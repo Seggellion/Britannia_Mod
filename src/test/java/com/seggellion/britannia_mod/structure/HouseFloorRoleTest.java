@@ -28,10 +28,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * names do not: {@code brick_foundation_spruce} sounds like a perimeter block and is not one.
  *
  * <p>The structures do say, unambiguously, and this is that evidence held still. Across every
- * shipped house the {@code brick_foundation_*} family occurs at y=0 and nowhere else -- it is
- * the ground-floor slab, brick at the exposed edges and spruce planks underfoot, which is what
- * the six small houses look like. The {@code ThinWall} foundations occur at y>=1 and never at
- * y=0 -- they are the wall bases.
+ * shipped house the {@code brick_foundation_*} slabs occur at y=0 and nowhere else -- the
+ * ground-floor slab, brick at the exposed edges and planks underfoot. The six small houses
+ * carried the spruce one until the 2026-08 rebuild re-floored them in the wooden-board family.
+ * The {@code ThinWall} foundations occur at y>=1 and never at y=0 -- they are the wall bases.
  *
  * <p>This is what Milestone 5's {@code house_foundation} tag has to encode. If someone later
  * lays a brick foundation up a wall, or a wall base across a floor, this fails and the tag needs
@@ -85,24 +85,29 @@ class HouseFloorRoleTest {
     }
 
     /**
-     * The six small houses floor themselves in one block, and it already plays the interior role.
-     *
-     * <p>Worth stating outright, because the obvious reading of the name is the wrong one and it
-     * decides whether those houses can have basements. No new floor-foundation block is needed
-     * for them; what is needed is for the tag to put this one on the right side of the line.
+     * The six small houses re-floored themselves in the 2026-08 rebuild. The 7x7 interior that
+     * was 49 {@code brick_foundation_spruce} is now a chequer of 24
+     * {@code wooden_board_floor_foundation} -- the structural slab the basement rules read --
+     * and 25 plain {@code wooden_board_floor}, the decorative boards an owner may break. Only
+     * the foundation half carries protection, and it must stay on the floor side of the tag
+     * line the way the spruce slab used to.
      */
     @Test
-    void theSmallHousesFloorIsBrickFoundationSpruceAndNothingElse() throws IOException {
+    void theSmallHousesFloorIsTheWoodenBoardChequer() throws IOException {
         int houses = 0;
         for (HouseStyle style : HouseStyle.values()) {
             if (style.getSize() != HouseSize.SMALL) continue;
             houses++;
 
             var layers = layersByBlock(style);
-            assertEquals(Set.of(0), layers.get("britannia_mod:brick_foundation_spruce"),
-                    style + " no longer floors itself in brick_foundation_spruce at y=0");
-            assertEquals(49, countAt(style, "britannia_mod:brick_foundation_spruce", 0),
-                    style + " should lay a 7x7 interior floor");
+            assertEquals(Set.of(0), layers.get("britannia_mod:wooden_board_floor_foundation"),
+                    style + " no longer lays wooden_board_floor_foundation at y=0 and nowhere else");
+            assertTrue(!layers.containsKey("britannia_mod:brick_foundation_spruce"),
+                    style + " grew its brick_foundation_spruce floor back; the rebuild replaced it");
+            assertEquals(24, countAt(style, "britannia_mod:wooden_board_floor_foundation", 0),
+                    style + " should lay the 24 structural cells of its 7x7 interior floor");
+            assertEquals(25, countAt(style, "britannia_mod:wooden_board_floor", 0),
+                    style + " should lay the 25 decorative cells of its 7x7 interior floor");
         }
         assertEquals(6, houses, "the small-house roster changed; recheck what they floor themselves in");
     }

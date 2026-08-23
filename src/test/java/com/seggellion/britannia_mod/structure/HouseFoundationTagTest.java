@@ -39,8 +39,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * through and leave the walls of their house breakable.
  *
  * <p>So membership is measured against the authored structures, and this is where that
- * measurement is enforced: a perimeter block never appears at y=0, and a slab block appears
- * nowhere else.
+ * measurement is enforced: a perimeter block never appears at y=0 (the entrance steps are the
+ * one named exception), and a slab block appears nowhere else.
  *
  * <p>The tags carry no behaviour yet. The protection rework that reads them is the rest of
  * Milestone 5 and waits on the creative-mode decision.
@@ -57,6 +57,13 @@ class HouseFoundationTagTest {
         for (HouseStyle style : HouseStyle.values()) {
             for (var entry : foundationLayers(style).entrySet()) {
                 if (!perimeter.contains(entry.getKey())) continue;
+
+                // The entrance steps are the one perimeter block that belongs at ground level:
+                // stairs cut from the foundation masonry, protected like the perimeter they are
+                // cut from -- an operator removes them, an owner does not. Named here so a wall
+                // base laid across a floor still fails rather than hiding behind them.
+                if (entry.getKey().equals("britannia_mod:brick_foundation_stairs")) continue;
+
                 assertTrue(entry.getValue().stream().allMatch(y -> y >= 1),
                         style + " lays " + entry.getKey() + " at " + entry.getValue() + ", including "
                                 + "the floor. It is tagged as exterior perimeter, so protecting it "

@@ -6,11 +6,12 @@ public enum HouseSize {
     MEDIUM("medium",  9,  7,  9),
     TOWER ("tower",  13,  7, 13),
     // Measured from the shipped structures rather than taken from the plan, which predated the
-    // authoring: the villa is 13x13 and not 11x11, and the keep is 26 wide by 25 deep and ten
-    // high, not 25x26x12. The keep is the first house whose footprint is not square.
+    // authoring: the villa is 13x13 and not 11x11. The keep's 2026-08 rebuild squared its
+    // footprint at 26x26 and raised it to twelve high; it shipped 26 wide by 25 deep and ten
+    // high before that.
     VILLA ("villa",  13, 10, 13),
     PATIO ("patio",  18,  8, 18),
-    KEEP  ("keep",   26, 10, 25),
+    KEEP  ("keep",   26, 12, 26),
     CASTLE("castle", 34, 20, 35);
 
     private final String id; // lowercase string → used for Rails, logic, etc.

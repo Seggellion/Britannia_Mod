@@ -158,8 +158,8 @@ class HouseStyleRegistrationTest {
         assertEquals(HouseSize.KEEP, HouseStyle.KEEP.getSize());
 
         assertEquals(new BlockPos(3, 0, 5), HouseStyle.VILLA.getDoorOffset());
-        assertEquals(new BlockPos(11, 0, 0), HouseStyle.PATIO.getDoorOffset());
-        assertEquals(new BlockPos(13, 0, 1), HouseStyle.KEEP.getDoorOffset());
+        assertEquals(new BlockPos(12, 0, 0), HouseStyle.PATIO.getDoorOffset());
+        assertEquals(new BlockPos(13, 0, 2), HouseStyle.KEEP.getDoorOffset());
     }
 
     /**
@@ -192,19 +192,21 @@ class HouseStyleRegistrationTest {
     }
 
     /**
-     * The keep is the first house wider than it is deep, and the bounding-box maths turns width
-     * and depth over each other on a quarter turn. A box built from the wrong one is 26 deep
-     * where the building is 25, and one block short the other way.
+     * The bounding-box maths turns width and depth over each other on a quarter turn, so it
+     * takes a non-square footprint to prove it swaps them. The keep carried this check until
+     * its 2026-08 rebuild squared it at 26x26; the castle, a block deeper than it is wide,
+     * carries it now. A box built from the wrong dimension is 35 wide where the building is
+     * 34, and one block short the other way.
      */
     @Test
-    void theKeepsNonSquareFootprintRotatesCorrectly() {
-        HouseStyle keep = HouseStyle.KEEP;
-        assertEquals(26, keep.getWidth());
-        assertEquals(25, keep.getDepth());
+    void theCastlesNonSquareFootprintRotatesCorrectly() {
+        HouseStyle castle = HouseStyle.CASTLE;
+        assertEquals(34, castle.getWidth());
+        assertEquals(35, castle.getDepth());
 
         BlockPos origin = new BlockPos(0, 64, 0);
         net.minecraft.core.Vec3i size =
-                new net.minecraft.core.Vec3i(keep.getWidth(), keep.getHeight(), keep.getDepth());
+                new net.minecraft.core.Vec3i(castle.getWidth(), castle.getHeight(), castle.getDepth());
 
         for (Rotation rotation : Rotation.values()) {
             var boxes = com.seggellion.britannia_mod.util.StructureUtils
@@ -216,12 +218,12 @@ class HouseStyleRegistrationTest {
             boolean quarterTurn = rotation == Rotation.CLOCKWISE_90
                     || rotation == Rotation.COUNTERCLOCKWISE_90;
 
-            assertEquals(quarterTurn ? keep.getDepth() : keep.getWidth(), spanX,
-                    "keep X span wrong under " + rotation);
-            assertEquals(quarterTurn ? keep.getWidth() : keep.getDepth(), spanZ,
-                    "keep Z span wrong under " + rotation);
-            assertEquals(keep.getHeight(), box.maxY - box.minY,
-                    "keep height changed under " + rotation);
+            assertEquals(quarterTurn ? castle.getDepth() : castle.getWidth(), spanX,
+                    "castle X span wrong under " + rotation);
+            assertEquals(quarterTurn ? castle.getWidth() : castle.getDepth(), spanZ,
+                    "castle Z span wrong under " + rotation);
+            assertEquals(castle.getHeight(), box.maxY - box.minY,
+                    "castle height changed under " + rotation);
             assertEquals(box.minY - 10.0D, boxes.fullBox().minY,
                     "the basement should reach ten blocks below, whatever the rotation");
         }
