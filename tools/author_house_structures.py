@@ -29,14 +29,15 @@ stone_keep
     problem, and LockableDoorBlock now refuses a signal while the door is locked. A house is
     allowed to have a pressure plate in its own doorway.
 
-large_patio
-    Its interior floor is 166 britannia_mod:wooden_board_floor. That is decorative flooring
-    standing in for the structural floor layer a house ships with, which is a distinction the
-    housing system needs to make: the perimeter foundation stays protected, and the interior
-    floor is what an owner cuts through to reach a basement. They become
-    britannia_mod:wooden_board_floor_foundation, which is the same boards on top, the same
-    facing and the same variation -- only the identity differs, and with it the masonry the
-    slab shows to the basement below it. No block moves and no layer is added.
+What this deliberately does not do
+----------------------------------
+It does not touch floors. A house authors its own floor in the sandbox, and the model is
+that the foundation is the outside perimeter of that floor and nothing else -- a ring of
+britannia_mod:wooden_board_floor_foundation around an interior of plain
+britannia_mod:wooden_board_floor, which is what the six small houses and the large patio are
+built as. A blanket floor-to-foundation rename used to run here for the patio; it flattened
+exactly the distinction the owner had drawn by hand, and it is gone. If a floor is wrong,
+fix it in the sandbox and export again.
 """
 import argparse
 import gzip
@@ -52,9 +53,6 @@ KEEP_DOOR_TO = 'britannia_mod:lockable_metal_door'
 LOCKABLE_DOOR_BE = 'britannia_mod:lockable_door'
 # Authored, and kept. Named here only so the verifier can prove they were not touched.
 KEEP_REDSTONE = ('minecraft:stone_pressure_plate', 'minecraft:stone_button')
-
-PATIO_FLOOR_FROM = 'britannia_mod:wooden_board_floor'
-PATIO_FLOOR_TO = 'britannia_mod:wooden_board_floor_foundation'
 
 
 # --------------------------------------------------------------------------- helpers
@@ -112,31 +110,8 @@ def author_keep(compound):
     return notes
 
 
-def author_patio(compound):
-    names = palette_names(compound)
-    if PATIO_FLOOR_FROM not in names:
-        return []
-
-    # The foundation block declares variation 0-13; the floor declares 0-14 but ships only
-    # fourteen textures. Refuse rather than write a state the block cannot represent.
-    for entry in compound['palette'][1][1]:
-        if entry['Name'][1] != PATIO_FLOOR_FROM:
-            continue
-        properties = entry.get('Properties')
-        variation = properties[1].get('variation', (None, '0'))[1] if properties else '0'
-        if int(variation) > 13:
-            raise SystemExit('large_patio uses wooden_board_floor variation %s, which the '
-                             'foundation block cannot represent' % variation)
-
-    renamed = rename_palette(compound, names, PATIO_FLOOR_FROM, PATIO_FLOOR_TO)
-    used = sum(1 for block in compound['blocks'][1][1] if names[block['state'][1]] == PATIO_FLOOR_TO)
-    return ['renamed %d palette entries (%d blocks) %s -> %s'
-            % (renamed, used, PATIO_FLOOR_FROM, PATIO_FLOOR_TO)]
-
-
 EDITS = {
     'stone_keep.nbt': author_keep,
-    'large_patio.nbt': author_patio,
 }
 
 
@@ -183,16 +158,6 @@ def verify(path, before_compound, after_compound):
         if before_redstone != after_redstone:
             problems.append("the keep authored redstone was disturbed: %s"
                             % sorted(before_redstone ^ after_redstone))
-
-    if name == 'large_patio.nbt':
-        if PATIO_FLOOR_FROM in after_names:
-            problems.append('plain wooden board floor survived')
-        floors = block_positions(after_compound, after_names, {PATIO_FLOOR_TO})
-        was = set(block_positions(before_compound, before_names, {PATIO_FLOOR_FROM, PATIO_FLOOR_TO}))
-        if set(floors) != was:
-            problems.append('floor positions changed')
-        if any(pos[1] != 0 for pos in floors):
-            problems.append('floor foundation appeared above y=0')
 
     return problems
 

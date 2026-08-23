@@ -85,15 +85,20 @@ class HouseFloorRoleTest {
     }
 
     /**
-     * The six small houses re-floored themselves in the 2026-08 rebuild. The 7x7 interior that
-     * was 49 {@code brick_foundation_spruce} is now a chequer of 24
-     * {@code wooden_board_floor_foundation} -- the structural slab the basement rules read --
-     * and 25 plain {@code wooden_board_floor}, the decorative boards an owner may break. Only
-     * the foundation half carries protection, and it must stay on the floor side of the tag
-     * line the way the spruce slab used to.
+     * The six small houses re-floored themselves in the 2026-08 rebuild, and how they did it is
+     * the house-wide model: the 7x7 interior that was 49 {@code brick_foundation_spruce} is now
+     * a ring of 24 {@code wooden_board_floor_foundation} around an interior of 25 plain
+     * {@code wooden_board_floor}.
+     *
+     * <p>The foundation is the outside perimeter of the floor and nothing else. That is the rule
+     * a house is authored to in the sandbox, not something a tool applies afterwards -- a blanket
+     * floor-to-foundation rename used to run over the patio and flattened exactly this
+     * distinction, and it has been removed from {@code tools/author_house_structures.py}. This
+     * pins the shape so that neither a re-added conversion nor a mis-authored export can put
+     * foundation through the middle of a room without failing here.
      */
     @Test
-    void theSmallHousesFloorIsTheWoodenBoardChequer() throws IOException {
+    void theSmallHousesLayFoundationOnlyAroundTheOutsideOfTheirFloor() throws IOException {
         int houses = 0;
         for (HouseStyle style : HouseStyle.values()) {
             if (style.getSize() != HouseSize.SMALL) continue;
@@ -104,10 +109,31 @@ class HouseFloorRoleTest {
                     style + " no longer lays wooden_board_floor_foundation at y=0 and nowhere else");
             assertTrue(!layers.containsKey("britannia_mod:brick_foundation_spruce"),
                     style + " grew its brick_foundation_spruce floor back; the rebuild replaced it");
-            assertEquals(24, countAt(style, "britannia_mod:wooden_board_floor_foundation", 0),
-                    style + " should lay the 24 structural cells of its 7x7 interior floor");
-            assertEquals(25, countAt(style, "britannia_mod:wooden_board_floor", 0),
-                    style + " should lay the 25 decorative cells of its 7x7 interior floor");
+
+            Set<Point> foundation = cellsAt(style, "britannia_mod:wooden_board_floor_foundation", 0);
+            Set<Point> plain = cellsAt(style, "britannia_mod:wooden_board_floor", 0);
+            assertEquals(24, foundation.size(), style + " should ring its floor in 24 foundation cells");
+            assertEquals(25, plain.size(), style + " should fill its floor with 25 plain cells");
+
+            Set<Point> floor = new TreeSet<>(foundation);
+            floor.addAll(plain);
+            for (Point cell : floor) {
+                boolean onTheOutside = !floor.contains(new Point(cell.x() + 1, cell.z()))
+                        || !floor.contains(new Point(cell.x() - 1, cell.z()))
+                        || !floor.contains(new Point(cell.x(), cell.z() + 1))
+                        || !floor.contains(new Point(cell.x(), cell.z() - 1));
+                if (onTheOutside) {
+                    assertTrue(foundation.contains(cell),
+                            style + " leaves " + cell + " plain on the outside edge of its floor; "
+                                    + "the perimeter of a floor is what the foundation is");
+                } else {
+                    assertTrue(plain.contains(cell),
+                            style + " lays foundation at " + cell + ", inside its own floor. The "
+                                    + "foundation is the outside perimeter and nothing else -- an "
+                                    + "interior cell being foundation is the blanket floor "
+                                    + "conversion coming back.");
+                }
+            }
         }
         assertEquals(6, houses, "the small-house roster changed; recheck what they floor themselves in");
     }
@@ -132,6 +158,39 @@ class HouseFloorRoleTest {
                     .add(block.getList("pos", Tag.TAG_INT).getInt(1));
         }
         return layers;
+    }
+
+    /** One cell of a floor, in template x/z. Ordered so failures name cells predictably. */
+    private record Point(int x, int z) implements Comparable<Point> {
+        @Override
+        public int compareTo(Point other) {
+            return x != other.x ? Integer.compare(x, other.x) : Integer.compare(z, other.z);
+        }
+
+        @Override
+        public String toString() {
+            return "(" + x + "," + z + ")";
+        }
+    }
+
+    private static Set<Point> cellsAt(HouseStyle style, String blockName, int y) throws IOException {
+        CompoundTag structure = read(style);
+        ListTag palette = structure.getList("palette", Tag.TAG_COMPOUND);
+        String[] names = new String[palette.size()];
+        for (int index = 0; index < palette.size(); index++) {
+            names[index] = palette.getCompound(index).getString("Name");
+        }
+
+        Set<Point> cells = new TreeSet<>();
+        ListTag blocks = structure.getList("blocks", Tag.TAG_COMPOUND);
+        for (int index = 0; index < blocks.size(); index++) {
+            CompoundTag block = blocks.getCompound(index);
+            if (!names[block.getInt("state")].equals(blockName)) continue;
+            ListTag pos = block.getList("pos", Tag.TAG_INT);
+            if (pos.getInt(1) != y) continue;
+            cells.add(new Point(pos.getInt(0), pos.getInt(2)));
+        }
+        return cells;
     }
 
     private static int countAt(HouseStyle style, String blockName, int y) throws IOException {
