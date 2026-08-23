@@ -99,9 +99,9 @@
 			}
 		},
 		{
-			"from": [0, 0, -0.5],
-			"to": [16, 1, 5.8],
-			"rotation": {"angle": 0, "axis": "y", "origin": [0, 0, -0.5]},
+			"from": [0, 0, -0.9],
+			"to": [16, 1, 5.9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 0, -0.9]},
 			"faces": {
 				"north": {"uv": [0, 1, 16, 2], "texture": "#3"},
 				"east": {"uv": [0.7, 1, 7, 2], "texture": "#3"},
