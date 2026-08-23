@@ -19,6 +19,7 @@ import com.seggellion.britannia_mod.resource.removal.ResourceDepositRemovalInspe
 import com.seggellion.britannia_mod.resource.removal.ResourceDepositRemovalProtocol;
 import com.seggellion.britannia_mod.resource.removal.ResourceDepositRemover;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -43,6 +44,16 @@ public final class ResourceDepositRemovalGameTests {
     public static void previewIsNonMutatingAndRemovalUsesExactProvenanceThenReplays(
             GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
+        // Every deposit protocol refuses footprints that touch unloaded chunks, and whether this
+        // structure's neighbourhood is loaded depends on which other tests happen to be running
+        // nearby. Hold the whole possible footprint loaded for the duration of the test.
+        ChunkPos anchorChunk = new ChunkPos(helper.absolutePos(new BlockPos(2, 2, 2)));
+        for (int cx = anchorChunk.x - 4; cx <= anchorChunk.x + 4; cx++) {
+            for (int cz = anchorChunk.z - 4; cz <= anchorChunk.z + 4; cz++) {
+                level.setChunkForced(cx, cz, true);
+                level.getChunk(cx, cz);
+            }
+        }
         UUID depositUuid = UUID.randomUUID();
         UUID materializationUuid = UUID.randomUUID();
         ResourceDepositPreviewProtocol.Request request = new ResourceDepositPreviewProtocol.Request(
@@ -208,6 +219,11 @@ public final class ResourceDepositRemovalGameTests {
         check(level.getBlockState(playerCell).is(resourceBlock)
                         && level.getBlockState(nearbySameBlock).is(resourceBlock),
                 "tombstone replay must preserve all previously preserved cells");
+        for (int cx = anchorChunk.x - 4; cx <= anchorChunk.x + 4; cx++) {
+            for (int cz = anchorChunk.z - 4; cz <= anchorChunk.z + 4; cz++) {
+                level.setChunkForced(cx, cz, false);
+            }
+        }
         helper.succeed();
     }
 

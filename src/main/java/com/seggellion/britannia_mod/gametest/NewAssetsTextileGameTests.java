@@ -41,6 +41,11 @@ public final class NewAssetsTextileGameTests {
         helper.getLevel().setBlock(wheelPos, BlockRegistry.SPINNING_WHEEL.get().defaultBlockState(), Block.UPDATE_ALL);
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
         player.setGameMode(GameType.SURVIVAL);
+        // Mock players join at the shared world spawn, where every concurrently batched test's
+        // players and drops pile up; the yarn count below scans a bubble around this player, so
+        // both players must stand inside this test's own structure.
+        BlockPos standAt = helper.absolutePos(new BlockPos(2, 2, 3));
+        player.setPos(standAt.getX() + 0.5, standAt.getY(), standAt.getZ() + 0.5);
 
         process(helper, player, wheelPos, new ItemStack(Items.WHITE_WOOL, 2),
                 ItemRegistry.BALL_OF_YARN.get(), 1, 1);
@@ -106,6 +111,7 @@ public final class NewAssetsTextileGameTests {
 
         ServerPlayer second = helper.makeMockServerPlayerInLevel();
         second.setGameMode(GameType.SURVIVAL);
+        second.setPos(standAt.getX() + 1.5, standAt.getY(), standAt.getZ() + 0.5);
         ItemStack firstThread = new ItemStack(ItemRegistry.SPOOL_OF_THREAD.get(), 5);
         ItemStack secondThread = new ItemStack(ItemRegistry.SPOOL_OF_THREAD.get(), 5);
         player.getInventory().clearContent();

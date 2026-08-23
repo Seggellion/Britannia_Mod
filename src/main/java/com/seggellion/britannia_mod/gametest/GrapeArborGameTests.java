@@ -16,13 +16,18 @@ import com.seggellion.britannia_mod.item.GrapesItem;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.winery.GrapeColor;
+import com.mojang.authlib.GameProfile;
+import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -78,8 +83,10 @@ public final class GrapeArborGameTests {
         helper.setBlock(plot, BlockRegistry.FARMING_BLOCK.get().defaultBlockState());
         FarmingBlockEntity farmBe = farmEntity(helper, plot);
 
-        ServerPlayer stranger = helper.makeMockServerPlayerInLevel();
-        stranger.setGameMode(GameType.SURVIVAL);
+        // makeMockServerPlayerInLevel() hard-codes isCreative() to true, and a creative player
+        // is a FlowerProtectionService administrator - allowed into anyone's plot by design.
+        // Refusal can only be exercised by a player whose survival mode is real.
+        ServerPlayer stranger = makeSurvivalMockServerPlayer(helper);
         farmBe.setOwner(UUID.randomUUID());
         check(farmBe.hasOwner(), "a private plot did not record an owner");
         check(!farmBe.mayPlant(stranger), "a private plot accepted a stranger");
@@ -278,7 +285,10 @@ public final class GrapeArborGameTests {
         ServerLevel level = helper.getLevel();
         BlockPos absoluteVine = helper.absolutePos(vine);
         check(LegacyGrapeVineMigration.migrate(level, absoluteVine), "the legacy vine did not convert");
-        check(helper.getBlockState(vine).isAir(), "the legacy vine survived its own conversion");
+        // A mature migrated crop immediately fills the space above its plot with arbor occupancy
+        // blocks (TallCropSupport), so the cell is not air - the legacy vine itself must be gone.
+        check(!(helper.getBlockState(vine).getBlock() instanceof GrapeVineBlock),
+            "the legacy vine survived its own conversion");
 
         FarmingBlockEntity farmBe = farmEntity(helper, plot);
         check(farmBe.hasCrop(), "the converted vine did not become a crop");
@@ -305,6 +315,25 @@ public final class GrapeArborGameTests {
             "the orphaned legacy vine did not convert");
         check(helper.getBlockState(vine).isAir(), "the orphaned legacy vine survived");
         helper.succeedWhen(() -> helper.assertItemEntityPresent(ItemRegistry.TRELLIS_ITEM.get()));
+    }
+
+    /**
+     * A joined survival {@link ServerPlayer} whose {@code isCreative()} tells the truth.
+     *
+     * <p>{@link GameTestHelper#makeMockServerPlayerInLevel()} overrides {@code isCreative()} to
+     * always return true, which makes every mock an administrator under
+     * {@code FlowerProtectionService} - useless for proving that a stranger is refused.
+     */
+    private static ServerPlayer makeSurvivalMockServerPlayer(GameTestHelper helper) {
+        CommonListenerCookie cookie = CommonListenerCookie.createInitial(
+            new GameProfile(UUID.randomUUID(), "test-mock-player"), false);
+        ServerPlayer player = new ServerPlayer(
+            helper.getLevel().getServer(), helper.getLevel(), cookie.gameProfile(), cookie.clientInformation());
+        Connection connection = new Connection(PacketFlow.SERVERBOUND);
+        new EmbeddedChannel(connection);
+        helper.getLevel().getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
+        player.setGameMode(GameType.SURVIVAL);
+        return player;
     }
 
     private static void useSeedsOn(GameTestHelper helper, ServerPlayer player, BlockPos relativePos) {
