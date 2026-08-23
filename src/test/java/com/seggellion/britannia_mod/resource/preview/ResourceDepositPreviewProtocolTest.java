@@ -37,6 +37,30 @@ class ResourceDepositPreviewProtocolTest {
         assertEquals("minecraft:overworld", request.target().dimensionKey());
         assertEquals(-12, request.x());
         assertEquals(34, request.z());
+        assertTrue(request.geometry().isEmpty(),
+                "a request without the geometry key is the pre-geometry request");
+    }
+
+    @Test
+    void parsesAuthoredGeometryFromTheMirroredFixtureAndBoundsItAtParseTime() throws IOException {
+        List<ResourceDepositPreviewProtocol.Request> requests = ResourceDepositPreviewProtocol
+                .parsePending(contract("resource_deposit_preview_pending_v1_geometry.json"));
+        assertEquals(60, requests.getFirst().geometry().orElseThrow().radius());
+
+        // A malformed geometry is refused, never silently treated as unauthored.
+        String base = pendingJson("1").replace("\"coordinates\":{\"x\":-12,\"z\":34}",
+                "\"coordinates\":{\"x\":-12,\"z\":34},\"geometry\":GEOMETRY");
+        for (String bad : List.of("{}", "{\"radius\":0}", "{\"radius\":513}",
+                "{\"radius\":1.5}", "\"60\"")) {
+            assertThrows(ResourceDepositPreviewProtocol.MalformedProtocolException.class,
+                    () -> ResourceDepositPreviewProtocol.parsePending(
+                            base.replace("GEOMETRY", bad).getBytes(StandardCharsets.UTF_8)),
+                    "geometry " + bad + " must be malformed");
+        }
+        List<ResourceDepositPreviewProtocol.Request> bounds = ResourceDepositPreviewProtocol
+                .parsePending(base.replace("GEOMETRY", "{\"radius\":512}")
+                        .getBytes(StandardCharsets.UTF_8));
+        assertEquals(512, bounds.getFirst().geometry().orElseThrow().radius());
     }
 
     @Test
@@ -91,9 +115,15 @@ class ResourceDepositPreviewProtocolTest {
         ResourceDepositPreviewProtocol.Request repeated = new ResourceDepositPreviewProtocol.Request(
                 UUID.fromString("99999999-9999-4999-8999-999999999999"), DEPOSIT, 7, "iron",
                 first.target(), first.x(), first.z());
+        ResourceDepositPreviewProtocol.Request authored = new ResourceDepositPreviewProtocol.Request(
+                first.previewUuid(), DEPOSIT, 7, "iron", first.target(), first.x(), first.z(),
+                java.util.Optional.of(new ResourceDepositPreviewProtocol.Geometry(60)));
 
         assertEquals(ResourceDepositPreviewEvaluator.previewSeed(first),
                 ResourceDepositPreviewEvaluator.previewSeed(repeated));
+        assertEquals(ResourceDepositPreviewEvaluator.previewSeed(first),
+                ResourceDepositPreviewEvaluator.previewSeed(authored),
+                "authored geometry must never perturb the deterministic seed");
     }
 
     @Test

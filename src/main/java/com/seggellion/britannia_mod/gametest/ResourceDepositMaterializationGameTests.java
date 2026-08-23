@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -207,6 +208,54 @@ public final class ResourceDepositMaterializationGameTests {
                 "invalid target/resource must not register a DepositInstance");
         check(level.getBlockState(approved.host()).is(Blocks.STONE),
                 "invalid target/resource must not place resource blocks");
+        helper.succeed();
+    }
+
+    /**
+     * The regression test for the reconstruction defect: an authored radius must survive
+     * {@code previewRequest(operation)} into the pre-write re-evaluation. If reconstruction ever
+     * drops the geometry again, re-evaluation plans at the catalogue minimum, the equality check
+     * sees a different plan, and this test fails with the false non-retryable
+     * {@code preview_world_changed} it exists to forbid.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void authoredGeometrySurvivesReconstructionAndMaterializes(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos requested = helper.absolutePos(new BlockPos(2, 2, 2));
+        ResourceDepositPreviewProtocol.Request request = new ResourceDepositPreviewProtocol.Request(
+                UUID.fromString("13131313-1313-4313-8313-131313131313"),
+                UUID.fromString("14141414-1414-4414-8414-141414141414"), 9, "silver",
+                new ResourceDepositPreviewProtocol.Target(
+                        SHARD, SERVER, "Britannia", "minecraft:overworld"),
+                requested.getX(), requested.getZ(),
+                Optional.of(new ResourceDepositPreviewProtocol.Geometry(4)));
+        Approved approved = approveOneHost(level, request);
+        check(approved.evaluation().radius() == 4,
+                "the approved preview must carry the authored radius");
+        ResourceDepositMaterializationProtocol.Operation operation = operation(
+                request, approved.evaluation(),
+                UUID.fromString("15151515-1515-4515-8515-151515151515"));
+        DepositLedger ledger = DepositLedger.get(level);
+        int ledgerBefore = ledger.size();
+
+        ResourceDepositMaterializationProtocol.Outcome outcome =
+                ResourceDepositMaterializer.process(level.getServer(), operation, SERVER);
+        if (outcome instanceof ResourceDepositMaterializationProtocol.Failure failed) {
+            throw new GameTestAssertException("authored-geometry materialization must succeed, got "
+                    + failed.code() + ": " + failed.detail());
+        }
+        ResourceDepositMaterializationProtocol.Generated generated =
+                (ResourceDepositMaterializationProtocol.Generated) outcome;
+        check(generated.plannedBlockCount() == approved.evaluation().plannedBlockCount(),
+                "materialization must execute the approved authored-radius plan, not the minimum");
+        check(ledger.size() == ledgerBefore + 1,
+                "authored geometry must register exactly one DepositInstance");
+
+        ResourceDepositMaterializationProtocol.Outcome replay =
+                ResourceDepositMaterializer.process(level.getServer(), operation, SERVER);
+        check(replay instanceof ResourceDepositMaterializationProtocol.Generated
+                        && ((ResourceDepositMaterializationProtocol.Generated) replay).replayed(),
+                "authored geometry replay must acknowledge, not re-place or fail");
         helper.succeed();
     }
 

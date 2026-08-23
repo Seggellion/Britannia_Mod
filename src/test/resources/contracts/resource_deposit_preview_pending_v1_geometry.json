@@ -1,0 +1,26 @@
+{
+  "protocol_version": 1,
+  "preview_requests": [
+    {
+      "protocol_version": 1,
+      "preview_uuid": "11111111-1111-4111-8111-111111111111",
+      "resource_deposit_uuid": "22222222-2222-4222-8222-222222222222",
+      "resource_deposit_revision": 7,
+      "resource_definition_key": "iron",
+      "target": {
+        "shard_uuid": "33333333-3333-4333-8333-333333333333",
+        "minecraft_server_uuid": "44444444-4444-4444-8444-444444444444",
+        "world_name": "Britannia",
+        "dimension_key": "minecraft:overworld"
+      },
+      "coordinates": {
+        "x": -12,
+        "z": 34
+      },
+      "geometry": {
+        "radius": 60
+      },
+      "requested_at": "2026-08-22T00:00:00Z"
+    }
+  ]
+}

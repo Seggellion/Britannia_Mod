@@ -22,6 +22,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -146,6 +147,18 @@ public final class ResourceDepositMaterializer {
                 registration.outcome() == DepositLedger.Outcome.ALREADY_REGISTERED);
     }
 
+    /**
+     * The preview request the pre-write re-evaluation runs against, rebuilt from the operation.
+     *
+     * <p>The geometry is ALWAYS carried explicitly, as the approved preview's radius. Whether or
+     * not the original Rails request authored a geometry, {@code approvedPreview().radius()} is
+     * the radius the approved evaluation actually planned with -- for an unauthored request it is
+     * the catalogue minimum the evaluator chose, so passing it back changes nothing. Rebuilding
+     * WITHOUT it would let the evaluator fall back to the catalogue minimum while the approved
+     * evaluation holds the authored value, and the equality check in {@code process} would then
+     * report every authored materialization as {@code preview_world_changed} -- a non-retryable
+     * failure blaming the world for a defect in this reconstruction.
+     */
     private static ResourceDepositPreviewProtocol.Request previewRequest(
             ResourceDepositMaterializationProtocol.Operation operation) {
         return new ResourceDepositPreviewProtocol.Request(operation.previewUuid(),
@@ -153,7 +166,9 @@ public final class ResourceDepositMaterializer {
                 operation.resourceDefinitionKey(),
                 new ResourceDepositPreviewProtocol.Target(operation.target().shardUuid(),
                         operation.target().minecraftServerUuid(), operation.target().worldName(),
-                        operation.target().dimensionKey()), operation.x(), operation.z());
+                        operation.target().dimensionKey()), operation.x(), operation.z(),
+                Optional.of(new ResourceDepositPreviewProtocol.Geometry(
+                        operation.approvedPreview().radius())));
     }
 
     private static ResourceDepositPreviewProtocol.Bounds bounds(PlannedDeposit plan) {

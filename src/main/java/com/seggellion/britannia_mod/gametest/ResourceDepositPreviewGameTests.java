@@ -23,6 +23,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /** Live-world proof that M4's inspection seam is wholly non-mutating. */
@@ -113,6 +114,54 @@ public final class ResourceDepositPreviewGameTests {
         beforeRepeat.forEach((pos, state) -> check(level.getBlockState(pos).equals(state),
                 "repeat preview evaluation changed " + pos.toShortString()));
         helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void authoredGeometryScalesThePlanAndDefaultKeepsTheCatalogueMinimum(
+            GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos requested = helper.absolutePos(new BlockPos(2, 2, 2));
+        UUID serverKey = UUID.fromString("44444444-4444-4444-8444-444444444444");
+        ResourceDepositPreviewProtocol.Target target = new ResourceDepositPreviewProtocol.Target(
+                UUID.fromString("33333333-3333-4333-8333-333333333333"), serverKey,
+                "Britannia", level.dimension().location().toString());
+        ResourceDepositPreviewProtocol.Request unauthored =
+                new ResourceDepositPreviewProtocol.Request(
+                        UUID.fromString("55555555-5555-4555-8555-555555555555"),
+                        UUID.fromString("66666666-6666-4666-8666-666666666666"), 3, "silver",
+                        target, requested.getX(), requested.getZ());
+        ResourceDepositPreviewProtocol.Request authored =
+                new ResourceDepositPreviewProtocol.Request(
+                        unauthored.previewUuid(), unauthored.resourceDepositUuid(), 3, "silver",
+                        target, requested.getX(), requested.getZ(),
+                        Optional.of(new ResourceDepositPreviewProtocol.Geometry(4)));
+
+        ResourceDepositPreviewProtocol.Evaluation byDefault = evaluation(
+                ResourceDepositPreviewEvaluator.evaluate(level.getServer(), unauthored, serverKey));
+        int catalogueMinimum = ResourceCatalog.instance().byPath("silver").orElseThrow()
+                .generation().orElseThrow().minRadius();
+        check(byDefault.radius() == catalogueMinimum,
+                "a request without geometry must keep the catalogue-minimum default");
+
+        ResourceDepositPreviewProtocol.Evaluation evaluated = evaluation(
+                ResourceDepositPreviewEvaluator.evaluate(level.getServer(), authored, serverKey));
+        check(evaluated.radius() == 4,
+                "the evaluated radius must be exactly the authored radius");
+        check(evaluated.plannedBlockCount() >= byDefault.plannedBlockCount(),
+                "an authored radius above the minimum must not shrink the plan");
+        check(span(evaluated.footprint()) > span(byDefault.footprint()),
+                "an authored radius above the minimum must reach further than the default");
+
+        ResourceDepositPreviewProtocol.Evaluation repeated = evaluation(
+                ResourceDepositPreviewEvaluator.evaluate(level.getServer(), authored, serverKey));
+        check(evaluated.equals(repeated),
+                "authored geometry must evaluate deterministically for the same deposit revision");
+        helper.succeed();
+    }
+
+    private static int span(ResourceDepositPreviewProtocol.Bounds bounds) {
+        return (bounds.maxX() - bounds.minX()) + (bounds.maxY() - bounds.minY())
+                + (bounds.maxZ() - bounds.minZ());
     }
 
     private static ResourceDepositPreviewProtocol.Evaluation evaluation(

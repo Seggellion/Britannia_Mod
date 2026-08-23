@@ -10,6 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -17,6 +19,15 @@ import java.util.regex.Pattern;
 public final class ResourceDepositPreviewProtocol {
     public static final int VERSION = 1;
     public static final int MAX_REQUESTS = 20;
+
+    /**
+     * Parse-level ceiling for an authored geometry radius. Syntactic only: the per-resource
+     * bound lives in the catalogue and is enforced by the evaluator through
+     * {@code PlacementPlanner.reject}, in the catalogue's own words. This constant merely keeps
+     * an absurd number from travelling any further than the parser, and mirrors the 512 ceiling
+     * Rails' result contract already applies to the radius it gets back.
+     */
+    public static final int MAX_GEOMETRY_RADIUS = 512;
     private static final Pattern RESOURCE_KEY = Pattern.compile("[a-z0-9_.-]{1,128}");
     private static final Pattern DIMENSION_KEY =
             Pattern.compile("[a-z0-9_.-]+:[a-z0-9_./-]+");
@@ -26,9 +37,36 @@ public final class ResourceDepositPreviewProtocol {
     public record Target(UUID shardUuid, UUID minecraftServerUuid,
                          String worldName, String dimensionKey) {}
 
+    /**
+     * Per-deposit geometry authored in Rails. Optional on the wire and in the record: an absent
+     * geometry means "no extent was explicitly authored" and the evaluator keeps its original
+     * conservative default, the resource's catalogue minimum. Only the extent scalar lives here
+     * today; the object exists so later fields (rotation, and any future per-deposit dimension)
+     * can join additively without reshaping the request. Resource-level shape character --
+     * thickness, irregularity, gap chance -- deliberately does NOT belong here; that is
+     * {@code ShapeTuning}, owned by the resource definition.
+     */
+    public record Geometry(int radius) {}
+
     public record Request(UUID previewUuid, UUID resourceDepositUuid,
                           long resourceDepositRevision, String resourceDefinitionKey,
-                          Target target, int x, int z) {}
+                          Target target, int x, int z, Optional<Geometry> geometry) {
+        public Request {
+            Objects.requireNonNull(geometry, "geometry is optional but never null");
+        }
+
+        /**
+         * The original seven-argument form, kept so that every caller written before authored
+         * geometry existed still reads correctly -- the same convention {@code ShapeConfig} uses
+         * for tuning. A request without geometry is the common case, not a special one.
+         */
+        public Request(UUID previewUuid, UUID resourceDepositUuid,
+                       long resourceDepositRevision, String resourceDefinitionKey,
+                       Target target, int x, int z) {
+            this(previewUuid, resourceDepositUuid, resourceDepositRevision, resourceDefinitionKey,
+                    target, x, z, Optional.empty());
+        }
+    }
 
     public record Bounds(int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
         public Bounds {
@@ -109,7 +147,18 @@ public final class ResourceDepositPreviewProtocol {
         JsonObject coordinates = requireObject(json, "coordinates");
         int x = requireInteger(coordinates, "x", -30_000_000, 30_000_000);
         int z = requireInteger(coordinates, "z", -30_000_000, 30_000_000);
-        return new Request(previewUuid, depositUuid, revision, resourceKey, target, x, z);
+
+        // Additive: a request without the key is exactly the pre-geometry request. When the key
+        // is present it must be a well-formed object with a radius -- a malformed geometry is
+        // refused rather than silently treated as unauthored, because falling back to the default
+        // here would evaluate a different deposit than the one Rails asked about.
+        Optional<Geometry> geometry = Optional.empty();
+        if (json.has("geometry")) {
+            JsonObject geometryJson = requireObject(json, "geometry");
+            geometry = Optional.of(new Geometry(
+                    requireInteger(geometryJson, "radius", 1, MAX_GEOMETRY_RADIUS)));
+        }
+        return new Request(previewUuid, depositUuid, revision, resourceKey, target, x, z, geometry);
     }
 
     private static JsonObject evaluationJson(Evaluation value) {

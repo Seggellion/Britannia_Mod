@@ -168,6 +168,28 @@ class PlacementPlannerTest {
     /* ------------------------------------------------------------------ */
 
     @Test
+    void anAuthoredRadiusPlansWithTheResourcesOwnTuningNotAPerDepositCopy() {
+        // World Admin geometry: the per-deposit radius arrives from Rails, but the bed's
+        // character -- thickness 5, and the rim knobs -- stays the resource definition's
+        // ShapeTuning. Thickness 5 gives half-thickness 2 and a drift limit of 1, so the
+        // declared box reaches exactly +-3 vertically whatever radius the deposit authored.
+        ResourceDefinition silica = resource("silica_sand_deposit");
+        PlannedDeposit first = PlacementPlanner.plan(
+                silica, OVERWORLD, new BlockPos(0, 40, 0), 10, ShapeRotation.XZ, 99L);
+        PlannedDeposit repeated = PlacementPlanner.plan(
+                silica, OVERWORLD, new BlockPos(0, 40, 0), 10, ShapeRotation.XZ, 99L);
+
+        assertEquals(first.positions(), repeated.positions(),
+                "an authored radius must plan deterministically");
+        assertEquals(-3, first.plan().bounds().minY(),
+                "vertical reach must come from the resource-owned tuning thickness");
+        assertEquals(3, first.plan().bounds().maxY(),
+                "vertical reach must come from the resource-owned tuning thickness");
+        assertEquals(10, first.plan().bounds().maxX(),
+                "horizontal reach must come from the authored radius");
+    }
+
+    @Test
     void aRadiusOutsideTheResourcesConfiguredRangeIsRefused() {
         ResourceDefinition agapite = resource("agapite");
         assertTrue(PlacementPlanner.reject(agapite, 2).isPresent(), "below the configured minimum");

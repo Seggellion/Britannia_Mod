@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -34,10 +35,12 @@ import java.util.UUID;
  * guarded host policy, structure index, and deposit ledger.
  *
  * <p>No method in this class calls materialisation, registration, {@code setBlock}, or restoration.
- * The selected radius is the resource definition's existing minimum -- a deterministic,
- * conservative footprint that adds no second tuning catalogue. Y is selected by comparing the
- * existing guarded-placement policy across the loaded build column and choosing the origin with
- * the most eligible hosts (ties prefer the origin nearest the column's mid-geology depth).
+ * The radius is the request's authored geometry when Rails supplies one, validated against the
+ * catalogue's own per-resource range; a request without geometry keeps the original conservative
+ * default, the resource definition's minimum, so pre-geometry payloads evaluate exactly as they
+ * always did. Y is selected by comparing the existing guarded-placement policy across the loaded
+ * build column and choosing the origin with the most eligible hosts (ties prefer the origin
+ * nearest the column's mid-geology depth).
  */
 public final class ResourceDepositPreviewEvaluator {
     private ResourceDepositPreviewEvaluator() {}
@@ -66,6 +69,19 @@ public final class ResourceDepositPreviewEvaluator {
             return failure("resource_not_plannable", "resource definition has no managed-deposit geometry", false);
         }
 
+        // Authored geometry wins; its bound check is the same one the curated-row path uses,
+        // so an out-of-range request is refused in the catalogue's own words before any world
+        // state is consulted. Absent geometry falls back to the catalogue minimum -- the exact
+        // pre-geometry behaviour, which is what keeps the field additive.
+        int radius = generation.minRadius();
+        if (request.geometry().isPresent()) {
+            radius = request.geometry().get().radius();
+            Optional<PlacementPlanner.Rejection> rejection = PlacementPlanner.reject(resource, radius);
+            if (rejection.isPresent()) {
+                return failure("geometry_rejected", rejection.get().reason(), false);
+            }
+        }
+
         ResourceLocation dimensionId;
         try {
             dimensionId = ResourceLocation.parse(request.target().dimensionKey());
@@ -78,7 +94,6 @@ public final class ResourceDepositPreviewEvaluator {
             return failure("dimension_unavailable", "target dimension is not available on this server", true);
         }
 
-        int radius = generation.minRadius();
         long seed = previewSeed(request);
         ShapeRotation rotation = chooseRotation(generation, seed);
         int probeY = Math.max(level.getMinBuildHeight(), Math.min(0, level.getMaxBuildHeight() - 1));
