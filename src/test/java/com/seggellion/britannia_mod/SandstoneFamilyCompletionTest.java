@@ -85,27 +85,37 @@ class SandstoneFamilyCompletionTest {
     }
 
     @Test
-    void bothWindowModelsContainARealTenByEighteenVoxelOpening() throws Exception {
-        for (String id : List.of("sandstone_window", "ornate_sandstone_window")) {
-            JsonArray elements = json(MODELS.resolve(id + "_straight.json")).getAsJsonArray("elements");
-            assertTrue(elements.size() >= 4);
-            for (JsonElement value : elements) {
-                JsonObject element = value.getAsJsonObject();
-                JsonArray from = element.getAsJsonArray("from");
-                JsonArray to = element.getAsJsonArray("to");
-                boolean intrudesIntoOpening = from.get(0).getAsDouble() < 13.0D
-                    && to.get(0).getAsDouble() > 3.0D
-                    && from.get(1).getAsDouble() < 26.0D
-                    && to.get(1).getAsDouble() > 8.0D;
-                assertFalse(intrudesIntoOpening, id + " has opaque geometry inside its aperture");
-            }
-        }
+    void bothWindowModelsContainARealOpening() throws Exception {
+        // The sandstone window draws a stepped arch: the light spans x 2..14 above its y 9 sill
+        // and corbels in to x 6..10 under the lintel at y 28. The ornate window keeps a squared
+        // x 3..13 light over a taller y 11 sill. Each rectangle below is a part of a light that
+        // must stay clear of geometry for the window to be a real opening and not decorated wall.
+        assertLightStaysClear("sandstone_window", 2.0D, 9.0D, 14.0D, 18.0D);
+        assertLightStaysClear("sandstone_window", 6.0D, 9.0D, 10.0D, 28.0D);
+        assertLightStaysClear("ornate_sandstone_window", 3.0D, 11.0D, 13.0D, 26.0D);
 
         String block = Files.readString(PROJECT.resolve(
             "src/main/java/com/seggellion/britannia_mod/block/SandstoneWindowBlock.java"));
-        assertTrue(block.contains("STRAIGHT_LOWER"));
-        assertTrue(block.contains("STRAIGHT_UPPER"));
+        assertTrue(block.contains("archedMainRun"));
+        assertTrue(block.contains("straightLower"));
         assertTrue(block.contains("getCollisionShape"));
+    }
+
+    private static void assertLightStaysClear(String id, double x0, double y0, double x1, double y1)
+            throws Exception {
+        JsonArray elements = json(MODELS.resolve(id + "_straight.json")).getAsJsonArray("elements");
+        assertTrue(elements.size() >= 4);
+        for (JsonElement value : elements) {
+            JsonObject element = value.getAsJsonObject();
+            JsonArray from = element.getAsJsonArray("from");
+            JsonArray to = element.getAsJsonArray("to");
+            boolean intrudesIntoOpening = from.get(0).getAsDouble() < x1
+                && to.get(0).getAsDouble() > x0
+                && from.get(1).getAsDouble() < y1
+                && to.get(1).getAsDouble() > y0;
+            assertFalse(intrudesIntoOpening, id + " has opaque geometry inside its light over x "
+                + x0 + ".." + x1 + ", y " + y0 + ".." + y1);
+        }
     }
 
     @Test

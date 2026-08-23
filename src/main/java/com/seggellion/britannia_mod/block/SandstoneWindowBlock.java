@@ -15,17 +15,16 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * Every box below is copied out of the matching {@code sandstone_window_*} model file in the
  * model's own coordinates - {@code y} runs 0 to 32 across both halves - and
  * {@link WallModelShape#half} slices out the block being asked. The parallel between a collision
- * definition and the {@code elements} array it came from is the whole point: the previous version
+ * definition and the {@code elements} array it came from is the whole point: an earlier version
  * had one hand-written pair of shapes standing in for all five variants, and it did not match any
- * of them.
+ * of them - the mismatch was exactly a crouching player walking through solid-looking wall.
  *
- * <h2>The defect this fixes</h2>
- * That single pair was measured off the {@code _t_junction} art - sill top at {@code y 4}, lintel
- * bottom at {@code y 28} - and was used for the {@code _straight} art as well, which draws a taller
- * sill and a lower lintel ({@code y 8} and {@code y 26}). The straight window therefore collided
- * with a 24 pixel opening while drawing an 18 pixel one, and 24 pixels is exactly a crouching
- * player: standing on the sill and sneaking, a player walked clean through the middle of a wall
- * that plainly shows solid stone above and below the light.
+ * <h2>Two window styles, one block class</h2>
+ * The plain sandstone window draws a stepped arch: two-pixel jambs, a sill at {@code y 9}, and
+ * courses corbelling in from {@code x 2..14} at {@code y 18} to {@code x 6..10} under the lintel
+ * at {@code y 28}. Its corner models repeat the arch on both runs and leave the meeting of the two
+ * walls open rather than solid. The ornate window keeps rectangular lights. Each registration
+ * therefore passes its own transcriptions; only the {@code _t_junction} art is still shared.
  */
 public final class SandstoneWindowBlock extends DoubleWallBlock {
 
@@ -33,7 +32,7 @@ public final class SandstoneWindowBlock extends DoubleWallBlock {
     private static final double DEPTH = 7.0D;
 
     /**
-     * The sill top and lintel bottom of one modelled opening, in model coordinates.
+     * The sill top and lintel bottom of one rectangular modelled opening, in model coordinates.
      *
      * @param sillTop      the height the sill stops at, below which the wall is solid
      * @param lintelBottom the height the lintel starts at, above which the wall is solid
@@ -41,47 +40,48 @@ public final class SandstoneWindowBlock extends DoubleWallBlock {
     public record Opening(double sillTop, double lintelBottom) {
     }
 
-    /** What every {@code _t_junction} and {@code _corner_branch_right} model in the family draws. */
+    /** What every {@code _t_junction} model in the family draws. */
     public static final Opening JUNCTION_OPENING = new Opening(4.0D, 28.0D);
 
-    /** What the {@code _straight} models draw: a deeper sill and a lower lintel. */
-    private static final Opening STRAIGHT_OPENING = new Opening(8.0D, 26.0D);
+    /** What {@code ornate_sandstone_window_straight} draws: a tall sill under a squared light. */
+    private static final Opening ORNATE_STRAIGHT_OPENING = new Opening(11.0D, 26.0D);
 
-    /* --- the run hugging the north edge --------------------------------- */
-
-    private static final VoxelShape STRAIGHT_LOWER =
-        mainRun(STRAIGHT_OPENING).half(DoubleBlockHalf.LOWER);
-    private static final VoxelShape STRAIGHT_UPPER =
-        mainRun(STRAIGHT_OPENING).half(DoubleBlockHalf.UPPER);
-
-    /* --- the perpendicular return, on either edge ------------------------ */
+    /* --- t-junctions, whose art is shared across the family --------------- */
 
     private static final VoxelShape T_JUNCTION_WEST_LOWER = tJunction(false).half(DoubleBlockHalf.LOWER);
     private static final VoxelShape T_JUNCTION_WEST_UPPER = tJunction(false).half(DoubleBlockHalf.UPPER);
     private static final VoxelShape T_JUNCTION_EAST_LOWER = tJunction(true).half(DoubleBlockHalf.LOWER);
     private static final VoxelShape T_JUNCTION_EAST_UPPER = tJunction(true).half(DoubleBlockHalf.UPPER);
 
-    /* --- corners, whose opening differs between the two blocks ----------- */
+    /* --- runs that differ between the two registrations ------------------- */
 
+    private final VoxelShape straightLower;
+    private final VoxelShape straightUpper;
     private final VoxelShape westCornerLower;
     private final VoxelShape westCornerUpper;
     private final VoxelShape eastCornerLower;
     private final VoxelShape eastCornerUpper;
 
-    /**
-     * @param counterClockwiseCornerOpening what this block's {@code _corner} model draws.
-     *        {@code sandstone_window_corner} is the one file in the family authored with a six
-     *        pixel sill and a lintel at 26, where its own {@code _corner_branch_right} mirror and
-     *        the whole ornate family use four and 28. The two registrations pass their own value
-     *        rather than the code averaging over an art inconsistency.
-     */
-    public SandstoneWindowBlock(BlockBehaviour.Properties properties,
-                                Opening counterClockwiseCornerOpening) {
+    /** The plain sandstone window, transcribed from its stepped-arch models. */
+    public static SandstoneWindowBlock sandstone(BlockBehaviour.Properties properties) {
+        return new SandstoneWindowBlock(properties, archedMainRun(), archedWestCorner(), archedEastCorner());
+    }
+
+    /** The ornate window: rectangular lights, corners drawn with the junction opening. */
+    public static SandstoneWindowBlock ornate(BlockBehaviour.Properties properties) {
+        return new SandstoneWindowBlock(properties, mainRun(ORNATE_STRAIGHT_OPENING),
+            corner(false, JUNCTION_OPENING), corner(true, JUNCTION_OPENING));
+    }
+
+    private SandstoneWindowBlock(BlockBehaviour.Properties properties, WallModelShape straightRun,
+                                 WallModelShape westCornerRun, WallModelShape eastCornerRun) {
         super(properties);
-        this.westCornerLower = corner(false, counterClockwiseCornerOpening).half(DoubleBlockHalf.LOWER);
-        this.westCornerUpper = corner(false, counterClockwiseCornerOpening).half(DoubleBlockHalf.UPPER);
-        this.eastCornerLower = corner(true, JUNCTION_OPENING).half(DoubleBlockHalf.LOWER);
-        this.eastCornerUpper = corner(true, JUNCTION_OPENING).half(DoubleBlockHalf.UPPER);
+        this.straightLower = straightRun.half(DoubleBlockHalf.LOWER);
+        this.straightUpper = straightRun.half(DoubleBlockHalf.UPPER);
+        this.westCornerLower = westCornerRun.half(DoubleBlockHalf.LOWER);
+        this.westCornerUpper = westCornerRun.half(DoubleBlockHalf.UPPER);
+        this.eastCornerLower = eastCornerRun.half(DoubleBlockHalf.LOWER);
+        this.eastCornerUpper = eastCornerRun.half(DoubleBlockHalf.UPPER);
     }
 
     /* --- model transcriptions -------------------------------------------- */
@@ -93,6 +93,81 @@ public final class SandstoneWindowBlock extends DoubleWallBlock {
             .box(0.0D, opening.sillTop(), 0.0D, 3.0D, opening.lintelBottom(), DEPTH)
             .box(13.0D, opening.sillTop(), 0.0D, 16.0D, opening.lintelBottom(), DEPTH)
             .box(0.0D, opening.lintelBottom(), 0.0D, 16.0D, 32.0D, DEPTH);
+    }
+
+    /** {@code sandstone_window_straight}: the arch, corbelling in one course per step. */
+    private static WallModelShape archedMainRun() {
+        return WallModelShape.of()
+            .box(0.0D, 0.0D, 0.0D, 16.0D, 9.0D, DEPTH)      // sill
+            .box(0.0D, 9.0D, 0.0D, 2.0D, 28.0D, DEPTH)      // west jamb
+            .box(14.0D, 9.0D, 0.0D, 16.0D, 28.0D, DEPTH)    // east jamb
+            .box(2.0D, 18.0D, 0.0D, 3.0D, 28.0D, DEPTH)     // arch, west side
+            .box(3.0D, 23.0D, 0.0D, 4.0D, 28.0D, DEPTH)
+            .box(4.0D, 25.0D, 0.0D, 5.0D, 28.0D, DEPTH)
+            .box(5.0D, 27.0D, 0.0D, 6.0D, 28.0D, DEPTH)
+            .box(13.0D, 18.0D, 0.0D, 14.0D, 28.0D, DEPTH)   // arch, east side
+            .box(12.0D, 23.0D, 0.0D, 13.0D, 28.0D, DEPTH)
+            .box(11.0D, 25.0D, 0.0D, 12.0D, 28.0D, DEPTH)
+            .box(10.0D, 27.0D, 0.0D, 11.0D, 28.0D, DEPTH)
+            .box(0.0D, 28.0D, 0.0D, 16.0D, 32.0D, DEPTH);   // lintel
+    }
+
+    /** {@code sandstone_window_corner}: an arched north run and an arched west return. */
+    private static WallModelShape archedWestCorner() {
+        return WallModelShape.of()
+            // the north run; its west jamb stops at z 5 where the return's arch takes over
+            .box(0.0D, 0.0D, 0.0D, 16.0D, 9.0D, DEPTH)      // sill
+            .box(0.0D, 9.0D, 0.0D, 2.0D, 28.0D, 5.0D)       // west jamb
+            .box(14.0D, 9.0D, 0.0D, 16.0D, 28.0D, DEPTH)    // east jamb
+            .box(2.0D, 18.0D, 0.0D, 3.0D, 28.0D, 6.0D)      // arch, west side
+            .box(3.0D, 23.0D, 0.0D, 4.0D, 28.0D, 6.0D)
+            .box(4.0D, 25.0D, 0.0D, 5.0D, 28.0D, 6.0D)
+            .box(5.0D, 27.0D, 0.0D, 6.0D, 28.0D, 6.0D)
+            .box(13.0D, 18.0D, 0.0D, 14.0D, 28.0D, DEPTH)   // arch, east side
+            .box(12.0D, 23.0D, 0.0D, 13.0D, 28.0D, DEPTH)
+            .box(11.0D, 25.0D, 0.0D, 12.0D, 28.0D, DEPTH)
+            .box(10.0D, 27.0D, 0.0D, 11.0D, 28.0D, DEPTH)
+            .box(0.0D, 28.0D, 0.0D, 16.0D, 32.0D, DEPTH)    // lintel
+            // the west return, its arch stepping along z from both ends
+            .box(0.0D, 0.0D, DEPTH, 7.0D, 9.0D, 16.0D)      // sill
+            .box(0.0D, 18.0D, 15.0D, 3.0D, 28.0D, 16.0D)    // arch, far end
+            .box(0.0D, 23.0D, 14.0D, 3.0D, 28.0D, 15.0D)
+            .box(0.0D, 25.0D, 13.0D, 3.0D, 28.0D, 14.0D)
+            .box(0.0D, 27.0D, 12.0D, 3.0D, 28.0D, 13.0D)
+            .box(0.0D, 18.0D, 5.0D, 2.0D, 28.0D, 6.0D)      // arch, corner end
+            .box(0.0D, 23.0D, 6.0D, 2.0D, 28.0D, 7.0D)
+            .box(0.0D, 25.0D, 7.0D, 2.0D, 28.0D, 8.0D)
+            .box(0.0D, 27.0D, 8.0D, 2.0D, 28.0D, 9.0D)
+            .box(0.0D, 28.0D, DEPTH, 7.0D, 32.0D, 16.0D);   // lintel
+    }
+
+    /** {@code sandstone_window_corner_branch_right}: the same corner mirrored onto the east edge. */
+    private static WallModelShape archedEastCorner() {
+        return WallModelShape.of()
+            // the north run; its east jamb stops at z 5 where the return's arch takes over
+            .box(0.0D, 0.0D, 0.0D, 16.0D, 9.0D, DEPTH)      // sill
+            .box(0.0D, 9.0D, 0.0D, 2.0D, 28.0D, 6.0D)       // west jamb
+            .box(14.0D, 9.0D, 0.0D, 16.0D, 28.0D, 5.0D)     // east jamb
+            .box(2.0D, 18.0D, 0.0D, 3.0D, 28.0D, 6.0D)      // arch, west side
+            .box(3.0D, 23.0D, 0.0D, 4.0D, 28.0D, 6.0D)
+            .box(4.0D, 25.0D, 0.0D, 5.0D, 28.0D, 6.0D)
+            .box(5.0D, 27.0D, 0.0D, 6.0D, 28.0D, 6.0D)
+            .box(13.0D, 18.0D, 0.0D, 14.0D, 28.0D, 6.0D)    // arch, east side
+            .box(12.0D, 23.0D, 0.0D, 13.0D, 28.0D, DEPTH)
+            .box(11.0D, 25.0D, 0.0D, 12.0D, 28.0D, DEPTH)
+            .box(10.0D, 27.0D, 0.0D, 11.0D, 28.0D, DEPTH)
+            .box(0.0D, 28.0D, 0.0D, 16.0D, 32.0D, DEPTH)    // lintel
+            // the east return, its arch stepping along z from both ends
+            .box(9.0D, 0.0D, DEPTH, 16.0D, 9.0D, 16.0D)     // sill
+            .box(13.0D, 18.0D, 15.0D, 16.0D, 28.0D, 16.0D)  // arch, far end
+            .box(13.0D, 23.0D, 14.0D, 16.0D, 28.0D, 15.0D)
+            .box(13.0D, 25.0D, 13.0D, 16.0D, 28.0D, 14.0D)
+            .box(13.0D, 27.0D, 12.0D, 16.0D, 28.0D, 13.0D)
+            .box(14.0D, 18.0D, 5.0D, 16.0D, 28.0D, 6.0D)    // arch, corner end
+            .box(13.0D, 23.0D, 6.0D, 16.0D, 28.0D, 7.0D)
+            .box(13.0D, 25.0D, 7.0D, 16.0D, 28.0D, 8.0D)
+            .box(13.0D, 27.0D, 8.0D, 16.0D, 28.0D, 9.0D)
+            .box(9.0D, 28.0D, DEPTH, 16.0D, 32.0D, 16.0D);  // lintel
     }
 
     /**
@@ -145,7 +220,7 @@ public final class SandstoneWindowBlock extends DoubleWallBlock {
         boolean east = state.getValue(BRANCH_RIGHT);
 
         return switch (state.getValue(SHAPE)) {
-            case STRAIGHT -> lower ? STRAIGHT_LOWER : STRAIGHT_UPPER;
+            case STRAIGHT -> lower ? this.straightLower : this.straightUpper;
             case CORNER -> lower
                 ? (east ? this.eastCornerLower : this.westCornerLower)
                 : (east ? this.eastCornerUpper : this.westCornerUpper);

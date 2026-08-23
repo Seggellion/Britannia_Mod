@@ -109,10 +109,8 @@ class WindowCollisionContractTest {
         windows.put("plaster_and_stone_window", new DoubleWallBlock(stoneProps()));
         windows.put("ornate_wall_large_window", new MirrorableWallBlock(stoneProps()));
         windows.put("plaster_wall_large_window", new MirrorableWallBlock(stoneProps()));
-        windows.put("sandstone_window",
-            new SandstoneWindowBlock(stoneProps(), new SandstoneWindowBlock.Opening(6.0D, 26.0D)));
-        windows.put("ornate_sandstone_window",
-            new SandstoneWindowBlock(stoneProps(), SandstoneWindowBlock.JUNCTION_OPENING));
+        windows.put("sandstone_window", SandstoneWindowBlock.sandstone(stoneProps()));
+        windows.put("ornate_sandstone_window", SandstoneWindowBlock.ornate(stoneProps()));
     }
 
     private static BlockBehaviour.Properties woodProps() {
