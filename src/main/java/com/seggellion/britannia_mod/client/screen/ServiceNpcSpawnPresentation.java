@@ -61,9 +61,12 @@ public record ServiceNpcSpawnPresentation(List<Line> lines) {
         // A bank teller has neither, and must render exactly as it always did — no empty headings,
         // no blank rows, nothing new on screen at all.
         boolean unstaffed = isRegisteredButUnstaffed(state);
-        if (taught.isEmpty() && supplies.isEmpty() && !unstaffed) return EMPTY;
+        // Sent only when it is worth saying (see the payload's own worldStateSyncStatusFor), so a
+        // healthy staffed post still renders as nothing at all.
+        String syncStatus = state.worldStateSyncStatus();
+        if (taught.isEmpty() && supplies.isEmpty() && !unstaffed && syncStatus == null) return EMPTY;
 
-        List<Line> lines = new ArrayList<>(taught.size() + supplies.size() + 3);
+        List<Line> lines = new ArrayList<>(taught.size() + supplies.size() + 4);
 
         if (!taught.isEmpty()) {
             lines.add(new Line("Teaches:", COLOR_HEADING));
@@ -93,6 +96,13 @@ public record ServiceNpcSpawnPresentation(List<Line> lines) {
 
         if (unstaffed) {
             lines.add(new Line(unstaffedReason(state), COLOR_NOTE));
+        }
+
+        // Directly under the "awaiting" note on purpose: together they answer the question the
+        // note alone cannot -- whether this server is still waiting on Rails, or has stopped
+        // being able to hear it. Formatted server-side, so this only places it.
+        if (syncStatus != null) {
+            lines.add(new Line(syncStatus, COLOR_NOTE));
         }
 
         return new ServiceNpcSpawnPresentation(lines);

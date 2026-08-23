@@ -34,11 +34,22 @@ class ServiceNpcSpawnPresentationTest {
             ServiceNpcSpawnRegistrationState registrationState,
             UUID assignedNpc
     ) {
+        return of(taught, status, supplies, registrationState, assignedNpc, null);
+    }
+
+    private static ServiceNpcSpawnPresentation of(
+            List<String> taught,
+            ServiceNpcSpawnEligibility.Status status,
+            List<SupplyLine> supplies,
+            ServiceNpcSpawnRegistrationState registrationState,
+            UUID assignedNpc,
+            String worldStateSyncStatus
+    ) {
         return ServiceNpcSpawnPresentation.of(new ServiceNpcSpawnStateS2CPayload(
                 1, BlockPos.ZERO, UUID.randomUUID(), true, ServiceNpcSpawnValidationError.NONE,
                 true, true, List.of(), List.of(), UUID.randomUUID(), "warrior_guildmaster",
                 true, true, true, 1L, registrationState, null, assignedNpc, null, 1L, null,
-                taught, status, supplies
+                taught, status, supplies, worldStateSyncStatus
         ));
     }
 
@@ -51,6 +62,47 @@ class ServiceNpcSpawnPresentationTest {
                 ServiceNpcSpawnRegistrationState.REGISTERED, UUID.randomUUID());
 
         assertTrue(presentation.isEmpty(), "a staffed bank teller must add no rows to the screen");
+    }
+
+    @Test
+    void aStaffedTellerWithAHealthySyncStillRendersNothing() {
+        // The server sends no sync line at all when there is nothing worth saying, and that has
+        // to keep meaning "draw nothing" here, not "draw a blank row".
+        ServiceNpcSpawnPresentation presentation = of(
+                List.of(), ServiceNpcSpawnEligibility.Status.SATISFIED, List.of(),
+                ServiceNpcSpawnRegistrationState.REGISTERED, UUID.randomUUID(), null);
+
+        assertTrue(presentation.isEmpty(), "a healthy staffed post must add no rows");
+    }
+
+    // ---------- World state sync ----------
+
+    @Test
+    void theSyncStatusIsDrawnDirectlyUnderTheAwaitingNote() {
+        // The pair is the whole point: "awaiting reconciliation" alone cannot tell an admin
+        // whether Rails has not staffed this yet, or has, and this server cannot hear it.
+        ServiceNpcSpawnPresentation presentation = of(
+                List.of(), ServiceNpcSpawnEligibility.Status.SATISFIED, List.of(),
+                ServiceNpcSpawnRegistrationState.REGISTERED, null,
+                "World sync FAILED: assignment references missing s\u2026");
+
+        List<ServiceNpcSpawnPresentation.Line> lines = presentation.lines();
+        assertEquals(2, lines.size());
+        assertEquals("No NPC yet: awaiting staffing reconciliation.", lines.get(0).text());
+        assertEquals("World sync FAILED: assignment references missing s\u2026", lines.get(1).text());
+    }
+
+    @Test
+    void aSyncStatusIsRenderedEvenForAStaffedPost() {
+        // A stuck delta channel is worth knowing about even when this particular post happens to
+        // be fine -- every failure shape is permanent until something intervenes.
+        ServiceNpcSpawnPresentation presentation = of(
+                List.of(), ServiceNpcSpawnEligibility.Status.SATISFIED, List.of(),
+                ServiceNpcSpawnRegistrationState.REGISTERED, UUID.randomUUID(),
+                "World sync FAILED: transport_error");
+
+        assertEquals(1, presentation.lines().size());
+        assertEquals("World sync FAILED: transport_error", presentation.lines().get(0).text());
     }
 
     // ---------- Taught skills ----------

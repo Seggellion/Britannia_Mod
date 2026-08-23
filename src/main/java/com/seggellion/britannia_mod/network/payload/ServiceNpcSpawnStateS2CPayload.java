@@ -11,6 +11,9 @@ import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnEligibility;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnRegistrationState;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnValidationError;
 import com.seggellion.britannia_mod.skill.SkillManager;
+import com.seggellion.britannia_mod.worldstate.WorldStateSyncOutcome;
+import com.seggellion.britannia_mod.worldstate.WorldStateSyncPoller;
+import com.seggellion.britannia_mod.worldstate.WorldStateSyncStatusText;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -50,7 +53,8 @@ public record ServiceNpcSpawnStateS2CPayload(
         @Nullable Long lastSuccessfulSyncEpochMillis,
         List<String> taughtSkillLabels,
         ServiceNpcSpawnEligibility.Status eligibilityStatus,
-        List<SupplyLine> supplyRequirements
+        List<SupplyLine> supplyRequirements,
+        @Nullable String worldStateSyncStatus
 ) implements CustomPacketPayload {
     public record CityOption(UUID publicId, String displayName) {}
     public record ServiceTypeOption(String key, String displayName) {}
@@ -176,7 +180,8 @@ public record ServiceNpcSpawnStateS2CPayload(
                     null,
                     List.of(),
                     ServiceNpcSpawnEligibility.Status.SATISFIED,
-                    List.of()
+                    List.of(),
+                    worldStateSyncStatusFor(player, ServiceNpcSpawnRegistrationState.ERROR, null)
             );
         }
 
@@ -230,7 +235,44 @@ public record ServiceNpcSpawnStateS2CPayload(
                 blockEntity.getLastSuccessfulSyncEpochMillis(),
                 taughtSkillLabelsFor(storedType),
                 eligibility.status(),
-                supplyLinesFor(eligibility)
+                supplyLinesFor(eligibility),
+                worldStateSyncStatusFor(
+                        player, blockEntity.getRegistrationState(), blockEntity.getAssignedNpcPublicId())
+        );
+    }
+
+    /**
+     * The world-state sync line, or null when there is nothing worth saying.
+     *
+     * <h2>Why it is conditional</h2>
+     * A post standing here with a healthy NPC and a healthy delta channel must render exactly as
+     * it always did -- no new row, no empty heading. The line earns its place in only two
+     * situations: the post is registered with nobody assigned (the state an admin cannot
+     * currently explain -- "Rails has not staffed this yet" and "Rails staffed it and this server
+     * cannot accept the news" look identical from here), or the last poll did not land, which is
+     * worth knowing even for a post that is currently staffed, because every failure shape is
+     * permanent until something intervenes.
+     *
+     * <p>The unstaffed test is duplicated from {@code ServiceNpcSpawnPresentation}'s own rather
+     * than shared: this one decides whether to spend wire bytes, that one decides how to draw
+     * what arrived, and a client that receives the line always renders it.
+     */
+    @Nullable
+    private static String worldStateSyncStatusFor(
+            ServerPlayer player,
+            ServiceNpcSpawnRegistrationState registrationState,
+            @Nullable UUID assignedNpcPublicId
+    ) {
+        WorldStateSyncOutcome outcome = player.getServer() == null
+                ? WorldStateSyncOutcome.neverPolled()
+                : WorldStateSyncPoller.lastOutcome(player.getServer());
+        boolean unstaffed = registrationState == ServiceNpcSpawnRegistrationState.REGISTERED
+                && assignedNpcPublicId == null;
+        if (!unstaffed && WorldStateSyncStatusText.isHealthy(outcome)) return null;
+        return boundedOrFallback(
+                WorldStateSyncStatusText.of(outcome),
+                ServiceNpcSpawnPayloadCodec.MAX_ERROR_BYTES,
+                "world sync status too long"
         );
     }
 
@@ -307,6 +349,7 @@ public record ServiceNpcSpawnStateS2CPayload(
             buffer.writeDouble(line.available());
             buffer.writeBoolean(line.measured());
         });
+        writeNullableString(buffer, payload.worldStateSyncStatus, ServiceNpcSpawnPayloadCodec.MAX_ERROR_BYTES);
     }
 
     private static ServiceNpcSpawnStateS2CPayload decode(FriendlyByteBuf buffer) {
@@ -358,12 +401,13 @@ public record ServiceNpcSpawnStateS2CPayload(
                 readNullableString(buffer, ServiceNpcSpawnPayloadCodec.MAX_LABEL_BYTES),
                 buffer.readLong(),
                 buffer.readBoolean() ? buffer.readLong() : null,
-                // Java evaluates arguments left to right, so these three read after every inline
+                // Java evaluates arguments left to right, so these four read after every inline
                 // read above and stay in wire order. They are method calls rather than locals for
                 // exactly that reason: locals declared before this return would read too early.
                 readTaughtSkillLabels(buffer),
                 readEnum(buffer, ServiceNpcSpawnEligibility.Status.values()),
-                readSupplyLines(buffer)
+                readSupplyLines(buffer),
+                readNullableString(buffer, ServiceNpcSpawnPayloadCodec.MAX_ERROR_BYTES)
         );
     }
 

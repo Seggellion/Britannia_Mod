@@ -8,6 +8,7 @@ import com.seggellion.britannia_mod.service.ServiceNpcRegistryCache;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnMenuRequestValidator;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnConfigurationValidator;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnValidationError;
+import com.seggellion.britannia_mod.worldstate.WorldStateSyncPoller;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
@@ -49,6 +50,29 @@ public final class ServiceNpcSpawnPayloadHandler {
         });
     }
 
+    /**
+     * The Refresh button. Redraws from what this server already knows, and -- for a valid session
+     * -- also asks the world-state poller to go and get the news now rather than at some point in
+     * the next five to six minutes.
+     *
+     * <h2>Why the immediate poll is here</h2>
+     * Staffing is applied on the Rails side; this server learns about it only when {@link
+     * WorldStateSyncPoller} next polls. Before this, an admin standing at a freshly staffed post
+     * had exactly two options -- wait out a cadence they cannot see, or relog to force the login
+     * bootstrap -- and no way at all to tell a post that is merely waiting apart from one whose
+     * delta channel is stuck (every failure shape there is permanent, since a rejected batch
+     * never advances the applied version, so the next poll re-fetches and re-rejects the same
+     * rows). Both of those are now one click.
+     *
+     * <h2>Two sends, not one</h2>
+     * The immediate send is unchanged from before and never waits on the network: Refresh stays
+     * as responsive as it has always been even with Rails unreachable. The second send happens
+     * only when the forced poll actually settles, and only if this player is still sitting in the
+     * same menu -- by then the cache holds the assignment, the block has spawned the NPC on its
+     * own next tick, and the panel redraws showing it. A poll that cannot be forced (no poller
+     * registered, or the cooldown has not expired) returns false and simply produces no second
+     * send, which is why the first one is not conditional on any of this.
+     */
     public static void handleResync(ServiceNpcSpawnResyncC2SPayload payload, IPayloadContext context) {
         context.enqueueWork(() -> {
             if (!(context.player() instanceof ServerPlayer player)) return;
@@ -59,6 +83,17 @@ public final class ServiceNpcSpawnPayloadHandler {
                     payload.spawnPointId(),
                     payload.expectedConfigurationRevision()
             );
+            if (session.error() == ServiceNpcSpawnValidationError.NONE && session.menu() != null
+                    && player.getServer() != null) {
+                ServiceNpcSpawnMenu menu = session.menu();
+                WorldStateSyncPoller.requestImmediatePoll(player.getServer(), () -> {
+                    // Runs on the server thread once the poll reaches a terminal outcome. The
+                    // menu check is what keeps a late redraw from landing on a player who has
+                    // since closed the screen or opened a different one.
+                    if (player.hasDisconnected() || player.containerMenu != menu) return;
+                    sendState(player, menu, ServiceNpcSpawnValidationError.NONE);
+                });
+            }
             sendState(player, session.menu(), session.error());
         });
     }

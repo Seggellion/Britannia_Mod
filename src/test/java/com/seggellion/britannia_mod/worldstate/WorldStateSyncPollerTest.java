@@ -314,6 +314,111 @@ class WorldStateSyncPollerTest {
         assertFalse(poller.isStopped());
     }
 
+    // ---------- Forced polls (the Service NPC spawn block's Refresh button) ----------
+
+    @Test
+    void aForcedPollFiresAtOnceInsteadOfWaitingOutTheCadenceAndTellsItsListener() {
+        List<Long> requestedVersions = new ArrayList<>();
+        List<String> notifications = new ArrayList<>();
+        WorldStateSyncPoller poller = poller(fixedJitter(0), requestedVersions);
+
+        assertTrue(poller.requestImmediatePoll(() -> notifications.add("settled")));
+
+        assertEquals(1, requestedVersions.size(), "a forced poll did not actually reach the client");
+        assertEquals(List.of("settled"), notifications, "the caller was never told the poll had settled");
+        assertInstanceOf(WorldStateSyncOutcome.Accepted.class, poller.lastOutcomeForTest());
+    }
+
+    @Test
+    void aForcedPollReschedulesTheCadenceRatherThanLeavingAScheduledPollRightBehindIt() {
+        WorldStateSyncPoller poller = poller(fixedJitter(123), new ArrayList<>());
+
+        poller.requestImmediatePoll(null);
+
+        assertEquals(WorldStateSyncPoller.BASE_CADENCE_TICKS + 123, poller.ticksUntilNextPollForTest(),
+                "a forced poll must reschedule like any other, or the shard asks the same question twice");
+    }
+
+    @Test
+    void aSecondForcedPollInsideTheCooldownIsRefusedRatherThanQueued() {
+        List<Long> requestedVersions = new ArrayList<>();
+        WorldStateSyncPoller poller = poller(fixedJitter(0), requestedVersions);
+
+        assertTrue(poller.requestImmediatePoll(null));
+        assertFalse(poller.requestImmediatePoll(() -> {
+            throw new AssertionError("a refused forced poll must never run a settlement listener");
+        }), "the cooldown did not refuse a second immediate poll");
+        assertEquals(1, requestedVersions.size(), "the refused poll still reached the client");
+    }
+
+    @Test
+    void theForcedPollCooldownExpiresOnItsOwnTicks() {
+        List<Long> requestedVersions = new ArrayList<>();
+        WorldStateSyncPoller poller = poller(fixedJitter(0), requestedVersions);
+        poller.requestImmediatePoll(null);
+
+        for (int tick = 0; tick < WorldStateSyncPoller.FORCED_POLL_COOLDOWN_TICKS; tick++) {
+            poller.onTick();
+        }
+
+        assertTrue(poller.requestImmediatePoll(null), "the cooldown never expired");
+        assertEquals(2, requestedVersions.size());
+    }
+
+    @Test
+    void aFailedForcedPollStillSettlesItsListener() {
+        // The failure cases are exactly the ones the button exists to surface, so a listener that
+        // only runs on success would leave the panel showing nothing on the run that mattered.
+        List<String> notifications = new ArrayList<>();
+        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(
+                respondingWith(new WorldStateChangesClient.Failure("transport_error")), fixedJitter(0),
+                Runnable::run, () -> 0L, neverCalledApplier(), neverCalledFullBootstrapApplier()
+        );
+
+        assertTrue(poller.requestImmediatePoll(() -> notifications.add("settled")));
+
+        assertEquals(List.of("settled"), notifications);
+        assertInstanceOf(WorldStateSyncOutcome.TransportFailure.class, poller.lastOutcomeForTest());
+    }
+
+    @Test
+    void aForcedPollDuringAnInFlightPollJoinsItRatherThanStartingASecond() {
+        List<Long> requestedVersions = new ArrayList<>();
+        List<String> notifications = new ArrayList<>();
+        CompletableFuture<WorldStateChangesClient.Result> pending = new CompletableFuture<>();
+        WorldStateChangesClient client = new WorldStateChangesClient(
+                ignored -> java.util.Optional.of(testCredentials()),
+                (ignored, task) -> {
+                    requestedVersions.add(0L);
+                    return pending;
+                },
+                com.seggellion.britannia_mod.server.http.CancellableHttpRequest::new
+        );
+        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(
+                client, fixedJitter(0), Runnable::run, () -> 0L, appliedApplier(), neverCalledFullBootstrapApplier()
+        );
+
+        assertTrue(poller.requestImmediatePoll(() -> notifications.add("first")));
+        assertTrue(poller.requestImmediatePoll(() -> notifications.add("second")),
+                "a request arriving mid-flight must attach to the poll already running");
+        assertEquals(1, requestedVersions.size(), "the in-flight poll was duplicated");
+        assertEquals(List.of(), notifications, "nothing may settle before the poll actually returns");
+
+        pending.complete(new WorldStateChangesClient.Success(wellFormedResponse(SHARD, 0, 0, 0, List.of())));
+
+        assertEquals(List.of("first", "second"), notifications, "both waiters must be told, in order");
+    }
+
+    @Test
+    void aStoppedPollerRefusesForcedPollsInsteadOfPromisingACallbackItCannotKeep() {
+        WorldStateSyncPoller poller = poller(fixedJitter(0), new ArrayList<>());
+        poller.stopForTest();
+
+        assertFalse(poller.requestImmediatePoll(() -> {
+            throw new AssertionError("a stopped poller must never run a settlement listener");
+        }));
+    }
+
     private static void fireOnce(WorldStateSyncPoller poller) {
         int total = WorldStateSyncPoller.BASE_CADENCE_TICKS;
         for (int tick = 0; tick < total; tick++) {

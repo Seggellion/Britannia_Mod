@@ -73,7 +73,8 @@ class ServiceNpcSpawnPayloadCodecTest {
                         // measured=false is the UNKNOWN case, and has to survive the round trip
                         // distinguishably from a real zero.
                         new ServiceNpcSpawnStateS2CPayload.SupplyLine("silver", 5.0, 0.0, false)
-                )
+                ),
+                "World sync FAILED: malformed_change: x must be an integer"
         );
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
 
@@ -85,5 +86,10 @@ class ServiceNpcSpawnPayloadCodecTest {
         assertEquals(ServiceNpcSpawnEligibility.Status.BELOW_MINIMUM, decoded.eligibilityStatus());
         assertFalse(decoded.supplyRequirements().get(0).satisfied(), "143.5 does not meet 200");
         assertFalse(decoded.supplyRequirements().get(1).measured(), "an unmeasured supply must stay unmeasured");
+        assertEquals(
+                "World sync FAILED: malformed_change: x must be an integer",
+                decoded.worldStateSyncStatus(),
+                "the sync line is the last field on the wire and must not be dropped"
+        );
     }
 }

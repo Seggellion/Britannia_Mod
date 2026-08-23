@@ -5,7 +5,10 @@ import com.seggellion.britannia_mod.service.ServiceNpcAssignmentsCache;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -69,6 +72,16 @@ public final class WorldStateSyncPoller {
     /** Up to 60 seconds of additional randomized delay, re-rolled every cycle. See class doc. */
     public static final int MAX_JITTER_TICKS = 1200;
 
+    /**
+     * 5 seconds. Bounds how often {@link #requestImmediatePoll} can actually reach Rails, so the
+     * Refresh button on a Service NPC spawn post cannot be turned into a request amplifier by
+     * holding it down. The menu behind that button already requires permission level 2, and this
+     * cooldown is per server rather than per player, so the worst case for the whole shard is 12
+     * polls a minute against an endpoint that permits 300 -- the guard is about not being
+     * gratuitous, not about a real threat.
+     */
+    public static final int FORCED_POLL_COOLDOWN_TICKS = 100;
+
     private static final Map<MinecraftServer, WorldStateSyncPoller> ACTIVE = new HashMap<>();
 
     @FunctionalInterface
@@ -88,9 +101,11 @@ public final class WorldStateSyncPoller {
     private final LongSupplier lastKnownVersionSource;
     private final ResponseApplier responseApplier;
     private final FullBootstrapApplier fullBootstrapApplier;
+    private final List<Runnable> settlementListeners = new ArrayList<>();
     private boolean stopped;
     private boolean pollInFlight;
     private int ticksUntilNextPoll;
+    private int forcedPollCooldownTicks;
     private String pinnedShardPublicId;
     private volatile WorldStateSyncOutcome lastOutcome = WorldStateSyncOutcome.neverPolled();
 
@@ -126,6 +141,37 @@ public final class WorldStateSyncPoller {
         if (poller != null) poller.onTick();
     }
 
+    /**
+     * Fires a poll right now instead of waiting out the remaining 5-6 minutes of the cadence, and
+     * calls {@code onSettled} on the server thread once that poll reaches a terminal outcome --
+     * applied, rejected, or failed. Returns false when no callback will ever come: no poller is
+     * registered for this server, it is already stopping, or the forced-poll cooldown has not
+     * expired. A caller that gets false is expected to carry on with whatever it already knows,
+     * never to wait.
+     *
+     * <p>A poll already in flight is joined rather than duplicated -- {@code onSettled} is
+     * attached to the one already running, which is the same answer a second request would have
+     * fetched anyway.
+     *
+     * <p>The cadence is re-rolled from this moment, exactly as if the scheduled poll had fired:
+     * a forced poll is a real poll, and following it 30 seconds later with the scheduled one
+     * would be asking the same question twice for no reason.
+     */
+    public static synchronized boolean requestImmediatePoll(MinecraftServer server, @Nullable Runnable onSettled) {
+        WorldStateSyncPoller poller = ACTIVE.get(server);
+        return poller != null && poller.requestImmediatePoll(onSettled);
+    }
+
+    /**
+     * The most recent poll's outcome for this server, or {@link WorldStateSyncOutcome.NeverPolled}
+     * when no poller is registered (a client-only or not-yet-started server). Read by the Service
+     * NPC spawn block's state payload; see {@link WorldStateSyncStatusText}.
+     */
+    public static synchronized WorldStateSyncOutcome lastOutcome(MinecraftServer server) {
+        WorldStateSyncPoller poller = ACTIVE.get(server);
+        return poller == null ? WorldStateSyncOutcome.neverPolled() : poller.lastOutcome;
+    }
+
     public static synchronized void stop(MinecraftServer server) {
         WorldStateSyncPoller poller = ACTIVE.remove(server);
         if (poller != null) poller.close();
@@ -155,8 +201,24 @@ public final class WorldStateSyncPoller {
         );
     }
 
+    boolean requestImmediatePoll(@Nullable Runnable onSettled) {
+        if (stopped) return false;
+        if (pollInFlight) {
+            if (onSettled != null) settlementListeners.add(onSettled);
+            return true;
+        }
+        if (forcedPollCooldownTicks > 0) return false;
+        forcedPollCooldownTicks = FORCED_POLL_COOLDOWN_TICKS;
+        if (onSettled != null) settlementListeners.add(onSettled);
+        ticksUntilNextPoll = BASE_CADENCE_TICKS + boundedJitter();
+        LOGGER.info("World state sync poll forced by request next_poll_in_ticks={}", ticksUntilNextPoll);
+        firePoll();
+        return true;
+    }
+
     public void onTick() {
         if (stopped) return;
+        if (forcedPollCooldownTicks > 0) forcedPollCooldownTicks--;
         if (--ticksUntilNextPoll > 0) return;
         ticksUntilNextPoll = BASE_CADENCE_TICKS + boundedJitter();
         firePoll();
@@ -178,15 +240,13 @@ public final class WorldStateSyncPoller {
         }
 
         if (failure != null || result == null) {
-            pollInFlight = false;
-            lastOutcome = WorldStateSyncOutcome.transportFailure("unexpected_error");
             LOGGER.warn("World state sync poll failed code=unexpected_error from_version={}", requestedFromVersion, failure);
+            settle(WorldStateSyncOutcome.transportFailure("unexpected_error"));
             return;
         }
         if (result instanceof WorldStateChangesClient.Failure failureResult) {
-            pollInFlight = false;
-            lastOutcome = WorldStateSyncOutcome.transportFailure(failureResult.safeCode());
             LOGGER.warn("World state sync poll failed code={} from_version={}", failureResult.safeCode(), requestedFromVersion);
+            settle(WorldStateSyncOutcome.transportFailure(failureResult.safeCode()));
             return;
         }
 
@@ -194,10 +254,9 @@ public final class WorldStateSyncPoller {
         WorldStateSyncValidator.Result validation =
                 WorldStateSyncValidator.validate(response, requestedFromVersion, pinnedShardPublicId);
         if (validation instanceof WorldStateSyncValidator.Rejected rejected) {
-            pollInFlight = false;
-            lastOutcome = WorldStateSyncOutcome.rejected(rejected.reason());
             LOGGER.warn("World state sync poll rejected reason={} from_version={} schema_version={}",
                     rejected.reason(), requestedFromVersion, response.schemaVersion());
+            settle(WorldStateSyncOutcome.rejected(rejected.reason()));
             return;
         }
 
@@ -219,43 +278,76 @@ public final class WorldStateSyncPoller {
             return;
         }
 
-        pollInFlight = false;
         ServiceNpcAssignmentsCandidateApply.Result applyResult = responseApplier.apply(server, response);
         if (applyResult instanceof ServiceNpcAssignmentsCandidateApply.Rejected rejected) {
-            lastOutcome = WorldStateSyncOutcome.applyRejected(rejected.reason());
             LOGGER.warn("World state sync apply rejected reason={} from_version={} to_version={}",
                     rejected.reason(), requestedFromVersion, response.toVersion());
+            settle(WorldStateSyncOutcome.applyRejected(rejected.reason()));
             return;
         }
 
-        lastOutcome = WorldStateSyncOutcome.accepted(response);
         LOGGER.info("World state sync poll applied and committed to_version={}", response.toVersion());
+        settle(WorldStateSyncOutcome.accepted(response));
     }
 
     private void completeFullBootstrap(WorldStateFullBootstrapFallback.Result result, Throwable failure) {
-        pollInFlight = false;
-        if (stopped) return;
+        if (stopped) {
+            pollInFlight = false;
+            return;
+        }
 
         if (failure != null || result == null) {
-            lastOutcome = WorldStateSyncOutcome.fullBootstrapDeferred("unexpected_error");
             LOGGER.warn("World state full bootstrap fallback failed code=unexpected_error", failure);
+            settle(WorldStateSyncOutcome.fullBootstrapDeferred("unexpected_error"));
             return;
         }
         if (result instanceof WorldStateFullBootstrapFallback.Applied applied) {
-            lastOutcome = WorldStateSyncOutcome.fullBootstrapApplied(applied.version());
             LOGGER.info("World state full bootstrap fallback applied version={}", applied.version());
+            settle(WorldStateSyncOutcome.fullBootstrapApplied(applied.version()));
         } else if (result instanceof WorldStateFullBootstrapFallback.NoPlayerOnline) {
-            lastOutcome = WorldStateSyncOutcome.fullBootstrapDeferred("no_player_online");
             LOGGER.warn("World state full bootstrap fallback deferred reason=no_player_online");
+            settle(WorldStateSyncOutcome.fullBootstrapDeferred("no_player_online"));
         } else if (result instanceof WorldStateFullBootstrapFallback.Failed failedResult) {
-            lastOutcome = WorldStateSyncOutcome.fullBootstrapDeferred(failedResult.safeCode());
             LOGGER.warn("World state full bootstrap fallback deferred reason={}", failedResult.safeCode());
+            settle(WorldStateSyncOutcome.fullBootstrapDeferred(failedResult.safeCode()));
+        }
+    }
+
+    /**
+     * The one place a poll ends. Every terminal path routes through here so {@link #pollInFlight},
+     * {@link #lastOutcome} and the {@link #requestImmediatePoll} listeners can never disagree
+     * about whether this cycle finished -- a listener left un-run by a path that forgot it would
+     * leave the caller (a Refresh click) waiting for a redraw that never comes, and a
+     * pollInFlight left true would wedge the poller permanently, silently skipping every
+     * scheduled poll from then on.
+     *
+     * <p>Listeners are drained before they run, and each is isolated, so one throwing can neither
+     * strand the others nor leave this poller wedged. The one deliberate path that does not come
+     * through here is the stopped-server check at the top of {@link #complete} and {@link
+     * #completeFullBootstrap}: a server on its way down has no outcome worth recording and nobody
+     * left to tell.
+     */
+    private void settle(WorldStateSyncOutcome outcome) {
+        pollInFlight = false;
+        lastOutcome = outcome;
+        if (settlementListeners.isEmpty()) return;
+        List<Runnable> pending = List.copyOf(settlementListeners);
+        settlementListeners.clear();
+        for (Runnable listener : pending) {
+            try {
+                listener.run();
+            } catch (RuntimeException listenerFailure) {
+                LOGGER.warn("World state sync settlement listener failed", listenerFailure);
+            }
         }
     }
 
     private void close() {
         if (stopped) return;
         stopped = true;
+        // Nothing can settle after this, so anything still waiting for a callback is dropped
+        // rather than left holding a menu on a server that is going away.
+        settlementListeners.clear();
         LOGGER.info("World state sync poller stopped");
     }
 
