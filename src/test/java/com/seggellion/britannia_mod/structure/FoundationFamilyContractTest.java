@@ -314,7 +314,7 @@ class FoundationFamilyContractTest {
      * map instead. So the family rules that generalise are re-asserted here in the stair's own
      * terms rather than the block being bent to fit a cube-shaped test, and the two that do not --
      * the full-cube geometry and the pickaxe tier -- are replaced by the rules that do apply: the
-     * vanilla stair parents, and being unbreakable rather than tool-gated.
+     * vanilla stair parents, and stopping players by hardness rather than by a tool tier.
      */
     private static final String STAIRS = "brick_foundation_stairs";
 
@@ -423,11 +423,12 @@ class FoundationFamilyContractTest {
         assertTrue(lang.has("block.britannia_mod." + STAIRS), STAIRS + " has no display name");
         assertTrue(Files.exists(itemModelPath(STAIRS)), STAIRS + " has no item model");
 
-        // The one wiring rule that inverts: an unbreakable block declares noLootTable() rather
-        // than shipping a table, exactly as the moongate does.
+        // The one wiring rule that inverts: this block declares noLootTable() rather than shipping
+        // a table, exactly as the moongate does. No player break exists to drop anything, and the
+        // creative removal that does exist never drops.
         assertFalse(Files.exists(lootTablePath(STAIRS)),
-                STAIRS + " ships a loot table, but nothing may ever break it. A table here is dead "
-                        + "data that reads as though the block drops.");
+                STAIRS + " ships a loot table, but the only removal it has is a creative one, which "
+                        + "never drops. A table here is dead data that reads as though it does.");
         assertTrue(Files.readString(STAIRS_SOURCE).contains(".noLootTable()"),
                 STAIRS + " must be explicitly drop-free");
     }
@@ -442,17 +443,25 @@ class FoundationFamilyContractTest {
     }
 
     /**
-     * The stairs are permanent, and both halves of that are asserted.
+     * Permanent to a player, removable by an operator -- and the operator half is the fragile one.
      *
-     * <p>Hardness alone is not indestructibility: {@code ServerPlayerGameMode.destroyBlock} never
-     * consults it for a creative player. {@code onDestroyedByPlayer} is the one question asked in
-     * every game mode, and it must answer no on its own rather than deferring to {@code super}.
-     * {@code FoundationStairsIndestructibilityGameTests} drives the live behaviour; this holds the
+     * <p>Hardness is read in exactly one place, {@code getDestroyProgress}, which is why it stops a
+     * survival or adventure player: they accumulate nothing and the break never completes. It is
+     * also why it does not stop an operator, since
+     * {@code ServerPlayerGameMode.destroyBlock} skips that gate for a creative player and goes
+     * straight to {@code removeBlock}. Bedrock behaves the same way.
+     *
+     * <p>So the absence of an {@code onDestroyedByPlayer} override is a requirement here, not an
+     * omission. That method is the one question asked in <em>every</em> game mode, so an override
+     * refusing there would take the operator's removal away along with everybody else's -- which is
+     * exactly the defect this guards against returning.
+     *
+     * <p>{@code FoundationStairsPermanenceGameTests} drives the live behaviour; this holds the
      * declarations that produce it, because a unit test that touches {@code BlockRegistry} without
      * bootstrapping Minecraft poisons the whole test JVM.
      */
     @Test
-    void theFoundationStairsRefuseEveryPlayerInEveryGameMode() throws IOException {
+    void theFoundationStairsStopPlayersByHardnessAndLeaveTheOperatorAWayOut() throws IOException {
         String source = Files.readString(STAIRS_SOURCE);
 
         assertTrue(source.contains("extends StairBlock"),
@@ -461,24 +470,51 @@ class FoundationFamilyContractTest {
                 STAIRS + " must carry bedrock's hardness and blast resistance, which is what stops "
                         + "a survival or adventure break and every explosion");
 
-        int declaration = source.indexOf("public boolean onDestroyedByPlayer");
-        assertTrue(declaration >= 0,
-                STAIRS + " does not override onDestroyedByPlayer, so a creative player removes it "
-                        + "-- hardness is never consulted on that path");
-        String body = source.substring(declaration, source.indexOf("}", declaration));
-        assertTrue(body.contains("return false;"),
-                STAIRS + " must refuse removal outright");
-        assertFalse(body.contains("super.onDestroyedByPlayer"),
-                STAIRS + " must not fall through to the default removal");
+        // Read the code, not the prose. Both method names are discussed in that class's own
+        // javadoc, which is where the reasoning for their absence belongs.
+        String code = withoutComments(source);
+        assertFalse(code.contains("onDestroyedByPlayer"),
+                STAIRS + " overrides onDestroyedByPlayer. That is the one removal question asked in "
+                        + "every game mode, so refusing there locks the creative operator out along "
+                        + "with everybody else and a misplaced stair becomes permanent for the "
+                        + "person who placed it.");
+        assertFalse(code.contains("getDestroyProgress"),
+                STAIRS + " overrides getDestroyProgress, which is the hook the declared hardness "
+                        + "already answers. A second opinion there can only disagree with it.");
+    }
+
+    /**
+     * Java source with its block and line comments removed.
+     *
+     * <p>Every other source check here is for something that must be present, where a stray mention
+     * in a comment is harmless. The two above are for something that must be <em>absent</em>, and
+     * that inverts: the class documents at length why it does not override those two methods, so a
+     * plain {@code contains} would read its own explanation as the violation.
+     */
+    private static String withoutComments(String source) {
+        StringBuilder code = new StringBuilder(source.length());
+        int index = 0;
+        while (index < source.length()) {
+            if (source.startsWith("/*", index)) {
+                int end = source.indexOf("*/", index + 2);
+                index = end < 0 ? source.length() : end + 2;
+            } else if (source.startsWith("//", index)) {
+                int end = source.indexOf('\n', index);
+                index = end < 0 ? source.length() : end;
+            } else {
+                code.append(source.charAt(index++));
+            }
+        }
+        return code.toString();
     }
 
     /**
      * Permanence is declared on the block, and the housing rule is joined rather than duplicated.
      *
      * <p>The stairs sit in {@code house_foundation} beside the other perimeter courses, so a player
-     * who reaches for one inside a house is told why by the rule that already exists. That rule is
-     * scoped to registered houses and exempts creative, which is exactly why the block-level
-     * refusal above is also there -- and why a tool tier would be meaningless here.
+     * who reaches for one inside a house is told why by the rule that already exists. That rule
+     * exempts creative, which is the same operator carve-out the hardness leaves open, arriving from
+     * the other direction. A tool tier would be meaningless either way: no tool reaches this block.
      */
     @Test
     void theFoundationStairsJoinThePerimeterTagAndCarryNoToolTier() throws IOException {
@@ -493,7 +529,8 @@ class FoundationFamilyContractTest {
         assertTrue(from >= 0, STAIRS + " is not registered");
         String statement = registry.substring(from, registry.indexOf(");", from));
         assertFalse(statement.contains("requiresCorrectToolForDrops"),
-                STAIRS + " is unbreakable, so a tool tier promises drops it can never produce");
+                STAIRS + " cannot be mined by any player, so a tool tier promises drops no "
+                        + "tool can ever produce");
         assertFalse(tagValues(PICKAXE_TAG).contains("britannia_mod:" + STAIRS),
                 STAIRS + " cannot be mined at all, so it does not belong in mineable/pickaxe");
     }
