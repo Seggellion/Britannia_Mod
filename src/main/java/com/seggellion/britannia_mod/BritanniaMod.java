@@ -258,6 +258,9 @@ CraftableRegistry.init();
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
         NeoForge.EVENT_BUS.addListener(this::onServerStarted);
         com.seggellion.britannia_mod.economy.TraderSaleReservationRecovery.register();
+        // Housing: retries a placed house at Rails until Rails has it. Without this a transient
+        // outage lost the durable record of the house permanently, and its region with it.
+        com.seggellion.britannia_mod.structure.persistence.HousePersistenceService.register();
         NeoForge.EVENT_BUS.addListener(this::onServerTick);
         NeoForge.EVENT_BUS.addListener(this::onServerStopping);
 

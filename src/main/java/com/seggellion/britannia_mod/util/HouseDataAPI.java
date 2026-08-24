@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.seggellion.britannia_mod.structure.StructureRecord;
 import com.seggellion.britannia_mod.structure.StructureRegionCodec;
+import com.seggellion.britannia_mod.structure.persistence.HousePersistenceService;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
@@ -53,91 +54,58 @@ public class HouseDataAPI {
                 LOGGER.error("HouseLotBlockEntity not found at position: {}", housePos);
                 return;
             }
-            UUID houseUuid = lot.getHouseUuid(); // ✅ Use the actual in-game UUID
-            UUID deedUuid = lot.getDeedUuid(); 
-
-            // We'll assume "small" for the house_type, matching your MIGRATION (house_type can be "villa", "cottage", etc.)
-            String houseType = lot.getHouseType();
-
-            // The Rails endpoint
-            var requestUri = ServerAuthRegistry.credentials(level.getServer()).orElseThrow().apiUrls()
-                    .resolve(Endpoint.HOUSE_CREATE);
-            HttpURLConnection conn = (HttpURLConnection) requestUri.toURL().openConnection();
-            BoundedHttp.configure(conn);
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-
-            // Build JSON
-            JsonObject payload = new JsonObject();
-            // Required by House model:
-            payload.addProperty("uuid", houseUuid.toString());           // e.g. "48e5-..."
-            payload.addProperty("house_type", houseType);                // "small" for day 3
-            payload.addProperty("style", style.name().toLowerCase());      // "small", "patio", etc.
-            payload.addProperty("x", housePos.getX());
-            payload.addProperty("y", housePos.getY());
-            payload.addProperty("z", housePos.getZ());
-            if (deedUuid != null) {
-                payload.addProperty("deed_id", deedUuid.toString());
-            }
-
-            // belongs_to :shard_user => you must pass something that your Rails app uses to identify the shard_user
-            // e.g. if your server finds shard_user by "player_uuid", or you have a known "shard_user_id"
-            // For example:
-            // payload.addProperty("shard_user_id", 123); 
-            // or
-            // payload.addProperty("player_uuid", owner.getStringUUID());
-            // Then handle it in your Rails controller so it can do:
-            //   House.create!(shard_user_id: ShardUser.find_by(uuid: params[:player_uuid]).id, ...)
-            
-            // For Day 3, let's assume your server will handle "player_uuid" -> shard_user lookups
-            payload.addProperty("owner_uuid", owner.getStringUUID());
-
-            // Additional fields (per your migration):
-            payload.addProperty("owner_username", owner.getName().getString());
-            payload.addProperty("region_name", "Trinsic");
-            payload.addProperty("shard", ServerAuthRegistry.credentials(level.getServer()).orElseThrow().shardName());
-            payload.addProperty("for_sale", false);
-            payload.addProperty("price", 0);
-
-            JsonArray emptyAccessList = new JsonArray();
-            payload.add("friends_list", emptyAccessList);
-
-            // placed_at: needs a datetime (ISO8601). 
-            String timestamp = Instant.now().toString(); 
-            payload.addProperty("placed_at", timestamp);
-
-            // The region itself. Rails stores this blob verbatim and never reads inside it;
-            // StructureRegionCodec owns the shape on both sides of the wire.
-            payload.add("structure", StructureRegionCodec.encode(record, origin));
-
-            // Send it
-            byte[] bodyBytes = payload.toString().getBytes(StandardCharsets.UTF_8);
-            if (!RailsRequestAuthenticator.apply(conn, level.getServer(), bodyBytes)) throw new IllegalStateException("Server authentication unavailable");
-            conn.setDoOutput(true);
-            try (OutputStream os = conn.getOutputStream()) {
-                os.write(bodyBytes);
-            }
-
-            // Handle response
-            int responseCode = conn.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_CREATED) {
-                JsonObject response = JsonParser.parseString(
-                        BoundedHttp.readUtf8(conn.getInputStream(), 256 * 1024)).getAsJsonObject();
-                LOGGER.info("House created successfully: {}", response);
-            } else {
-                // Milestone 2: this is not a cosmetic failure any more. Rails is what the
-                // shard rebuilds house regions from at boot, so a house that never lands
-                // here comes back after the next restart with no region at all: its doors
-                // resolve no lock, and its owner cannot dig beneath it. The lot block still
-                // holds the rotation and owner needed to rebuild it by hand.
-                LOGGER.warn("Failed to record house {} with Rails (HTTP {}). Its region will "
-                        + "not survive a restart until Rails learns about it.",
-                        houseUuid, responseCode);
-            }
-
+            JsonObject payload = houseCreatePayload(level, lot, owner, style, record, origin);
+            // Queue first, then send. The queue write is what makes a house survive a crash, a Rails
+            // restart, or a 500 -- see HousePersistenceService for why this stopped being an inline
+            // call with a logged warning for failure handling.
+            HousePersistenceService.submit(level, lot.getHouseUuid(), payload.toString());
         } catch (Exception e) {
-            LOGGER.error("Error sending house data to API: ", e);
+            LOGGER.error("Error preparing house data for Rails: ", e);
         }
+    }
+
+    /**
+     * The house row exactly as Rails' {@code Api::HousesController#create} reads it.
+     *
+     * <p>Built once, at placement, and then stored verbatim by the outbox: a retry has to send the
+     * house that was placed, not a house re-derived from a world that has since been dug up, sold
+     * or restarted.
+     *
+     * <p>{@code size} is sent because the column exists and was never populated -- every house row
+     * this shard has ever written has a null {@code size} -- and {@code house_type} carries the size
+     * id while {@code style} carries the style, which is the mapping the controller actually applies.
+     */
+    static JsonObject houseCreatePayload(ServerLevel level, HouseLotBlockEntity lot, Player owner,
+                                         HouseStyle style, StructureRecord record, BlockPos origin) {
+        UUID houseUuid = lot.getHouseUuid();
+        UUID deedUuid = lot.getDeedUuid();
+        BlockPos housePos = lot.getBlockPos();
+
+        JsonObject payload = new JsonObject();
+        payload.addProperty("uuid", houseUuid.toString());
+        payload.addProperty("house_type", lot.getHouseType());
+        payload.addProperty("style", style.name().toLowerCase());
+        payload.addProperty("size", style.getSize().id());
+        payload.addProperty("x", housePos.getX());
+        payload.addProperty("y", housePos.getY());
+        payload.addProperty("z", housePos.getZ());
+        if (deedUuid != null) {
+            payload.addProperty("deed_id", deedUuid.toString());
+        }
+        payload.addProperty("owner_uuid", owner.getStringUUID());
+        payload.addProperty("owner_username", owner.getName().getString());
+        payload.addProperty("region_name", "Trinsic");
+        payload.addProperty("shard",
+                ServerAuthRegistry.credentials(level.getServer()).orElseThrow().shardName());
+        payload.addProperty("for_sale", false);
+        payload.addProperty("price", 0);
+        payload.add("friends_list", new JsonArray());
+        payload.addProperty("placed_at", Instant.now().toString());
+
+        // The region itself. Rails stores this blob verbatim and never reads inside it;
+        // StructureRegionCodec owns the shape on both sides of the wire.
+        payload.add("structure", StructureRegionCodec.encode(record, origin));
+        return payload;
     }
 
 /**

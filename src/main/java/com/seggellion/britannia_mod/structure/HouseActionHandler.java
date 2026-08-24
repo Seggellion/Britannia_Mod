@@ -180,6 +180,10 @@ public class HouseActionHandler {
 
         // ✅ Step 3: Remove from structure manager and Rails
         StructureRegionManager.unregisterStructure(record);
+        // Before the delete, not after. A house whose placement is still queued for delivery would
+        // otherwise be re-created by the next retry, moments after being re-deeded.
+        com.seggellion.britannia_mod.structure.persistence.HousePersistenceOutbox.get(level)
+                .settle(record.getHouseUuid());
         HouseDataAPI.deleteHouseRecord(player, record);
 
 
