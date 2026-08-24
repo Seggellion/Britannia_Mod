@@ -2454,7 +2454,7 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
             new DecorativePlantBlock(BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).instabreak().sound(SoundType.GRASS).noCollission().noOcclusion().replaceable(), Block.box(3, 0, 3, 13, 10, 13)));
     public static final DeferredHolder<Block, HedgeBushBlock> HEDGE_BUSH = BLOCKS.register("hedge_bush", () ->
             new HedgeBushBlock(BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).instabreak()
-                    .sound(SoundType.GRASS).noCollission().noOcclusion(),
+                    .sound(SoundType.GRASS).noOcclusion(),
                     Block.box(2, 0, 2, 14, 16, 14)));
     public static final DeferredHolder<Block, PoolOfBloodBlock> POOL_OF_BLOOD = BLOCKS.register("pool_of_blood", () ->
             new PoolOfBloodBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).instabreak()

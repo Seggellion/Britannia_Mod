@@ -149,6 +149,20 @@ public final class NewAssetsUtilityGameTests {
         check(helper.getLevel().getBlockState(hedgeBottom.above(2)).getValue(HedgeBushBlock.SEGMENT)
                         == HedgeBushBlock.TOP,
                 "hedge top segment did not resolve");
+        for (int y = 0; y < 3; y++) {
+            BlockPos hedgePos = hedgeBottom.above(y);
+            var collision = helper.getLevel().getBlockState(hedgePos)
+                    .getCollisionShape(helper.getLevel(), hedgePos);
+            check(!collision.isEmpty(), "hedge segment " + y + " has no collision");
+            AABB bounds = collision.bounds();
+            check(bounds.minX == 0.125D && bounds.maxX == 0.875D
+                            && bounds.minY == 0.0D && bounds.maxY == 1.0D
+                            && bounds.minZ == 0.125D && bounds.maxZ == 0.875D,
+                    "hedge segment " + y + " collision no longer matches its authored footprint");
+        }
+        var fernState = BlockRegistry.FERN.get().defaultBlockState();
+        check(fernState.getCollisionShape(helper.getLevel(), hedgeBottom).isEmpty(),
+                "intentional non-colliding fern gained collision with the hedge fix");
 
         player.setGameMode(GameType.ADVENTURE);
         BlockPos community = helper.absolutePos(new BlockPos(5, 2, 5));

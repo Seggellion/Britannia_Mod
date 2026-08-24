@@ -21,7 +21,7 @@ public final class HedgeBushBlock extends DecorativePropBlock {
     public static final int TOP = 2;
 
     public HedgeBushBlock(Properties properties, VoxelShape outlineShape) {
-        super(properties, outlineShape, false);
+        super(properties, outlineShape, true);
         registerDefaultState(defaultBlockState().setValue(SEGMENT, BOTTOM));
     }
 
