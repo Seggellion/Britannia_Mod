@@ -49,6 +49,7 @@ public final class HouseOwnerBuildRightsGameTests {
 
     private static final String TEMPLATE = "service_npc_spawn_test_empty";
 
+
     /** Ungated by anything else -- stone would meet the mining skill gate instead. */
     private static final Block ORDINARY = Blocks.WHITE_WOOL;
 

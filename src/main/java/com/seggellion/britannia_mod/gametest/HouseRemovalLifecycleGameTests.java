@@ -57,6 +57,7 @@ public final class HouseRemovalLifecycleGameTests {
 
     private static final String TEMPLATE = "service_npc_spawn_test_empty";
 
+
     private HouseRemovalLifecycleGameTests() {
     }
 

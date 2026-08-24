@@ -53,6 +53,7 @@ import java.util.UUID;
 public final class GrabbyInteractionPathGameTests {
     private static final String TEMPLATE = "service_npc_spawn_test_empty";
 
+
     private GrabbyInteractionPathGameTests() {
     }
 
@@ -85,6 +86,20 @@ public final class GrabbyInteractionPathGameTests {
         // in the destination legitimately blocks their own placement.
         player.setPos(standAt.getX() + 0.5, standAt.getY(), standAt.getZ() + 0.5);
         return player;
+    }
+
+    /**
+     * Sends the mock player home again.
+     *
+     * <p>A player joined with {@code placeNewPlayer} stays on the server for the rest of the run,
+     * and a player keeps the chunks around them loaded. Four of them left standing changes chunk
+     * residency and the per-tick player loop for every test that runs afterwards -- which is not
+     * hypothetical: a pre-existing silica test asserts its own chunks are already loaded, and
+     * pre-existing banking rigs are sensitive to what else is being ticked. Leaving no trace is
+     * this file's business, not theirs.
+     */
+    private static void disconnect(GameTestHelper helper, ServerPlayer player) {
+        helper.getLevel().getServer().getPlayerList().remove(player);
     }
 
     /** A solid floor cell to build on. Returns the absolute position of the floor block itself. */
@@ -122,33 +137,37 @@ public final class GrabbyInteractionPathGameTests {
         BlockPos floor = floorAt(helper, 2, 2);
         BlockPos target = floor.above();
         ServerPlayer player = adventurePlayer(helper, floor.offset(2, 0, 2));
+        try {
 
-        ItemStack bottle = new ItemStack(ItemRegistry.WINE_BOTTLE_GREEN.get());
-        WineBottleBlockItem.setWineData(bottle, "Britannia Vineyards", "Verdant", 271, 88, "Yew", "red");
-        player.setItemInHand(InteractionHand.MAIN_HAND, bottle);
+            ItemStack bottle = new ItemStack(ItemRegistry.WINE_BOTTLE_GREEN.get());
+            WineBottleBlockItem.setWineData(bottle, "Britannia Vineyards", "Verdant", 271, 88, "Yew", "red");
+            player.setItemInHand(InteractionHand.MAIN_HAND, bottle);
 
-        check(rightClickTopOf(player, floor), "the placement gesture was not consumed by Grabby Hands");
-        check(helper.getLevel().getBlockState(target).is(BlockRegistry.WINE_BOTTLE_GREEN_BLOCK.get()),
-                "right-clicking the ground with a wine bottle did not place it");
-        check(GrabbyProvenanceAccess.grabbyManaged(helper.getLevel(), target),
-                "the placed bottle was not marked player-placed, so it can never be picked up again");
+            check(rightClickTopOf(player, floor), "the placement gesture was not consumed by Grabby Hands");
+            check(helper.getLevel().getBlockState(target).is(BlockRegistry.WINE_BOTTLE_GREEN_BLOCK.get()),
+                    "right-clicking the ground with a wine bottle did not place it");
+            check(GrabbyProvenanceAccess.grabbyManaged(helper.getLevel(), target),
+                    "the placed bottle was not marked player-placed, so it can never be picked up again");
 
-        // The documented pickup gesture: sneak, both hands empty.
-        player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-        player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
-        player.setShiftKeyDown(true);
+            // The documented pickup gesture: sneak, both hands empty.
+            player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+            player.setShiftKeyDown(true);
 
-        check(rightClickTopOf(player, target), "the pickup gesture was not consumed by Grabby Hands");
-        check(helper.getLevel().getBlockState(target).isAir(),
-                "the bottle is still standing there after a pickup");
+            check(rightClickTopOf(player, target), "the pickup gesture was not consumed by Grabby Hands");
+            check(helper.getLevel().getBlockState(target).isAir(),
+                    "the bottle is still standing there after a pickup");
 
-        ItemStack recovered = player.getInventory().getItem(0);
-        check(recovered.is(ItemRegistry.WINE_BOTTLE_GREEN.get()),
-                "the bottle did not come back as an item; inventory slot 0 held " + recovered);
-        WineData wine = WineBottleBlockItem.getWineData(recovered);
-        check("Britannia Vineyards".equals(wine.wineryName()) && wine.year() == 271 && wine.quality() == 88,
-                "the recovered bottle lost its wine data: " + wine);
+            ItemStack recovered = player.getInventory().getItem(0);
+            check(recovered.is(ItemRegistry.WINE_BOTTLE_GREEN.get()),
+                    "the bottle did not come back as an item; inventory slot 0 held " + recovered);
+            WineData wine = WineBottleBlockItem.getWineData(recovered);
+            check("Britannia Vineyards".equals(wine.wineryName()) && wine.year() == 271 && wine.quality() == 88,
+                    "the recovered bottle lost its wine data: " + wine);
 
+        } finally {
+            disconnect(helper, player);
+        }
         helper.succeed();
     }
 
@@ -164,25 +183,29 @@ public final class GrabbyInteractionPathGameTests {
         BlockPos floor = floorAt(helper, 5, 2);
         BlockPos target = floor.above();
         ServerPlayer player = adventurePlayer(helper, floor.offset(2, 0, 2));
+        try {
 
-        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ItemRegistry.CHEESE.get()));
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ItemRegistry.CHEESE.get()));
 
-        check(rightClickTopOf(player, floor), "the host placement gesture was not consumed");
-        check(helper.getLevel().getBlockState(target).is(GrabbyRegistry.PLACED_ITEM.get()),
-                "right-clicking the ground with cheese did not place the loose-item host");
-        check(helper.getLevel().getBlockEntity(target) instanceof GrabbyPlacedItemBlockEntity host
-                        && host.grabbyPayload().is(ItemRegistry.CHEESE.get()),
-                "the host did not take the cheese as its payload");
+            check(rightClickTopOf(player, floor), "the host placement gesture was not consumed");
+            check(helper.getLevel().getBlockState(target).is(GrabbyRegistry.PLACED_ITEM.get()),
+                    "right-clicking the ground with cheese did not place the loose-item host");
+            check(helper.getLevel().getBlockEntity(target) instanceof GrabbyPlacedItemBlockEntity host
+                            && host.grabbyPayload().is(ItemRegistry.CHEESE.get()),
+                    "the host did not take the cheese as its payload");
 
-        player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-        player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
-        player.setShiftKeyDown(true);
+            player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+            player.setShiftKeyDown(true);
 
-        check(rightClickTopOf(player, target), "the loose-item pickup gesture was not consumed");
-        check(helper.getLevel().getBlockState(target).isAir(), "the host survived its own pickup");
-        check(player.getInventory().contains(new ItemStack(ItemRegistry.CHEESE.get())),
-                "the cheese did not come back");
+            check(rightClickTopOf(player, target), "the loose-item pickup gesture was not consumed");
+            check(helper.getLevel().getBlockState(target).isAir(), "the host survived its own pickup");
+            check(player.getInventory().contains(new ItemStack(ItemRegistry.CHEESE.get())),
+                    "the cheese did not come back");
 
+        } finally {
+            disconnect(helper, player);
+        }
         helper.succeed();
     }
 
@@ -197,17 +220,21 @@ public final class GrabbyInteractionPathGameTests {
         BlockPos floor = floorAt(helper, 8, 2);
         BlockPos target = floor.above();
         ServerPlayer player = adventurePlayer(helper, floor.offset(2, 0, 2));
+        try {
 
-        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ItemRegistry.WINE_BOTTLE_GREEN.get()));
-        check(rightClickTopOf(player, floor), "the placement gesture was not consumed");
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ItemRegistry.WINE_BOTTLE_GREEN.get()));
+            check(rightClickTopOf(player, floor), "the placement gesture was not consumed");
 
-        player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-        player.setShiftKeyDown(false);
-        rightClickTopOf(player, target);
+            player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            player.setShiftKeyDown(false);
+            rightClickTopOf(player, target);
 
-        check(helper.getLevel().getBlockState(target).is(BlockRegistry.WINE_BOTTLE_GREEN_BLOCK.get()),
-                "an ordinary empty-handed click picked the bottle up");
+            check(helper.getLevel().getBlockState(target).is(BlockRegistry.WINE_BOTTLE_GREEN_BLOCK.get()),
+                    "an ordinary empty-handed click picked the bottle up");
 
+        } finally {
+            disconnect(helper, player);
+        }
         helper.succeed();
     }
 
@@ -225,14 +252,18 @@ public final class GrabbyInteractionPathGameTests {
         helper.getLevel().setBlockAndUpdate(scenery, BlockRegistry.WOODEN_CHAIR.get().defaultBlockState());
 
         ServerPlayer player = adventurePlayer(helper, floor.offset(2, 0, 2));
-        player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-        player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
-        player.setShiftKeyDown(true);
+        try {
+            player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+            player.setShiftKeyDown(true);
 
-        rightClickTopOf(player, scenery);
-        check(helper.getLevel().getBlockState(scenery).is(BlockRegistry.WOODEN_CHAIR.get()),
-                "a chair the world placed was carried off by an ordinary player");
+            rightClickTopOf(player, scenery);
+            check(helper.getLevel().getBlockState(scenery).is(BlockRegistry.WOODEN_CHAIR.get()),
+                    "a chair the world placed was carried off by an ordinary player");
 
+        } finally {
+            disconnect(helper, player);
+        }
         helper.succeed();
     }
 }

@@ -50,29 +50,14 @@ public class SurvivalZoneHandler {
     private static final Set<UUID> lentBuildRights = ConcurrentHashMap.newKeySet();
 
     /**
-     * Re-states this player's build rights to their new client.
-     *
-     * <p>The flag lives on the connection, not on the player, so somebody who logs out inside their
-     * own house and back in is still holding the server-side lease while their fresh client
-     * believes it holds nothing. Without this they would have to walk out of the house and back in
-     * before they could break anything in it.
-     */
-    @SubscribeEvent
-    public void onLogin(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            restateTo(player);
-        }
-    }
-
-    /**
      * A lease belongs to a session, and ends with it.
      *
      * <p>Without this the entry stays in the set for the lifetime of the server, which is two
-     * problems rather than one. It grows without bound on a shard people log in and out of; and the
-     * login restate above would hand a returning player a {@code true} earned by where they were
-     * standing when they left, which the next tick then has to take back. Clearing here makes the
-     * invariant simple enough to state: this set holds online players who are standing in their own
-     * house, and nobody else.
+     * problems rather than one. It grows without bound on a shard people log in and out of; and a
+     * returning player would still be holding a lease earned by where they were standing when they
+     * left, which the next tick then has to take back. Clearing here makes the invariant simple
+     * enough to state: this set holds online players who are standing in their own house, and
+     * nobody else.
      *
      * <p>Nothing is sent to the client, because there is no longer a client to send to. The next
      * session starts from {@code false} — {@code ClientHouseBuildRights} clears itself on
@@ -194,16 +179,20 @@ public class SurvivalZoneHandler {
     }
 
     /**
-     * Re-states a player's build rights to their client, whatever they currently are.
+     * Why there is no login hook here.
      *
-     * <p>Needed on login: the flag is per-connection client state, so a player who logs out inside
-     * their own house and back in is still in {@code lentBuildRights} on the server but has a fresh
-     * client that believes it holds nothing. Without this the owner would have to walk out of their
-     * house and back in to be able to break anything.
+     * <p>There was one, re-stating the lease to a freshly connected client, and it was redundant the
+     * moment {@link #onLogout} started releasing the lease: a returning player is never in
+     * {@code lentBuildRights}, {@code ClientHouseBuildRights} clears itself on {@code LoggingIn}, and
+     * so the first {@link #applyTo} tick after login sees a brand-new grant and tells the client
+     * about it. Both sides start at false and agree within one tick.
+     *
+     * <p>It was also the one piece of this system that ran for every player join in the game, and
+     * touching a connection that is still being set up inside {@code placeNewPlayer} is not
+     * something a housing rule needs to do. Leaving the grant to the tick loop keeps this handler's
+     * entire contract "look at where players are standing", which is all it was ever for.
      */
-    public static void restateTo(ServerPlayer player) {
-        tellClient(player, lentBuildRights.contains(player.getUUID()));
-    }
+
 
     /**
      * Whether this player's ability to build is one this handler lent them.
