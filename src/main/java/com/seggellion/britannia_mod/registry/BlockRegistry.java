@@ -906,7 +906,8 @@ public static final DeferredHolder<Block, Block> IRON_FENCE = BLOCKS.register("i
             .mapColor(MapColor.WOOD)
             .strength(2.0f)
             .sound(SoundType.WOOD)
-            .noOcclusion()
+            .noOcclusion(),
+            ThinWall.ConnectionRule.FIXED_FACING
         )
     );
 
@@ -1090,7 +1091,8 @@ public static final DeferredHolder<Block, WaterBarrelBlock> WATER_BARREL_BLOCK =
             .mapColor(MapColor.STONE)
             .strength(2.0f)
             .sound(SoundType.STONE)
-            .noOcclusion()
+            .noOcclusion(),
+            ThinWall.ConnectionRule.FIXED_FACING
         )
     );
 
@@ -1100,7 +1102,8 @@ public static final DeferredHolder<Block, WaterBarrelBlock> WATER_BARREL_BLOCK =
             .mapColor(MapColor.STONE)
             .strength(2.0f)
             .sound(SoundType.STONE)
-            .noOcclusion()
+            .noOcclusion(),
+            ThinWall.ConnectionRule.FIXED_FACING
         )
     );
 
@@ -1110,7 +1113,8 @@ public static final DeferredHolder<Block, ThinWall> CURTAIN_BOTTOM =
             .mapColor(MapColor.STONE)
             .strength(2.0f)
             .sound(SoundType.STONE)
-            .noOcclusion()
+            .noOcclusion(),
+            ThinWall.ConnectionRule.FIXED_FACING
         )
     );
 
@@ -1539,7 +1543,8 @@ public static final DeferredHolder<Block, ThinWall> WINDOW_1X1 =
             .mapColor(MapColor.WOOD)
             .strength(1.0f)
             .sound(SoundType.WOOD)
-            .noOcclusion()
+            .noOcclusion(),
+            ThinWall.ConnectionRule.FIXED_FACING
         )
     );
 
@@ -1606,7 +1611,8 @@ public static final DeferredHolder<Block, MultiCellWindowBlock> WINDOW_2X3 =
             .mapColor(MapColor.WOOD)
             .strength(1.0f)
             .sound(SoundType.WOOD)
-            .noOcclusion()
+            .noOcclusion(),
+            ThinWall.ConnectionRule.FIXED_FACING
         )
     );
 
@@ -1663,7 +1669,8 @@ public static final DeferredHolder<Block, MultiCellWindowBlock> WINDOW_2X3 =
             .mapColor(MapColor.WOOD)
             .strength(1.0f)
             .sound(SoundType.WOOD)
-            .noOcclusion()
+            .noOcclusion(),
+            ThinWall.ConnectionRule.FIXED_FACING
         )
     );
 
@@ -1811,7 +1818,8 @@ public static final DeferredHolder<Block, Block> STONE_FLOOR_POLISHED =
             .mapColor(MapColor.STONE)
             .strength(2.0f)
             .sound(SoundType.STONE)
-            .noOcclusion()
+            .noOcclusion(),
+            ThinWall.ConnectionRule.FIXED_FACING
         )
     );
 
@@ -1821,7 +1829,8 @@ public static final DeferredHolder<Block, Block> STONE_FLOOR_POLISHED =
             .mapColor(MapColor.STONE)
             .strength(2.0f)
             .sound(SoundType.STONE)
-            .noOcclusion()
+            .noOcclusion(),
+            ThinWall.ConnectionRule.FIXED_FACING
         )
     );
 
@@ -1831,7 +1840,8 @@ public static final DeferredHolder<Block, Block> STONE_FLOOR_POLISHED =
             .mapColor(MapColor.STONE)
             .strength(2.0f)
             .sound(SoundType.STONE)
-            .noOcclusion()
+            .noOcclusion(),
+            ThinWall.ConnectionRule.FIXED_FACING
         )
     );
 
@@ -1887,7 +1897,8 @@ public static final DeferredHolder<Block, ThinWall> STONE_WALL_BOTTOM =
             .mapColor(MapColor.STONE)
             .strength(2.0f)
             .sound(SoundType.STONE)
-            .noOcclusion()
+            .noOcclusion(),
+            ThinWall.ConnectionRule.FIXED_FACING
         )
     );
 
@@ -1897,7 +1908,8 @@ public static final DeferredHolder<Block, ThinWall> STONE_WALL_BOTTOM =
             .mapColor(MapColor.STONE)
             .strength(2.0f)
             .sound(SoundType.STONE)
-            .noOcclusion()
+            .noOcclusion(),
+            ThinWall.ConnectionRule.FIXED_FACING
         )
     );
 

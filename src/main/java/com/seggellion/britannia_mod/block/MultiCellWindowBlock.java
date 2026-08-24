@@ -50,7 +50,9 @@ public class MultiCellWindowBlock extends ThinWall {
     private final WindowFootprint footprint;
 
     public MultiCellWindowBlock(BlockBehaviour.Properties props, WindowFootprint footprint) {
-        super(props);
+        // The footprint's world cells are computed from FACING, so the facing must never be
+        // re-derived out from under the art the way adaptive wall trim allows.
+        super(props, ConnectionRule.FIXED_FACING);
         this.footprint = footprint;
     }
 
