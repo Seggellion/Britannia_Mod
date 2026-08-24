@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.structure;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
@@ -76,9 +77,21 @@ public class StructureProtectionHandler {
                 }
             }
             case ALLOWED -> {
-                // Nothing to do. The ability lent by SurvivalZoneHandler is what permits it;
-                // un-cancelling here would not, because destroyBlock re-checks the restriction
-                // after this event regardless.
+                // The ability lent by SurvivalZoneHandler is what permits this; un-cancelling here
+                // would not, because destroyBlock re-checks the restriction after this event
+                // regardless. So nothing is done -- except for two rules that only make sense here,
+                // in the pipeline where a real hand swings at a real block.
+                if (HouseBuildRights.bareHanded(player)) {
+                    // Nothing in a house comes apart bare-handed. Refused before the block is
+                    // removed rather than restored afterwards, so a block entity and a container's
+                    // contents are never briefly destroyed on the way.
+                    refuse(event, player, HouseBuildRights.Decision.DENIED_BARE_HANDED.message());
+                } else if (event.getLevel() instanceof ServerLevel serverLevel
+                        && HouseObjectRemoval.isStatefulHouseObject(serverLevel, event.getPos())
+                        && HouseObjectRemoval.take(serverLevel, player, event.getPos())) {
+                    // The one class of block whose ordinary break would lose what it was carrying.
+                    event.setCanceled(true);
+                }
             }
             default -> refuse(event, player, decision.message());
         }

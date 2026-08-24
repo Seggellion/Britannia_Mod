@@ -195,6 +195,11 @@ public final class StructureRegionRehydrationGameTests {
         ServerPlayer player = FakePlayerFactory.get(level, new GameProfile(UUID.randomUUID(), name));
         player.setPos(at.getX() + 0.5D, at.getY(), at.getZ() + 0.5D);
         player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+        // Holding an ordinary tool: nothing in a house comes apart bare-handed. A vanilla pickaxe
+        // rather than a mod tool, because QualityToolItem and TwoHandedAxeItem skip the house rules
+        // entirely and would make the restored region prove nothing.
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
+                new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_PICKAXE));
         return player;
     }
 

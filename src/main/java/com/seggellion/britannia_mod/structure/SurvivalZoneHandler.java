@@ -6,6 +6,8 @@ import net.minecraft.world.level.GameType;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import com.seggellion.britannia_mod.network.payload.housing.S2CHouseBuildRightsPayload;
+import net.neoforged.neoforge.network.PacketDistributor;
 import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
 import com.seggellion.britannia_mod.item.QualityToolItem;
 
@@ -46,6 +48,42 @@ public class SurvivalZoneHandler {
      * of some kind -- is left entirely alone.
      */
     private static final Set<UUID> lentBuildRights = ConcurrentHashMap.newKeySet();
+
+    /**
+     * Re-states this player's build rights to their new client.
+     *
+     * <p>The flag lives on the connection, not on the player, so somebody who logs out inside their
+     * own house and back in is still holding the server-side lease while their fresh client
+     * believes it holds nothing. Without this they would have to walk out of the house and back in
+     * before they could break anything in it.
+     */
+    @SubscribeEvent
+    public void onLogin(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            restateTo(player);
+        }
+    }
+
+    /**
+     * A lease belongs to a session, and ends with it.
+     *
+     * <p>Without this the entry stays in the set for the lifetime of the server, which is two
+     * problems rather than one. It grows without bound on a shard people log in and out of; and the
+     * login restate above would hand a returning player a {@code true} earned by where they were
+     * standing when they left, which the next tick then has to take back. Clearing here makes the
+     * invariant simple enough to state: this set holds online players who are standing in their own
+     * house, and nobody else.
+     *
+     * <p>Nothing is sent to the client, because there is no longer a client to send to. The next
+     * session starts from {@code false} — {@code ClientHouseBuildRights} clears itself on
+     * {@code LoggingIn} — and the first tick grants it again if the player is still at home.
+     */
+    @SubscribeEvent
+    public void onLogout(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            releaseLease(player.getUUID());
+        }
+    }
 
     @SubscribeEvent
     public void onServerTick(ServerTickEvent.Post event) {
@@ -90,7 +128,10 @@ public class SurvivalZoneHandler {
     }
 
     private static void grant(ServerPlayer player) {
-        lentBuildRights.add(player.getUUID());
+        boolean isNew = lentBuildRights.add(player.getUUID());
+        if (isNew) {
+            tellClient(player, true);
+        }
         if (player.getAbilities().mayBuild) return;
 
         player.getAbilities().mayBuild = true;
@@ -99,6 +140,7 @@ public class SurvivalZoneHandler {
 
     private static void revoke(ServerPlayer player) {
         if (!lentBuildRights.remove(player.getUUID())) return;
+        tellClient(player, false);
         if (!player.getAbilities().mayBuild) return;
 
         // Only ever handing back what this class lent. A player whose current game mode grants
@@ -110,6 +152,60 @@ public class SurvivalZoneHandler {
     }
 
     /**
+     * Tells the player's own client what it has been lent.
+     *
+     * <p>{@code onUpdateAbilities()} above is not enough and never was:
+     * {@code ClientboundPlayerAbilitiesPacket} carries {@code invulnerable}, {@code flying},
+     * {@code mayfly} and {@code instabuild}, and not {@code mayBuild}. The client's copy of that
+     * flag is written only by {@code GameType.updatePlayerAbilities} on a game-mode change, which
+     * for Adventure writes {@code false} once and never revisits it.
+     *
+     * <p>So the owner's own client kept refusing their break in
+     * {@code MultiPlayerGameMode.startDestroyBlock}, before any packet was sent. Placing was
+     * unaffected because the client does not gate {@code useItemOn} at all, which is exactly the
+     * shape of the report: blocks could be placed inside the house and never broken.
+     *
+     * <p>Sent only on a transition, not every tick -- this runs twenty times a second for every
+     * player on the shard.
+     */
+    private static void tellClient(ServerPlayer player, boolean granted) {
+        // Only where there is a real client that speaks this channel. Three things reaching this
+        // method are not one, and each fails differently if it is not screened out:
+        //
+        //   a fake player            no listener at all
+        //   a GameTest mock player   a listener whose Connection has no netty channel, which
+        //                            hasChannel() itself dereferences
+        //   a vanilla client         a real channel that never negotiated this payload, which
+        //                            throws "may not be sent to the client"
+        //
+        // The last one is why this cannot simply be a null check: it took an entire GameTest batch
+        // down when it was.
+        if (player.connection == null) {
+            return;
+        }
+        net.minecraft.network.Connection raw = player.connection.getConnection();
+        if (raw == null || raw.channel() == null) {
+            return;
+        }
+        if (!player.connection.hasChannel(S2CHouseBuildRightsPayload.TYPE)) {
+            return;
+        }
+        PacketDistributor.sendToPlayer(player, new S2CHouseBuildRightsPayload(granted));
+    }
+
+    /**
+     * Re-states a player's build rights to their client, whatever they currently are.
+     *
+     * <p>Needed on login: the flag is per-connection client state, so a player who logs out inside
+     * their own house and back in is still in {@code lentBuildRights} on the server but has a fresh
+     * client that believes it holds nothing. Without this the owner would have to walk out of their
+     * house and back in to be able to break anything.
+     */
+    public static void restateTo(ServerPlayer player) {
+        tellClient(player, lentBuildRights.contains(player.getUUID()));
+    }
+
+    /**
      * Whether this player's ability to build is one this handler lent them.
      *
      * <p>Asked by the protection rules, because a lent right is only good inside the house that
@@ -118,6 +214,21 @@ public class SurvivalZoneHandler {
      */
     public static boolean hasLentBuildRights(net.minecraft.world.entity.player.Player player) {
         return lentBuildRights.contains(player.getUUID());
+    }
+
+    /**
+     * Drops a lease without touching the player.
+     *
+     * <p>Separate from {@link #revoke} because that one also hands the ability back and tells the
+     * client, neither of which is possible or meaningful for a player who has gone.
+     */
+    static boolean releaseLease(java.util.UUID playerId) {
+        return lentBuildRights.remove(playerId);
+    }
+
+    /** Whether this player currently holds a lease. Diagnostics and tests. */
+    public static boolean holdsLease(java.util.UUID playerId) {
+        return lentBuildRights.contains(playerId);
     }
 
     /** Test seam: forget who has been lent what, without touching any player. */

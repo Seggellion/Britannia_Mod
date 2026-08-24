@@ -70,10 +70,13 @@ class ManagedVegetationControllerContractTest {
     @Test
     void adventureClientSendsSwordAttacksForServerOwnedVegetationChecks() throws IOException {
         String mixins = Files.readString(PROJECT.resolve("src/main/resources/britannia_mod.mixins.json"));
-        String adventure = source("mixin/client/ManagedVegetationAdventureModeMixin.java");
+        // One mixin now covers every client-side Adventure break exemption, vegetation included:
+        // there is a single blockActionRestricted call in startDestroyBlock, and a second
+        // @Redirect against it would be a mixin conflict rather than a second feature.
+        String adventure = source("mixin/client/ClientAdventureBreakGateMixin.java");
         String handler = source("event/ManagedVegetationInteractionHandler.java");
 
-        assertTrue(mixins.contains("client.ManagedVegetationAdventureModeMixin"));
+        assertTrue(mixins.contains("client.ClientAdventureBreakGateMixin"));
         assertTrue(adventure.contains("blockActionRestricted"));
         assertTrue(adventure.contains("gameType == GameType.ADVENTURE"));
         assertTrue(adventure.contains("ManagedVegetationCutTools.canCut"));

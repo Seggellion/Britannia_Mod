@@ -56,7 +56,16 @@ public final class HouseBuildRights {
         DENIED_PERIMETER_FOUNDATION(false, "The foundations of a house cannot be removed."),
 
         /** The lot block, which is the house's ownership record. */
-        DENIED_HOUSE_INFRASTRUCTURE(false, "That is part of the house itself.");
+        DENIED_HOUSE_INFRASTRUCTURE(false, "That is part of the house itself."),
+
+        /**
+         * A bare-handed swing inside a house the player owns.
+         *
+         * <p>Permitted in the sense that matters -- it is their house and their block -- and
+         * refused anyway, because a bare hand is not how anything is meant to come out of a
+         * building. See {@link #bareHanded}.
+         */
+        DENIED_BARE_HANDED(false, "You need a tool to take that apart. Bare hands will not do it.");
 
         private final boolean permitted;
         @Nullable private final String message;
@@ -101,6 +110,32 @@ public final class HouseBuildRights {
         // Everything else inside a house the player owns, the interior floor slab included --
         // which is the point, because that is how they get down into a basement.
         return Decision.ALLOWED;
+    }
+
+    /**
+     * The bare-hand rule: a house block is never destroyed by an empty hand.
+     *
+     * <p>Deliberately a refusal rather than a silent no-op. The alternative reading -- let the swing
+     * through and put the block back afterwards -- would mean the block genuinely leaves the world
+     * for a moment, taking any block entity with it, and a container's contents with that. Refusing
+     * before anything is removed is the only version of "not destroyed" that is actually true.
+     *
+     * <p>Stated here, applied by {@link StructureProtectionHandler}, and deliberately <em>not</em>
+     * part of {@link #evaluateBreak}. This is a rule about swinging: it reads the hand, and it is
+     * only meaningful where the hand is what performs the removal. {@code ManagedDepositExtraction}
+     * also asks {@code evaluateBreak} whether a player may change a block, and passes the tool it
+     * means as an argument rather than holding it -- folding a hand check into that question
+     * refused an owner their own clay bed.
+     *
+     * <p>Applied after ownership and after the two permanent exceptions, so a player gets the most
+     * specific message that applies: an owner swinging bare-handed at their own perimeter is still
+     * told it is the perimeter.
+     *
+     * <p>Only the main hand. That is the hand that swings, and it is the hand
+     * {@code ServerPlayerGameMode.destroyBlock} consults for harvest and tool wear.
+     */
+    public static boolean bareHanded(Player player) {
+        return player != null && player.getMainHandItem().isEmpty();
     }
 
     /**

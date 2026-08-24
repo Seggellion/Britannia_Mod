@@ -16,6 +16,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -425,6 +426,217 @@ public final class HouseOwnerBuildRightsGameTests {
     }
 
     /* ------------------------------------------------------------------ */
+    /*  Bare hands                                                         */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * The special rule: a house block is never destroyed by an empty hand.
+     *
+     * <p>A refusal rather than a break-and-restore. The alternative reading -- let the swing land
+     * and put the block back afterwards -- means the block genuinely leaves the world for a moment,
+     * taking its block entity, and a container's contents with it. Refusing before anything is
+     * removed is the only version of "not destroyed" that is true.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 100)
+    public static void barehandsdonotdestroyahouseblock(GameTestHelper helper) {
+        House house = House.smallAt(helper, new BlockPos(1, 1, 1), new BlockPos(5, 4, 5));
+        try {
+            BlockPos target = helper.absolutePos(new BlockPos(2, 1, 2));
+            helper.setBlock(new BlockPos(2, 1, 2), ORDINARY);
+
+            ServerPlayer owner = house.owner(helper, "m5-barehand");
+            owner.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+
+            if (owner.gameMode.destroyBlock(target)) {
+                throw new GameTestAssertException("a bare hand destroyed a block inside a house");
+            }
+            if (!helper.getLevel().getBlockState(target).is(ORDINARY)) {
+                throw new GameTestAssertException(
+                        "the block is gone after a bare-handed swing that was supposed to refuse");
+            }
+        } finally {
+            house.close();
+        }
+        helper.succeed();
+    }
+
+    /** The same hand, one block outside the house, is still governed by the world's own rules. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 100)
+    public static void thebarehandruleisahouserulenotaworldrule(GameTestHelper helper) {
+        House house = House.smallAt(helper, new BlockPos(1, 1, 1), new BlockPos(5, 4, 5));
+        try {
+            BlockPos outside = helper.absolutePos(new BlockPos(9, 1, 9));
+            helper.setBlock(new BlockPos(9, 1, 9), ORDINARY);
+
+            ServerPlayer owner = house.owner(helper, "m5-barehand-outside");
+            owner.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+
+            // Refused, but by the reach rule that already governed it -- the lent ability does not
+            // know which way the player is pointing. What matters is that the bare-hand rule has not
+            // become a new world-wide ban.
+            if (owner.gameMode.destroyBlock(outside)) {
+                throw new GameTestAssertException(
+                        "an owner reached outside their house and broke a block");
+            }
+        } finally {
+            house.close();
+        }
+        helper.succeed();
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Lease lifecycle                                                    */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Walking out of your house takes the lease with you.
+     *
+     * <p>Asserted on the lease itself rather than on a break attempt, because the two can disagree:
+     * a break can be refused for reach while the lease is still wrongly held, and it is the lease
+     * that the client is told about.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 100)
+    public static void theleaseendswhentheownerleaves(GameTestHelper helper) {
+        House house = House.smallAt(helper, new BlockPos(1, 1, 1), new BlockPos(5, 4, 5));
+        try {
+            ServerPlayer owner = house.owner(helper, "m5-lease-leaver");
+            if (!SurvivalZoneHandler.holdsLease(owner.getUUID())) {
+                throw new GameTestAssertException("the owner holds no lease while standing at home");
+            }
+
+            BlockPos outside = helper.absolutePos(new BlockPos(12, 1, 12));
+            owner.setPos(outside.getX() + 0.5D, outside.getY(), outside.getZ() + 0.5D);
+            SurvivalZoneHandler.applyTo(owner);
+
+            if (SurvivalZoneHandler.holdsLease(owner.getUUID())) {
+                throw new GameTestAssertException(
+                        "the owner kept their build lease after walking out of the house");
+            }
+            if (owner.getAbilities().mayBuild) {
+                throw new GameTestAssertException(
+                        "the owner kept mayBuild after walking out; adventure protection is not restored");
+            }
+        } finally {
+            house.close();
+        }
+        helper.succeed();
+    }
+
+    /** Standing in somebody else's house is not standing in yours. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 100)
+    public static void steppingintoanotherpersonshousedoesnotcarrythelease(GameTestHelper helper) {
+        House mine = House.smallAt(helper, new BlockPos(0, 1, 0), new BlockPos(4, 4, 4));
+        House theirs = House.smallAt(helper, new BlockPos(10, 1, 10), new BlockPos(14, 4, 14));
+        try {
+            ServerPlayer owner = mine.owner(helper, "m5-lease-visitor");
+            if (!SurvivalZoneHandler.holdsLease(owner.getUUID())) {
+                throw new GameTestAssertException("the owner holds no lease at home");
+            }
+
+            BlockPos nextDoor = BlockPos.containing(theirs.centre());
+            owner.setPos(nextDoor.getX() + 0.5D, nextDoor.getY(), nextDoor.getZ() + 0.5D);
+            SurvivalZoneHandler.applyTo(owner);
+
+            if (SurvivalZoneHandler.holdsLease(owner.getUUID())) {
+                throw new GameTestAssertException(
+                        "an owner carried their build lease into a house they do not own");
+            }
+        } finally {
+            theirs.close();
+            mine.close();
+        }
+        helper.succeed();
+    }
+
+    /**
+     * Losing the house loses the lease, on the next tick and without anybody moving.
+     *
+     * <p>Re-deeding unregisters the region while the owner is still standing in it. Nothing else
+     * about the player changes, so if the lease survived a lost region an ex-owner would keep
+     * building in a house that is no longer theirs.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 100)
+    public static void losingthehouselosesthelease(GameTestHelper helper) {
+        House house = House.smallAt(helper, new BlockPos(1, 1, 1), new BlockPos(5, 4, 5));
+        ServerPlayer owner = house.owner(helper, "m5-lease-redeeded");
+        try {
+            if (!SurvivalZoneHandler.holdsLease(owner.getUUID())) {
+                throw new GameTestAssertException("the owner holds no lease at home");
+            }
+        } finally {
+            // Exactly what re-deeding does: the region goes, the player stays where they are.
+            StructureRegionManager.unregisterStructure(house.record());
+        }
+
+        SurvivalZoneHandler.applyTo(owner);
+        try {
+            if (SurvivalZoneHandler.holdsLease(owner.getUUID())) {
+                throw new GameTestAssertException(
+                        "the lease outlived the house; a re-deeded owner still holds build rights");
+            }
+            if (owner.getAbilities().mayBuild) {
+                throw new GameTestAssertException("mayBuild outlived the house");
+            }
+        } finally {
+            SurvivalZoneHandler.forgetLentRights();
+        }
+        helper.succeed();
+    }
+
+    /**
+     * Logging out ends the lease rather than leaving it behind.
+     *
+     * <p>The set used to keep every player who had ever stood in their own house, for the lifetime
+     * of the server. That grows without bound, and it made the login restate hand a returning
+     * player a grant earned by where they were standing when they left.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 100)
+    public static void loggingoutendsthelease(GameTestHelper helper) {
+        House house = House.smallAt(helper, new BlockPos(1, 1, 1), new BlockPos(5, 4, 5));
+        try {
+            ServerPlayer owner = house.owner(helper, "m5-lease-quitter");
+            if (!SurvivalZoneHandler.holdsLease(owner.getUUID())) {
+                throw new GameTestAssertException("the owner holds no lease at home");
+            }
+
+            new SurvivalZoneHandler().onLogout(
+                    new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(owner));
+
+            if (SurvivalZoneHandler.holdsLease(owner.getUUID())) {
+                throw new GameTestAssertException(
+                        "the build lease survived the player logging out");
+            }
+        } finally {
+            house.close();
+        }
+        helper.succeed();
+    }
+
+    /** An operator in creative is not managed by this rule, and holds no lease from it. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 100)
+    public static void anoperatorincreativeholdsnohouselease(GameTestHelper helper) {
+        House house = House.smallAt(helper, new BlockPos(1, 1, 1), new BlockPos(5, 4, 5));
+        try {
+            ServerPlayer owner = house.owner(helper, "m5-lease-operator");
+            if (!SurvivalZoneHandler.holdsLease(owner.getUUID())) {
+                throw new GameTestAssertException("the owner holds no lease at home");
+            }
+
+            owner.gameMode.changeGameModeForPlayer(GameType.CREATIVE);
+            SurvivalZoneHandler.applyTo(owner);
+
+            if (SurvivalZoneHandler.holdsLease(owner.getUUID())) {
+                throw new GameTestAssertException(
+                        "an operator in creative is holding a housing lease, which this handler "
+                                + "would then try to take back off them");
+            }
+        } finally {
+            house.close();
+        }
+        helper.succeed();
+    }
+
+    /* ------------------------------------------------------------------ */
     /*  Fixtures                                                           */
     /* ------------------------------------------------------------------ */
 
@@ -458,6 +670,14 @@ public final class HouseOwnerBuildRightsGameTests {
                     "small", "SMALL_BRICK", null, 0));
         }
 
+        StructureRecord record() {
+            return record;
+        }
+
+        net.minecraft.world.phys.Vec3 centre() {
+            return record.getStructureBox().getCenter();
+        }
+
         ServerPlayer owner(GameTestHelper helper, String name) {
             return player(helper, name, record.getOwnerUuid(), true);
         }
@@ -473,6 +693,11 @@ public final class HouseOwnerBuildRightsGameTests {
                 player.setPos(centre.x, record.getStructureBox().minY, centre.z);
             }
             player.gameMode.changeGameModeForPlayer(GameType.ADVENTURE);
+            // Holding an ordinary tool, because a house block is never taken apart bare-handed --
+            // see HouseBuildRights.bareHanded, and the bare-hand tests below. A vanilla pickaxe
+            // rather than a mod tool: QualityToolItem and TwoHandedAxeItem are the existing escape
+            // hatch that skips the house rules entirely, which would make these tests prove nothing.
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_PICKAXE));
             SurvivalZoneHandler.applyTo(player);
             return player;
         }
@@ -509,6 +734,9 @@ public final class HouseOwnerBuildRightsGameTests {
                 new BlockHitResult(Vec3.atCenterOf(support).add(0.0D, 0.5D, 0.0D),
                         Direction.UP, support, false));
 
+        // The stack is deliberately left in hand: the caller checks that placement consumed it,
+        // which is the survival semantics this whole design exists to keep. No test places and then
+        // breaks, so nothing here is left bare-handed by accident.
         return level.getBlockState(target).is(ORDINARY);
     }
 }

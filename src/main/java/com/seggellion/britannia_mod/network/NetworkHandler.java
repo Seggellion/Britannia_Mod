@@ -139,6 +139,16 @@ public static void register(final RegisterPayloadHandlersEvent event) {
             : (payload, context) -> {}
     );
 
+    // Housing: the one flag ClientboundPlayerAbilitiesPacket does not carry. Without it a house
+    // owner's client refuses their own break before the packet is ever sent.
+    registrar.playToClient(
+        com.seggellion.britannia_mod.network.payload.housing.S2CHouseBuildRightsPayload.TYPE,
+        com.seggellion.britannia_mod.network.payload.housing.S2CHouseBuildRightsPayload.STREAM_CODEC,
+        FMLLoader.getDist().isClient()
+            ? ClientNetworkHandler::handleHouseBuildRights
+            : (payload, context) -> {}
+    );
+
     registrar.playToServer(
         com.seggellion.britannia_mod.network.payload.grabby.C2SConfirmGrabbyDestructionPayload.TYPE,
         com.seggellion.britannia_mod.network.payload.grabby.C2SConfirmGrabbyDestructionPayload.STREAM_CODEC,

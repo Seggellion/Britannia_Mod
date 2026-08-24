@@ -138,6 +138,19 @@ public class ClientNetworkHandler {
                         payload.sessionId(), payload.objectName(), payload.occupiedSlots())));
     }
 
+    /**
+     * Records whether the server currently lends this player the right to build.
+     *
+     * <p>Consumed only by {@code ClientAdventureBreakGateMixin}, which stops the client refusing a
+     * break the server would have allowed. It grants nothing by itself.
+     */
+    public static void handleHouseBuildRights(
+            com.seggellion.britannia_mod.network.payload.housing.S2CHouseBuildRightsPayload payload,
+            IPayloadContext context) {
+        context.enqueueWork(() ->
+                com.seggellion.britannia_mod.client.house.ClientHouseBuildRights.set(payload.granted()));
+    }
+
     public static void handleOpenBlacksmithGui(OpenBlacksmithGuiS2CPayload payload, IPayloadContext context) {
         // enqueueWork ensures this runs on the main client rendering thread
         context.enqueueWork(() -> {

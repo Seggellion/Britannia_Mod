@@ -290,6 +290,10 @@ public final class ServiceNpcSpawnGameTests {
         StructureRegionManager.registerStructure(ownedRegion);
         try {
             player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+            // With a tool in hand: nothing inside a house comes apart bare-handed, and the point of
+            // this check is the spawn post's own lifecycle rather than the housing hand rule.
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
+                    new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_PICKAXE));
             check(player.gameMode.destroyBlock(survivalAbsolute),
                     "survival player could not break the spawn post inside an owned structure");
             player.gameMode.changeGameModeForPlayer(GameType.CREATIVE);

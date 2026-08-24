@@ -210,11 +210,15 @@ if (held.getItem() instanceof AbstractHouseDeedItem deed) {
 public static void onClientLogin(ClientPlayerNetworkEvent.LoggingIn event) {
     ClientSkillTable.beginSession();
     ClientFarmingPresentationRefresh.reset();
+    // A lent build right belongs to one session in one world. The server re-states it on the
+    // first tick after login; until then the client must assume it has none.
+    com.seggellion.britannia_mod.client.house.ClientHouseBuildRights.clear();
 }
 
 public static void onClientLogout(ClientPlayerNetworkEvent.LoggingOut event) {
     ClientSkillTable.clear();
     ClientFarmingPresentationRefresh.reset();
+    com.seggellion.britannia_mod.client.house.ClientHouseBuildRights.clear();
 }
 
 public static void onRenderNameTag(RenderNameTagEvent event) {
