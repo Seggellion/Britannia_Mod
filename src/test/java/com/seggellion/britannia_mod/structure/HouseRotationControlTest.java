@@ -42,8 +42,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * <p>Three things are pinned, and each would independently reintroduce the defect if it changed:
  * the vanilla contract the fix depends on, the deed's use of it, and the fact that rotation has one
- * caller. The one thing no headless test can press is a physical mouse button — see
- * {@code PATCH_18_HOUSING_PRODUCTION_SMOKE_TEST.md} steps 9 and 10.
+ * caller. The one thing no headless test can press is a physical mouse button, so the manual check
+ * that completes these is: hold a deed, left-click four times and watch the ghost turn one quarter
+ * each time; then right-click repeatedly and watch it not turn at all.
  */
 class HouseRotationControlTest {
 
