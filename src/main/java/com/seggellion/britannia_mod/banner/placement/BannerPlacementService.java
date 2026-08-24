@@ -168,7 +168,10 @@ public final class BannerPlacementService {
         }
         BannerOrientationPreferenceService.CycleResult result =
                 BannerOrientationPreferenceService.cycle(player.getUUID(), definition.supportedOrientations());
-        if (player instanceof ServerPlayer serverPlayer) {
+        // Display-only mirror: skip connections that negotiated no britannia channels
+        // (gametest mock players) instead of letting NeoForge throw, matching BannerRenderDataSync.
+        if (player instanceof ServerPlayer serverPlayer
+                && serverPlayer.connection.hasChannel(S2CBannerPlacementOrientationPayload.TYPE)) {
             serverPlayer.connection.send(new ClientboundCustomPayloadPacket(
                     new S2CBannerPlacementOrientationPayload(result.orientation())));
         }
