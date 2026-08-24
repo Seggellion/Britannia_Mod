@@ -56,8 +56,9 @@ import java.util.stream.Stream;
  *       sneaking player to walk through the middle of the wall.</li>
  *   <li>{@code dark_stone_window} selected as a solid panel - a full cell, once its rear gap
  *       filled - so the crosshair could never reach the chest a player could plainly see through
- *       the open light. The rule cuts the other way too: where art with nothing in it draws an
- *       opening, selection has to leave that opening empty.</li>
+ *       the open light; {@code stone_wall_window} had the same disease through its own class. The
+ *       rule cuts the other way too: where art with nothing in it draws an opening, selection has
+ *       to leave that opening empty.</li>
  * </ul>
  */
 class WindowCollisionContractTest {
@@ -236,24 +237,31 @@ class WindowCollisionContractTest {
         return null;
     }
 
-    /* ─── the dark stone window's open light ─────────────────── */
+    /* ─── the unglazed windows' open lights ──────────────────── */
 
     /**
-     * {@code dark_stone_window} draws a light with nothing in it - no pane, no muntins, unlike the
-     * glazed timber windows - so its selection shape must be exactly its art: solid over the sill,
-     * jambs and lintel, open through the light, in every orientation. And it must stay the art
-     * whatever {@code corner}, {@code filled} and {@code style} say, because the blockstate keys
-     * its variants on facing and half alone: those flags never change what is drawn, so they must
-     * never cover the light with shape the player cannot see.
+     * The windows that draw a light with nothing in it - no pane, no muntins, unlike the glazed
+     * timber and plaster windows, whose glazing is drawn geometry and rightly selectable.
+     */
+    private static final List<String> UNGLAZED_WINDOWS = List.of("dark_stone_window", "stone_wall_window");
+
+    /**
+     * An unglazed window's selection shape must be exactly its art: solid over sill, jambs and
+     * lintel or corbels, open through the light, in every orientation. And it must stay the art
+     * whatever properties the blockstate leaves free ({@code dark_stone_window} keys its variants
+     * on facing and half alone, so {@code corner}, {@code filled} and {@code style} never change
+     * what is drawn and must never cover the light with shape the player cannot see).
      */
     @Test
-    void darkStoneWindowSelectionIsExactlyItsArt() throws IOException {
-        Block block = windows.get("dark_stone_window");
-        for (WindowArt.Variant variant : WindowArt.variantsOf("dark_stone_window")) {
-            VoxelShape art = shapeOf(WindowArt.solidElements(variant));
-            for (BlockState state : statesOfVariant(block, variant.key())) {
-                assertShapesMatch("dark_stone_window " + state + " selection against " + variant.key(),
-                    art, state.getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO));
+    void unglazedWindowsSelectExactlyTheirArt() throws IOException {
+        for (String id : UNGLAZED_WINDOWS) {
+            Block block = windows.get(id);
+            for (WindowArt.Variant variant : WindowArt.variantsOf(id)) {
+                VoxelShape art = shapeOf(WindowArt.solidElements(variant));
+                for (BlockState state : statesOfVariant(block, variant.key())) {
+                    assertShapesMatch(id + " " + state + " selection against " + variant.key(),
+                        art, state.getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO));
+                }
             }
         }
     }
@@ -292,6 +300,59 @@ class WindowCollisionContractTest {
     }
 
     /**
+     * The same raycast contract for {@code stone_wall_window}, probed at its own numbers: the
+     * light is {@code x 3..13} above the {@code y 2} sill; corbel courses at {@code x 3..5} and
+     * {@code 11..13} from {@code y 12}, then {@code x 5..7} and {@code 9..11} from {@code y 14},
+     * leave the top open at {@code x 7..9}; all of it on the {@code z 0..8} slab.
+     */
+    @Test
+    void stoneWallWindowRaycastsPassOnlyThroughTheLight() throws IOException {
+        Block block = windows.get("stone_wall_window");
+        for (WindowArt.Variant variant : WindowArt.variantsOf("stone_wall_window")) {
+            for (BlockState state : statesOfVariant(block, variant.key())) {
+                VoxelShape selection = state.getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+                VoxelShape collision = state.getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+                String where = "stone_wall_window " + state;
+
+                for (double[] light : new double[][] {{8, 7}, {8, 13}, {8, 15}}) {
+                    assertNull(clipThroughPanel(selection, variant, light[0], light[1]),
+                        where + " swallows the crosshair in its open light at " + light[0] + "/" + light[1]);
+                    assertNotNull(clipThroughPanel(collision, variant, light[0], light[1]),
+                        where + " lets bodies and arrows through its light at " + light[0] + "/" + light[1]);
+                }
+                assertNotNull(clipThroughPanel(selection, variant, 1.5D, 9.0D),
+                    where + " no longer selects on its west jamb");
+                assertNotNull(clipThroughPanel(selection, variant, 14.5D, 9.0D),
+                    where + " no longer selects on its east jamb");
+                assertNotNull(clipThroughPanel(selection, variant, 8.0D, 1.0D),
+                    where + " no longer selects on its sill");
+                assertNotNull(clipThroughPanel(selection, variant, 4.0D, 13.0D),
+                    where + " no longer selects on its first corbel course");
+                assertNotNull(clipThroughPanel(selection, variant, 10.0D, 15.0D),
+                    where + " no longer selects on its second corbel course");
+            }
+        }
+    }
+
+    /**
+     * {@code stone_wall_window} collision stays the solid half slab it always was. Its light is
+     * ten pixels wide - a whisker wider than a player - so carving collision open would let
+     * players walk through a window every existing build trusts as wall; that stays an owner
+     * decision, not a side effect.
+     */
+    @Test
+    void stoneWallWindowCollisionKeepsTheSolidSlab() throws IOException {
+        Block block = windows.get("stone_wall_window");
+        for (WindowArt.Variant variant : WindowArt.variantsOf("stone_wall_window")) {
+            VoxelShape slab = Shapes.create(shapeOf(WindowArt.solidElements(variant)).bounds());
+            for (BlockState state : statesOfVariant(block, variant.key())) {
+                assertShapesMatch("stone_wall_window " + state + " collision", slab,
+                    state.getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO));
+            }
+        }
+    }
+
+    /**
      * Collision stays what it always was: the solid five pixel panel the art bounds, or the whole
      * cell at a corner pivot or over a filled rear gap. Nothing that collides fits the six pixel
      * light, and builds have settled against these boxes.
@@ -321,13 +382,22 @@ class WindowCollisionContractTest {
         return shape.optimize();
     }
 
-    /** Every possible state that bakes the given variant - same facing and half, the rest free. */
+    /** Every possible state that bakes the given variant - the key's properties match, the rest free. */
     private static List<BlockState> statesOfVariant(Block block, String variantKey) {
         BlockState example = stateFromVariantKey(block, variantKey);
         assertNotNull(example, "no state for blockstate variant '" + variantKey + "'");
+        if (variantKey.isEmpty()) {
+            return block.getStateDefinition().getPossibleStates();
+        }
+        List<Property<?>> named = new ArrayList<>();
+        for (String pair : variantKey.split(",")) {
+            Property<?> property = block.getStateDefinition().getProperty(pair.split("=", 2)[0]);
+            assertNotNull(property, "variant '" + variantKey + "' names a property the block lacks");
+            named.add(property);
+        }
         return block.getStateDefinition().getPossibleStates().stream()
-            .filter(state -> state.getValue(TallThinBlock.FACING) == example.getValue(TallThinBlock.FACING)
-                && state.getValue(TallThinBlock.HALF) == example.getValue(TallThinBlock.HALF))
+            .filter(state -> named.stream()
+                .allMatch(property -> state.getValue(property).equals(example.getValue(property))))
             .toList();
     }
 
