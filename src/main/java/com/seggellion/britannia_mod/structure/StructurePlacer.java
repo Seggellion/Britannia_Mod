@@ -138,67 +138,17 @@ String nbtFile = style.getStructureFile();                 // e.g. "structures/w
                                           .setIgnoreEntities(true);
 
 // Constraints
-
-// Bounding box (1-block buffer around the structure)
+//
+// Clearance is derived from the footprint, not padded around it -- see HousePlacementClearance
+// for what the old skirt actually demanded and why removing it does not weaken anything.
 StructureBoxes boxes = StructureUtils.makeStructureBoxes(adjustedPos, rawSize, rotation);
 
-int minX = Mth.floor(boxes.structureBox().minX) - 1;
-int maxX = Mth.floor(boxes.structureBox().maxX) + 1;
-int minY = Mth.floor(boxes.structureBox().minY);
-int maxY = Mth.floor(boxes.structureBox().maxY);
-int minZ = Mth.floor(boxes.structureBox().minZ) - 1;
-int maxZ = Mth.floor(boxes.structureBox().maxZ) + 1;
-
-int validationOffsetY = -1; // go one block down to check grass/sand
-
-
-boolean valid = true;
-
-outer:
-for (int x = minX; x <= maxX; x++) {
-    for (int z = minZ; z <= maxZ; z++) {
-        for (int y = minY; y <= maxY; y++) {
-
-            boolean isBottom = (y == minY);
-
-            // use different Y for ground vs. upper blocks
-            BlockPos pos = isBottom
-                    ? new BlockPos(x, y + validationOffsetY, z)   // ground block
-                    : new BlockPos(x, y, z);                      // in‑volume air check
-
-            BlockState state = level.getBlockState(pos);
-
-            if (isBottom) {
-                // foundation must sit on grass or sand only
-                if (state.getBlock() != Blocks.GRASS_BLOCK &&
-                    state.getBlock() != Blocks.SAND) {
-
-                    LOGGER.warn("❌ Invalid ground block at {}: {}", pos, state.getBlock());
-                    valid = false;
-                    break outer;
-                }
-            } else {
-                // everything above ground must be replaceable (air, tall grass, etc.)
-                if (!state.isAir() && !state.canBeReplaced()) {
-                    LOGGER.warn("❌ Blocked by {} at {}", state.getBlock(), pos);
-                    valid = false;
-                    break outer;
-                }
-            }
-        }
-    }
-}
-
-
-
-
-
-if (!valid) {
-    player.displayClientMessage(Component.literal("❌ Invalid placing location. You need flat grass or sand."), true);
+HousePlacementClearance.Refusal refusal = findClearanceRefusal(level, boxes.structureBox());
+if (refusal != null) {
+    LOGGER.warn("❌ {} at {}", refusal.reason(), refusal.where());
+    player.displayClientMessage(Component.literal("❌ " + refusal.reason()), true);
     return false;
 }
-
-
 // end of constraints
 
                                           
@@ -210,6 +160,11 @@ if (!valid) {
     }
 
     
+
+// The authored house sign, in world coordinates. Collected during the same pass that corrects
+// its facing, because the sign is also what tells us where the house's controller belongs --
+// see lotPositionFor below.
+java.util.List<BlockPos> houseSigns = new ArrayList<>();
 
 BlockPos.betweenClosedStream(
     new BlockPos(
@@ -225,6 +180,7 @@ BlockPos.betweenClosedStream(
 ).forEach(pos -> {
     BlockState state = level.getBlockState(pos);
     if (state.getBlock() instanceof HouseSignBlock) {
+        houseSigns.add(pos.immutable());
         LOGGER.info("✅ Correcting sign at {} for rotation {}", pos, rotation);
         Direction correctFacing = switch (rotation) {
             case NONE -> Direction.WEST;
@@ -240,24 +196,10 @@ BlockPos.betweenClosedStream(
 
     LOGGER.info("Structure {} placed at {} (size {})", structureId, adjustedPos, rawSize);
     UUID houseUuid = UUID.randomUUID();
-    // You can keep your HouseLot logic unchanged
-    // Lot block goes just inside the door (1 block behind)
+    // The controller block, directly beneath the house's own sign. That pairing is the contract
+    // HouseSignBlock reads back, and lotPositionFor is where it is stated.
 
-// Step 1: Compute center-front position in unrotated structure space
-int centerX = rawSize.getX() / 2 + style.getLotOffsetX();;
-int yOffset = 1; // 1 block above ground
-int zOffset = 0; // front of structure (adjust if door is inset)
-
-BlockPos unrotatedLotOffset = new BlockPos(centerX, yOffset, zOffset);
-
-// Step 2: Rotate the lot offset based on the placed structure rotation
-BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
-    new StructurePlaceSettings().setRotation(rotation),
-    unrotatedLotOffset
-);
-
-
-   BlockPos lotPos = adjustedPos.offset(lotOffset); 
+   BlockPos lotPos = lotPositionFor(style, rawSize, rotation, adjustedPos, houseSigns);
 
 
     level.setBlock(lotPos,
@@ -326,5 +268,107 @@ BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
 
 }
 
+    /**
+     * Where this house's controller block belongs.
+     *
+     * <h2>The contract, stated once</h2>
+     *
+     * <p>A house's controller is the {@code HouseLotBlockEntity}: it carries the house UUID, the
+     * owner, the privacy flag and the rotation, and {@code HouseUtil.findLot} resolves it for every
+     * door and every management action. It is not authored into the structure -- no shipped NBT
+     * contains one -- so placement has to decide where it goes.
+     *
+     * <p>{@code HouseSignBlock.useWithoutItem} reads it from {@code pos.below()}. That is the
+     * contract, and it is the only one: the sign and the controller are a pair, and a sign with no
+     * controller directly beneath it is the "Could not find the house controller." message.
+     *
+     * <p>It used to be computed instead, from {@code width / 2 + HouseStyle.getLotOffsetX()} with
+     * y and z hard-coded to 1 and 0. That agreed with the authored sign for the six small houses
+     * and the castle and disagreed for the other three, which is exactly the set of houses the
+     * message was reported against:
+     *
+     * <pre>
+     *   villa   sign (6,3,0)   computed lot (1,1,0)   wrong in x and y
+     *   patio   sign (8,2,0)   computed lot (9,1,0)   wrong in x
+     *   keep    sign (10,3,2)  computed lot (11,1,0)  wrong in x, y and z
+     * </pre>
+     *
+     * <p>Two independent descriptions of one position will always drift, and the authored one is
+     * the one a person can see. So the sign decides, and the table no longer has to be kept in step
+     * with the exports.
+     *
+     * <p>The declared offset survives only as the answer for a structure with no sign at all. That
+     * is not a fallback that guesses: it is the historical authored value for such a house, and
+     * {@code HouseControllerContractTest} asserts that every registered style ships exactly one
+     * sign, so no shipped house can reach it.
+     */
+    static BlockPos lotPositionFor(HouseStyle style,
+                                   Vec3i rawSize,
+                                   Rotation rotation,
+                                   BlockPos origin,
+                                   java.util.List<BlockPos> houseSigns) {
+        if (houseSigns.size() == 1) {
+            return houseSigns.get(0).below();
+        }
+        if (houseSigns.size() > 1) {
+            LOGGER.error("{} placed {} house signs; a house has exactly one controller, so the "
+                    + "first one found is being used. Fix the structure.", style, houseSigns.size());
+            return houseSigns.get(0).below();
+        }
+        LOGGER.error("{} placed no house sign, so its controller position cannot be read from the "
+                + "structure. Falling back to the declared lot offset; its sign, if one is added "
+                + "later, will not resolve it.", style);
+        BlockPos declared = new BlockPos(rawSize.getX() / 2 + style.getLotOffsetX(), 1, 0);
+        return origin.offset(StructureTemplate.calculateRelativePosition(
+                new StructurePlaceSettings().setRotation(rotation), declared));
+    }
 
+    /**
+     * Why this footprint cannot take a house, or {@code null} if it can.
+     *
+     * <p>Three checks, each naming its own cell so the player is told what is in the way instead of
+     * being told to find flatter ground and guess. In footprint order -- foundation, then the volume
+     * the structure writes into, then the region registry -- because the first two are what a player
+     * can see and fix.
+     */
+    private static HousePlacementClearance.Refusal findClearanceRefusal(ServerLevel level, AABB structureBox) {
+        int[] columns = HousePlacementClearance.foundationColumns(structureBox);
+        int groundY = HousePlacementClearance.foundationY(structureBox);
+        for (int x = columns[0]; x <= columns[1]; x++) {
+            for (int z = columns[2]; z <= columns[3]; z++) {
+                BlockPos ground = new BlockPos(x, groundY, z);
+                BlockState state = level.getBlockState(ground);
+                if (state.getBlock() != Blocks.GRASS_BLOCK && state.getBlock() != Blocks.SAND) {
+                    return new HousePlacementClearance.Refusal(
+                            "A house needs flat grass or sand under all of it.", ground);
+                }
+            }
+        }
+
+        int[] volume = HousePlacementClearance.occupiedVolume(structureBox);
+        for (int x = volume[0]; x <= volume[1]; x++) {
+            for (int z = volume[4]; z <= volume[5]; z++) {
+                for (int y = volume[2]; y <= volume[3]; y++) {
+                    BlockPos cell = new BlockPos(x, y, z);
+                    BlockState state = level.getBlockState(cell);
+                    if (!state.isAir() && !state.canBeReplaced()) {
+                        return new HousePlacementClearance.Refusal(
+                                "Something is in the way where the house would stand.", cell);
+                    }
+                }
+            }
+        }
+
+        StructureRecord overlap =
+                HousePlacementClearance.overlappingHouse(level.dimension(), structureBox);
+        if (overlap != null) {
+            // Deliberately the only rule that consults the registry rather than the blocks: a
+            // neighbouring house's claim extends ten blocks below its floor, where there is nothing
+            // to bump into, and it exists whether or not its chunks are loaded.
+            return new HousePlacementClearance.Refusal(
+                    "That overlaps another house.",
+                    BlockPos.containing(overlap.getStructureBox().getCenter()));
+        }
+        return null;
+    }
 }

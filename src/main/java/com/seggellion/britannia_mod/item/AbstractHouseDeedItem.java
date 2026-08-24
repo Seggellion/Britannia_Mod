@@ -64,12 +64,39 @@ public InteractionResultHolder<ItemStack> use(Level level, Player player, Intera
         HousePlacementPayload payload =
             new HousePlacementPayload(pos, rotDeg, houseStyle.name());
 
-        NetworkHandler.sendToServer(payload); 
+        NetworkHandler.sendToServer(payload);
 
-        return InteractionResultHolder.success(stack); // swing animation etc.
+        // CONSUME, not SUCCESS, and this is the whole of defect "both mouse buttons rotate".
+        //
+        // Minecraft.startUseItem swings the arm when the result both consumesAction() and
+        // shouldSwing(). SUCCESS does both; CONSUME does the first only. LivingEntity.swing then
+        // calls ItemStack.onEntitySwing -- which is where rotation lives, because rotation is the
+        // left-click gesture. So every right-click placed the house *and* rotated the ghost, and
+        // the two controls were indistinguishable.
+        //
+        // Nothing else changes: the placement request has already been sent, and CONSUME still
+        // stops the loop trying the off-hand.
+        return InteractionResultHolder.consume(stack);
     }
 
     return InteractionResultHolder.pass(stack);
+}
+
+/**
+ * A deed is not a tool, and must not break anything.
+ *
+ * <p>Rotation is a left-click, and a left-click at a block is also an attack on it. That was
+ * harmless while nothing the player held could break anything in Adventure mode -- but a house
+ * owner standing inside their own house is now lent that ability, and rotating a ghost there
+ * would have started knocking their own walls down. Refusing here is the vanilla hook for
+ * exactly that: {@code ServerPlayerGameMode.destroyBlock} consults it before doing anything.
+ */
+@Override
+public boolean canAttackBlock(net.minecraft.world.level.block.state.BlockState state,
+                              Level level,
+                              BlockPos pos,
+                              Player player) {
+    return false;
 }
 
 
