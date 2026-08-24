@@ -24,8 +24,12 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.EnumMap;
+import java.util.Map;
 
 public class TallThinBlock extends Block {
 
@@ -44,15 +48,61 @@ public class TallThinBlock extends Block {
     /**
      * The slab this family's art draws, measured off {@code dark_stone_window_bottom.json} and
      * {@code _top.json}: a five pixel deep wall panel with a six pixel wide light in the middle.
-     * The light is too narrow for a player to fit through, so collision keeps the panel solid
-     * rather than modelling the opening - a simplification, but the only one here, and it is the
-     * shape the block already presented.
+     * The light is too narrow for anything that bumps into walls to fit through, so collision
+     * keeps the panel solid rather than modelling the opening - a simplification, but a purely
+     * physical one. Selection is not simplified: the crosshair has to reach through the light to
+     * whatever stands beyond it, so {@link #getShape} traces the art instead - see the frame
+     * shapes below.
      */
     private static final VoxelShape PANEL_NORTH = Block.box(0, 0, 0, 16, 16, 5);
     private static final VoxelShape PANEL_SOUTH = Block.box(0, 0, 11, 16, 16, 16);
     private static final VoxelShape PANEL_WEST  = Block.box(0, 0, 0, 5, 16, 16);
     private static final VoxelShape PANEL_EAST  = Block.box(11, 0, 0, 16, 16, 16);
     private static final VoxelShape FULL_SHAPE  = Block.box(0, 0, 0, 16, 16, 16);
+
+    /**
+     * The lower half's art, element for element from {@code dark_stone_window_bottom.json}: a sill
+     * with a jamb either side of the light. The light - {@code x 5..11} above the sill - is left
+     * open on purpose; it is what the player reaches through.
+     */
+    private static final VoxelShape FRAME_BOTTOM = Shapes.or(
+            Block.box(0, 0, 11, 16, 6, 16),     // sill
+            Block.box(0, 6, 11, 5, 16, 16),     // jamb west of the light
+            Block.box(11, 6, 11, 16, 16, 16))   // jamb east of the light
+        .optimize();
+
+    /** The upper half's art, element for element from {@code dark_stone_window_top.json}. */
+    private static final VoxelShape FRAME_TOP = Shapes.or(
+            Block.box(0, 10, 11, 16, 16, 16),   // lintel
+            Block.box(0, 0, 11, 5, 10, 16),     // jamb west of the light
+            Block.box(11, 0, 11, 16, 10, 16))   // jamb east of the light
+        .optimize();
+
+    private static final Map<Direction, VoxelShape> FRAME_LOWER = turnedWithTheArt(FRAME_BOTTOM);
+    private static final Map<Direction, VoxelShape> FRAME_UPPER = turnedWithTheArt(FRAME_TOP);
+
+    private static Map<Direction, VoxelShape> turnedWithTheArt(VoxelShape canonical) {
+        Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            shapes.put(facing, HorizontalShape.rotateFromNorth(canonical, artRotationOf(facing)));
+        }
+        return shapes;
+    }
+
+    /**
+     * The rotation the blockstate really bakes for a facing. East and west are swapped relative to
+     * the house convention - {@code facing=east} uses {@code "y": 270} where every other wall
+     * family here uses {@code "y": 90} - which is one of the two inversions documented on
+     * {@link #panelFor}; the other (the panel sitting on the far edge) is already in the canonical
+     * frames, authored at {@code z 11..16} like the model.
+     */
+    private static Direction artRotationOf(Direction facing) {
+        return switch (facing) {
+            case EAST -> Direction.WEST;
+            case WEST -> Direction.EAST;
+            default   -> facing;
+        };
+    }
 
     /* ─── constructor & defaults ─────────────────────────────── */
 
@@ -190,15 +240,33 @@ public class TallThinBlock extends Block {
         };
     }
 
+    /**
+     * Selection and raycasting trace the art exactly: solid over the frame, open through the
+     * light, so a crosshair through the opening reaches the block beyond it - a chest behind the
+     * window opens from either side. Neither {@link #CORNER} nor {@link #FILLED} has a say here:
+     * the blockstate keys its variants on facing and half alone, so those flags never change what
+     * is drawn, and shape the player cannot see must not swallow the click. Both flags keep their
+     * say over {@link #getCollisionShape}, which used to delegate here - the solid panel it
+     * inherited (the whole cell, once the rear gap filled) is exactly what made the visible
+     * opening unclickable.
+     */
     @Override
     public VoxelShape getShape(BlockState s, BlockGetter w, BlockPos p, CollisionContext c) {
-        return s.getValue(FILLED) ? FULL_SHAPE : panelFor(s.getValue(FACING));
+        Map<Direction, VoxelShape> frames =
+            s.getValue(HALF) == DoubleBlockHalf.LOWER ? FRAME_LOWER : FRAME_UPPER;
+        return frames.get(s.getValue(FACING));
     }
 
+    /**
+     * Bodies and projectiles keep meeting the wall they always met: the solid panel, or the whole
+     * cell at a junction pivot or over a filled rear gap. Nothing that collides fits the six pixel
+     * light, so keeping it closed costs nothing physical, and every build settled against these
+     * boxes stays settled.
+     */
     @Override
     public VoxelShape getCollisionShape(BlockState s, BlockGetter w, BlockPos p, CollisionContext c) {
-        if (s.getValue(CORNER)) return FULL_SHAPE;  
-        return getShape(s, w, p, c); 
+        if (s.getValue(CORNER) || s.getValue(FILLED)) return FULL_SHAPE;
+        return panelFor(s.getValue(FACING));
     }
 
     /* ─── rotation & state ───────────────────────────────────── */

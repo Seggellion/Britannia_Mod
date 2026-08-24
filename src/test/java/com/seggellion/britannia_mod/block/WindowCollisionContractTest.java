@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.block;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.minecraft.SharedConstants;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -52,6 +54,10 @@ import java.util.stream.Stream;
  *   <li>{@code dark_stone_window} collided against the opposite face of its own block;</li>
  *   <li>the sandstone windows collided with a taller opening than they drew, wide enough for a
  *       sneaking player to walk through the middle of the wall.</li>
+ *   <li>{@code dark_stone_window} selected as a solid panel - a full cell, once its rear gap
+ *       filled - so the crosshair could never reach the chest a player could plainly see through
+ *       the open light. The rule cuts the other way too: where art with nothing in it draws an
+ *       opening, selection has to leave that opening empty.</li>
  * </ul>
  */
 class WindowCollisionContractTest {
@@ -228,6 +234,117 @@ class WindowCollisionContractTest {
             }
         }
         return null;
+    }
+
+    /* ─── the dark stone window's open light ─────────────────── */
+
+    /**
+     * {@code dark_stone_window} draws a light with nothing in it - no pane, no muntins, unlike the
+     * glazed timber windows - so its selection shape must be exactly its art: solid over the sill,
+     * jambs and lintel, open through the light, in every orientation. And it must stay the art
+     * whatever {@code corner}, {@code filled} and {@code style} say, because the blockstate keys
+     * its variants on facing and half alone: those flags never change what is drawn, so they must
+     * never cover the light with shape the player cannot see.
+     */
+    @Test
+    void darkStoneWindowSelectionIsExactlyItsArt() throws IOException {
+        Block block = windows.get("dark_stone_window");
+        for (WindowArt.Variant variant : WindowArt.variantsOf("dark_stone_window")) {
+            VoxelShape art = shapeOf(WindowArt.solidElements(variant));
+            for (BlockState state : statesOfVariant(block, variant.key())) {
+                assertShapesMatch("dark_stone_window " + state + " selection against " + variant.key(),
+                    art, state.getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO));
+            }
+        }
+    }
+
+    /**
+     * The raycast the game aims interaction with, fired straight through the middle of the light:
+     * selection must let it pass - that is how a chest beyond the window gets targeted - while
+     * collision still stops it, because the glassless light is no invitation to arrows. The same
+     * ray through sill, jamb or lintel must select the window as it always did. Probe points are
+     * the model's own numbers: the light is {@code x 5..11} from {@code y 6} of the bottom model
+     * to {@code y 10} of the top one, jambs five pixels wide beside it, all on the {@code z 11..16}
+     * panel.
+     */
+    @Test
+    void darkStoneWindowRaycastsPassOnlyThroughTheLight() throws IOException {
+        Block block = windows.get("dark_stone_window");
+        for (WindowArt.Variant variant : WindowArt.variantsOf("dark_stone_window")) {
+            boolean lower = variant.key().endsWith("half=lower");
+            double lightY = lower ? 11.0D : 5.0D;         // centre of y 6..16, or of y 0..10
+            double frameY = lower ? 3.0D : 13.0D;         // centre of the sill, or of the lintel
+            for (BlockState state : statesOfVariant(block, variant.key())) {
+                VoxelShape selection = state.getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+                VoxelShape collision = state.getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+                String where = "dark_stone_window " + state;
+
+                assertNull(clipThroughPanel(selection, variant, 8.0D, lightY),
+                    where + " swallows the crosshair in the middle of its open light");
+                assertNotNull(clipThroughPanel(collision, variant, 8.0D, lightY),
+                    where + " lets bodies and arrows through its light");
+                assertNotNull(clipThroughPanel(selection, variant, 8.0D, frameY),
+                    where + " no longer selects on its sill or lintel");
+                assertNotNull(clipThroughPanel(selection, variant, 2.5D, lightY),
+                    where + " no longer selects on its jamb");
+            }
+        }
+    }
+
+    /**
+     * Collision stays what it always was: the solid five pixel panel the art bounds, or the whole
+     * cell at a corner pivot or over a filled rear gap. Nothing that collides fits the six pixel
+     * light, and builds have settled against these boxes.
+     */
+    @Test
+    void darkStoneWindowCollisionKeepsTheSolidPanel() throws IOException {
+        Block block = windows.get("dark_stone_window");
+        for (WindowArt.Variant variant : WindowArt.variantsOf("dark_stone_window")) {
+            VoxelShape panel = Shapes.create(shapeOf(WindowArt.solidElements(variant)).bounds());
+            for (BlockState state : statesOfVariant(block, variant.key())) {
+                boolean full = state.getValue(TallThinBlock.CORNER) || state.getValue(TallThinBlock.FILLED);
+                assertShapesMatch("dark_stone_window " + state + " collision",
+                    full ? Shapes.block() : panel,
+                    state.getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO));
+            }
+        }
+    }
+
+    /** The union of art boxes as one voxel shape, in block coordinates. */
+    private static VoxelShape shapeOf(List<WindowArt.Box> boxes) {
+        VoxelShape shape = Shapes.empty();
+        for (WindowArt.Box box : boxes) {
+            shape = Shapes.or(shape, Shapes.create(new AABB(
+                box.x0() / WindowArt.BLOCK, box.y0() / WindowArt.BLOCK, box.z0() / WindowArt.BLOCK,
+                box.x1() / WindowArt.BLOCK, box.y1() / WindowArt.BLOCK, box.z1() / WindowArt.BLOCK)));
+        }
+        return shape.optimize();
+    }
+
+    /** Every possible state that bakes the given variant - same facing and half, the rest free. */
+    private static List<BlockState> statesOfVariant(Block block, String variantKey) {
+        BlockState example = stateFromVariantKey(block, variantKey);
+        assertNotNull(example, "no state for blockstate variant '" + variantKey + "'");
+        return block.getStateDefinition().getPossibleStates().stream()
+            .filter(state -> state.getValue(TallThinBlock.FACING) == example.getValue(TallThinBlock.FACING)
+                && state.getValue(TallThinBlock.HALF) == example.getValue(TallThinBlock.HALF))
+            .toList();
+    }
+
+    /**
+     * Fires a ray through the whole cell along the panel's normal, aimed at {@code (x, y)} of the
+     * unrotated model, turned into place the same way the game turns the art. Returns where the
+     * shape stopped it, or {@code null} when it passed.
+     */
+    private static Object clipThroughPanel(VoxelShape shape, WindowArt.Variant variant, double x, double y) {
+        WindowArt.Box probe = new WindowArt.Box(x, y, 13.5D, x, y, 13.5D).rotatedY(variant.yRotation());
+        boolean alongZ = variant.yRotation() % 180 == 0;
+        double px = probe.x0() / WindowArt.BLOCK;
+        double py = probe.y0() / WindowArt.BLOCK;
+        double pz = probe.z0() / WindowArt.BLOCK;
+        Vec3 from = alongZ ? new Vec3(px, py, -1.0D) : new Vec3(-1.0D, py, pz);
+        Vec3 to = alongZ ? new Vec3(px, py, 2.0D) : new Vec3(2.0D, py, pz);
+        return shape.clip(from, to, BlockPos.ZERO);
     }
 
     /* ─── shape hygiene ──────────────────────────────────────── */
