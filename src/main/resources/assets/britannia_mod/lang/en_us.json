@@ -1464,6 +1464,8 @@
   "material.britannia_mod.linen": "Linen",
   "material.britannia_mod.silk": "Silk",
   "material.britannia_mod.wool": "Wool",
+  "message.britannia_mod.banner.mount.changed": "Mount changed to %s",
+  "message.britannia_mod.banner.mount.only": "Only %s mounting is supported by this banner.",
   "message.britannia_mod.banner.orientation.changed": "Placement orientation: %s",
   "message.britannia_mod.banner.orientation.only": "Only %s is supported by this banner.",
   "message.britannia_mod.banner.orientation.parallel": "Wall Parallel",

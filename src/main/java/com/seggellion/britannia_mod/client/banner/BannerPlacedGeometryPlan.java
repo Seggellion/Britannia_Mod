@@ -76,7 +76,16 @@ public record BannerPlacedGeometryPlan(
                     -facing.getStepZ() * WALL_OFFSET);
         }
         Vec3 spanVector = new Vec3(span.getStepX(), 0, span.getStepZ());
-        Vec3 clothStart = center.add(spanVector.scale(-0.5 + horizontalInset));
+        // A parallel banner's span runs along its wall, so a negative inset (the medium
+        // families' cloth is wider than its footprint) overhangs harmlessly at both ends. A
+        // perpendicular banner's span starts AT the wall face: the same negative inset would
+        // push the cloth's first 3/16 of artwork inside the wall (the assembly already pins its
+        // pole to the wall face for exactly this reason). Pin the cloth's wall end at the wall
+        // face instead and let the whole overhang extend outward.
+        double clothStartAlong = orientation == BannerOrientation.WALL_PERPENDICULAR
+                ? -0.5 + Math.max(horizontalInset, 0.0)
+                : -0.5 + horizontalInset;
+        Vec3 clothStart = center.add(spanVector.scale(clothStartAlong));
         // The cloth quad is always square, because every banner texture is square (128x128)
         // and BannerBlockEntityRenderer maps the WHOLE sprite (getU0..getU1, getV0..getV1)
         // onto this quad -- so the rendered artwork's aspect is its aspect within the texture

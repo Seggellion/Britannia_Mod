@@ -63,9 +63,16 @@ public final class BannerBlockEntityRenderer implements BlockEntityRenderer<Bann
             if (pass.type() == BannerPlacedRenderPass.Type.MOUNT) {
                 continue;
             }
+            // Entity render types, not chunk ones: the chunk translucent type carries the level
+            // pipeline's TRANSLUCENT_TARGET output shard, and LevelRenderer clears that target
+            // right after the block-entity batch flushes whenever shader transparency is active
+            // (Fabulous graphics or a shader pack), erasing the pass. Entity types draw to the
+            // main target under every pipeline. The flower dye-mask renderer established this
+            // convention.
             VertexConsumer vertices = buffers.getBuffer(
                     pass.type() == BannerPlacedRenderPass.Type.DYE_MASK
-                            ? RenderType.translucent() : RenderType.cutout());
+                            ? RenderType.entityTranslucentCull(TextureAtlas.LOCATION_BLOCKS)
+                            : RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS));
             TextureAtlasSprite sprite = Minecraft.getInstance()
                     .getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(pass.texture());
             emitTwoSided(pose, vertices, sprite, pass.argb(), sampledLight, packedOverlay,
@@ -94,7 +101,7 @@ public final class BannerBlockEntityRenderer implements BlockEntityRenderer<Bann
             int packedLight,
             int packedOverlay) {
         BannerPlacedAssembly assembly = BannerPlacedAssembly.from(plan.geometry(), state.orientation());
-        VertexConsumer vertices = buffers.getBuffer(RenderType.cutout());
+        VertexConsumer vertices = buffers.getBuffer(RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS));
 
         BannerModelRepository.model(BannerAssemblyAssets.poleModelFor(entity.getBlockPos()))
                 .ifPresent(pole -> renderPart(poseStack, vertices, pole, assembly.poleCenter(),

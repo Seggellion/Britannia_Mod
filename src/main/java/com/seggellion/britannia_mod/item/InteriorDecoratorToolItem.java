@@ -6,6 +6,9 @@ import com.seggellion.britannia_mod.block.ThinWall;
 import com.seggellion.britannia_mod.block.CarpetDummyBlock;
 import com.seggellion.britannia_mod.block.CarpetTeleporterBlock;
 import com.seggellion.britannia_mod.block.MirrorableWallBlock;
+import com.seggellion.britannia_mod.banner.block.BannerBlock;
+import com.seggellion.britannia_mod.banner.block.BannerPartBlock;
+import com.seggellion.britannia_mod.banner.interaction.BannerMountCycleService;
 import com.seggellion.britannia_mod.block.nudgeable.INudgeable;
 import com.seggellion.britannia_mod.block.nudgeable.NudgeableBlockEntity;
 import com.seggellion.britannia_mod.registry.LargeStructureRegistry;
@@ -61,6 +64,21 @@ public class InteriorDecoratorToolItem extends Item {
                     serverLevel, serverPlayer, inHand, pos, state);
             return result == ShrineVariantCycleService.Result.SUCCESS
                     ? InteractionResult.sidedSuccess(false) : InteractionResult.FAIL;
+        }
+
+        // Banner ownership must also win over the generic rotation: a banner cell's FACING is
+        // structural (it binds parts to their anchor and the anchor to its wall), so spinning
+        // one cell in place would orphan it from its own banner. The decorator's action on a
+        // banner is instead the mount-material cycle, resolved through the banner's anchor so
+        // any section of a multi-block banner behaves identically, with either hand.
+        if (state.getBlock() instanceof BannerBlock || state.getBlock() instanceof BannerPartBlock) {
+            if (level.isClientSide()) return InteractionResult.SUCCESS;
+            if (!(level instanceof ServerLevel serverLevel) || !(player instanceof ServerPlayer serverPlayer)) {
+                return InteractionResult.FAIL;
+            }
+            BannerMountCycleService.Result result = BannerMountCycleService.cycle(
+                    serverLevel, serverPlayer, inHand, pos, state);
+            return result.handled() ? InteractionResult.sidedSuccess(false) : InteractionResult.FAIL;
         }
 
         // Nudge logic: only if offhand also holds InteriorDecoratorTool

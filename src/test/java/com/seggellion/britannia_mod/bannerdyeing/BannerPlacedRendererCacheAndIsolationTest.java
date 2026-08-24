@@ -196,8 +196,15 @@ class BannerPlacedRendererCacheAndIsolationTest {
         assertTrue(renderer.contains("implements BlockEntityRenderer<BannerBlockEntity>"));
         assertTrue(renderer.contains("getRenderBoundingBox"));
         assertTrue(renderer.contains("getViewDistance"));
-        assertTrue(renderer.contains("RenderType.cutout()"));
-        assertTrue(renderer.contains("RenderType.translucent()"));
+        // Entity render types draw to the main target under every graphics pipeline. The chunk
+        // types are pinned ABSENT: RenderType.translucent() routes block-entity quads into the
+        // level pipeline's translucent target, which vanilla clears right after the batch
+        // flushes under Fabulous graphics or shader packs -- the dye-mask pass silently
+        // disappeared from every placed banner while the held item stayed dyed.
+        assertTrue(renderer.contains("RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS)"));
+        assertTrue(renderer.contains("RenderType.entityTranslucentCull(TextureAtlas.LOCATION_BLOCKS)"));
+        assertFalse(renderer.contains("RenderType.cutout()"));
+        assertFalse(renderer.contains("RenderType.translucent()"));
         assertFalse(renderer.contains("FULL_BRIGHT"));
         assertFalse(renderer.contains("getChunk("));
         assertTrue(renderer.contains("hasChunkAt"));

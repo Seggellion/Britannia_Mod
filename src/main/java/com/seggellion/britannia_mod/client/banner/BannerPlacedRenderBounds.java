@@ -11,13 +11,13 @@ import net.minecraft.world.phys.AABB;
 /** Finite footprint bounds; calculated only from persisted occupancy and anchor facing. */
 public final class BannerPlacedRenderBounds {
     /**
-     * Must cover the furthest any rendered geometry reaches outside its occupied cells: the
-     * mount's own {@code BannerPlacedGeometryPlan.MOUNT_OVERHANG} (0.125) and, since the medium
-     * family's square cloth is wider than its one-block footprint, that cloth's 0.1875 overhang
-     * per side. Sized above both so the block entity is not culled while its cloth is still
-     * on screen.
+     * Must cover the furthest any rendered geometry reaches outside its occupied cells. The
+     * worst case is a perpendicular medium banner: its cloth is pinned at the wall face and
+     * overhangs its one-block footprint by the full 0.375 at the outer end, and the pole runs
+     * {@code BannerPlacedAssembly.POLE_OVERHANG} (0.125) past that -- 0.5 beyond the cell.
+     * Sized above that so the block entity is not culled while its pole tip is still on screen.
      */
-    public static final double MOUNT_AND_CLOTH_MARGIN = 0.25;
+    public static final double MOUNT_AND_CLOTH_MARGIN = 0.5625;
 
     private BannerPlacedRenderBounds() {
     }

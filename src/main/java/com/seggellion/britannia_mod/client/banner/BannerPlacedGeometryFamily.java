@@ -72,8 +72,12 @@ public enum BannerPlacedGeometryFamily {
     }
 
     /**
-     * Custom item geometry does not change the placed footprint. When it has no shared-family ID,
-     * use the synchronized approved dimensions and the most compact matching placed convention.
+     * Custom item geometry does not change the placed footprint. Real catalogue geometry lives
+     * under {@code banner/<group>/...}, so the group directory selects the family whose insets
+     * were tuned for that group's authored artwork; matching by footprint alone collapsed every
+     * 1x1 banner into {@link #X_SMALL} (small-family cloth at 57% of its authored size). Only
+     * geometry from outside the catalogue groups falls through to the synchronized approved
+     * dimensions and the most compact matching placed convention.
      */
     public static Optional<BannerPlacedGeometryFamily> from(
             ResourceLocation geometryId, BannerDimensions dimensions) {
@@ -81,13 +85,38 @@ public enum BannerPlacedGeometryFamily {
         if (exact.isPresent() || dimensions == null) {
             return exact;
         }
-        if (geometryId.getPath().startsWith("banner/large/")
-                && LARGE.supports(dimensions.widthBlocks(), dimensions.heightBlocks())) {
-            return Optional.of(LARGE);
+        Optional<BannerPlacedGeometryFamily> group = catalogueGroupFamily(geometryId)
+                .filter(value -> value.supports(dimensions.widthBlocks(), dimensions.heightBlocks()));
+        if (group.isPresent()) {
+            return group;
         }
         return Arrays.stream(values())
                 .filter(value -> value.geometryId.getPath().contains("/placeholder/"))
                 .filter(value -> value.supports(dimensions.widthBlocks(), dimensions.heightBlocks()))
                 .reduce((first, second) -> second);
+    }
+
+    /**
+     * The catalogue group encoded in a real geometry path. Both medium groups share
+     * {@link #MEDIUM}: its inset was tuned from all 14 medium definitions' authored quads
+     * (the two groups' own means differ by 0.014 blocks), while their placed presentations
+     * differ by orientation, not cloth size. {@code banner/medium_wall/} must be tested before
+     * {@code banner/medium/} would ever match it as a prefix.
+     */
+    private static Optional<BannerPlacedGeometryFamily> catalogueGroupFamily(ResourceLocation geometryId) {
+        String path = geometryId.getPath();
+        if (path.startsWith("banner/large/")) {
+            return Optional.of(LARGE);
+        }
+        if (path.startsWith("banner/medium_wall/") || path.startsWith("banner/medium/")) {
+            return Optional.of(MEDIUM);
+        }
+        if (path.startsWith("banner/small/")) {
+            return Optional.of(SMALL);
+        }
+        if (path.startsWith("banner/x_small/")) {
+            return Optional.of(X_SMALL);
+        }
+        return Optional.empty();
     }
 }
