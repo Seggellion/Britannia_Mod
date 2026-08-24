@@ -77,4 +77,27 @@ public enum GrabbyPickupOutcome {
     public boolean handled() {
         return this != NOTHING_THERE && this != TYPE_NOT_ENROLLED && this != NOT_GRABBY_MANAGED;
     }
+
+    /**
+     * The translation key explaining this refusal to the player, or {@code null} when there is
+     * nothing to say.
+     *
+     * <p>Every refusal used to be silent. That is correct for the three fall-through outcomes --
+     * the object simply is not Grabby content and its own behaviour runs instead -- but for the
+     * rest it meant a player whose pickup was refused for a reason they could act on saw exactly
+     * what a broken feature looks like: nothing at all. The reports that Grabby Hands "does
+     * nothing" are indistinguishable from these, which is why they now speak.
+     */
+    public String refusalMessageKey() {
+        return switch (this) {
+            case SUCCESS, DROPPED_AT_FEET, NOTHING_THERE, TYPE_NOT_ENROLLED, NOT_GRABBY_MANAGED -> null;
+            case DENIED_BY_POLICY -> "message.britannia_mod.grabby.pickup.denied";
+            case OUT_OF_REACH -> "message.britannia_mod.grabby.pickup.out_of_reach";
+            case NO_PORTABLE_FORM -> "message.britannia_mod.grabby.pickup.no_portable_form";
+            case IN_USE -> "message.britannia_mod.grabby.pickup.in_use";
+            case NESTED_CONTAINER -> "message.britannia_mod.grabby.pickup.nested_container";
+            case INVENTORY_FULL -> "message.britannia_mod.grabby.pickup.inventory_full";
+            case REMOVAL_FAILED, ALREADY_IN_PROGRESS -> "message.britannia_mod.grabby.pickup.busy";
+        };
+    }
 }

@@ -48,11 +48,21 @@ class GrabbyEnrollmentPreconditionTest {
             "BRITANNIA_CHEST_BLOCK_ENTITY_TYPE", "ARMOIRE_BLOCK_ENTITY_TYPE",
             // The crate family is multi-cell, but only its anchor carries the block entity, so
             // provenance has exactly one home per crate just as it does for the single-cell families.
-            "CRATE_BLOCK_ENTITY_TYPE");
+            "CRATE_BLOCK_ENTITY_TYPE",
+            // Grabby Hands' own generic host for items with no block form of their own. It lives in
+            // GrabbyRegistry rather than the shared registries, which is why this list and the
+            // scans below had to learn about a third registry file -- and why the host was not
+            // enrollable at all until they did: every precondition here reported it as an
+            // unregistered block.
+            "PLACED_ITEM_BLOCK_ENTITY");
 
-    /** Block-entity builders live in two registries; both have to be searched. */
+    /** Block-entity builders live in three registries; all of them have to be searched. */
     private static final List<String> REGISTRY_FILES =
-            List.of("BlockEntityRegistry.java", "BlockRegistry.java");
+            List.of("BlockEntityRegistry.java", "BlockRegistry.java", "GrabbyRegistry.java");
+
+    /** Block and item registrations, likewise. */
+    private static final List<String> CONTENT_REGISTRY_FILES =
+            List.of("BlockRegistry.java", "GrabbyRegistry.java");
 
     /**
      * Item classes Grabby Hands can place without landing the object somewhere unintended.
@@ -212,18 +222,22 @@ class GrabbyEnrollmentPreconditionTest {
 
     private static Map<String, String> blockConstantsById() throws IOException {
         Map<String, String> byId = new HashMap<>();
-        Matcher matcher = BLOCK_REGISTRATION.matcher(read(REGISTRY_DIR.resolve("BlockRegistry.java")));
-        while (matcher.find()) {
-            byId.put(matcher.group(2), matcher.group(1));
+        for (String registryFile : CONTENT_REGISTRY_FILES) {
+            Matcher matcher = BLOCK_REGISTRATION.matcher(read(REGISTRY_DIR.resolve(registryFile)));
+            while (matcher.find()) {
+                byId.put(matcher.group(2), matcher.group(1));
+            }
         }
         return byId;
     }
 
     private static Map<String, String> itemClassesById() throws IOException {
         Map<String, String> byId = new HashMap<>();
-        Matcher matcher = ITEM_REGISTRATION.matcher(read(REGISTRY_DIR.resolve("ItemRegistry.java")));
-        while (matcher.find()) {
-            byId.put(matcher.group(1), matcher.group(2));
+        for (String registryFile : List.of("ItemRegistry.java", "GrabbyRegistry.java")) {
+            Matcher matcher = ITEM_REGISTRATION.matcher(read(REGISTRY_DIR.resolve(registryFile)));
+            while (matcher.find()) {
+                byId.put(matcher.group(1), matcher.group(2));
+            }
         }
         return byId;
     }

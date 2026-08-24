@@ -1651,5 +1651,13 @@
   "block.britannia_mod.training_dummy": "Training Dummy",
   "block.britannia_mod.spinning_wheel": "Spinning Wheel",
   "item.britannia_mod.ball_of_yarn": "Ball of Yarn",
-  "block.britannia_mod.display_case": "Display Case"
+  "block.britannia_mod.display_case": "Display Case",
+  "message.britannia_mod.grabby.pickup.denied": "You cannot take that here.",
+  "message.britannia_mod.grabby.pickup.out_of_reach": "That is too far away to pick up.",
+  "message.britannia_mod.grabby.pickup.no_portable_form": "That cannot be carried.",
+  "message.britannia_mod.grabby.pickup.in_use": "Somebody has that open.",
+  "message.britannia_mod.grabby.pickup.nested_container": "You cannot carry a container that holds another full container.",
+  "message.britannia_mod.grabby.pickup.inventory_full": "Your pack is full.",
+  "message.britannia_mod.grabby.pickup.busy": "That is busy. Try again.",
+  "message.britannia_mod.grabby.pickup.not_yours": "That was not put there by a player. It cannot be moved."
 }

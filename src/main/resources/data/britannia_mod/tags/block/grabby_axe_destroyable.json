@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    "britannia_mod:grabby_placed_item",
     "britannia_mod:wooden_chair",
     "britannia_mod:straw_chair",
     "britannia_mod:chair_trinsic",

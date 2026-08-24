@@ -29,10 +29,18 @@ class GrabbyEnrollmentTagTest {
             PROJECT.resolve("src/main/resources/data/britannia_mod/tags/block");
     private static final Path BLOCK_REGISTRY = PROJECT.resolve(
             "src/main/java/com/seggellion/britannia_mod/registry/BlockRegistry.java");
+    /**
+     * Grabby Hands owns exactly one block outright, and it is registered here rather than in the
+     * shared registry. Reading only {@code BlockRegistry} made the host look unregistered, which
+     * is why the host could not be enrolled without this test rejecting it.
+     */
+    private static final Path GRABBY_REGISTRY = PROJECT.resolve(
+            "src/main/java/com/seggellion/britannia_mod/registry/GrabbyRegistry.java");
 
     @Test
     void everyEnrolledIdIsActuallyRegisteredAsABlock() throws IOException {
-        String registry = Files.readString(BLOCK_REGISTRY, StandardCharsets.UTF_8)
+        String registry = (Files.readString(BLOCK_REGISTRY, StandardCharsets.UTF_8)
+                + Files.readString(GRABBY_REGISTRY, StandardCharsets.UTF_8))
                 .replace("\r\n", "\n");
         for (String id : allEnrolledIds()) {
             String path = id.substring(id.indexOf(':') + 1);
@@ -71,6 +79,11 @@ class GrabbyEnrollmentTagTest {
         }
         // Locked chests are portable by owner decision; a thief carries off a box they still cannot open.
         assertTrue(movable.contains("britannia_mod:britannia_lockable_chest"));
+        // The generic host for items that have no block form. Leaving it out made every loose item
+        // a player set down unrecoverable: pickup refused it as TYPE_NOT_ENROLLED, silently, which
+        // from the player's side is indistinguishable from Grabby Hands not working at all.
+        assertTrue(movable.contains("britannia_mod:grabby_placed_item"),
+                "the loose-item host must be pickable, or setting an item down loses it");
         // A deliberate exclusion rather than an oversight.
         assertFalse(movable.contains("britannia_mod:trash_barrel"),
                 "the trash barrel voids whatever is put in it");

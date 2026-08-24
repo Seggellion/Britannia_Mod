@@ -104,8 +104,18 @@ public final class GrabbyInteractionHandler {
             // Not a Grabby object, or not a player-placed one. Leave the interaction completely alone
             // so the block's own behaviour still runs - a sneaking empty-handed player must still be
             // able to interact normally with everything this system does not own.
+            //
+            // One thing is said rather than nothing: a player who made the deliberate pickup gesture
+            // at an object of an enrolled type, and was refused because that particular one belongs
+            // to Britannia rather than to them, otherwise sees exactly what a dead feature looks
+            // like. This is the single most common way "grabby hands does nothing" is reported. The
+            // interaction is still not consumed, so the block's own behaviour is untouched.
+            if (result.outcome() == GrabbyPickupOutcome.NOT_GRABBY_MANAGED) {
+                explain(player, "message.britannia_mod.grabby.pickup.not_yours");
+            }
             return;
         }
+        explain(player, result.outcome().refusalMessageKey());
         consume(event, result.succeeded());
     }
 
@@ -131,6 +141,20 @@ public final class GrabbyInteractionHandler {
             return;
         }
         consume(event, result.succeeded());
+    }
+
+    /**
+     * Says why, above the hotbar, when a refusal is one the player can do something about.
+     *
+     * <p>Refusals that mean "this is not Grabby content" say nothing and never reach here: the
+     * object's own behaviour runs instead, and announcing a system the player did not invoke would
+     * be noise. Everything else used to be equally silent, which is the single reason a refused
+     * pickup is reported as the feature being broken.
+     */
+    private void explain(ServerPlayer player, String messageKey) {
+        if (messageKey != null) {
+            player.displayClientMessage(net.minecraft.network.chat.Component.translatable(messageKey), true);
+        }
     }
 
     private void consume(PlayerInteractEvent.RightClickBlock event, boolean succeeded) {
