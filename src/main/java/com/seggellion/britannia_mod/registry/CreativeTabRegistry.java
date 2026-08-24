@@ -554,6 +554,10 @@ public class CreativeTabRegistry {
 
                 // Interactive Brick
                 safeAccept(output, ItemRegistry.CUSTOM_SANDSTONE_BRICK_ITEM.get());
+                safeAccept(output, ItemRegistry.CUSTOM_SANDSTONE_BRICK_STAIRS_0_ITEM.get());
+                safeAccept(output, ItemRegistry.CUSTOM_SANDSTONE_BRICK_STAIRS_1_ITEM.get());
+                safeAccept(output, ItemRegistry.CUSTOM_SANDSTONE_BRICK_STAIRS_2_ITEM.get());
+                safeAccept(output, ItemRegistry.CUSTOM_SANDSTONE_BRICK_STAIRS_3_ITEM.get());
 
                 // Road Blocks
                 safeAccept(output, ItemRegistry.LIGHT_SANDSTONE_BRICK_ROAD_ITEM.get());

@@ -2388,6 +2388,10 @@ public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
     public static final DeferredHolder<Item, Item> SANDSTONE_BATTLEMENT_ITEM = ITEMS.register("sandstone_battlement", () -> new BlockItem(BlockRegistry.SANDSTONE_BATTLEMENT.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> SANDSTONE_COLUMN_ITEM = ITEMS.register("sandstone_column", () -> new BlockItem(BlockRegistry.SANDSTONE_COLUMN.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> CUSTOM_SANDSTONE_BRICK_ITEM = ITEMS.register("custom_sandstone_brick", () -> new BlockItem(BlockRegistry.CUSTOM_SANDSTONE_BRICK.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> CUSTOM_SANDSTONE_BRICK_STAIRS_0_ITEM = ITEMS.register("custom_sandstone_brick_stairs_0", () -> new BlockItem(BlockRegistry.CUSTOM_SANDSTONE_BRICK_STAIRS_0.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> CUSTOM_SANDSTONE_BRICK_STAIRS_1_ITEM = ITEMS.register("custom_sandstone_brick_stairs_1", () -> new BlockItem(BlockRegistry.CUSTOM_SANDSTONE_BRICK_STAIRS_1.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> CUSTOM_SANDSTONE_BRICK_STAIRS_2_ITEM = ITEMS.register("custom_sandstone_brick_stairs_2", () -> new BlockItem(BlockRegistry.CUSTOM_SANDSTONE_BRICK_STAIRS_2.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> CUSTOM_SANDSTONE_BRICK_STAIRS_3_ITEM = ITEMS.register("custom_sandstone_brick_stairs_3", () -> new BlockItem(BlockRegistry.CUSTOM_SANDSTONE_BRICK_STAIRS_3.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> LIGHT_SANDSTONE_BRICK_ROAD_ITEM = ITEMS.register("light_sandstone_brick_road", () -> new BlockItem(BlockRegistry.LIGHT_SANDSTONE_BRICK_ROAD.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> MEDIUM_SANDSTONE_BRICK_ROAD_ITEM = ITEMS.register("medium_sandstone_brick_road", () -> new BlockItem(BlockRegistry.MEDIUM_SANDSTONE_BRICK_ROAD.get(), new Item.Properties()));
 

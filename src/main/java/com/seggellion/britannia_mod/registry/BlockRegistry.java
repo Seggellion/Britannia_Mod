@@ -2454,6 +2454,17 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
     public static final DeferredHolder<Block, VillaLampPostBlock> VILLA_LAMP_POST = BLOCKS.register("villa_lamp_post", () -> new VillaLampPostBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.5f).sound(SoundType.WOOD).noOcclusion().lightLevel(state -> 15)));
 
     public static final DeferredHolder<Block, CustomSandstoneBrickBlock> CUSTOM_SANDSTONE_BRICK = BLOCKS.register("custom_sandstone_brick", () -> new CustomSandstoneBrickBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE)));
+    public static final DeferredHolder<Block, StairBlock> CUSTOM_SANDSTONE_BRICK_STAIRS_0 = registerSandstoneBrickStairs("custom_sandstone_brick_stairs_0");
+    public static final DeferredHolder<Block, StairBlock> CUSTOM_SANDSTONE_BRICK_STAIRS_1 = registerSandstoneBrickStairs("custom_sandstone_brick_stairs_1");
+    public static final DeferredHolder<Block, StairBlock> CUSTOM_SANDSTONE_BRICK_STAIRS_2 = registerSandstoneBrickStairs("custom_sandstone_brick_stairs_2");
+    public static final DeferredHolder<Block, StairBlock> CUSTOM_SANDSTONE_BRICK_STAIRS_3 = registerSandstoneBrickStairs("custom_sandstone_brick_stairs_3");
+
+    private static DeferredHolder<Block, StairBlock> registerSandstoneBrickStairs(String name) {
+        return BLOCKS.register(name, () -> new StairBlock(
+                CUSTOM_SANDSTONE_BRICK.value().defaultBlockState(),
+                BlockBehaviour.Properties.ofFullCopy(Blocks.SANDSTONE_STAIRS)));
+    }
+
     public static final DeferredHolder<Block, SandstoneBrickRoadBlock> LIGHT_SANDSTONE_BRICK_ROAD = BLOCKS.register("light_sandstone_brick_road", () -> new SandstoneBrickRoadBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE)));
     public static final DeferredHolder<Block, SandstoneBrickRoadBlock> MEDIUM_SANDSTONE_BRICK_ROAD = BLOCKS.register("medium_sandstone_brick_road", () -> new SandstoneBrickRoadBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE)));
 

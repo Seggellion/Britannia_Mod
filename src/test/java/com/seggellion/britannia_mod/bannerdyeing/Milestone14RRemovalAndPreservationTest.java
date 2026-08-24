@@ -93,7 +93,9 @@ class Milestone14RRemovalAndPreservationTest {
         // the three vanilla stair shapes times the three existing brick-side textures, so
         // they are model-level only and add no further ids -- and the block is unbreakable,
         // so the item is the only way anybody ever holds one.
-        assertEquals(913, repositoryItems);
+        // 917 as of 2026-08-23: four rounded sandstone-brick stair items, one for each supplied
+        // custom_sandstone_brick_top texture variant.
+        assertEquals(917, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));
