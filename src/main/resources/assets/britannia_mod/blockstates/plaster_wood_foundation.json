@@ -4,33 +4,57 @@
     "style=0,corner=false,filled=true,facing=north": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_north" },
     "style=1,corner=false,filled=false,facing=north": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_north" },
     "style=1,corner=false,filled=true,facing=north": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_north" },
+    "style=2,corner=false,filled=false,facing=north": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_north" },
+    "style=2,corner=false,filled=true,facing=north": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_north" },
 
     "style=0,corner=false,filled=false,facing=south": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_south" },
     "style=0,corner=false,filled=true,facing=south": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_south" },
     "style=1,corner=false,filled=false,facing=south": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_south" },
     "style=1,corner=false,filled=true,facing=south": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_south" },
+    "style=2,corner=false,filled=false,facing=south": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_south" },
+    "style=2,corner=false,filled=true,facing=south": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_south" },
 
     "style=0,corner=false,filled=false,facing=west": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_west" },
     "style=0,corner=false,filled=true,facing=west": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_west" },
     "style=1,corner=false,filled=false,facing=west": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_west" },
     "style=1,corner=false,filled=true,facing=west": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_west" },
+    "style=2,corner=false,filled=false,facing=west": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_west" },
+    "style=2,corner=false,filled=true,facing=west": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_west" },
 
     "style=0,corner=false,filled=false,facing=east": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_east" },
     "style=0,corner=false,filled=true,facing=east": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_east" },
     "style=1,corner=false,filled=false,facing=east": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_east" },
     "style=1,corner=false,filled=true,facing=east": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_east" },
+    "style=2,corner=false,filled=false,facing=east": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_east" },
+    "style=2,corner=false,filled=true,facing=east": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_east" },
 
     "style=0,corner=true,filled=false,facing=north": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_north_corner" },
     "style=0,corner=true,filled=true,facing=north": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_north_corner" },
+    "style=1,corner=true,filled=false,facing=north": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_north_corner" },
+    "style=1,corner=true,filled=true,facing=north": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_north_corner" },
+    "style=2,corner=true,filled=false,facing=north": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_north_corner" },
+    "style=2,corner=true,filled=true,facing=north": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_north_corner" },
 
     "style=0,corner=true,filled=false,facing=south": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_south_corner" },
     "style=0,corner=true,filled=true,facing=south": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_south_corner" },
+    "style=1,corner=true,filled=false,facing=south": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_south_corner" },
+    "style=1,corner=true,filled=true,facing=south": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_south_corner" },
+    "style=2,corner=true,filled=false,facing=south": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_south_corner" },
+    "style=2,corner=true,filled=true,facing=south": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_south_corner" },
 
     "style=0,corner=true,filled=false,facing=west": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_west_corner" },
     "style=0,corner=true,filled=true,facing=west": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_west_corner" },
+    "style=1,corner=true,filled=false,facing=west": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_west_corner" },
+    "style=1,corner=true,filled=true,facing=west": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_west_corner" },
+    "style=2,corner=true,filled=false,facing=west": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_west_corner" },
+    "style=2,corner=true,filled=true,facing=west": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_west_corner" },
 
     "style=0,corner=true,filled=false,facing=east": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_east_corner" },
-    "style=0,corner=true,filled=true,facing=east": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_east_corner" }
+    "style=0,corner=true,filled=true,facing=east": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_east_corner" },
+    "style=1,corner=true,filled=false,facing=east": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_east_corner" },
+    "style=1,corner=true,filled=true,facing=east": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_east_corner" },
+    "style=2,corner=true,filled=false,facing=east": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_east_corner" },
+    "style=2,corner=true,filled=true,facing=east": { "model": "britannia_mod:block/structure/plaster_wood_wall/plaster_wood_foundation_east_corner" }
 
   }
 }

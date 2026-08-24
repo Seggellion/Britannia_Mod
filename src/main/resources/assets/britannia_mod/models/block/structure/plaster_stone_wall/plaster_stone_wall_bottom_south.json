@@ -1,0 +1,41 @@
+{
+  "parent": "block/cube_column",
+  "textures": {
+    "end": "britannia_mod:block/structure/plaster_stone_wall_bottom",
+    "side": "britannia_mod:block/structure/plaster_stone_wall_bottom"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        8
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#end"
+        },
+        "down": {
+          "texture": "#end"
+        }
+      }
+    }
+  ]
+}
