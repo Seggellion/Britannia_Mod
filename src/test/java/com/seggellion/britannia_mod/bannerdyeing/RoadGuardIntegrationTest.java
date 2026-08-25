@@ -103,7 +103,8 @@ class RoadGuardIntegrationTest {
         assertEquals(1, roadGuard.widthBlocks());
         assertEquals(1, roadGuard.heightBlocks());
         assertEquals(Boolean.FALSE, roadGuard.dimensionsProvisional());
-        assertEquals(List.of("wall_parallel", "wall_perpendicular"), roadGuard.supportedOrientations());
+        // Owner ruling 2026-08-24: x-small banners are non-wall models and hang perpendicular.
+        assertEquals(List.of("wall_perpendicular"), roadGuard.supportedOrientations());
         assertEquals(List.of("britannia_mod:brass", "britannia_mod:iron"), roadGuard.supportedMounts());
         assertEquals("britannia_mod:brass", roadGuard.defaultMount());
         assertEquals(GEOMETRY.toString(), roadGuard.geometry());

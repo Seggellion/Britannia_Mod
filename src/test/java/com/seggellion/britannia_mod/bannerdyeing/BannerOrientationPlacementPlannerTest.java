@@ -92,10 +92,13 @@ class BannerOrientationPlacementPlannerTest {
 
     @Test
     void parallelAndPerpendicularUseDistinctSpanAxes() {
-        ItemStack stack = natural(BannerDefinitionId.parse("britannia_mod:road_guard"), BRASS);
-        var parallel = plan(stack, production, BannerOrientation.WALL_PARALLEL,
+        // Since the owner's 2026-08-24 orientation ruling no definition supports both
+        // orientations, so each side of the comparison plans its own family's banner.
+        ItemStack parallelStack = natural(BannerDefinitionId.parse("britannia_mod:ankh_pennon"), BRASS);
+        ItemStack perpendicularStack = natural(BannerDefinitionId.parse("britannia_mod:road_guard"), BRASS);
+        var parallel = plan(parallelStack, production, BannerOrientation.WALL_PARALLEL,
                 BlockPos.ZERO, Direction.NORTH, new FakeWorld()).plan().orElseThrow();
-        var perpendicular = plan(stack, production, BannerOrientation.WALL_PERPENDICULAR,
+        var perpendicular = plan(perpendicularStack, production, BannerOrientation.WALL_PERPENDICULAR,
                 BlockPos.ZERO, Direction.NORTH, new FakeWorld()).plan().orElseThrow();
         assertEquals(BannerOrientation.WALL_PARALLEL, parallel.orientation());
         assertEquals(BannerOrientation.WALL_PERPENDICULAR, perpendicular.orientation());
