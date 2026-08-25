@@ -83,12 +83,16 @@ class ExtraSmallBannerFamilyIntegrationTest {
             assertEquals(Boolean.FALSE, entry.dimensionsProvisional(), entry.id());
             // Owner ruling 2026-08-24: the non-wall families (x-small, small, medium) hang
             // perpendicular; only medium-wall and large lie parallel against the wall.
-            assertEquals(List.of("wall_perpendicular"),
+            // Small Curtain is the one exception inside this group -- it is drapery, not a
+            // projecting sign, and was reclassified parallel on 2026-08-25.
+            boolean curtain = "small_curtain".equals(entry.id());
+            assertEquals(List.of(curtain ? "wall_parallel" : "wall_perpendicular"),
                     entry.supportedOrientations(), entry.id());
             assertEquals(List.of("britannia_mod:brass", "britannia_mod:iron"),
                     entry.supportedMounts(), entry.id());
             assertEquals("britannia_mod:brass", entry.defaultMount(), entry.id());
-            assertEquals("britannia_mod:extra_small", entry.placementProfile(), entry.id());
+            assertEquals(curtain ? "britannia_mod:extra_small_parallel" : "britannia_mod:extra_small",
+                    entry.placementProfile(), entry.id());
             assertTrue(Boolean.TRUE.equals(entry.displayNameApproved()), entry.id());
         }
         assertEquals(new HashSet<>(FAMILY), manifest.banners().stream()

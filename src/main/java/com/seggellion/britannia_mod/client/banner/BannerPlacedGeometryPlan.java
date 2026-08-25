@@ -18,6 +18,7 @@ public record BannerPlacedGeometryPlan(
         Vec3 mountBottomRight,
         Vec3 mountTopRight,
         Direction frontNormal,
+        double poleLineY,
         Optional<ResourceLocation> mountGeometry) {
     /**
      * How far a parallel banner's cloth sits from the block centre, i.e. flush with the wall
@@ -28,6 +29,14 @@ public record BannerPlacedGeometryPlan(
      */
     private static final double WALL_OFFSET = 0.5 - BannerPlacedAssembly.POLE_STANDOFF;
     private static final double MOUNT_OVERHANG = 0.125;
+
+    /**
+     * Thickness of the placed cloth, in blocks: 0.5 Minecraft model pixels. The renderer draws
+     * the cloth as a front and a back face, each offset half of this from the cloth plane, so
+     * this is the distance between them. It was effectively zero (0.001 blocks, 1/60th of a
+     * pixel) before, which read as a flat decal and let the two faces z-fight at range.
+     */
+    public static final double CLOTH_THICKNESS = 0.5 / 16.0;
 
     public BannerPlacedGeometryPlan {
         Objects.requireNonNull(topLeft, "topLeft");
@@ -67,8 +76,12 @@ public record BannerPlacedGeometryPlan(
                 .spanAxis(facing, orientation);
         Direction normal = orientation == BannerOrientation.WALL_PARALLEL
                 ? facing : facing.getClockWise();
-        double horizontalInset = fallback ? 0.0625 : family.horizontalInset();
-        double verticalInset = fallback ? 0.0625 : family.verticalInset();
+        // The missing-asset placeholder keeps its own square 1/16 inset; a real family states
+        // its cloth outright, because width and height no longer scale together.
+        double clothWidth = fallback ? width - 0.125 : family.clothWidth();
+        double clothHeight = fallback ? width - 0.125 : family.clothHeight();
+        double topInset = fallback ? 0.0625 : family.clothTopInset();
+        double clothLift = fallback ? 0.0 : family.clothLift();
 
         Vec3 center = new Vec3(0.5, 0.5, 0.5);
         if (orientation == BannerOrientation.WALL_PARALLEL) {
@@ -76,27 +89,23 @@ public record BannerPlacedGeometryPlan(
                     -facing.getStepZ() * WALL_OFFSET);
         }
         Vec3 spanVector = new Vec3(span.getStepX(), 0, span.getStepZ());
-        // A parallel banner's span runs along its wall, so a negative inset (the medium
-        // families' cloth is wider than its footprint) overhangs harmlessly at both ends. A
-        // perpendicular banner's span starts AT the wall face: the same negative inset would
-        // push the cloth's first 3/16 of artwork inside the wall (the assembly already pins its
-        // pole to the wall face for exactly this reason). Pin the cloth's wall end at the wall
-        // face instead and let the whole overhang extend outward.
+        // A parallel banner's span runs along its wall, so it centres on its own footprint and
+        // any excess width (the medium families' cloth is wider than the block it is anchored
+        // in) overhangs evenly at both ends. A perpendicular banner's span starts AT the wall
+        // face and runs outward, so centring would bury its first inches of artwork inside the
+        // wall; it is pinned to the wall face instead, exactly where the assembly already pins
+        // its pole, and the whole cloth extends outward from there.
         double clothStartAlong = orientation == BannerOrientation.WALL_PERPENDICULAR
-                ? -0.5 + Math.max(horizontalInset, 0.0)
-                : -0.5 + horizontalInset;
+                ? -0.5
+                : -0.5 + (width - clothWidth) / 2.0;
         Vec3 clothStart = center.add(spanVector.scale(clothStartAlong));
-        // The cloth quad is always square, because every banner texture is square (128x128)
-        // and BannerBlockEntityRenderer maps the WHOLE sprite (getU0..getU1, getV0..getV1)
-        // onto this quad -- so the rendered artwork's aspect is its aspect within the texture
-        // multiplied by clothWidth/clothHeight, and any non-square quad distorts every banner
-        // in the family. verticalInset therefore positions the cloth's TOP edge (keeping it
-        // against the mount) and no longer also determines its height; deriving the height
-        // from the width is what enforces the invariant structurally rather than leaving it
-        // to each family constant to get right independently.
-        double clothWidth = width - 2.0 * horizontalInset;
-        double clothHeight = clothWidth;
-        Vec3 topLeft = clothStart.add(0, 0.5 - verticalInset, 0);
+        // topInset positions the MOUNT LINE -- the height the pole and its brackets sit at,
+        // measured down from the anchor block's top face. The cloth hangs from that line, less
+        // any family lift (see BannerPlacedGeometryFamily#clothLift), so that a family whose
+        // artwork carries transparent margin above its painted cloth can be raised onto its
+        // pole without dragging the pole up with it.
+        double poleLineY = center.y + 0.5 - topInset;
+        Vec3 topLeft = new Vec3(clothStart.x, poleLineY + clothLift, clothStart.z);
         Vec3 bottomLeft = topLeft.add(0, -clothHeight, 0);
         Vec3 horizontalLength = spanVector.scale(clothWidth);
         Vec3 topRight = topLeft.add(horizontalLength);
@@ -113,6 +122,6 @@ public record BannerPlacedGeometryPlan(
         Vec3 mountLength = spanVector.scale(mountSpan);
         return new BannerPlacedGeometryPlan(topLeft, bottomLeft, bottomRight, topRight,
                 mountTopLeft, mountBottomLeft, mountBottomLeft.add(mountLength),
-                mountTopLeft.add(mountLength), normal, mountGeometry);
+                mountTopLeft.add(mountLength), normal, poleLineY, mountGeometry);
     }
 }

@@ -94,16 +94,18 @@ class BannerPlacedGeometryAndBoundsTest {
                     Direction span = BannerStructureTransform.spanAxis(facing, orientation);
                     Vec3 delta = plan.topRight().subtract(plan.topLeft());
                     assertEquals(0.0, delta.y, 1.0e-12);
-                    assertEquals(family.width() - 2.0 * family.horizontalInset(),
+                    assertEquals(family.clothWidth(),
                             delta.x * span.getStepX() + delta.z * span.getStepZ(), 1.0e-12);
                     assertEquals(0.0,
                             delta.x * span.getStepZ() - delta.z * span.getStepX(), 1.0e-12);
-                    // Cloth height is the cloth WIDTH, not the footprint height less its inset:
-                    // the quad must stay square because the whole square texture is mapped onto
-                    // it. verticalInset positions the top edge only.
-                    assertEquals(family.width() - 2.0 * family.horizontalInset(),
+                    // Width and height are stated per family and no longer derived from one
+                    // another; clothTopInset positions the mount line, and only the cloth is
+                    // raised off it by the family's lift.
+                    assertEquals(family.clothHeight(),
                             plan.topLeft().y - plan.bottomLeft().y, 1.0e-12);
-                    assertEquals(1.0 - family.verticalInset(), plan.topLeft().y, 1.0e-12);
+                    assertEquals(1.0 - family.clothTopInset(), plan.poleLineY(), 1.0e-12);
+                    assertEquals(1.0 - family.clothTopInset() + family.clothLift(),
+                            plan.topLeft().y, 1.0e-12);
                     Vec3 mountDelta = plan.mountTopRight().subtract(plan.mountTopLeft());
                     assertEquals(family.width() + 0.25,
                             mountDelta.x * span.getStepX() + mountDelta.z * span.getStepZ(), 1.0e-12);

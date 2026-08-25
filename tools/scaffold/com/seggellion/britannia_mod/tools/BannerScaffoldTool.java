@@ -379,6 +379,8 @@ public final class BannerScaffoldTool {
                 utf8(json(profile("x_small", 1, 1))));
         output.put(DATA_ROOT + "placement_profiles/extra_small.json",
                 utf8(json(extraSmallProfile())));
+        output.put(DATA_ROOT + "placement_profiles/extra_small_parallel.json",
+                utf8(json(extraSmallParallelProfile())));
         output.put(DATA_ROOT + "placement_profiles/small.json",
                 utf8(json(smallProfile())));
         output.put(DATA_ROOT + "placement_profiles/medium_parallel.json",
@@ -420,8 +422,8 @@ public final class BannerScaffoldTool {
             if (Set.of("britannia_mod:extra_small", "britannia_mod:small")
                     .contains(banner.placementProfile)) {
                 geometries.add("britannia_mod:banner/mount/wall_perpendicular");
-            } else if (Set.of("britannia_mod:medium_parallel", "britannia_mod:large_parallel")
-                    .contains(banner.placementProfile)) {
+            } else if (Set.of("britannia_mod:medium_parallel", "britannia_mod:large_parallel",
+                    "britannia_mod:extra_small_parallel").contains(banner.placementProfile)) {
                 geometries.add("britannia_mod:banner/mount/wall_parallel");
             } else if ("britannia_mod:medium_perpendicular".equals(banner.placementProfile)) {
                 geometries.add("britannia_mod:banner/mount/wall_perpendicular");
@@ -553,6 +555,26 @@ public final class BannerScaffoldTool {
         root.addProperty("requires_wall_support", true);
         JsonObject mounts = new JsonObject();
         mounts.addProperty("wall_perpendicular", "britannia_mod:banner/mount/wall_perpendicular");
+        root.add("orientation_mount_geometry", mounts);
+        return root;
+    }
+
+    /**
+     * The one extra-small profile that hangs against the wall. Small Curtain is drapery rather
+     * than a projecting sign, so it is parallel while the rest of its group is perpendicular.
+     */
+    private static JsonObject extraSmallParallelProfile() {
+        JsonObject root = new JsonObject();
+        root.addProperty("schema_version", 1);
+        root.addProperty("id", "britannia_mod:extra_small_parallel");
+        JsonObject dimensions = new JsonObject();
+        dimensions.addProperty("width_blocks", 1);
+        dimensions.addProperty("height_blocks", 1);
+        dimensions.addProperty("provisional", false);
+        root.add("dimensions", dimensions);
+        root.addProperty("requires_wall_support", true);
+        JsonObject mounts = new JsonObject();
+        mounts.addProperty("wall_parallel", "britannia_mod:banner/mount/wall_parallel");
         root.add("orientation_mount_geometry", mounts);
         return root;
     }
@@ -739,8 +761,8 @@ public final class BannerScaffoldTool {
         require(result.snapshot().fabricMaterials().activeCount() == 1, "Cotton material did not become active");
         require(result.snapshot().materialPalettes().activeCount() == 1, "Cotton palette did not become active");
         require(result.snapshot().mounts().activeCount() == 2, "Brass and iron mounts did not become active");
-        require(result.snapshot().placementProfiles().activeCount() == 10,
-                "Ten placement profiles did not become active");
+        require(result.snapshot().placementProfiles().activeCount() == 11,
+                "Eleven placement profiles did not become active");
         require(result.snapshot().pigments().activeCount() == 0, "Natural scaffold must not require pigments");
         return result;
     }
