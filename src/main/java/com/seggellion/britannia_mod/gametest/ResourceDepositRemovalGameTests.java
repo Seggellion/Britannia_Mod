@@ -219,11 +219,16 @@ public final class ResourceDepositRemovalGameTests {
         check(level.getBlockState(playerCell).is(resourceBlock)
                         && level.getBlockState(nearbySameBlock).is(resourceBlock),
                 "tombstone replay must preserve all previously preserved cells");
-        for (int cx = anchorChunk.x - 4; cx <= anchorChunk.x + 4; cx++) {
-            for (int cz = anchorChunk.z - 4; cz <= anchorChunk.z + 4; cz++) {
-                level.setChunkForced(cx, cz, false);
-            }
-        }
+        // The 81 chunks forced above are deliberately NOT released here. setChunkForced(false) is
+        // not reference counted: it drops the ticket outright, including the one
+        // StructureUtils.forceLoadChunks put there for some other test's structure. Tests in a
+        // batch run concurrently on a shared grid, so a 9x9 release reaches well into the
+        // neighbours, and a test whose chunks stop being entity-ticking is never ticked again --
+        // GameTestInfo.tick gates tickInternal on entity-ticking chunks, and tickInternal is the
+        // only place tickCount advances, so such a test never starts, never times out and never
+        // reports done. Its batch then waits on it forever: the suite ran 613 of 872 tests and sat
+        // idle for hours. GameTestRunner already unforces every forced chunk when the batch ends,
+        // which is the right scope for this cleanup and the only one that is safe.
         helper.succeed();
     }
 
