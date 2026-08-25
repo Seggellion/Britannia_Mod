@@ -17,7 +17,7 @@ class DisplayCaseContractTest {
     private static final Path PROJECT = Path.of(System.getProperty("britannia.projectDir", "."));
 
     @Test
-    void oneFinalDecorativeIdHasNoStorageImplementation() throws Exception {
+    void oneFinalIdUsesOneRootOwnedMerchandiseHost() throws Exception {
         String blockRegistry = Files.readString(PROJECT.resolve(
                 "src/main/java/com/seggellion/britannia_mod/registry/BlockRegistry.java"))
                 .replace("\r\n", "\n");
@@ -30,15 +30,76 @@ class DisplayCaseContractTest {
 
         String source = Files.readString(PROJECT.resolve(
                 "src/main/java/com/seggellion/britannia_mod/block/DisplayCaseBlock.java"));
-        assertFalse(source.contains("EntityBlock"));
-        assertFalse(source.contains("BlockEntity"));
+        assertTrue(source.contains("implements EntityBlock"));
+        assertTrue(source.contains("new DisplayCaseBlockEntity(pos, state)"));
+        assertTrue(source.contains("isRoot(state)"),
+                "only the canonical root may construct merchandise state");
         assertFalse(source.contains("Container"));
         assertTrue(source.contains("ConnectionForm.INDEPENDENT"));
         assertTrue(source.contains("ConnectionForm.END"));
         assertTrue(source.contains("ConnectionForm.MIDDLE"));
         assertTrue(source.contains("ConnectionForm.CORNER"));
-        assertTrue(source.contains("return hasValidPart(state) ? RenderShape.MODEL : RenderShape.INVISIBLE"),
-                "the upper cage cell must not inherit the shared non-root invisibility policy");
+        assertTrue(source.contains(
+                        "return hasValidPart(state) ? RenderShape.MODEL : RenderShape.INVISIBLE;"),
+                "both valid cells must use their normal baked models");
+        assertTrue(source.contains("mirrorConnectionsToUpper(level, rootPos, connected)"),
+                "the baked upper casing must track root topology changes");
+        assertTrue(source.contains("getBlockSupportShape"),
+                "support must remain explicitly separated from selection geometry");
+        assertTrue(source.contains("UPPER_INTERACTION_SURFACE"),
+                "center clicks need to resolve to the root-routed upper helper");
+        assertTrue(source.contains("getCollisionShape"),
+                "the interaction surface must stay out of physical collision");
+        assertTrue(source.contains("useItemOn("),
+                "held merchandise must be routed into the root host");
+        assertTrue(source.contains("useWithoutItem("),
+                "empty-hand retrieval must be explicit and server authoritative");
+        assertTrue(source.contains("beforeDismantle"),
+                "multiblock teardown must return stored merchandise exactly once");
+
+        String entities = Files.readString(PROJECT.resolve(
+                "src/main/java/com/seggellion/britannia_mod/registry/BlockEntityRegistry.java"));
+        assertTrue(entities.contains("BlockEntityType<DisplayCaseBlockEntity>"));
+        assertTrue(entities.contains("DisplayCaseBlockEntity::new, BlockRegistry.DISPLAY_CASE.get()"));
+
+        String client = Files.readString(PROJECT.resolve(
+                "src/main/java/com/seggellion/britannia_mod/ClientModSetup.java"));
+        assertTrue(client.contains(
+                "BlockEntityRegistry.DISPLAY_CASE.get(), DisplayCaseBlockEntityRenderer::new"));
+    }
+
+    @Test
+    void rootRendererUsesMeasuredSurfaceAndSeparateBlockAndItemPaths() throws Exception {
+        String renderer = Files.readString(PROJECT.resolve(
+                "src/main/java/com/seggellion/britannia_mod/client/renderer/DisplayCaseBlockEntityRenderer.java"));
+        assertTrue(renderer.contains("DISPLAY_SURFACE_Y = 16.0D / 16.0D"),
+                "merchandise origin must be the owner-authored model-Y=16 counter surface");
+        assertTrue(renderer.contains("BLOCK_MERCHANDISE_SCALE = 6.0F / 16.0F"),
+                "block merchandise must fit the model-Y=16..22 frame volume");
+        assertTrue(renderer.contains("ITEM_MERCHANDISE_SCALE = 0.45F"),
+                "ordinary-item merchandise scale must remain unchanged");
+        assertTrue(renderer.contains("ITEM_MODEL_CENTER_Y = DISPLAY_SURFACE_Y + 0.22D"),
+                "ordinary-item merchandise height must remain unchanged");
+        assertTrue(renderer.contains("Axis.XP.rotationDegrees(-15.0F)"),
+                "ordinary-item merchandise pitch must remain unchanged");
+        assertTrue(renderer.contains("instanceof BlockItem"));
+        assertTrue(renderer.contains("blockRenderer.renderSingleBlock("),
+                "BlockItems must render as their corresponding 3D block models");
+        assertTrue(renderer.contains("itemRenderer.renderStatic("),
+                "ordinary ItemStacks must retain a general item-model path");
+        assertFalse(renderer.contains("cageRenderState"),
+                "the merchandise renderer must not replace the normal baked casing path");
+        assertTrue(renderer.contains("new AABB("),
+                "root renderer bounds must include the visual frame above the root voxel");
+
+        String entity = Files.readString(PROJECT.resolve(
+                "src/main/java/com/seggellion/britannia_mod/block/entity/DisplayCaseBlockEntity.java"));
+        assertTrue(entity.contains("source.copyWithCount(1)"),
+                "storing merchandise must preserve the complete component-bearing stack");
+        assertTrue(entity.contains("displayedItem.save(registries)"));
+        assertTrue(entity.contains("ItemStack.parse(registries"));
+        assertTrue(entity.contains("getUpdateTag("));
+        assertTrue(entity.contains("getUpdatePacket("));
     }
 
     @Test
@@ -82,7 +143,7 @@ class DisplayCaseContractTest {
         assertTrue(blockstate.contains("\"y\": 180"));
         assertTrue(blockstate.contains("\"y\": 270"));
         assertEquals(15, count(blockstate, "\"part\": \"1\""),
-                "every cage topology must render from the upper cell for correct light sampling");
+                "every baked upper-casing topology must remain addressable by its real state");
 
         for (String relative : relatives) {
             if (!relative.contains("models/block")) continue;

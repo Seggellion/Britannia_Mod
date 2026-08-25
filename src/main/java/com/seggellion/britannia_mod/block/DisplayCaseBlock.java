@@ -1,13 +1,23 @@
 package com.seggellion.britannia_mod.block;
 
+import com.seggellion.britannia_mod.block.entity.DisplayCaseBlockEntity;
 import java.util.Map;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -16,15 +26,16 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.phys.BlockHitResult;
 
 /**
- * Two-block-tall decorative case whose root selects owner-authored neighbor geometry.
+ * Two-cell display whose root owns connections and merchandise.
  *
- * <p>The root owns the four connection flags and mirrors them to the upper rendering cell.
- * Independent, straight/end, genuine corner, open tee, and open four-way interior models are
- * selected from those flags without additional public block IDs.
+ * <p>The upper cell renders and collides with the authored frame geometry. Independent,
+ * straight/end, genuine corner, open tee, and open four-way interior models are selected from
+ * connection flags mirrored from the root without additional public block IDs.
  */
-public final class DisplayCaseBlock extends DecorativeMultiblockBlock {
+public final class DisplayCaseBlock extends DecorativeMultiblockBlock implements EntityBlock {
     public static final BooleanProperty NORTH = BlockStateProperties.NORTH;
     public static final BooleanProperty EAST = BlockStateProperties.EAST;
     public static final BooleanProperty SOUTH = BlockStateProperties.SOUTH;
@@ -38,6 +49,8 @@ public final class DisplayCaseBlock extends DecorativeMultiblockBlock {
 
     private static final VoxelShape LOWER_INDEPENDENT = Block.box(1, 0, 1, 15, 16, 15);
     private static final VoxelShape LOWER_CONNECTED = Shapes.block();
+    /** Invisible selection surface immediately above the model-Y=16 merchandise counter. */
+    private static final VoxelShape UPPER_INTERACTION_SURFACE = Block.box(1, 0, 1, 15, 1, 15);
     private static final VoxelShape UPPER_INDEPENDENT = Shapes.or(
             Block.box(1, 0, 2, 2, 1.5, 14),
             Block.box(14, 0, 2, 15, 1.5, 14),
@@ -112,9 +125,40 @@ public final class DisplayCaseBlock extends DecorativeMultiblockBlock {
         return hasValidPart(state) ? RenderShape.MODEL : RenderShape.INVISIBLE;
     }
 
+    @Nullable
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return hasValidPart(state) && isRoot(state)
+                ? new DisplayCaseBlockEntity(pos, state)
+                : null;
+    }
+
     @Override
     public VoxelShape getShape(
             BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        VoxelShape physicalShape = physicalShape(state, level, pos);
+        return isUpperCell(state)
+                ? Shapes.or(physicalShape, UPPER_INTERACTION_SURFACE)
+                : physicalShape;
+    }
+
+    @Override
+    public VoxelShape getCollisionShape(
+            BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return physicalShape(state, level, pos);
+    }
+
+    @Override
+    public VoxelShape getBlockSupportShape(BlockState state, BlockGetter level, BlockPos pos) {
+        return physicalShape(state, level, pos);
+    }
+
+    @Override
+    public VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
+        return physicalShape(state, level, pos);
+    }
+
+    private VoxelShape physicalShape(BlockState state, BlockGetter level, BlockPos pos) {
         if (!state.is(this) || !hasValidPart(state)) return Shapes.empty();
 
         BlockState root = rootState(level, pos, state);
@@ -131,6 +175,76 @@ public final class DisplayCaseBlock extends DecorativeMultiblockBlock {
             return shape;
         }
         return connectedUpperShape(root);
+    }
+
+    private boolean isUpperCell(BlockState state) {
+        return state.is(this) && hasValidPart(state) && cell(state).y() == 1;
+    }
+
+    @Override
+    protected ItemInteractionResult useItemOn(
+            ItemStack stack,
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player,
+            InteractionHand hand,
+            BlockHitResult hit) {
+        if (stack.isEmpty() || !hasValidPart(state)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+        BlockPos rootPos = anchorPosition(pos, state);
+        if (!level.mayInteract(player, rootPos)
+                || !player.mayUseItemAt(rootPos, hit.getDirection(), stack)
+                || !(level.getBlockEntity(rootPos) instanceof DisplayCaseBlockEntity display)
+                || display.hasDisplayedItem()) {
+            return ItemInteractionResult.FAIL;
+        }
+        if (!level.isClientSide) {
+            if (!display.storeOne(stack)) {
+                return ItemInteractionResult.FAIL;
+            }
+            if (!player.hasInfiniteMaterials()) {
+                stack.shrink(1);
+            }
+        }
+        return ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player,
+            BlockHitResult hit) {
+        if (!hasValidPart(state)) {
+            return InteractionResult.PASS;
+        }
+        BlockPos rootPos = anchorPosition(pos, state);
+        if (!level.mayInteract(player, rootPos)
+                || !(level.getBlockEntity(rootPos) instanceof DisplayCaseBlockEntity display)
+                || !display.hasDisplayedItem()) {
+            return InteractionResult.PASS;
+        }
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
+        }
+        ItemStack merchandise = display.takeDisplayedItem();
+        if (!player.getInventory().add(merchandise)) {
+            popResource(level, rootPos, merchandise);
+        }
+        return InteractionResult.CONSUME;
+    }
+
+    @Override
+    protected void beforeDismantle(ServerLevel level, BlockPos anchor, Direction facing) {
+        if (level.getBlockEntity(anchor) instanceof DisplayCaseBlockEntity display) {
+            ItemStack merchandise = display.takeDisplayedItem();
+            if (!merchandise.isEmpty()) {
+                popResource(level, anchor, merchandise);
+            }
+        }
     }
 
     @Override
@@ -176,7 +290,7 @@ public final class DisplayCaseBlock extends DecorativeMultiblockBlock {
             mirrored = mirrored.setValue(property, root.getValue(property));
         }
         if (!mirrored.equals(upper)) {
-            // The upper cell owns the cage model so its light is sampled in the cell it occupies.
+            // The upper cell owns the baked casing, so update the state that selects its model.
             level.setBlock(upperPos, mirrored, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
         }
     }
