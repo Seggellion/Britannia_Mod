@@ -49,6 +49,18 @@ final class BannerXSmallArtwork {
         return new int[] {left, top, right, bottom, image.getWidth(), image.getHeight()};
     }
 
+    /** Where the painted artwork begins across its texture, as a fraction of the full width. */
+    static double leftEdgeFraction(String banner) throws Exception {
+        int[] bounds = alphaBounds(banner);
+        return bounds[0] / (double) bounds[4];
+    }
+
+    /** Where the painted artwork ends across its texture, as a fraction of the full width. */
+    static double rightEdgeFraction(String banner) throws Exception {
+        int[] bounds = alphaBounds(banner);
+        return bounds[2] / (double) bounds[4];
+    }
+
     static double visibleWidthPx(String banner, double clothWidthPx) throws Exception {
         int[] bounds = alphaBounds(banner);
         return clothWidthPx * (bounds[2] - bounds[0]) / (double) bounds[4];

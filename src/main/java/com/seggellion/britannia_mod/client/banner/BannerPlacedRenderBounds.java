@@ -18,8 +18,12 @@ public final class BannerPlacedRenderBounds {
      * (0.125) past that -- 0.775 beyond the cell. The deepest vertical reach is a small
      * banner's 1.25-block cloth hanging out of its single cell, 0.4375 below. Sized above both
      * so the block entity is never culled while any part of it is still on screen.
+     *
+     * <p>Raised to 0.9375 on 2026-08-25 when Small Curtain's width doubled: its 2.5-block cloth
+     * hangs on a 2.75-block pole from a single cell, so the pole tips reach 0.875 beyond it --
+     * the furthest anything in the system now travels outside its own blocks.
      */
-    public static final double MOUNT_AND_CLOTH_MARGIN = 0.8125;
+    public static final double MOUNT_AND_CLOTH_MARGIN = 0.9375;
 
     private BannerPlacedRenderBounds() {
     }

@@ -19,6 +19,8 @@ public record BannerPlacedGeometryPlan(
         Vec3 mountTopRight,
         Direction frontNormal,
         double poleLineY,
+        double poleStartAlong,
+        double poleEndAlong,
         Optional<ResourceLocation> mountGeometry) {
     /**
      * How far a parallel banner's cloth sits from the block centre, i.e. flush with the wall
@@ -37,6 +39,17 @@ public record BannerPlacedGeometryPlan(
      * pixel) before, which read as a flat decal and let the two faces z-fight at range.
      */
     public static final double CLOTH_THICKNESS = 0.5 / 16.0;
+
+    /**
+     * How far along its own pole a perpendicular banner's cloth starts, instead of at the wall
+     * face. The wall bracket's collar reaches {@code 4.75} model pixels out from the wall, and
+     * the small and medium families paint artwork beginning 5.16 and 4.95 pixels into their
+     * cloth -- clearances of 0.41 and 0.20 pixels, which read in-game as the cloth growing out
+     * of the hardware. Two pixels of daylight puts every family at least 2.2 pixels clear, in
+     * line with the x-small family that already looked right. The pole is measured from the
+     * wall regardless (see {@link #poleStartAlong()}), so moving the cloth does not lengthen it.
+     */
+    public static final double WALL_SIDE_CLEARANCE = 2.0 / 16.0;
 
     public BannerPlacedGeometryPlan {
         Objects.requireNonNull(topLeft, "topLeft");
@@ -95,10 +108,25 @@ public record BannerPlacedGeometryPlan(
         // face and runs outward, so centring would bury its first inches of artwork inside the
         // wall; it is pinned to the wall face instead, exactly where the assembly already pins
         // its pole, and the whole cloth extends outward from there.
-        double clothStartAlong = orientation == BannerOrientation.WALL_PERPENDICULAR
-                ? -0.5
+        boolean perpendicular = orientation == BannerOrientation.WALL_PERPENDICULAR;
+        double clothStartAlong = perpendicular
+                ? -0.5 + WALL_SIDE_CLEARANCE
                 : -0.5 + (width - clothWidth) / 2.0;
         Vec3 clothStart = center.add(spanVector.scale(clothStartAlong));
+
+        // The pole spans the artwork, not the transparent quad around it, and a perpendicular
+        // pole always reaches back to its wall bracket no matter where the cloth hangs on it.
+        double poleCovered = (fallback ? 1.0 : family.poleArtworkSpan()) * clothWidth;
+        double poleStartAlong;
+        double poleEndAlong;
+        if (perpendicular) {
+            poleStartAlong = -0.5;
+            poleEndAlong = -0.5 + poleCovered + BannerPlacedAssembly.POLE_OVERHANG;
+        } else {
+            double clothCentreAlong = clothStartAlong + clothWidth / 2.0;
+            poleStartAlong = clothCentreAlong - poleCovered / 2.0 - BannerPlacedAssembly.POLE_OVERHANG;
+            poleEndAlong = clothCentreAlong + poleCovered / 2.0 + BannerPlacedAssembly.POLE_OVERHANG;
+        }
         // topInset positions the MOUNT LINE -- the height the pole and its brackets sit at,
         // measured down from the anchor block's top face. The cloth hangs from that line, less
         // any family lift (see BannerPlacedGeometryFamily#clothLift), so that a family whose
@@ -122,6 +150,7 @@ public record BannerPlacedGeometryPlan(
         Vec3 mountLength = spanVector.scale(mountSpan);
         return new BannerPlacedGeometryPlan(topLeft, bottomLeft, bottomRight, topRight,
                 mountTopLeft, mountBottomLeft, mountBottomLeft.add(mountLength),
-                mountTopLeft.add(mountLength), normal, poleLineY, mountGeometry);
+                mountTopLeft.add(mountLength), normal, poleLineY, poleStartAlong, poleEndAlong,
+                mountGeometry);
     }
 }

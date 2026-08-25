@@ -63,8 +63,10 @@ class BannerXSmallFamilyProportionTest {
         // The defect: 12px of cloth cleared the block by one pixel, against small's seven.
         assertEquals(-7.0, clothBottomPx(BannerPlacedGeometryFamily.SMALL), EPS, "small cloth bottom");
         for (BannerPlacedGeometryFamily family : X_SMALL_FAMILIES) {
-            assertEquals(-7.0, clothBottomPx(family), EPS, family + " cloth bottom");
-            assertEquals(20.0, px(family.clothHeight()), EPS, family + " cloth height");
+            // Since the 2026-08-25 polish pass x-small carries 30% more cloth than small, so it
+            // hangs a little past small's -7 rather than level with it.
+            assertEquals(-9.8035085, clothBottomPx(family), 1.0e-6, family + " cloth bottom");
+            assertEquals(22.8035085, px(family.clothHeight()), 1.0e-6, family + " cloth height");
             assertTrue(px(family.clothHeight()) > 12.0 + 6.0,
                     family + " must be substantially taller than the 12px that was too short");
         }
@@ -117,11 +119,12 @@ class BannerXSmallFamilyProportionTest {
                 px(BannerPlacedGeometryFamily.SMALL.clothHeight()));
         double roadGuardHeight = BannerXSmallArtwork.visibleHeightPx("road_guard",
                 px(BannerPlacedGeometryFamily.ROAD_GUARD.clothHeight()));
-        assertTrue(roadGuardHeight > smallHeight * 0.9,
-                "an x-small banner must hang nearly as far as a small one: "
-                        + roadGuardHeight + "px against " + smallHeight + "px");
-        assertTrue(roadGuardHeight <= smallHeight + EPS,
-                "x-small may be slightly shorter than small, never taller");
+        // The 2026-08-25 polish pass moved this relationship: x-small is now deliberately the
+        // slightly TALLER family, having been given 30% more cloth than small.
+        assertTrue(roadGuardHeight > smallHeight,
+                "x-small must now hang past small: " + roadGuardHeight + "px against " + smallHeight + "px");
+        assertTrue(roadGuardHeight < smallHeight * 1.2,
+                "only slightly taller: " + roadGuardHeight + "px against " + smallHeight + "px");
     }
 
     @Test
@@ -145,8 +148,9 @@ class BannerXSmallFamilyProportionTest {
                 for (Direction facing : Direction.Plane.HORIZONTAL) {
                     BannerPlacedGeometryPlan plan = plan(family, orientation, facing);
                     String label = family + "/" + orientation + "/" + facing;
-                    assertEquals(20.0, px(plan.topLeft().y - plan.bottomLeft().y), EPS, label + " height");
-                    assertEquals(20.0,
+                    assertEquals(px(family.clothHeight()),
+                            px(plan.topLeft().y - plan.bottomLeft().y), EPS, label + " height");
+                    assertEquals(px(family.clothWidth()),
                             px(plan.topRight().subtract(plan.topLeft()).length()), EPS, label + " width");
                     assertEquals(13.0, px(plan.poleLineY()), EPS, label + " mount line");
                     assertEquals(13.0, px(plan.topLeft().y), EPS, label + " cloth top");
@@ -160,13 +164,18 @@ class BannerXSmallFamilyProportionTest {
         // Its reach now equals the small family's, which the current margin already covered, so
         // no global bounds change is needed.
         double margin = BannerPlacedRenderBounds.MOUNT_AND_CLOTH_MARGIN;
-        assertEquals(0.8125, margin, EPS, "render bounds must not need widening again");
+        assertEquals(0.9375, margin, EPS, "render bounds cover Small Curtain's doubled width");
         for (BannerPlacedGeometryFamily family : X_SMALL_FAMILIES) {
             double downward = family.clothHeight() + family.clothTopInset()
                     - family.clothLift() - family.height();
-            double perpendicular = family.clothWidth() - family.width() + 0.125;
             assertTrue(downward <= margin + EPS, family + " hangs " + downward + " past the margin");
-            assertTrue(perpendicular <= margin + EPS, family + " reaches " + perpendicular + " past the margin");
+            // Small Curtain hangs wall-parallel, so its span reach is measured across its
+            // footprint rather than out from the wall like its perpendicular cousins.
+            double along = family == BannerPlacedGeometryFamily.SMALL_CURTAIN
+                    ? (family.clothWidth() - family.width()) / 2.0 + 0.125
+                    : family.clothWidth() + BannerPlacedGeometryPlan.WALL_SIDE_CLEARANCE
+                            - family.width();
+            assertTrue(along <= margin + EPS, family + " reaches " + along + " past the margin");
         }
     }
 

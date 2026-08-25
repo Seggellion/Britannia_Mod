@@ -46,11 +46,12 @@ class BannerFamilyDimensionsTest {
         record Expected(BannerPlacedGeometryFamily family, double widthPx, double heightPx) {
         }
         List<Expected> expected = List.of(
-                // x-small: sized to the small family so it hangs to the same depth (2026-08-25
-                // follow-up); it stays the narrow family through its artwork, not its quad.
-                new Expected(BannerPlacedGeometryFamily.X_SMALL, 20.0, 20.0),
-                new Expected(BannerPlacedGeometryFamily.ROAD_GUARD, 20.0, 20.0),
-                new Expected(BannerPlacedGeometryFamily.SMALL_CURTAIN, 20.0, 20.0),
+                // x-small: the small family's cloth plus 30% more of it (sqrt in each axis),
+                // which is the most it can grow and stay only slightly taller than small.
+                new Expected(BannerPlacedGeometryFamily.X_SMALL, 22.8035085, 22.8035085),
+                new Expected(BannerPlacedGeometryFamily.ROAD_GUARD, 22.8035085, 22.8035085),
+                // Small Curtain doubles that width outright: it is drapery, not a pennant.
+                new Expected(BannerPlacedGeometryFamily.SMALL_CURTAIN, 40.0, 22.8035085),
                 // small: 10 x 10 doubled.
                 new Expected(BannerPlacedGeometryFamily.SMALL, 20.0, 20.0),
                 // medium: 22 x 22, +20% wide and +30% tall.
@@ -63,8 +64,8 @@ class BannerFamilyDimensionsTest {
         assertEquals(BannerPlacedGeometryFamily.values().length, expected.size(),
                 "every family must have a pinned cloth size");
         for (Expected row : expected) {
-            assertEquals(row.widthPx(), px(row.family().clothWidth()), EPS, row.family() + " width");
-            assertEquals(row.heightPx(), px(row.family().clothHeight()), EPS, row.family() + " height");
+            assertEquals(row.widthPx(), px(row.family().clothWidth()), 1.0e-6, row.family() + " width");
+            assertEquals(row.heightPx(), px(row.family().clothHeight()), 1.0e-6, row.family() + " height");
         }
     }
 
@@ -72,9 +73,11 @@ class BannerFamilyDimensionsTest {
     void scaleFactorsAreExactlyWhatWasRequestedFromTheOldSizes() {
         var baselineDouble = BannerPlacedGeometryFamily.Baseline.DOUBLE;
         // x-small is derived from small rather than scaled from its own baseline.
-        assertEquals(BannerPlacedGeometryFamily.SMALL.clothWidth(),
+        assertEquals(BannerPlacedGeometryFamily.SMALL.clothWidth()
+                        * BannerPlacedGeometryFamily.Baseline.THIRTY_PERCENT_MORE_CLOTH,
                 BannerPlacedGeometryFamily.X_SMALL.clothWidth(), EPS);
-        assertEquals(BannerPlacedGeometryFamily.SMALL.clothHeight(),
+        assertEquals(BannerPlacedGeometryFamily.SMALL.clothHeight()
+                        * BannerPlacedGeometryFamily.Baseline.THIRTY_PERCENT_MORE_CLOTH,
                 BannerPlacedGeometryFamily.X_SMALL.clothHeight(), EPS);
         assertEquals(BannerPlacedGeometryFamily.Baseline.SMALL * baselineDouble,
                 BannerPlacedGeometryFamily.SMALL.clothWidth(), EPS);
@@ -150,25 +153,37 @@ class BannerFamilyDimensionsTest {
     }
 
     @Test
-    void renderBoundsCoverTheFurthestClothAndPoleReachOfEveryFamily() {
+    void renderBoundsCoverTheFurthestClothAndPoleReachOfEveryFamily() throws Exception {
         double margin = BannerPlacedRenderBounds.MOUNT_AND_CLOTH_MARGIN;
-        // Anchor-local: the anchor cell spans y 0..1 and the footprint runs down to y = 1 - height.
-        for (BannerPlacedGeometryFamily family : BannerPlacedGeometryFamily.values()) {
-            double clothTop = 1.0 - family.clothTopInset() + family.clothLift();
-            double clothBottom = clothTop - family.clothHeight();
-            double reach = Math.max(Math.max(
-                            // Parallel: cloth centres on the footprint, pole overhangs each end.
-                            (family.clothWidth() - family.width()) / 2.0 + BannerPlacedAssembly.POLE_OVERHANG,
-                            // Perpendicular: cloth starts at the wall face of a single cell.
-                            family.clothWidth() - family.width() + BannerPlacedAssembly.POLE_OVERHANG),
-                    Math.max(
-                            // Below the footprint, and above the anchor cell's top face.
-                            (1.0 - family.height()) - clothBottom,
-                            clothTop - 1.0));
-            assertTrue(reach <= margin + EPS,
-                    family + " reaches " + reach + " blocks outside its cells, past the "
-                            + margin + " render-bounds margin");
+        // Checked against the orientations each family is actually PLACED in: a parallel-only
+        // family like Small Curtain never gets a perpendicular footprint, so measuring one for
+        // it would demand bounds for geometry the catalogue cannot produce.
+        var snapshot = com.seggellion.britannia_mod.bannerdyeing.testsupport.DyeResolverFixtures
+                .productionSnapshot();
+        int checked = 0;
+        for (var definition : snapshot.banners().activeDefinitions()) {
+            BannerPlacedGeometryFamily family = BannerPlacedGeometryFamily.from(
+                    definition.assets().geometry(), definition.dimensions()).orElseThrow();
+            for (BannerOrientation orientation : definition.supportedOrientations()) {
+                // Anchor-local: the anchor cell spans y 0..1, the footprint runs to 1 - height.
+                double clothTop = 1.0 - family.clothTopInset() + family.clothLift();
+                double clothBottom = clothTop - family.clothHeight();
+                double along = orientation == BannerOrientation.WALL_PARALLEL
+                        // Parallel: cloth centres on its footprint, pole overhangs each end.
+                        ? (family.clothWidth() * family.poleArtworkSpan() - family.width()) / 2.0
+                                + BannerPlacedAssembly.POLE_OVERHANG
+                        // Perpendicular: cloth starts a clearance out from the wall face.
+                        : family.clothWidth() + BannerPlacedGeometryPlan.WALL_SIDE_CLEARANCE
+                                - family.width();
+                double reach = Math.max(Math.max(along, (1.0 - family.height()) - clothBottom),
+                        clothTop - 1.0);
+                assertTrue(reach <= margin + EPS,
+                        definition.id() + " (" + family + "/" + orientation + ") reaches " + reach
+                                + " blocks outside its cells, past the " + margin + " margin");
+                checked++;
+            }
         }
+        assertTrue(checked >= 35, "expected the whole catalogue, checked " + checked);
     }
 
     @Test
@@ -178,8 +193,9 @@ class BannerFamilyDimensionsTest {
             // parallel banner's span runs west, so its footprint spans x from 1 back to 1 - width.
             BannerPlacedGeometryPlan perpendicular = plan(
                     family, BannerOrientation.WALL_PERPENDICULAR, Direction.NORTH);
-            assertEquals(1.0, perpendicular.topLeft().z, EPS,
-                    family + " perpendicular cloth must start on the wall face");
+            assertEquals(1.0 - BannerPlacedGeometryPlan.WALL_SIDE_CLEARANCE,
+                    perpendicular.topLeft().z, EPS,
+                    family + " perpendicular cloth must start clear of its wall bracket");
 
             BannerPlacedGeometryPlan parallel = plan(
                     family, BannerOrientation.WALL_PARALLEL, Direction.NORTH);

@@ -29,11 +29,11 @@ import net.minecraft.resources.ResourceLocation;
  */
 public enum BannerPlacedGeometryFamily {
     LARGE(BannerAssetAvailability.id("banner/placeholder/large"), 2, 2,
-            Baseline.LARGE, Baseline.WIDER, Baseline.TALLER, 0.0625, 3.0 / 16.0),
+            Baseline.LARGE, Baseline.WIDER, Baseline.TALLER, 0.0625, 3.0 / 16.0, Baseline.FULL_POLE),
     // Declared 2x2 and currently unreachable: every medium-wall definition ships 1x2 and so
     // resolves to MEDIUM. Kept in step with MEDIUM so it stays right if 2x2 wall art lands.
     MEDIUM_WALL(BannerAssetAvailability.id("banner/placeholder/medium_wall"), 2, 2,
-            Baseline.MEDIUM_WALL, Baseline.WIDER, Baseline.TALLER, 0.125, 0.0),
+            Baseline.MEDIUM_WALL, Baseline.WIDER, Baseline.TALLER, 0.125, 0.0, Baseline.FULL_POLE),
     // The only family whose footprint is not square (1x2), and the only one whose cloth cannot
     // be expressed as a positive inset: sized to the authored artwork it has to be WIDER than
     // the one block it is anchored in. Baseline 1.375 is the mean of the 14 medium definitions'
@@ -41,22 +41,32 @@ public enum BannerPlacedGeometryFamily {
     // size. The overhang is transparent margin -- the visible artwork is 62-77% of the texture
     // width -- so it still reads as a one-block banner.
     MEDIUM(BannerAssetAvailability.id("banner/placeholder/medium"), 1, 2,
-            Baseline.MEDIUM, Baseline.WIDER, Baseline.TALLER, 0.03125, 0.0),
+            Baseline.MEDIUM, Baseline.WIDER, Baseline.TALLER, 0.03125, 0.0, Baseline.FULL_POLE),
     SMALL(BannerAssetAvailability.id("banner/placeholder/small"), 1, 1,
-            Baseline.SMALL, Baseline.DOUBLE, Baseline.DOUBLE, Baseline.MOUNT_FLUSH_INSET, 0.0),
+            Baseline.SMALL, Baseline.DOUBLE, Baseline.DOUBLE, Baseline.MOUNT_FLUSH_INSET, 0.0,
+            Baseline.FULL_POLE),
     // The x-small families hang from the same mount line, to the same depth, as SMALL. They
     // read as the narrow family through their artwork rather than through a smaller quad: at
     // 31% texture fill a road-guard pennant draws 6.2px wide against the small family's 9.5px.
     // Their previous 12px cloth cleared its own block by a single pixel, against small's seven.
     X_SMALL(BannerAssetAvailability.id("banner/placeholder/x_small"), 1, 1,
-            Baseline.X_SMALL, Baseline.X_SMALL_TO_SMALL, Baseline.X_SMALL_TO_SMALL,
-            Baseline.MOUNT_FLUSH_INSET, 0.0),
+            Baseline.X_SMALL,
+            Baseline.X_SMALL_TO_SMALL * Baseline.THIRTY_PERCENT_MORE_CLOTH,
+            Baseline.X_SMALL_TO_SMALL * Baseline.THIRTY_PERCENT_MORE_CLOTH,
+            Baseline.MOUNT_FLUSH_INSET, 0.0, Baseline.PENNANT_POLE),
     ROAD_GUARD(BannerAssetAvailability.id("banner/road_guard/geometry"), 1, 1,
-            Baseline.X_SMALL, Baseline.X_SMALL_TO_SMALL, Baseline.X_SMALL_TO_SMALL,
-            Baseline.MOUNT_FLUSH_INSET, 0.0),
+            Baseline.X_SMALL,
+            Baseline.X_SMALL_TO_SMALL * Baseline.THIRTY_PERCENT_MORE_CLOTH,
+            Baseline.X_SMALL_TO_SMALL * Baseline.THIRTY_PERCENT_MORE_CLOTH,
+            Baseline.MOUNT_FLUSH_INSET, 0.0, Baseline.PENNANT_POLE),
+    // Drapery rather than a pennant, so the family's "narrower than small" target does not
+    // apply to it: its width is exactly doubled as asked, it takes the family's growth in height
+    // only, and it keeps a full-span pole because its cloth fills what that pole carries.
     SMALL_CURTAIN(BannerAssetAvailability.id("banner/small_curtain/geometry"), 1, 1,
-            Baseline.X_SMALL, Baseline.X_SMALL_TO_SMALL, Baseline.X_SMALL_TO_SMALL,
-            Baseline.MOUNT_FLUSH_INSET, 0.0);
+            Baseline.X_SMALL,
+            Baseline.X_SMALL_TO_SMALL * Baseline.CURTAIN_WIDER,
+            Baseline.X_SMALL_TO_SMALL * Baseline.THIRTY_PERCENT_MORE_CLOTH,
+            Baseline.MOUNT_FLUSH_INSET, 0.0, Baseline.FULL_POLE);
 
     /**
      * What each family drew before the owner's 2026-08-25 sizing review, and the factors that
@@ -95,6 +105,28 @@ public enum BannerPlacedGeometryFamily {
          */
         public static final double MOUNT_FLUSH_INSET = 3.0 / 16.0;
 
+        /**
+         * The owner's 2026-08-25 polish pass asked for an x-small family 30% larger. Taken per
+         * axis that would have made it 27% TALLER than the small family it must only slightly
+         * exceed, and would have put its cloth exactly on the render-bounds limit. Taken as 30%
+         * more cloth -- the square root in each direction -- it lands inside every constraint at
+         * once: 30% more banner, still a quarter narrower than small, and 11% taller.
+         */
+        public static final double THIRTY_PERCENT_MORE_CLOTH = Math.sqrt(1.3);
+
+        /** Small Curtain alone was asked to double its width; it is drapery, not a pennant. */
+        public static final double CURTAIN_WIDER = 2.0;
+
+        /**
+         * How much of its cloth quad a family's artwork actually paints across, and therefore
+         * how far its pole needs to run. The x-small pennants fill the middle ~31% of their
+         * texture, so a pole sized to the whole quad ran a third again past the banner it
+         * carried; 0.7 covers that artwork and about a pixel beyond it. Every other family
+         * paints close enough to its full quad to keep the whole span.
+         */
+        public static final double FULL_POLE = 1.0;
+        public static final double PENNANT_POLE = 0.7;
+
         private Baseline() {
         }
     }
@@ -107,6 +139,7 @@ public enum BannerPlacedGeometryFamily {
     private final double heightScale;
     private final double clothTopInset;
     private final double clothLift;
+    private final double poleArtworkSpan;
 
     BannerPlacedGeometryFamily(
             ResourceLocation geometryId,
@@ -116,7 +149,8 @@ public enum BannerPlacedGeometryFamily {
             double widthScale,
             double heightScale,
             double clothTopInset,
-            double clothLift) {
+            double clothLift,
+            double poleArtworkSpan) {
         this.geometryId = geometryId;
         this.width = width;
         this.height = height;
@@ -125,6 +159,7 @@ public enum BannerPlacedGeometryFamily {
         this.heightScale = heightScale;
         this.clothTopInset = clothTopInset;
         this.clothLift = clothLift;
+        this.poleArtworkSpan = poleArtworkSpan;
     }
 
     public ResourceLocation geometryId() {
@@ -185,6 +220,14 @@ public enum BannerPlacedGeometryFamily {
      */
     public double clothLift() {
         return clothLift;
+    }
+
+    /**
+     * The fraction of this family's cloth width its pole runs along, so hardware is sized to the
+     * artwork rather than to the transparent margin around it. See {@link Baseline#PENNANT_POLE}.
+     */
+    public double poleArtworkSpan() {
+        return poleArtworkSpan;
     }
 
     /**

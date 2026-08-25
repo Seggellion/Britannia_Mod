@@ -81,26 +81,25 @@ public record BannerPlacedAssembly(
         double clothMiddle = (clothStart + clothEnd) / 2.0;
 
         boolean parallel = orientation == BannerOrientation.WALL_PARALLEL;
-        // A parallel banner's pole runs along the wall, so it simply overhangs the cloth at both
-        // ends. A perpendicular banner's pole runs OUT of the wall, so its inner end is pinned to
-        // the wall face instead of to the cloth: the cloth's own start moves with the family's
-        // horizontal inset, which would otherwise bury the bracket inside the wall (a negative
-        // inset, as the medium family uses) or leave it floating short of it (a large positive
-        // one, as the extra-small family uses).
-        double poleStart = parallel ? clothStart - POLE_OVERHANG : -0.5;
-        double poleEnd = clothEnd + POLE_OVERHANG;
-        double poleLength = poleEnd - poleStart;
+        // Where the pole runs is decided by the plan, which knows both how wide the cloth is and
+        // how much of that width the family's artwork actually paints. Deriving it from the cloth
+        // corners here instead would tie the pole to the transparent quad -- so a family whose art
+        // fills a third of its texture got a pole three times longer than the banner it carries,
+        // and shifting a cloth clear of its wall bracket would drag the pole out with it.
+        double poleStartAlong = geometry.poleStartAlong();
+        double poleEndAlong = geometry.poleEndAlong();
+        double poleLength = poleEndAlong - poleStartAlong;
 
         // The bracket's collar sits on the pole axis and its plate reaches POLE_STANDOFF back
         // from there, so anchoring the perpendicular bracket that far out from the wall face
         // lands its plate exactly on the wall.
         List<Vec3> brackets = parallel
-                ? List.of(pointAt(mountCentre, spanUnit, clothMiddle, poleStart + BRACKET_INSET),
-                          pointAt(mountCentre, spanUnit, clothMiddle, poleEnd - BRACKET_INSET))
+                ? List.of(pointAt(mountCentre, spanUnit, clothMiddle, poleStartAlong + BRACKET_INSET),
+                          pointAt(mountCentre, spanUnit, clothMiddle, poleEndAlong - BRACKET_INSET))
                 : List.of(pointAt(mountCentre, spanUnit, clothMiddle, -0.5 + POLE_STANDOFF));
 
         return new BannerPlacedAssembly(
-                pointAt(mountCentre, spanUnit, clothMiddle, (poleStart + poleEnd) / 2.0),
+                pointAt(mountCentre, spanUnit, clothMiddle, (poleStartAlong + poleEndAlong) / 2.0),
                 poleLength,
                 -geometry.frontNormal().toYRot(),
                 brackets,

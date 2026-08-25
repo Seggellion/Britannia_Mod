@@ -95,15 +95,16 @@ class BannerRegressionRepairTest {
         }
         // Every perpendicular cloth starts exactly at the wall face and runs outward from it,
         // which is also where the assembly pins its pole.
-        assertEquals(1.0, medium.topLeft().z, 1.0e-9);
-        assertEquals(1.0 - BannerPlacedGeometryFamily.MEDIUM.clothWidth(),
+        double clearance = BannerPlacedGeometryPlan.WALL_SIDE_CLEARANCE;
+        assertEquals(1.0 - clearance, medium.topLeft().z, 1.0e-9);
+        assertEquals(1.0 - clearance - BannerPlacedGeometryFamily.MEDIUM.clothWidth(),
                 medium.topRight().z, 1.0e-9);
 
         BannerPlacedGeometryPlan small = BannerPlacedGeometryPlan.create(
                 BannerOrientation.WALL_PERPENDICULAR, Direction.NORTH, 1, 1,
                 BannerPlacedGeometryFamily.SMALL, false);
-        assertEquals(1.0, small.topLeft().z, 1.0e-9);
-        assertEquals(1.0 - BannerPlacedGeometryFamily.SMALL.clothWidth(),
+        assertEquals(1.0 - clearance, small.topLeft().z, 1.0e-9);
+        assertEquals(1.0 - clearance - BannerPlacedGeometryFamily.SMALL.clothWidth(),
                 small.topRight().z, 1.0e-9);
     }
 
