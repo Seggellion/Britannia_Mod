@@ -187,7 +187,7 @@ Recommended identities:
 
 No player placement path should exist. A BlockItem would create untracked nodes that caps/spacing ignore, Adventure harvesting refuses, and invalid-support reconciliation never adopts. Administrative `/setblock` placement remains outside the gameplay lifecycle.
 
-For natural balance, start with the closest ash precedent: weight 1, cap 2/chunk, attempt 3–6 minutes, post-removal cooldown 20–40 minutes, 4 probes, spacing 8. Adding a third weight-1 entry slightly competes with ash/oyster when multiple entries are due, so cadence regression tests are required.
+The initial natural-balance recommendation matched the closest ash precedent: weight 1, cap 2/chunk, attempt 3–6 minutes, post-removal cooldown 20–40 minutes, 4 probes, spacing 8. Live-world testing subsequently approved a Dung-specific 50% frequency reduction by doubling only its attempt interval to 6–12 minutes. Adding a third weight-1 entry slightly competes with ash/oyster when multiple entries are due, so cadence regression tests are required.
 
 Adventure harvesting uses `WildResourceHarvestService.harvestOne`: revalidate node/entry/expected block, set air, remove the node, schedule cooldown, pop exactly one item, and post one event. Ordinary Survival breaking uses the one-roll block loot table; the LOWEST break listener only removes the ledger/schedules cooldown and does not create a second drop. Creative ordinary removal yields no item. Unsupported tracked dung removed by reconciliation yields no item/event.
 
@@ -626,7 +626,7 @@ Run the full loop in real server GameTests, exercise exploit matrices, run focus
 | WildResource support validity | Existing reconciliation is load-triggered, not immediate | Exact spawn/validator predicate; no independent survival removal that leaves stale ledger |
 | WildResource double drop | Manual Adventure and vanilla loot are separate | Manual pop only in canceled Adventure; loot table only in ordinary break |
 | Untracked player-placed dung | BlockItem would bypass ledger/caps | Plain item only; no BlockItem |
-| Sparse dung sites | Exact support excludes normal grass surface | Start ash cadence; live density/cap QA before balance lock |
+| Sparse or dense dung sites | Exact support and live terrain distribution | Use the Dung-specific 6–12 minute cadence; continue live density/cap QA |
 | Chunk persistence | Node/schedules and fertility must survive reload | Reuse generic SavedData and BE NBT/update paths; round-trip tests |
 | Double harvest decrement | Many visible crop interaction endpoints | Decrement only inside converged server success methods |
 | Fruit-tree semantic mismatch | Per-fruit clicks are separate existing HARVEST actions | Locked per fruit; explicit tests and product conflict documented |

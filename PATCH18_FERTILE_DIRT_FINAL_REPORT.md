@@ -84,7 +84,7 @@ The existing Earth Elemental loot table continues to output `britannia_mod:ferti
 | --- | --- |
 | Dung spawn weight | 1 |
 | Dung per-chunk cap | 2 tracked nodes |
-| Dung spawn-attempt interval | 3–6 minutes |
+| Dung spawn-attempt interval | 6–12 minutes |
 | Dung post-removal cooldown | 20–40 minutes |
 | Dung probes per attempt | 4 |
 | Dung same-type spacing | 8 blocks; the existing strict comparison permits the exact-radius boundary |
@@ -93,7 +93,7 @@ The existing Earth Elemental loot table continues to output `britannia_mod:ferti
 | Community re-seed window | 1,200 ticks / 60 seconds |
 | Fertilized-dirt uses | 5 successful harvests |
 
-Dung uses the closest existing sulphurous-ash cadence. Its exact support rule means normal grass-covered terrain is not eligible; live-world density remains a balance check.
+Live-world testing reduced Dung's placement-attempt frequency by approximately 50% from the original sulphurous-ash cadence. Dung now attempts every 6–12 minutes while ash remains at 3–6 minutes. Its exact support rule means normal grass-covered terrain is not eligible; live-world density remains a balance check.
 
 ## Five-harvest storage and compatibility
 
