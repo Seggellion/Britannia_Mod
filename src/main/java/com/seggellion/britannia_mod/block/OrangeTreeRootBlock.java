@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.block;
 
+import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.block.entity.OrangeTreeRootBlockEntity;
 import com.seggellion.britannia_mod.farming.CropDefinition;
 import com.seggellion.britannia_mod.farming.CropRegistry;
@@ -124,7 +125,7 @@ public class OrangeTreeRootBlock extends Block implements EntityBlock {
 
             boolean improved = root.water(1);
             if (improved) {
-                level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 0.6f, 1.3f);
+                level.playSound(null, pos, ModSounds.WATERING_CAN_DISPENSE.get(), SoundSource.BLOCKS, 0.7f, 1.0f);
                 if (!player.getAbilities().instabuild) {
                     WateringCanItem.setWaterCharges(stack, charges - 1);
                 }

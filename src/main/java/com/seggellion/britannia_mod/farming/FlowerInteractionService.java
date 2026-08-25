@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.farming;
 
 import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.block.FarmingBlock;
 import com.seggellion.britannia_mod.block.FlowerBlock;
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
@@ -147,7 +148,7 @@ public final class FlowerInteractionService {
                 if (!player.getAbilities().instabuild) {
                     WateringCanItem.setWaterCharges(stack, charges - 1);
                 }
-                level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 0.6F, 1.3F);
+                level.playSound(null, pos, ModSounds.WATERING_CAN_DISPENSE.get(), SoundSource.BLOCKS, 0.7F, 1.0F);
                 awardTending(player, 1.0F);
             }
             return ItemInteractionResult.SUCCESS;
@@ -212,7 +213,7 @@ public final class FlowerInteractionService {
             player.drop(harvested, false);
         }
         damageAfterSuccess(player, hand, stack);
-        level.playSound(null, pos, SoundEvents.CROP_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F);
+        level.playSound(null, pos, ModSounds.SCISSORS_CUT.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
         if (player instanceof ServerPlayer serverPlayer) {
             FarmingSkill.award(serverPlayer, FarmingActionType.HARVEST, 1, 1.0F);
         }

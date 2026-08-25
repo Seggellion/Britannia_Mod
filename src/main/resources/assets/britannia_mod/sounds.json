@@ -542,6 +542,31 @@
       "britannia_mod:catch_fish"
   ]
 },
+"dye_banner": {
+  "sounds": [
+      "britannia_mod:dye"
+  ]
+},
+"watering_can_fill": {
+  "sounds": [
+      "britannia_mod:liquid"
+  ]
+},
+"watering_can_dispense": {
+  "sounds": [
+      "britannia_mod:fshplsh"
+  ]
+},
+"fishing_cast": {
+  "sounds": [
+      "britannia_mod:fshsplsh"
+  ]
+},
+"scissors_cut": {
+  "sounds": [
+      "britannia_mod:scissors"
+  ]
+},
 "chop_tree": {
   "sounds": [
       "britannia_mod:chop_tree"

@@ -188,6 +188,38 @@ public static final EntitySoundGroup GARGOYLE_STONE = registerEntitySounds("garg
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":catch_fish"))
     );
 
+    // Interaction feedback. Event ids describe the gameplay action while sounds.json maps them
+    // to the supplied source filenames, so audio can be replaced without renaming code symbols.
+    public static final DeferredHolder<SoundEvent, SoundEvent> DYE_BANNER = SOUND_EVENTS.register(
+            "dye_banner",
+            () -> SoundEvent.createVariableRangeEvent(
+                    ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "dye_banner"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> WATERING_CAN_FILL = SOUND_EVENTS.register(
+            "watering_can_fill",
+            () -> SoundEvent.createVariableRangeEvent(
+                    ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "watering_can_fill"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> WATERING_CAN_DISPENSE = SOUND_EVENTS.register(
+            "watering_can_dispense",
+            () -> SoundEvent.createVariableRangeEvent(
+                    ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "watering_can_dispense"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> FISHING_CAST = SOUND_EVENTS.register(
+            "fishing_cast",
+            () -> SoundEvent.createVariableRangeEvent(
+                    ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "fishing_cast"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCISSORS_CUT = SOUND_EVENTS.register(
+            "scissors_cut",
+            () -> SoundEvent.createVariableRangeEvent(
+                    ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "scissors_cut"))
+    );
+
     public static final DeferredHolder<SoundEvent, SoundEvent> CHOP_TREE = SOUND_EVENTS.register(
             "chop_tree",
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":chop_tree"))
