@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -102,7 +102,10 @@ private void renderBottomCube(PoseStack poseStack,
                               int packedOverlay,
                               AdaptiveRoofBlockEntity be) {
 
-    VertexConsumer builder = buffers.getBuffer(RenderType.solid());
+    // This geometry is submitted by a block-entity renderer, not baked into a chunk mesh.
+    // The block sheet keeps the block atlas and opaque/culling behavior while selecting the
+    // entity vertex format and block-entity shader path expected by Iris and shader packs.
+    VertexConsumer builder = buffers.getBuffer(Sheets.solidBlockSheet());
     TextureAtlasSprite sprite = Minecraft.getInstance()
                                          .getTextureAtlas(TextureAtlas.LOCATION_BLOCKS)
                                          .apply(texture);
