@@ -141,7 +141,7 @@ Allow deliberate renewable collection of the custom dirt ingredient without dama
 
 ### Implement
 
-When the correct UltimaCraft shovel is used on an allowed dirt block:
+When the correct UltimaCraft shovel is used on exact vanilla dirt or coarse dirt:
 
 - right-click/use interaction grants the canonical custom dirt item;
 - target block remains unchanged;

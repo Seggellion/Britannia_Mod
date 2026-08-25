@@ -16,7 +16,7 @@ The intended player loop is:
 
 1. Find naturally spawned `dung` in the world.
 2. Break the dung block to obtain a `dung` item.
-3. Use the UltimaCraft custom shovel on a normal dirt block to gather a `dirt` item.
+3. Use the UltimaCraft custom shovel on a normal dirt or coarse dirt block to gather a `dirt` item.
    - The world dirt block is **not broken or replaced**.
    - This is **not Mining** and must not route through the managed mining/deposit system.
    - Gathering must have a meaningful cooldown/time cost so dirt cannot be spam-farmed.
@@ -240,7 +240,7 @@ The custom shovel interaction should be implemented as a gathering action, not a
 
 Required behavior:
 
-- target block: normal dirt;
+- target block: exact vanilla dirt or coarse dirt;
 - tool: the project’s intended custom shovel;
 - result: one canonical UltimaCraft dirt item per successful gather unless repository balance conventions justify another fixed amount;
 - target block remains dirt;
@@ -251,7 +251,7 @@ Required behavior:
 - hand swapping, reconnecting, or client packet repetition must not trivially bypass it;
 - respect any relevant house/build rights before granting resources.
 
-Milestone 0 must determine whether coarse dirt should also be gatherable. The current product requirement names “a dirt block,” so default to standard dirt only unless existing design evidence supports both.
+Live Patch 18 testing confirmed that coarse dirt is also an intended gathering target. Keep the rule closed to exact vanilla dirt and coarse dirt.
 
 ---
 

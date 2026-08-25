@@ -521,9 +521,9 @@ No custom loose dirt commodity exists. Fractional dirt construction blocks and `
 
 ### D. Gatherable terrain
 
-**Verdict: exact `minecraft:dirt` only.**
+**Current verdict: exact `minecraft:dirt` or `minecraft:coarse_dirt`.**
 
-Do not accept coarse dirt, grass, farmland, podzol, mud, paths, tags, or custom fertile soil. Dung support remains independently locked to dirt + coarse dirt. The inherited shovel may first flatten coarse dirt into normal dirt; a later click on the now-exact dirt is a distinct vanilla-then-gather sequence, not direct coarse-dirt acceptance.
+Live Patch 18 testing established coarse dirt as an intended direct gathering target, superseding the original M0 standard-dirt-only lock. Do not accept grass, farmland, podzol, mud, paths, tags, or custom fertile soil. Dung support remains independently locked to the same exact dirt + coarse dirt pair.
 
 ### E. Five-harvest state ownership
 
@@ -677,7 +677,7 @@ Locked decisions:
 - Bowl conservation: return 2 × `britannia_mod:empty_bowl`; consume exact inputs in all modes.
 - Dirt-gather cooldown: 1,200 ticks / 60 seconds, persisted per player and claimed server-side.
 - Dirt ingredient: new plain stackable `britannia_mod:dirt` item.
-- Gatherable terrain: exact `minecraft:dirt` only.
+- Gatherable terrain: exact `minecraft:dirt` or `minecraft:coarse_dirt`.
 - Five-harvest state owner: `FarmingBlockEntity`; decrement only in authoritative crop/tree success commits.
 
 Outstanding blockers:

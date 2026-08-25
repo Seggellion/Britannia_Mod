@@ -5,7 +5,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.level.block.Blocks;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -32,7 +31,7 @@ public final class DirtGatheringInteractionHandler {
         if (event.getHand() != InteractionHand.MAIN_HAND
                 || !(event.getLevel() instanceof ServerLevel level)
                 || !(event.getEntity() instanceof ServerPlayer player)
-                || !level.getBlockState(event.getPos()).is(Blocks.DIRT)
+                || !DirtGatheringTarget.isGatherable(level.getBlockState(event.getPos()))
                 || !player.getMainHandItem().is(ToolRegistry.SHOVEL.get())) {
             return;
         }

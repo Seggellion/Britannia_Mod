@@ -90,6 +90,36 @@ public final class Patch18MilestoneThreeGameTests {
     }
 
     @GameTest(template = TEMPLATE, timeoutTicks = 60)
+    public static void coarseDirtGestureGrantsOnceAndPreservesTerrain(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos target = target(helper);
+        helper.setBlock(TARGET, Blocks.COARSE_DIRT);
+        ServerPlayer player = preparedPlayer(helper, "patch18-coarse-dirt-survival", GameType.SURVIVAL);
+        ItemStack shovel = player.getMainHandItem();
+        int damageBefore = shovel.getDamageValue();
+
+        PlayerInteractEvent.RightClickBlock click =
+                rightClick(player, InteractionHand.MAIN_HAND, target);
+        check(click.isCanceled(), "valid coarse-dirt gathering gesture was not consumed");
+        check(level.getBlockState(target).is(Blocks.COARSE_DIRT),
+                "coarse-dirt gathering changed the target block");
+        check(totalDirt(level, player, target) == 1,
+                "one valid coarse-dirt gather did not create exactly one custom dirt");
+        check(shovel.getDamageValue() == damageBefore + 1,
+                "coarse-dirt gather did not charge exactly one shovel durability");
+
+        PlayerInteractEvent.RightClickBlock repeated =
+                rightClick(player, InteractionHand.MAIN_HAND, target);
+        check(repeated.isCanceled(), "coarse-dirt cooldown attempt fell through");
+        check(totalDirt(level, player, target) == 1,
+                "coarse-dirt packet repetition bypassed the player cooldown");
+        check(level.getBlockState(target).is(Blocks.COARSE_DIRT),
+                "coarse-dirt cooldown attempt changed the target block");
+        disconnect(player);
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 60)
     public static void adventureWorksWhileCreativeAndFakePlayersCreateNoEconomy(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos target = target(helper);
@@ -142,10 +172,10 @@ public final class Patch18MilestoneThreeGameTests {
         player.setItemInHand(
                 InteractionHand.MAIN_HAND,
                 ToolRegistry.createShovel(UOMetalToolMaterial.IRON, 3));
-        helper.setBlock(TARGET, Blocks.COARSE_DIRT);
+        helper.setBlock(TARGET, Blocks.GRASS_BLOCK);
         check(!rightClick(player, InteractionHand.MAIN_HAND, target).isCanceled(),
-                "coarse dirt was incorrectly claimed as a gather target");
-        check(totalDirt(level, player, target) == 0, "coarse dirt granted custom dirt");
+                "grass was incorrectly claimed as a gather target");
+        check(totalDirt(level, player, target) == 0, "grass granted custom dirt");
 
         helper.setBlock(TARGET, Blocks.DIRT);
         player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);

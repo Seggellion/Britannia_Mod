@@ -9,7 +9,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Blocks;
 
 /** The sole server transaction that grants Patch 18's loose dirt commodity. */
 public final class DirtGatheringService {
@@ -18,7 +17,8 @@ public final class DirtGatheringService {
 
     public static Result attempt(ServerLevel level, BlockPos position, ServerPlayer player) {
         ItemStack tool = player.getMainHandItem();
-        if (!level.getBlockState(position).is(Blocks.DIRT) || !tool.is(ToolRegistry.SHOVEL.get())) {
+        if (!DirtGatheringTarget.isGatherable(level.getBlockState(position))
+                || !tool.is(ToolRegistry.SHOVEL.get())) {
             return Result.NOT_OURS;
         }
 
