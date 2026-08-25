@@ -89,6 +89,12 @@ PROHIBITED_VEGETATION = (
     "britannia_mod:fern",
     "britannia_mod:managed_flower",
     "britannia_mod:blood_moss",
+    # Not a plant: the invisible marker ManagedVegetationService leaves at a node that has been
+    # cut and is regrowing. It outlives the plant it stood under, so stripping the managed plants
+    # alone left it behind -- the large_patio export picked up two of them from ground the owner
+    # had cleared. Its onPlace registers a regrowing node, so a house carrying one mints managed
+    # vegetation on every placement, which is the thing this audit exists to stop.
+    "britannia_mod:managed_vegetation_controller",
 )
 
 # Plants that are architecture. Named so the rule is a decision and not an omission.
