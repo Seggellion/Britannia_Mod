@@ -17,6 +17,14 @@ public final class MerchantTypes {
     public static final String BAKER = "baker";
     public static final String TAVERNKEEPER = "tavernkeeper";
     public static final String COSTERMONGER = "costermonger";
+    public static final String FARMER = "farmer";
+
+    /**
+     * Food-supply floor for the Farmer's legacy spawn maintenance. The value a city must show on
+     * the same Rails reading the food-gated spawn blocks already poll before the block will keep
+     * a Farmer staffed; the Rails staffing sweep enforces the same floor for authoritative posts.
+     */
+    public static final double FARMER_MINIMUM_FOOD_SUPPLY = 20.0D;
 
     private static final Map<String, MerchantDefinition> DEFINITIONS = new LinkedHashMap<>();
 
@@ -35,6 +43,10 @@ public final class MerchantTypes {
                 () -> EntityRegistry.COSTERMONGER.get(), TraderSpawnSettings.standard(),
                 TraderAppearance.outfit("costermonger"));
         alias("produce_merchant", COSTERMONGER);
+
+        register(FARMER, "farmer", "Farmer",
+                () -> EntityRegistry.FARMER.get(), TraderSpawnSettings.standard(),
+                TraderAppearance.outfit("farmer"), FARMER_MINIMUM_FOOD_SUPPLY);
     }
 
     private MerchantTypes() {
@@ -62,7 +74,16 @@ public final class MerchantTypes {
                                  Supplier<EntityType<? extends Mob>> entityType,
                                  TraderSpawnSettings spawnSettings,
                                  TraderAppearance appearance) {
-        DEFINITIONS.put(configKey, new MerchantDefinition(configKey, npcType, roleTitle, entityType, spawnSettings, appearance));
+        register(configKey, npcType, roleTitle, entityType, spawnSettings, appearance, 0.0D);
+    }
+
+    private static void register(String configKey, String npcType, String roleTitle,
+                                 Supplier<EntityType<? extends Mob>> entityType,
+                                 TraderSpawnSettings spawnSettings,
+                                 TraderAppearance appearance,
+                                 double minimumFoodSupply) {
+        DEFINITIONS.put(configKey, new MerchantDefinition(
+                configKey, npcType, roleTitle, entityType, spawnSettings, appearance, minimumFoodSupply));
     }
 
     private static void alias(String alias, String target) {

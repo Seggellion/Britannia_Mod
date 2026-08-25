@@ -613,6 +613,7 @@ public class ClientModSetup {
         event.registerEntityRenderer(EntityRegistry.VENDOR.get(), CitizenEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.TAVERNKEEPER.get(), CitizenEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.COSTERMONGER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.FARMER.get(), CitizenEntityRenderer::new);
     }
 
 
