@@ -69,19 +69,27 @@ class DungWildResourcePolicyTest {
     }
 
     @Test
-    void entryUsesAshCadenceAndClassifiesPersistedNodes() {
+    void entryUsesHalfFrequencyCadenceAndClassifiesPersistedNodes() {
         WildResourceEntry entry = WildResourceEntries.createDungEntry();
         WildResourceTuning tuning = entry.tuning();
 
         assertEquals(WildResourceEntries.DUNG, entry.id());
         assertEquals(1, entry.spawnWeight());
         assertEquals(2, entry.maxNodesPerChunk());
-        assertEquals(20 * 60 * 3, tuning.attemptIntervalMinTicks());
-        assertEquals(20 * 60 * 6, tuning.attemptIntervalMaxTicks());
+        assertEquals(20 * 60 * 6, tuning.attemptIntervalMinTicks());
+        assertEquals(20 * 60 * 12, tuning.attemptIntervalMaxTicks());
         assertEquals(20 * 60 * 20, tuning.respawnCooldownMinTicks());
         assertEquals(20 * 60 * 40, tuning.respawnCooldownMaxTicks());
         assertEquals(4, tuning.maxRandomProbes());
         assertEquals(8, tuning.minimumSameTypeSpacing());
+        assertEquals(20 * 60 * 3,
+                WildResourceEntries.SULPHUROUS_ASH_TUNING.attemptIntervalMinTicks());
+        assertEquals(20 * 60 * 6,
+                WildResourceEntries.SULPHUROUS_ASH_TUNING.attemptIntervalMaxTicks());
+        assertEquals(20 * 60 * 4,
+                WildResourceEntries.BLACK_LIPPED_OYSTER_TUNING.attemptIntervalMinTicks());
+        assertEquals(20 * 60 * 8,
+                WildResourceEntries.BLACK_LIPPED_OYSTER_TUNING.attemptIntervalMaxTicks());
 
         assertEquals(WildResourceEntry.ExistingNodeState.MISSING_OR_REPLACED,
                 WildResourceEntries.classifyDungNode(false, true));

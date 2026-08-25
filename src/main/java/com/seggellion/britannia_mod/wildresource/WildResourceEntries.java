@@ -36,8 +36,8 @@ public final class WildResourceEntries {
             BritanniaMod.MODID, "dung"
     );
     public static final WildResourceTuning DUNG_TUNING = new WildResourceTuning(
-            20 * 60 * 3,
             20 * 60 * 6,
+            20 * 60 * 12,
             20 * 60 * 20,
             20 * 60 * 40,
             4,

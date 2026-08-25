@@ -34,9 +34,12 @@ Balance values live in `WildResourceEntries`:
 | --- | ---: | ---: | --- | --- | ---: | ---: |
 | Sulphurous Ash | 1 | 2 | 3–6 min | 20–40 min | 4 | 8 blocks |
 | Black-lipped Oyster | 1 | 3 | 4–8 min | 30–60 min | 4 | 6 blocks |
-| Dung | 1 | 2 | 3–6 min | 20–40 min | 4 | 8 blocks |
+| Dung | 1 | 2 | 6–12 min | 20–40 min | 4 | 8 blocks |
 
 Intervals use normal server game time and do not depend on `randomTickSpeed`.
+Dung's doubled attempt interval is specific to Dung and reduces its long-run placement-attempt
+frequency by approximately 50% relative to the original 3–6 minute profile. Sulphurous Ash and
+Black-lipped Oyster retain their existing cadence.
 
 ## Placement and proximity
 
