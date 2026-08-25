@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "axis=x,texture_variant=0": {
+      "model": "britannia_mod:block/structure/sandstone/light_sandstone_paver_1",
+      "y": 0
+    },
+    "axis=z,texture_variant=0": {
+      "model": "britannia_mod:block/structure/sandstone/light_sandstone_paver_1",
+      "y": 90
+    },
+    "axis=x,texture_variant=1": {
+      "model": "britannia_mod:block/structure/sandstone/light_sandstone_paver_2",
+      "y": 0
+    },
+    "axis=z,texture_variant=1": {
+      "model": "britannia_mod:block/structure/sandstone/light_sandstone_paver_2",
+      "y": 90
+    }
+  }
+}

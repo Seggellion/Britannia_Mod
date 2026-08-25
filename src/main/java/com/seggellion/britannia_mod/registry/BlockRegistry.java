@@ -32,6 +32,7 @@ import com.seggellion.britannia_mod.block.CeilingJoistEdgeBlock;
 import com.seggellion.britannia_mod.block.CeilingPanelBlock;
 import com.seggellion.britannia_mod.block.CustomSandstoneBrickBlock;
 import com.seggellion.britannia_mod.block.SandstoneBrickRoadBlock;
+import com.seggellion.britannia_mod.block.SandstonePaverBlock;
 import com.seggellion.britannia_mod.block.IronFenceBlock;
 import com.seggellion.britannia_mod.block.TallThinBlock;
 import com.seggellion.britannia_mod.block.TallDecorativeBlock;
@@ -2514,6 +2515,9 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
     public static final DeferredHolder<Block, SandstoneBrickRoadBlock> MEDIUM_SANDSTONE_BRICK_ROAD = BLOCKS.register("medium_sandstone_brick_road", () -> new SandstoneBrickRoadBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE)));
 
     public static final DeferredHolder<Block, SandstoneBrickRoadBlock> DARK_SANDSTONE_BRICK_ROAD = BLOCKS.register("dark_sandstone_brick_road", () -> new SandstoneBrickRoadBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE)));
+
+    public static final DeferredHolder<Block, SandstonePaverBlock> LIGHT_SANDSTONE_PAVER = BLOCKS.register("light_sandstone_paver", () -> new SandstonePaverBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE)));
+    public static final DeferredHolder<Block, SandstonePaverBlock> DARK_SANDSTONE_PAVER = BLOCKS.register("dark_sandstone_paver", () -> new SandstonePaverBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE)));
 
     // New-assets Milestone 2. Purchased-pack geometry is temporary placeholder art.
     public static final DeferredHolder<Block, DecorativePropBlock> GLOBE = BLOCKS.register("globe", () ->
