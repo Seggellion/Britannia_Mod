@@ -30,6 +30,7 @@ import com.seggellion.britannia_mod.farming.GrapeVisualResolver;
 import com.seggellion.britannia_mod.client.renderer.ArchitectRenderer;
 import com.seggellion.britannia_mod.client.Keybinds;
 import com.seggellion.britannia_mod.client.renderer.FarmingBlockEntityRenderer;
+import com.seggellion.britannia_mod.client.renderer.DisplayCaseBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.FlowerBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.HouseFarmPlotBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.FlowerVisualModels;
@@ -484,6 +485,8 @@ public class ClientModSetup {
         event.registerBlockEntityRenderer(BlockRegistry.BLUE_TENT_BLOCK_ENTITY_TYPE.get(), BlueTentRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.PURPLE_TENT_BLOCK_ENTITY_TYPE.get(), PurpleTentRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.ADAPTIVE_ROOF.get(), AdaptiveRoofRenderer::new);
+        event.registerBlockEntityRenderer(
+                BlockEntityRegistry.DISPLAY_CASE.get(), DisplayCaseBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(com.seggellion.britannia_mod.registry.GrabbyRegistry.PLACED_ITEM_BLOCK_ENTITY.get(),
                 com.seggellion.britannia_mod.client.renderer.GrabbyPlacedItemRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.ARMOIRE_BLOCK_ENTITY_TYPE.get(), ArmoireRenderer::new);
