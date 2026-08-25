@@ -28,14 +28,17 @@ class DirtGatheringArchitectureTest {
     }
 
     @Test
-    void onlyExactVanillaDirtAndTheExactBritanniaShovelAreOwned() throws Exception {
+    void onlyExactVanillaDirtVariantsAndTheExactBritanniaShovelAreOwned() throws Exception {
         String service = source("dirtgathering/DirtGatheringService.java");
         String handler = source("dirtgathering/DirtGatheringInteractionHandler.java");
-        String combined = service + handler;
+        String target = source("dirtgathering/DirtGatheringTarget.java");
+        String combined = service + handler + target;
         assertTrue(combined.contains("Blocks.DIRT"));
+        assertTrue(combined.contains("Blocks.COARSE_DIRT"));
         assertTrue(combined.contains("ToolRegistry.SHOVEL.get()"));
-        assertFalse(combined.contains("Blocks.COARSE_DIRT"));
         assertFalse(combined.contains("BlockTags.DIRT"));
+        assertTrue(service.contains("DirtGatheringTarget.isGatherable"));
+        assertTrue(handler.contains("DirtGatheringTarget.isGatherable"));
     }
 
     @Test
@@ -59,7 +62,7 @@ class DirtGatheringArchitectureTest {
     void shovelOverrideOnlySuppressesPredictionAndNeverGrantsOutput() throws Exception {
         String shovel = source("item/QualityShovelItem.java");
         assertTrue(shovel.contains("UseOnContext"));
-        assertTrue(shovel.contains("Blocks.DIRT"));
+        assertTrue(shovel.contains("DirtGatheringTarget.isGatherable"));
         assertTrue(shovel.contains("context.getLevel().isClientSide"));
         assertFalse(shovel.contains("DirtGatheringService"));
         assertFalse(shovel.contains("ItemRegistry.DIRT"));

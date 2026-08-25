@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.item;
 
+import com.seggellion.britannia_mod.dirtgathering.DirtGatheringTarget;
 import com.seggellion.britannia_mod.registry.ToolRegistry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -14,7 +15,6 @@ import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.extensions.IItemExtension;
 
@@ -92,7 +92,8 @@ public class QualityShovelItem extends ShovelItem implements IItemExtension {
     public InteractionResult useOn(UseOnContext context) {
         if (context.getHand() == InteractionHand.MAIN_HAND
                 && context.getItemInHand().is(ToolRegistry.SHOVEL.get())
-                && context.getLevel().getBlockState(context.getClickedPos()).is(Blocks.DIRT)) {
+                && DirtGatheringTarget.isGatherable(
+                        context.getLevel().getBlockState(context.getClickedPos()))) {
             return context.getLevel().isClientSide ? InteractionResult.SUCCESS : InteractionResult.PASS;
         }
         return super.useOn(context);
