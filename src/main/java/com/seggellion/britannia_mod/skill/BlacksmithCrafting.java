@@ -11,6 +11,7 @@ import com.seggellion.britannia_mod.player.PlayerDataStore;
 import com.seggellion.britannia_mod.util.LocalRecipes;
 import com.seggellion.britannia_mod.skill.crafting.CraftableDef;
 import com.seggellion.britannia_mod.skill.crafting.IngredientRequirement;
+import com.seggellion.britannia_mod.skill.crafting.MetalProgression;
 import com.seggellion.britannia_mod.skill.crafting.ShieldProfileRegistry;
 import com.seggellion.britannia_mod.skill.crafting.SkillRequirement;
 import net.minecraft.ChatFormatting;
@@ -72,6 +73,19 @@ public final class BlacksmithCrafting {
         UOMetalToolMaterial material = UOMetalToolMaterial.getMaterialByIngot(metalStack.getItem());
         if (material == null) {
             reject(player, "Hold one supported metal type in your offhand.");
+            return;
+        }
+
+        // The material half of the requirement. The recipe above says how hard the shape is; this
+        // says how hard the metal is, and the harder of the two decides. Asked here, on the server,
+        // after the metal is known and before anything is consumed, so a stale or hand-written
+        // client cannot smith a metal the server says this smith cannot work. A refusal is a
+        // precondition rejection like every other one above it: nothing is spent.
+        if (!MetalProgression.canWork(current, material)) {
+            reject(player, String.format("You need %s Blacksmithy to work %s (you have %s).",
+                    formatSkill(MetalProgression.requiredBlacksmithy(material)),
+                    material.getMetalName(),
+                    formatSkill(current)));
             return;
         }
 
@@ -159,6 +173,17 @@ public final class BlacksmithCrafting {
         }
         if (SkillManager.getSkill(player, PRIMARY_SKILL_ID) < definition.minimumBlacksmithy()) {
             reject(player, "Insufficient Blacksmithy skill to repair this item.");
+            return;
+        }
+        // Beating a dent out of a Valorite hauberk is working Valorite, so the same material
+        // requirement applies here as at the forge. Without this, repair would be the way around
+        // the crafting gate for anyone who could get a high-tier item made for them.
+        float blacksmithy = SkillManager.getSkill(player, PRIMARY_SKILL_ID);
+        if (!MetalProgression.canWork(blacksmithy, material)) {
+            reject(player, String.format("You need %s Blacksmithy to work %s (you have %s).",
+                    formatSkill(MetalProgression.requiredBlacksmithy(material)),
+                    material.getMetalName(),
+                    formatSkill(blacksmithy)));
             return;
         }
         offhand.shrink(cost);
@@ -296,6 +321,16 @@ public final class BlacksmithCrafting {
     private static String stableRegionId(String name) {
         return name == null || name.isBlank() ? "unknown"
                 : name.toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9]+", "_").replaceAll("^_|_$", "");
+    }
+
+    /** Skill values read as whole numbers when they are whole, matching the Mining denial lines. */
+    private static String formatSkill(float value) {
+        if (!Float.isFinite(value)) {
+            return "?";
+        }
+        return value == Math.rint(value)
+                ? Integer.toString((int) value)
+                : String.format(java.util.Locale.ROOT, "%.1f", value);
     }
 
     private static double clamp(double value, double minimum, double maximum) {

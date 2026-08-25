@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.event;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
 import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
@@ -37,6 +38,7 @@ public class CustomBlockBreakHandler {
         // deposit. It breaks with ordinary vanilla behaviour -- no graded/purity drop, no
         // restoration, no Mining award -- which is what closes the place-break loop.
         if (com.seggellion.britannia_mod.mining.MiningProvenance.isPlayerPlaced(serverLevel, pos)) {
+            returnPlacedConstruction(serverLevel, pos, state, player);
             return;
         }
 
@@ -101,6 +103,19 @@ public class CustomBlockBreakHandler {
             // Milestone 6: the single durability charge, at the end of the one path that commits.
             // One ordinary hurtAndBreak, so Unbreaking behaves here as it does everywhere else.
             ManagedExtractionPolicy.chargeExtractionTool((net.minecraft.server.level.ServerPlayer) player);
+        } else if (Resources.resolve(state).isPresent()) {
+            // A live managed cell that this handler was not able to take over, because the tool
+            // cannot work it. An ordinary player never arrives here -- the gate answers WRONG_TOOL
+            // and cancels at HIGH, and a cancelled event reaches no further listener -- so in
+            // practice this is an operator, whose bypass deliberately outranks the tool check.
+            //
+            // Letting the event continue would hand a sited deposit to the vanilla break
+            // lifecycle, and these blocks ship no loot table: the cell would disappear, drop
+            // nothing, and file no restoration debt, permanently deleting a planned resource that
+            // the six-hour restoration would otherwise bring back. The managed pipeline owns the
+            // removal of managed cells, so a break it cannot commit is a break that does not
+            // happen. Creative removal is unaffected: it returns above, at mayExtract.
+            event.setCanceled(true);
         }
     }
 
@@ -108,6 +123,42 @@ public class CustomBlockBreakHandler {
     // resolves the resource's configured extraction tag. The private isBritanniaPickaxe predicate
     // that used to live here is gone -- it was the second definition of the rule, and there is now
     // exactly one, in data.
+
+    /**
+     * Hands back a mineable the player placed themselves.
+     *
+     * <p>Milestone 7 rules that player-placed construction "breaks with ordinary vanilla
+     * behaviour", which is what closes the place-break loop: no purity ore, no restoration debt
+     * and no Mining award, so stacking a block and re-breaking it trains nothing. For the vanilla
+     * blocks in the catalogue -- stone, deepslate, iron ore -- ordinary vanilla behaviour is
+     * already exactly right, and this method leaves them entirely alone.
+     *
+     * <p>The project's own ore and rock blocks ship no loot table, though, so for them "ordinary
+     * vanilla behaviour" silently evaluated to annihilation: a player who placed one and changed
+     * their mind lost it outright, which reads in game as "I broke it and got nothing". Returning
+     * the block when vanilla would return nothing restores the intended behaviour without
+     * reopening the loop, because a block handed back is not a resource extracted -- still no ore,
+     * still no skill, still no restoration debt.
+     */
+    private static void returnPlacedConstruction(ServerLevel level, BlockPos pos, BlockState state, Player player) {
+        // Creative keeps vanilla's own no-drop convention, the same one the creative guard and the
+        // extraction policy already apply everywhere else on this path.
+        if (!(player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)
+                || ManagedExtractionPolicy.isCreativeGameMode(serverPlayer)) {
+            return;
+        }
+        // Only compensate where vanilla genuinely yields nothing; anything with a working loot
+        // table drops through untouched, so this can never become a second drop.
+        if (!Block.getDrops(state, level, pos, level.getBlockEntity(pos), player,
+                player.getMainHandItem()).isEmpty()) {
+            return;
+        }
+        ItemStack returned = new ItemStack(state.getBlock().asItem());
+        if (returned.isEmpty()) {
+            return;
+        }
+        Block.popResource(level, pos, returned);
+    }
 
     /** The declared depleted state, falling back to the historical behaviour for unmanaged blocks. */
     private static BlockState depletedState(ServerLevel level, BlockPos pos, BlockState state) {

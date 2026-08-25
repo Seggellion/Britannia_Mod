@@ -85,6 +85,15 @@ public class MiningGateHandler {
         if (!evaluation.permitsBreak()) {
             event.setCanceled(true);
             MiningBreakGate.sendDenialFeedback(player, evaluation);
+            // Resynchronise here as well as at the completed break. Since the adventure-lifecycle
+            // change, the pickaxe carries a can_break predicate covering every catalogued block
+            // whatever the holder's skill -- deliberately, because the predicate is a lifecycle
+            // key and not an authority -- so a client may locally predict and animate a full dig
+            // of a resource the server will never let it have. Cancelling the swing without this
+            // leaves that prediction standing: the block appears to break, nothing drops and no
+            // skill moves, which is exactly the "I mined it and got nothing" report. The server
+            // state was always correct; only the client's picture of it was not.
+            MiningBreakGate.synchronizeDeniedBreak(player, level, event.getPos());
         }
     }
 
