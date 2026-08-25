@@ -43,13 +43,20 @@ public enum BannerPlacedGeometryFamily {
     MEDIUM(BannerAssetAvailability.id("banner/placeholder/medium"), 1, 2,
             Baseline.MEDIUM, Baseline.WIDER, Baseline.TALLER, 0.03125, 0.0),
     SMALL(BannerAssetAvailability.id("banner/placeholder/small"), 1, 1,
-            Baseline.SMALL, Baseline.DOUBLE, Baseline.DOUBLE, 0.1875, 0.0),
+            Baseline.SMALL, Baseline.DOUBLE, Baseline.DOUBLE, Baseline.MOUNT_FLUSH_INSET, 0.0),
+    // The x-small families hang from the same mount line, to the same depth, as SMALL. They
+    // read as the narrow family through their artwork rather than through a smaller quad: at
+    // 31% texture fill a road-guard pennant draws 6.2px wide against the small family's 9.5px.
+    // Their previous 12px cloth cleared its own block by a single pixel, against small's seven.
     X_SMALL(BannerAssetAvailability.id("banner/placeholder/x_small"), 1, 1,
-            Baseline.X_SMALL, Baseline.DOUBLE, Baseline.DOUBLE, 0.3125, 0.0),
+            Baseline.X_SMALL, Baseline.X_SMALL_TO_SMALL, Baseline.X_SMALL_TO_SMALL,
+            Baseline.MOUNT_FLUSH_INSET, 0.0),
     ROAD_GUARD(BannerAssetAvailability.id("banner/road_guard/geometry"), 1, 1,
-            Baseline.X_SMALL, Baseline.DOUBLE, Baseline.DOUBLE, 0.3125, 0.0),
+            Baseline.X_SMALL, Baseline.X_SMALL_TO_SMALL, Baseline.X_SMALL_TO_SMALL,
+            Baseline.MOUNT_FLUSH_INSET, 0.0),
     SMALL_CURTAIN(BannerAssetAvailability.id("banner/small_curtain/geometry"), 1, 1,
-            Baseline.X_SMALL, Baseline.DOUBLE, Baseline.DOUBLE, 0.3125, 0.0);
+            Baseline.X_SMALL, Baseline.X_SMALL_TO_SMALL, Baseline.X_SMALL_TO_SMALL,
+            Baseline.MOUNT_FLUSH_INSET, 0.0);
 
     /**
      * What each family drew before the owner's 2026-08-25 sizing review, and the factors that
@@ -67,6 +74,26 @@ public enum BannerPlacedGeometryFamily {
         public static final double WIDER = 1.2;
         public static final double TALLER = 1.3;
         public static final double DOUBLE = 2.0;
+
+        /**
+         * What the x-small families render at, derived rather than chosen: exactly the factor
+         * that gives them the small family's cloth, so the two hang from the same mount line to
+         * the same depth. X-small stays the narrower family through its ARTWORK, which fills
+         * only ~31% of its texture width against the small family's ~48%; the quad is a window
+         * onto a square texture, so equal windows still render a visibly narrower banner.
+         */
+        public static final double X_SMALL_TO_SMALL = (SMALL * DOUBLE) / X_SMALL;
+
+        /**
+         * The canonical top-of-block mount line, measured down from the anchor block's top
+         * face. It equals the bracket plate's own half-height ({@code banner/mount/bracket} is
+         * 6 pixels tall, centred on the pole axis), so a bracket hung here finishes exactly
+         * flush with the top of its block instead of floating below it. The small family
+         * already sat here; x-small did not, because its top inset was a leftover of the old
+         * symmetric-inset scheme -- it mirrored a horizontal inset rather than describing where
+         * hardware belongs -- which sank the whole assembly 2 pixels into the block.
+         */
+        public static final double MOUNT_FLUSH_INSET = 3.0 / 16.0;
 
         private Baseline() {
         }
