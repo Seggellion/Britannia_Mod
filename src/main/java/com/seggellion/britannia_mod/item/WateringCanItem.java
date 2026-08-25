@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.item;
 
+import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.block.FarmingBlock;
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
 import com.seggellion.britannia_mod.block.OrangeTreeRootBlock;
@@ -13,7 +14,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
@@ -115,7 +115,7 @@ public class WateringCanItem extends Item {
             }
 
             level.setBlock(pos, state.setValue(FarmingBlock.HYDRATION, farmBlockEntity.getHydration()), 3);
-            level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 0.6f, 1.3f);
+            level.playSound(null, pos, ModSounds.WATERING_CAN_DISPENSE.get(), SoundSource.BLOCKS, 0.7f, 1.0f);
             if (player == null || !player.getAbilities().instabuild) {
                 setWaterCharges(stack, charges - 1);
             }
@@ -154,7 +154,7 @@ public class WateringCanItem extends Item {
                 return ItemInteractionResult.SUCCESS;
             }
 
-            level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 0.6f, 1.3f);
+            level.playSound(null, pos, ModSounds.WATERING_CAN_DISPENSE.get(), SoundSource.BLOCKS, 0.7f, 1.0f);
             if (player == null || !player.getAbilities().instabuild) {
                 setWaterCharges(stack, charges - 1);
             }
@@ -174,7 +174,7 @@ public class WateringCanItem extends Item {
         int charges = getWaterCharges(stack);
         if (charges < MAX_WATER_CHARGES) {
             setWaterCharges(stack, MAX_WATER_CHARGES);
-            level.playSound(null, pos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS, 0.8f, 1.1f);
+            level.playSound(null, pos, ModSounds.WATERING_CAN_FILL.get(), SoundSource.BLOCKS, 0.8f, 1.0f);
             if (player != null) {
                 player.displayClientMessage(Component.literal("Watering can refilled.").withStyle(ChatFormatting.AQUA), true);
             }

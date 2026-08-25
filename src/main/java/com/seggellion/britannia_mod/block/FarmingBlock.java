@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.block;
 
+import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
 import com.seggellion.britannia_mod.block.entity.HouseFarmPlotBlockEntity;
 import com.seggellion.britannia_mod.block.entity.GrapeVineBlockEntity;
@@ -628,7 +629,11 @@ public class FarmingBlock extends Block implements EntityBlock {
                 }
             }
 
-            level.playSound(null, pos, SoundEvents.CROP_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
+            level.playSound(null, pos,
+                    toolStack.is(ItemRegistry.SCISSORS.get())
+                            ? ModSounds.SCISSORS_CUT.get()
+                            : SoundEvents.CROP_BREAK,
+                    SoundSource.BLOCKS, 0.8f, 1.0f);
             if (player instanceof ServerPlayer serverPlayer) {
                 FarmingSkill.award(serverPlayer, FarmingActionType.HARVEST, crop.tier(), crop.farmingSkillModifier());
             }

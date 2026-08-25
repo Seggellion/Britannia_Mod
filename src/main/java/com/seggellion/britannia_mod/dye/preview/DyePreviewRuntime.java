@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.dye.preview;
 
+import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.banner.item.BannerItem;
 import com.seggellion.britannia_mod.bannerdyeing.registry.BannerDataRegistries;
 import com.seggellion.britannia_mod.bannerdyeing.registry.RegistrySnapshot;
@@ -17,7 +18,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -106,7 +106,7 @@ public final class DyePreviewRuntime {
 
     private static void emitSuccess(ServerPlayer player) {
         ServerLevel level = player.serverLevel();
-        level.playSound(null, player.blockPosition(), SoundEvents.DYE_USE, SoundSource.PLAYERS, 0.7F, 1.0F);
+        level.playSound(null, player.blockPosition(), ModSounds.DYE_BANNER.get(), SoundSource.PLAYERS, 0.7F, 1.0F);
         level.sendParticles(ParticleTypes.HAPPY_VILLAGER,
                 player.getX(), player.getY() + 0.8D, player.getZ(),
                 6, 0.2D, 0.25D, 0.2D, 0.01D);

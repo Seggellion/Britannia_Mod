@@ -10,7 +10,8 @@
     "PlayerSleepMixin",
     "PlayerListInvokerMixin",
     "PlayerListAccessorMixin",
-    "OreVeinifierMixin"
+    "OreVeinifierMixin",
+    "FishingRodCastSoundMixin"
   ],
   "client": [
     "LoadingScreenPanoramaMixin",

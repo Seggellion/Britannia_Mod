@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.util;
 
+import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.bowlpreparation.BowlWaterFillingPlan;
 import com.seggellion.britannia_mod.bowlpreparation.BowlWaterFillingService;
 import com.seggellion.britannia_mod.item.PitcherItem;
@@ -43,8 +44,13 @@ public final class WaterSourceInteraction {
         }
 
         boolean applied = true;
+        boolean wateringCanFill = false;
         if (stack.getItem() instanceof WateringCanItem) {
-            WateringCanItem.setWaterCharges(stack, WateringCanItem.MAX_WATER_CHARGES);
+            applied = WateringCanItem.getWaterCharges(stack) < WateringCanItem.MAX_WATER_CHARGES;
+            if (applied) {
+                WateringCanItem.setWaterCharges(stack, WateringCanItem.MAX_WATER_CHARGES);
+                wateringCanFill = true;
+            }
         } else if (stack.getItem() instanceof PitcherItem pitcher) {
             pitcher.fillWithWater(stack);
         } else if (stack.is(Items.BUCKET)) {
@@ -60,7 +66,9 @@ public final class WaterSourceInteraction {
         }
 
         if (applied) {
-            level.playSound(null, pos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS, 0.8F, 1.0F);
+            level.playSound(null, pos,
+                    wateringCanFill ? ModSounds.WATERING_CAN_FILL.get() : SoundEvents.BUCKET_FILL,
+                    SoundSource.BLOCKS, 0.8F, 1.0F);
         }
         return ItemInteractionResult.sidedSuccess(false);
     }

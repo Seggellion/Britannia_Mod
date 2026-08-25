@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.block;
 
+import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.block.entity.OrangeTreeRootBlockEntity;
 import com.seggellion.britannia_mod.block.entity.HouseFarmPlotBlockEntity;
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
@@ -15,7 +16,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
@@ -88,7 +88,7 @@ public class OrangeFruitBlock extends Block {
                 root.cleanupTree(serverLevel, player, false);
                 FarmingBlock.exhaustFertileSoil(level, soil.getBlockPos(), soil);
             }
-            level.playSound(null, pos, SoundEvents.CROP_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
+            level.playSound(null, pos, ModSounds.SCISSORS_CUT.get(), SoundSource.BLOCKS, 0.8f, 1.0f);
             if (!player.getAbilities().instabuild) {
                 stack.hurtAndBreak(1, player, Player.getSlotForHand(hand));
             }
