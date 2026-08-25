@@ -16,6 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -53,10 +54,18 @@ public final class GrabbyPersistenceGameTests {
     private GrabbyPersistenceGameTests() {
     }
 
+    /**
+     * Throws {@link GameTestAssertException}, never {@link IllegalStateException} or
+     * {@link AssertionError}. When a check runs inside a {@code succeedWhen} or sequence callback --
+     * directly or through any helper called from one -- {@code GameTestSequence.tickAndContinue}
+     * swallows only that one type, which is how a polled condition retries until it holds.
+     * {@code GameTestInfo} ticks its sequences outside any try/catch, so anything else escapes into
+     * the server tick loop and crashes the whole GameTest server, ending the run and every result in
+     * it. {@code AssertionError} is worse still: being an Error rather than an Exception, it is not
+     * caught by the {@code catch (Exception)} that guards a test body either.
+     */
     private static void check(boolean condition, String message) {
-        if (!condition) {
-            throw new AssertionError(message);
-        }
+        if (!condition) throw new GameTestAssertException(message);
     }
 
     /** Saves and reloads a block entity the way a chunk unload and reload does. */

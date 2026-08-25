@@ -28,6 +28,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
@@ -707,8 +708,16 @@ public final class BankingDepositProxyServiceGameTests {
         return npc;
     }
 
+    /**
+     * Throws {@link GameTestAssertException}, never {@link IllegalStateException}. When a check runs
+     * inside a {@code succeedWhen} or sequence callback -- directly or through any helper called
+     * from one -- {@code GameTestSequence.tickAndContinue} swallows only that one type, which is how
+     * a polled condition retries until it holds. {@code GameTestInfo} ticks its sequences outside
+     * any try/catch, so anything else escapes into the server tick loop and crashes the whole
+     * GameTest server, ending the run and every result in it.
+     */
     private static void check(boolean condition, String message) {
-        if (!condition) throw new IllegalStateException(message);
+        if (!condition) throw new GameTestAssertException(message);
     }
 
     /**

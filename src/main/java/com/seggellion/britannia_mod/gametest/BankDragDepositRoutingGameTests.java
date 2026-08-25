@@ -32,6 +32,7 @@ import com.seggellion.britannia_mod.service.banking.BankingTransferPacketService
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
@@ -162,7 +163,10 @@ public final class BankDragDepositRoutingGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    // Own batch: Rig.install puts process-wide fakes in place and rig.results collects what reached
+    // the client, so "exactly one clean rejection" is only true if nothing else is exercising the
+    // same protocol at the same moment. A neighbour in this batch doing so makes this read two.
+    @GameTest(template = TEMPLATE, timeoutTicks = 40, batch = "bankDragRedemptionNonCheque")
     public static void theRedemptionPacketAimedAtANonChequeRejectsCleanlyAndDisposesNothing(GameTestHelper helper) {
         // A modified client can aim the new packet anywhere; the proxy re-reads the live slot.
         Rig rig = Rig.install(helper);
@@ -577,7 +581,15 @@ public final class BankDragDepositRoutingGameTests {
         }
     }
 
+    /**
+     * Throws {@link GameTestAssertException}, never {@link IllegalStateException}. When a check runs
+     * inside a {@code succeedWhen} or sequence callback -- directly or through any helper called
+     * from one -- {@code GameTestSequence.tickAndContinue} swallows only that one type, which is how
+     * a polled condition retries until it holds. {@code GameTestInfo} ticks its sequences outside
+     * any try/catch, so anything else escapes into the server tick loop and crashes the whole
+     * GameTest server, ending the run and every result in it.
+     */
     private static void check(boolean condition, String message) {
-        if (!condition) throw new IllegalStateException(message);
+        if (!condition) throw new GameTestAssertException(message);
     }
 }
