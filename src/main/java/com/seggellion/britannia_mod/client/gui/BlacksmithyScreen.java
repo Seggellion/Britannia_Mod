@@ -14,6 +14,7 @@ import com.seggellion.britannia_mod.skill.crafting.ArmorProfileRegistry;
 import com.seggellion.britannia_mod.skill.crafting.CraftableDef;
 import com.seggellion.britannia_mod.skill.crafting.CraftableRegistry;
 import com.seggellion.britannia_mod.skill.crafting.IngredientRequirement;
+import com.seggellion.britannia_mod.skill.crafting.MetalProgression;
 import com.seggellion.britannia_mod.skill.crafting.ResistanceProfile;
 import com.seggellion.britannia_mod.skill.crafting.ShieldProfileRegistry;
 import net.minecraft.ChatFormatting;
@@ -161,6 +162,11 @@ public class BlacksmithyScreen extends Screen {
         if (!(player.getMainHandItem().getItem() instanceof BlackSmithsHammerItem) || !hasNearbyAnvil(player)) return false;
         UOMetalToolMaterial material = UOMetalToolMaterial.getMaterialByIngot(player.getOffhandItem().getItem());
         if (material == null) return false;
+        // Presentation only: the server refuses this same pairing in BlacksmithCrafting whatever
+        // this list shows. Hiding recipes the selected metal is too good for keeps the carousel
+        // honest, so a smith holding Valorite ingots sees an empty list rather than a list of
+        // things that will all be rejected.
+        if (!MetalProgression.canWork(ClientSkillTable.get(MetalProgression.SKILL_ID), material)) return false;
         for (var skill : definition.skillRequirements()) {
             // ClientSkillTable, never SkillManager: SkillManager's map is the SERVER's store and
             // is empty in the client JVM of a dedicated server, so reading it here showed every
