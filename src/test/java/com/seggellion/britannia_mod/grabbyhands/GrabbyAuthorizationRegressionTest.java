@@ -107,29 +107,51 @@ class GrabbyAuthorizationRegressionTest {
     // The existing authorization layers must remain intact
     // ------------------------------------------------------------------
 
+    /**
+     * The protection this used to pin — CityGameModeHandler checking the city boundary before an
+     * axe could earn Survival — is now structural rather than an ordering: nothing grants
+     * Survival at all. That handler is retired, the zone rule holds every non-operator in
+     * adventure unconditionally (no held tool exempts anyone), and in-city mining is refused
+     * explicitly by the Mining gate instead of by a game-mode accident. This asserts each of
+     * those, so a future change that reintroduces a tool-based game-mode grant fails here.
+     */
     @Test
-    void theCityBoundaryStillForcesAdventureAheadOfAnyToolCheck() throws IOException {
-        String source = source("event/CityGameModeHandler.java");
-        int cityCheck = source.indexOf("isPlayerInAnyCity");
-        int toolCheck = source.indexOf("instanceof TwoHandedAxeItem");
-        assertTrue(cityCheck >= 0, "city boundary check missing");
-        assertTrue(toolCheck >= 0, "tool check missing");
-        assertTrue(cityCheck < toolCheck,
-                "the city check must still precede and short-circuit the tool check,"
-                        + " otherwise an axe would grant Survival inside cities");
-        assertTrue(source.contains("setGameMode(GameType.ADVENTURE)"));
+    void cityProtectionNoLongerDependsOnGameModeSwitching() throws IOException {
+        assertFalse(Files.exists(MOD_ROOT.resolve("event/CityGameModeHandler.java")),
+                "the Survival-switch handler must stay retired");
+
+        String zone = source("structure/SurvivalZoneHandler.java");
+        assertTrue(zone.contains("setGameMode(GameType.ADVENTURE)"),
+                "the zone rule must still return players to adventure");
+        assertFalse(zone.contains("instanceof TwoHandedAxeItem"),
+                "no held tool may exempt anyone from adventure");
+        assertFalse(zone.contains("instanceof QualityToolItem"),
+                "no held tool may exempt anyone from adventure");
+        assertFalse(zone.contains("setGameMode(GameType.SURVIVAL)"),
+                "nothing may put a player into Survival for a tool");
+
+        String gate = source("mining/MiningGateHandler.java");
+        assertTrue(gate.contains("isPlayerInAnyCity"),
+                "in-city mining must be refused explicitly now that adventure can dig");
     }
 
     @Test
     void theAxeRemainsContainedToWoodAtTheToolLevel() throws IOException {
-        // Two independent BreakSpeed cancellations plus a zero destroy speed are what stop an axe
-        // breaking furniture in any game mode. Grabby Hands relies on none of it, but must not
-        // have relaxed any of it either.
-        for (String handler : List.of("event/ToolInteractionHandler.java", "event/BreakSpeedHandler.java")) {
-            String source = source(handler);
-            assertTrue(source.contains("AxeHarvestRules.isAllowedAxeHarvestBlock"), handler);
-            assertTrue(source.contains("event.setCanceled(true)"), handler);
-        }
+        // A BreakSpeed cancellation plus a zero destroy speed are what stop an axe breaking
+        // furniture in any game mode. Grabby Hands relies on neither, but must not have relaxed
+        // either.
+        //
+        // This used to check two handlers. BreakSpeedHandler was a byte-for-byte duplicate of
+        // ToolInteractionHandler's logic that was imported but never registered and carried no
+        // @EventBusSubscriber, so it never fired: dead weight, and a standing invitation to fix a
+        // rule in the copy that does nothing. It is gone, and its absence is asserted so the
+        // duplicate cannot quietly return.
+        String handler = "event/ToolInteractionHandler.java";
+        String source = source(handler);
+        assertTrue(source.contains("AxeHarvestRules.isAllowedAxeHarvestBlock"), handler);
+        assertTrue(source.contains("event.setCanceled(true)"), handler);
+        assertFalse(Files.exists(MOD_ROOT.resolve("event/BreakSpeedHandler.java")),
+                "the unregistered duplicate break-speed handler must stay deleted");
         String axe = source("item/TwoHandedAxeItem.java");
         assertTrue(axe.contains("isAllowedAxeHarvestBlock"));
         assertTrue(axe.contains("return 0.0F"), "non-wood destroy speed must stay zero");

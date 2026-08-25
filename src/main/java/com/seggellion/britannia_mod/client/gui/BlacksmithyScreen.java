@@ -9,7 +9,7 @@ import com.seggellion.britannia_mod.registry.BlacksmithItemRegistry;
 import com.seggellion.britannia_mod.registry.WeaponProfile;
 import com.seggellion.britannia_mod.registry.WeaponRegistry;
 import com.seggellion.britannia_mod.skill.BlacksmithCrafting;
-import com.seggellion.britannia_mod.skill.SkillManager;
+import com.seggellion.britannia_mod.skill.ClientSkillTable;
 import com.seggellion.britannia_mod.skill.crafting.ArmorProfileRegistry;
 import com.seggellion.britannia_mod.skill.crafting.CraftableDef;
 import com.seggellion.britannia_mod.skill.crafting.CraftableRegistry;
@@ -162,7 +162,11 @@ public class BlacksmithyScreen extends Screen {
         UOMetalToolMaterial material = UOMetalToolMaterial.getMaterialByIngot(player.getOffhandItem().getItem());
         if (material == null) return false;
         for (var skill : definition.skillRequirements()) {
-            if (SkillManager.getSkill(player.getUUID(), skill.skillKey()) < skill.minValue()) return false;
+            // ClientSkillTable, never SkillManager: SkillManager's map is the SERVER's store and
+            // is empty in the client JVM of a dedicated server, so reading it here showed every
+            // skill as 0 and froze the craftable list regardless of the player's real Blacksmithy.
+            // The client table is the authoritative server sync, refreshed on every skill change.
+            if (ClientSkillTable.get(skill.skillKey()) < skill.minValue()) return false;
         }
         if (definition.requiresLearnedRecipe() && !learnedRecipes.contains(definition.learnedRecipeKey())) return false;
         if (definition.raceRestriction() != null && !definition.raceRestriction().equalsIgnoreCase(playerRace)) return false;
@@ -430,9 +434,11 @@ public class BlacksmithyScreen extends Screen {
             ItemStack stack = player.getInventory().getItem(i);
             inventory = 31 * inventory + Objects.hash(BuiltInRegistries.ITEM.getKey(stack.getItem()), stack.getCount(), stack.getDamageValue());
         }
+        // The sync revision covers every skill at once: any authoritative change - a gain, an
+        // admin set, a training purchase - bumps it, so the open screen recomputes within its
+        // five-tick refresh without naming individual skills.
         return Objects.hash(workflow, inventory, BlacksmithItemData.identityToken(player.getMainHandItem()),
-                SkillManager.getSkill(player.getUUID(), "blacksmithy"), SkillManager.getSkill(player.getUUID(), "tailoring"),
-                SkillManager.getSkill(player.getUUID(), "carpentry"), SkillManager.getSkill(player.getUUID(), "magery"));
+                ClientSkillTable.revision());
     }
 
     private static int inventoryCount(Player player, Item item) {
@@ -476,7 +482,7 @@ public class BlacksmithyScreen extends Screen {
     }
 
     private static int successPercent(Player player, CraftableDef def) {
-        float skill = SkillManager.getSkill(player.getUUID(), "blacksmithy");
+        float skill = ClientSkillTable.get("blacksmithy");
         return (int) Math.round(Math.max(5, Math.min(100, 50 + skill - def.minimumBlacksmithy())));
     }
 

@@ -76,20 +76,29 @@ class ManagedClayDepositTest {
     }
 
     /**
-     * The deposit is deliberately absent from the Mining catalogue.
+     * The deposit is in the Mining catalogue for its skill requirement, and for nothing else.
      *
-     * <p>Putting it there would have been the cheap way to get restoration, and it would have
-     * brought a Mining skill requirement, a STONE/ORE category and the pickaxe with it. It would
-     * also have made the rule key on block <em>type</em>, which is how the ores work — fine for a
-     * block only this mod places, fatal the day anybody added {@code minecraft:clay}, because
-     * every clay block generated in every river would have become an economic deposit at once.
+     * <p>This assertion used to be the inverse: clay was deliberately absent, because joining the
+     * catalogue then meant inheriting a STONE/ORE category and the pickaxe. The owner's
+     * skill-progression decision brought the beds in — every managed geological resource requires
+     * Mining, and the requirement number lives in exactly one file — but under a SEDIMENT
+     * category of their own, so nothing else came with it. What the old test protected is still
+     * pinned here: the mineable row claims only the authored block (a river of
+     * {@code minecraft:clay} is still worthless), and the tool authority is still the resource's
+     * shovel tag, never the pickaxe.
      */
     @Test
-    void clayIsNotInTheMiningCatalogue() throws IOException {
-        String catalogue = Files.readString(PROJECT.resolve(
-                "src/main/resources/data/britannia_mod/mining/mineables.json"), StandardCharsets.UTF_8);
-        assertFalse(catalogue.toLowerCase(java.util.Locale.ROOT).contains("clay"),
-                "clay reached the pickaxe catalogue");
+    void clayIsInTheMiningCatalogueForItsRequirementOnly() {
+        com.seggellion.britannia_mod.mining.MineableDefinition clay =
+                com.seggellion.britannia_mod.mining.MineableCatalog.instance()
+                        .byId("clay").orElseThrow(() -> new AssertionError(
+                                "the clay bed must carry a Mining requirement"));
+        assertEquals(com.seggellion.britannia_mod.mining.MineableDefinition.Category.SEDIMENT,
+                clay.category(), "the bed joins under its own category, not the pickaxe's");
+        assertEquals(java.util.List.of("britannia_mod:clay_deposit"), clay.blockIds(),
+                "only the authored bed block; vanilla clay stays out of the economy");
+        assertEquals(0.0f, clay.requiredMining(), 0.0f,
+                "clay stays at 0.0 so a new player can still supply their first house");
     }
 
     /**

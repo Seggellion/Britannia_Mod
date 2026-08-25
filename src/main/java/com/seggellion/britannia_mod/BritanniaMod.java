@@ -12,7 +12,6 @@ import com.seggellion.britannia_mod.spawner.BritainCemetarySpawner;
 import com.seggellion.britannia_mod.spawner.ShameDungeonSpawner;
 import com.seggellion.britannia_mod.spawner.CitySpawner;
 import com.seggellion.britannia_mod.event.ShadeEntitySizeHandler;
-import com.seggellion.britannia_mod.event.BreakSpeedHandler;
 import com.seggellion.britannia_mod.event.InventoryHandler;
 import com.seggellion.britannia_mod.event.ChestHandler;
 import com.seggellion.britannia_mod.event.GlobalEventHandler;
@@ -31,7 +30,6 @@ import com.seggellion.britannia_mod.villager.BlacksmithPOIHandler;
 import com.seggellion.britannia_mod.event.BlockRestoreHandler;
 import com.seggellion.britannia_mod.event.CustomBlockBreakHandler;
 import com.seggellion.britannia_mod.event.ToolInteractionHandler;
-import com.seggellion.britannia_mod.event.CityGameModeHandler;
 import com.seggellion.britannia_mod.event.LockpickingEventHandler;
 //import com.seggellion.britannia_mod.villager.CustomVillagerProfessions;
 import com.seggellion.britannia_mod.villager.BlacksmithProfessions;
@@ -219,7 +217,14 @@ CraftableRegistry.init();
         NeoForge.EVENT_BUS.register(QuestEventHandlers.class);
         NeoForge.EVENT_BUS.register(WoodChopEventHandler.class);
         NeoForge.EVENT_BUS.register(new ToolInteractionHandler());
-        NeoForge.EVENT_BUS.register(new CityGameModeHandler());
+        // CityGameModeHandler is retired. Its city clause (force adventure inside city bounds)
+        // is subsumed by SurvivalZoneHandler holding every non-operator in adventure everywhere,
+        // and its tool clause WAS the legacy mining workaround: it parked pickaxe- and
+        // axe-holders in Survival so vanilla breaking could run at all. Extraction tools now
+        // carry scoped CAN_BREAK predicates instead (ExtractionToolPredicates), so the ordinary
+        // break lifecycle runs in adventure and no game mode is ever switched for mining.
+        // In-city mining that the forced-adventure rule used to make impossible is refused
+        // explicitly by MiningGateHandler's city-bounds check.
         // Mining milestone 3: HIGH-priority skill gate; must precede CustomBlockBreakHandler,
         // which mutates the world inside its NORMAL-priority listener.
         NeoForge.EVENT_BUS.register(new com.seggellion.britannia_mod.mining.MiningGateHandler());
@@ -239,6 +244,12 @@ CraftableRegistry.init();
                 new com.seggellion.britannia_mod.resource.extraction.ManagedResourceCreativeGuard());
         NeoForge.EVENT_BUS.register(
                 new com.seggellion.britannia_mod.deposit.ManagedDepositInteractionHandler());
+        // Skill-progression remediation: keeps a CAN_BREAK predicate on every extraction tool —
+        // catalogue blocks for the pickaxe and shovel, wood and leaves for the two-handed axe —
+        // so an adventure player runs the ordinary vanilla break lifecycle (progress, duration,
+        // BreakEvent) instead of the retired instant left-click and Survival-switch workarounds.
+        NeoForge.EVENT_BUS.register(
+                new com.seggellion.britannia_mod.resource.extraction.ExtractionToolPredicates());
        NeoForge.EVENT_BUS.register(new CustomBlockBreakHandler());
         // OreVein milestone 1: explosions do not fire BreakEvent, so neither the Mining gate nor
         // the deposit handler above ever saw one. This takes managed resource cells out of the

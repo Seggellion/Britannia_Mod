@@ -43,7 +43,20 @@ public record MineableDefinition(
          * ORE mints a {@code PurityOreItem} and STONE a {@code GradeStoneItem}, and coal wants
          * neither. See {@code ResourceDefinition.Family#MINERAL}.
          */
-        MINERAL;
+        MINERAL,
+        /**
+         * A deposit bed worked with the shovel — clay and silica — whose extraction the managed
+         * deposit flow owns rather than {@code CustomBlockBreakHandler}.
+         *
+         * <p>Added when the owner decided the beds require Mining progression like everything
+         * else geological. The requirement <em>number</em> belongs in this catalogue for the same
+         * reason the ores' do — {@code required_mining} lives in exactly one file — while the
+         * yield stays with the resource definition, which is why this category needs no drop
+         * dispatch of its own: {@code ManagedDepositExtraction} reads the yield from the resource
+         * and only asks this catalogue, through {@code MiningBreakGate}, whether the digger's
+         * Mining is sufficient.
+         */
+        SEDIMENT;
 
         public static Category parse(String raw) {
             for (Category value : values()) {

@@ -8,8 +8,6 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import com.seggellion.britannia_mod.network.payload.housing.S2CHouseBuildRightsPayload;
 import net.neoforged.neoforge.network.PacketDistributor;
-import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
-import com.seggellion.britannia_mod.item.QualityToolItem;
 
 import java.util.Set;
 import java.util.UUID;
@@ -95,12 +93,15 @@ public class SurvivalZoneHandler {
                 return;
             }
 
-            // The existing escape hatch: a mod tool grants ordinary survival rights for the work
-            // it is for, anywhere. Unchanged.
-            boolean isHoldingTool = (player.getMainHandItem().getItem() instanceof QualityToolItem)
-                    || (player.getMainHandItem().getItem() instanceof TwoHandedAxeItem);
-
-            if (currentMode != GameType.ADVENTURE && !isHoldingTool) {
+            // Adventure, unconditionally. There used to be an escape hatch here — a held mod
+            // tool exempted its holder so that CityGameModeHandler could park them in Survival
+            // for the duration of a dig. That was the last game-mode workaround in the resource
+            // systems: extraction tools now carry scoped CAN_BREAK predicates
+            // (ExtractionToolPredicates), so adventure itself can run the ordinary break
+            // lifecycle and nothing needs to *be* anything else to mine. The hatch had also
+            // become a loophole — holding a pickaxe kept whatever mode you had — so it is gone
+            // rather than vestigial.
+            if (currentMode != GameType.ADVENTURE) {
                 player.setGameMode(GameType.ADVENTURE);
             }
 

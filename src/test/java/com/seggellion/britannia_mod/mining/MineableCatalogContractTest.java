@@ -59,7 +59,12 @@ class MineableCatalogContractTest {
             // material -- `minecraft:sandstone` stays out, because a block-type rule over a
             // material that generates in every desert would hand world generation the villa's
             // price. See ManagedSandstoneDepositTest.
-            "britannia_mod:sandstone_deposit");
+            "britannia_mod:sandstone_deposit",
+            // Skill-progression remediation, added deliberately: the sediment beds joined the
+            // catalogue when the owner decided every managed geological resource requires Mining.
+            // Their extraction stays with ManagedDepositExtraction (shovel, configured yield);
+            // only the Mining requirement lives here, read through MiningBreakGate.
+            "britannia_mod:clay_deposit", "britannia_mod:silica_sand_deposit");
 
     private static MineableCatalog catalog;
 
@@ -247,7 +252,8 @@ class MineableCatalogContractTest {
                 "message.britannia_mod.mining.insufficient",
                 "message.britannia_mod.mining.skill_unavailable",
                 "message.britannia_mod.mining.automation_blocked",
-                "message.britannia_mod.mining.unresolved")) {
+                "message.britannia_mod.mining.unresolved",
+                "message.britannia_mod.mining.city_protected")) {
             assertTrue(lang.contains("\"" + key + "\""), "en_us.json is missing " + key);
         }
     }

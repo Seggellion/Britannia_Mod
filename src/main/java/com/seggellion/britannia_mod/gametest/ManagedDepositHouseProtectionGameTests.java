@@ -192,6 +192,10 @@ public final class ManagedDepositHouseProtectionGameTests {
     private static ServerPlayer player(ServerLevel level, String name) {
         ServerPlayer player = ManagedResourceTestPlayers.survival(level, name);
         player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        // The beds are Mining-gated now (skill-progression remediation); this suite is about
+        // house authority, so every subject is seeded past the skill question.
+        com.seggellion.britannia_mod.skill.SkillManager.applyConfirmedValue(
+                player, com.seggellion.britannia_mod.mining.MiningSkill.SKILL_ID, 100.0f);
         return player;
     }
 }

@@ -404,6 +404,35 @@
       "restorable": true,
       "owner_review": true,
       "notes": "Activated in milestone 6 at the approved 35.0 tier - a pure data change now that the managed set reads this catalogue. Vanilla Dripstone needs only a wooden-tier pickaxe, so the Britannia pickaxe (iron tier) harvesting it bypasses no vanilla tool rule. Priced at 5.0 under the sedimentary family."
+    },
+    {
+      "id": "clay",
+      "display_name": "Clay",
+      "category": "sediment",
+      "status": "active",
+      "required_mining": 0.0,
+      "challenge": 0.0,
+      "blocks": [
+        "britannia_mod:clay_deposit"
+      ],
+      "drop": "Clay",
+      "restorable": true,
+      "notes": "Skill-progression remediation: the beds joined the catalogue when the owner decided every managed geological resource requires Mining. Kept at 0.0 so new players can still supply their first house with clay; the yield item (minecraft:clay_ball) carries its own commodity mapping, so no economy_commodity is declared on the drop."
+    },
+    {
+      "id": "silica_sand",
+      "display_name": "Silica Sand",
+      "category": "sediment",
+      "status": "active",
+      "required_mining": 5.0,
+      "challenge": 5.0,
+      "blocks": [
+        "britannia_mod:silica_sand_deposit"
+      ],
+      "drop": "Silica sand",
+      "restorable": true,
+      "owner_review": true,
+      "notes": "Skill-progression remediation. 5.0 is the acceptance example from the defect report (Mining 5 gates the bed; 4.9 does not qualify); flagged for owner tuning against the glass chain. The yield item (britannia_mod:silica_sand) carries its own commodity mapping."
     }
   ]
 }

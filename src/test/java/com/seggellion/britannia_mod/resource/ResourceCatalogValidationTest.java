@@ -43,6 +43,7 @@ class ResourceCatalogValidationTest {
               "display_name": "Clay Bed",
               "family": "sediment",
               "blocks": ["britannia_mod:clay_deposit"],
+              "mineable": "clay",
               "extraction_tool": "britannia_mod:clay_shovels",
               "yield": {"mode": "item", "item": "minecraft:clay_ball", "count": 1},
               "depleted": "fluid_aware_air",
@@ -148,11 +149,22 @@ class ResourceCatalogValidationTest {
         assertTrue(failureOf(extra).contains("they must match exactly"));
     }
 
+    /**
+     * The skill-progression remediation reversed the old rule here: a bed used to be forbidden a
+     * mineable reference, and a digger at Mining 0.0 could therefore empty any bed. Every
+     * resource now names its Mining requirement in the one catalogue that holds them.
+     */
     @Test
-    void aSedimentBedThatClaimsAMiningRequirementFails() {
-        String wrong = VALID_BED.replace("  \"extraction_tool\"",
-                "  \"mineable\": \"silver\",\n  \"extraction_tool\"");
-        assertTrue(failureOf(wrong).contains("must not reference a Mining requirement"));
+    void aSedimentBedWithoutAMiningRequirementFails() {
+        assertTrue(failureOf(VALID_BED.replace("  \"mineable\": \"clay\",\n", ""))
+                .contains("must reference a mineable"));
+    }
+
+    /** A bed may not quietly point at an ore's requirement any more than an ore may at a stone's. */
+    @Test
+    void aSedimentBedReferencingAnOreMineableFails() {
+        assertTrue(failureOf(VALID_BED.replace("\"mineable\": \"clay\"", "\"mineable\": \"silver\""))
+                .contains("is category"));
     }
 
     /* ------------------------------------------------------------------ */

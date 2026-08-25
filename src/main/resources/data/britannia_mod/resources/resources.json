@@ -567,6 +567,7 @@
       "id": "britannia_mod:clay_deposit",
       "display_name": "Clay Bed",
       "family": "sediment",
+      "mineable": "clay",
       "blocks": [
         "britannia_mod:clay_deposit"
       ],
@@ -586,6 +587,7 @@
       "id": "britannia_mod:silica_sand_deposit",
       "display_name": "Silica Bed",
       "family": "sediment",
+      "mineable": "silica_sand",
       "blocks": [
         "britannia_mod:silica_sand_deposit"
       ],

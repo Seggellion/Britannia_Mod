@@ -2256,6 +2256,34 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
 
 // Ores
 
+        /*
+         * The managed destroy-time ladder.
+         *
+         * Every one of these blocks used to register the same 3.0, so a Mining-10 coal seam cost
+         * exactly as much holding as a Mining-99 valorite vein -- a shared default nobody chose
+         * rather than a balance decision. The figures below are ordered by the Mining rank the
+         * catalogue already states (mining/mineables.json `required_mining`), which is the
+         * authority for material rank; nothing is duplicated here except the timing itself, and
+         * MiningHardnessLadderTest re-derives the ordering from that catalogue so the two cannot
+         * drift apart.
+         *
+         *   rock/mineral tier            metal tier (rank -> destroy time)
+         *   coal              req 10  2.0   silver       req 55  3.0
+         *   metamorphic_rock  req 30  2.2   tin          req 65  3.4
+         *   glacial_rock      req 35  2.4   shadow_iron  req 70  3.8
+         *   igneous_rock      req 40  2.6   copper       req 75  4.2
+         *   volcanic_rock     req 45  2.8   gold         req 85  4.6
+         *                                   agapite      req 90  5.0
+         *                                   verite       req 95  5.4
+         *                                   valorite     req 99  5.8
+         *
+         * Deliberately gentle: with the project pickaxe this is roughly 0.9s at the bottom and
+         * 2.5s at the summit, so the progression is felt without turning late-game ore into an
+         * endurance mechanic. Skill gating and dig duration stay separate dimensions -- the ladder
+         * borrows the rank ORDER from `required_mining`, never its numbers.
+         *
+         * Blast resistance stays 3.0 for all of them; see BaseOreBlock.
+         */
 
         /**
          * Managed coal. Deliberately not {@code minecraft:coal_ore}: that block generates in every
@@ -2263,46 +2291,46 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
          * terrain decide how much coal exists. This one is placed only by the deposit platform.
          */
         public static final DeferredHolder<Block, Block> COAL_ORE = BLOCKS.register(
-                "coal_ore", BaseOreBlock::new);
+                "coal_ore", () -> new BaseOreBlock(2.0F));
 
         public static final DeferredHolder<Block, Block> COPPER_ORE = BLOCKS.register(
-                "copper_ore", BaseOreBlock::new);
+                "copper_ore", () -> new BaseOreBlock(4.2F));
                 
         public static final DeferredHolder<Block, Block> TIN_ORE = BLOCKS.register(
-                "tin_ore", BaseOreBlock::new);
+                "tin_ore", () -> new BaseOreBlock(3.4F));
 
         public static final DeferredHolder<Block, Block> SILVER_ORE = BLOCKS.register(
-                "silver_ore", BaseOreBlock::new);
+                "silver_ore", () -> new BaseOreBlock(3.0F));
 
         public static final DeferredHolder<Block, Block> GOLD_ORE = BLOCKS.register(
-                "gold_ore", BaseOreBlock::new);
+                "gold_ore", () -> new BaseOreBlock(4.6F));
 
         public static final DeferredHolder<Block, Block> SHADOW_IRON_ORE = BLOCKS.register(
-                "shadow_iron_ore", BaseOreBlock::new);
+                "shadow_iron_ore", () -> new BaseOreBlock(3.8F));
 
         public static final DeferredHolder<Block, Block> AGAPITE_ORE = BLOCKS.register(
-                "agapite_ore", BaseOreBlock::new);
+                "agapite_ore", () -> new BaseOreBlock(5.0F));
 
         public static final DeferredHolder<Block, Block> VERITE_ORE = BLOCKS.register(
-                "verite_ore", BaseOreBlock::new);
+                "verite_ore", () -> new BaseOreBlock(5.4F));
 
         public static final DeferredHolder<Block, Block> VALORITE_ORE = BLOCKS.register(
-                "valorite_ore", BaseOreBlock::new);
+                "valorite_ore", () -> new BaseOreBlock(5.8F));
 
         public static final DeferredHolder<Block, Block> HIGH_PURITY_SILVER_ORE = BLOCKS.register(
-                "high_purity_silver_ore", BaseOreBlock::new);
+                "high_purity_silver_ore", () -> new BaseOreBlock(3.0F));
 
         public static final DeferredHolder<Block, Block> IGNEOUS_ROCK = BLOCKS.register(
-                "igneous_rock", BaseOreBlock::new);
+                "igneous_rock", () -> new BaseOreBlock(2.6F));
 
         public static final DeferredHolder<Block, Block> METAMORPHIC_ROCK = BLOCKS.register(
-                "metamorphic_rock", BaseOreBlock::new);
+                "metamorphic_rock", () -> new BaseOreBlock(2.2F));
 
         public static final DeferredHolder<Block, Block> VOLCANIC_ROCK = BLOCKS.register(
-                "volcanic_rock", BaseOreBlock::new);
+                "volcanic_rock", () -> new BaseOreBlock(2.8F));
 
         public static final DeferredHolder<Block, Block> GLACIAL_ROCK = BLOCKS.register(
-                "glacial_rock", BaseOreBlock::new);
+                "glacial_rock", () -> new BaseOreBlock(2.4F));
 
         /**
          * The managed clay bed. Soft sediment worked with a shovel, not a pickaxe, so it is
@@ -2345,7 +2373,12 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
                 "sandstone_deposit",
                 () -> new Block(BlockBehaviour.Properties.of()
                         .mapColor(MapColor.SAND)
-                        .strength(3.0F, 3.0F)
+                        // Destroy time 1.6, blast resistance unchanged at 3.0. It shipped at 3.0
+                        // for both, which put a Mining-5 quarry face on the same dig as a
+                        // Mining-99 valorite vein -- the shared-default artefact, not a decision.
+                        // 1.6 sits just above vanilla stone, which is what a soft early-game
+                        // sandstone face should cost.
+                        .strength(1.6F, 3.0F)
                         // Milestone 1: a quarry face is a place, not a material. It travels with
                         // its restoration record or not at all, exactly like BaseOreBlock.
                         .pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)
