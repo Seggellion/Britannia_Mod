@@ -39,6 +39,16 @@ class DisplayCaseContractTest {
         assertTrue(source.contains("ConnectionForm.CORNER"));
         assertTrue(source.contains("return hasValidPart(state) ? RenderShape.MODEL : RenderShape.INVISIBLE"),
                 "the upper cage cell must not inherit the shared non-root invisibility policy");
+        assertTrue(source.contains("getBlockSupportShape"),
+                "the short upper cage needs a dedicated logical support face");
+        assertTrue(source.contains("UPPER_PLACEMENT_SURFACE"),
+                "center clicks need to resolve to the occupied upper rendering cell");
+        assertTrue(source.contains("getCollisionShape"),
+                "the logical placement face must stay out of physical collision");
+        assertFalse(source.contains("useItemOn("),
+                "display-case placement must remain on Minecraft's ordinary item-use path");
+        assertFalse(source.contains("useWithoutItem("),
+                "the decorative display case must not consume empty-hand interaction");
     }
 
     @Test

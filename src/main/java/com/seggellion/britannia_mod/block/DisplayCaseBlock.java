@@ -38,6 +38,15 @@ public final class DisplayCaseBlock extends DecorativeMultiblockBlock {
 
     private static final VoxelShape LOWER_INDEPENDENT = Block.box(1, 0, 1, 15, 16, 15);
     private static final VoxelShape LOWER_CONNECTED = Shapes.block();
+    /**
+     * Logical top of the two-cell case.
+     *
+     * <p>The owner model and physical cage stop at local Y=6 in the upper cell. A full-width,
+     * one-voxel placement plate at the cell boundary makes center ray casts select that upper cell
+     * and gives support-sensitive blocks a conventional top face without adding collision in the
+     * ten-voxel visual gap above the cage.
+     */
+    private static final VoxelShape UPPER_PLACEMENT_SURFACE = Block.box(0, 15, 0, 16, 16, 16);
     private static final VoxelShape UPPER_INDEPENDENT = Shapes.or(
             Block.box(1, 0, 2, 2, 1.5, 14),
             Block.box(14, 0, 2, 15, 1.5, 14),
@@ -115,6 +124,29 @@ public final class DisplayCaseBlock extends DecorativeMultiblockBlock {
     @Override
     public VoxelShape getShape(
             BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        VoxelShape physicalShape = physicalShape(state, level, pos);
+        return isUpperCell(state)
+                ? Shapes.or(physicalShape, UPPER_PLACEMENT_SURFACE)
+                : physicalShape;
+    }
+
+    @Override
+    public VoxelShape getCollisionShape(
+            BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return physicalShape(state, level, pos);
+    }
+
+    @Override
+    public VoxelShape getBlockSupportShape(BlockState state, BlockGetter level, BlockPos pos) {
+        return isUpperCell(state) ? UPPER_PLACEMENT_SURFACE : physicalShape(state, level, pos);
+    }
+
+    @Override
+    public VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
+        return physicalShape(state, level, pos);
+    }
+
+    private VoxelShape physicalShape(BlockState state, BlockGetter level, BlockPos pos) {
         if (!state.is(this) || !hasValidPart(state)) return Shapes.empty();
 
         BlockState root = rootState(level, pos, state);
@@ -131,6 +163,10 @@ public final class DisplayCaseBlock extends DecorativeMultiblockBlock {
             return shape;
         }
         return connectedUpperShape(root);
+    }
+
+    private boolean isUpperCell(BlockState state) {
+        return state.is(this) && hasValidPart(state) && cell(state).y() == 1;
     }
 
     @Override
