@@ -2412,6 +2412,8 @@ public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
     public static final DeferredHolder<Item, Item> MEDIUM_SANDSTONE_BRICK_ROAD_ITEM = ITEMS.register("medium_sandstone_brick_road", () -> new BlockItem(BlockRegistry.MEDIUM_SANDSTONE_BRICK_ROAD.get(), new Item.Properties()));
 
     public static final DeferredHolder<Item, Item> DARK_SANDSTONE_BRICK_ROAD_ITEM = ITEMS.register("dark_sandstone_brick_road", () -> new BlockItem(BlockRegistry.DARK_SANDSTONE_BRICK_ROAD.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> LIGHT_SANDSTONE_PAVER_ITEM = ITEMS.register("light_sandstone_paver", () -> new BlockItem(BlockRegistry.LIGHT_SANDSTONE_PAVER.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> DARK_SANDSTONE_PAVER_ITEM = ITEMS.register("dark_sandstone_paver", () -> new BlockItem(BlockRegistry.DARK_SANDSTONE_PAVER.get(), new Item.Properties()));
 
     public static final DeferredHolder<Item, Item> GLOBE_ITEM = ITEMS.register("globe", () -> new BlockItem(BlockRegistry.GLOBE.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> FERN_ITEM = ITEMS.register("fern", () -> new BlockItem(BlockRegistry.FERN.get(), new Item.Properties()));

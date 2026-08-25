@@ -98,7 +98,9 @@ class Milestone14RRemovalAndPreservationTest {
         // 923 as of 2026-08-24: Patch 18 Milestone 1 adds the non-placeable dirt and dung
         // commodities plus empty, dirt-filled, fertile-mixture and water bowl identities. The
         // dung world block intentionally has no BlockItem, so these are exactly six item ids.
-        assertEquals(923, repositoryItems);
+        // 925 as of 2026-08-25: the light and dark sandstone pavers each add one ordinary
+        // BlockItem; their two visual variants remain block-state/model variants, not item ids.
+        assertEquals(925, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));

@@ -570,6 +570,8 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.MEDIUM_SANDSTONE_BRICK_ROAD_ITEM.get());
 
                 safeAccept(output, ItemRegistry.DARK_SANDSTONE_BRICK_ROAD_ITEM.get());
+                safeAccept(output, ItemRegistry.LIGHT_SANDSTONE_PAVER_ITEM.get());
+                safeAccept(output, ItemRegistry.DARK_SANDSTONE_PAVER_ITEM.get());
             }).build());
 
     // Utility method
