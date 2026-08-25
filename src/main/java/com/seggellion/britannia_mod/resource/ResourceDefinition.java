@@ -45,11 +45,11 @@ public record ResourceDefinition(
     /**
      * Which extraction system governs the resource, and therefore which tool family works it.
      *
-     * <p>ORE and STONE are the Mining ladder, worked with the project pickaxe and gated on the
-     * Mining skill. SEDIMENT is the deposit beds — clay and silica — worked with the project
-     * shovel and gated on nothing but the tool. They are parallel, not a hierarchy: a pickaxe has
-     * no authority over a clay bed and a shovel has none over an ore, and the tag on each
-     * definition is what says so.
+     * <p>ORE and STONE are the Mining ladder, worked with the project pickaxe. SEDIMENT is the
+     * deposit beds — clay and silica — worked with the project shovel. Every family is gated on
+     * the Mining skill through its mineable reference; the families stay parallel about tools,
+     * not about progression: a pickaxe has no authority over a clay bed and a shovel has none
+     * over an ore, and the tag on each definition is what says so.
      */
     public enum Family {
         ORE,
@@ -76,11 +76,6 @@ public record ResourceDefinition(
                 if (value.name().toLowerCase(Locale.ROOT).equals(raw)) return value;
             }
             throw new IllegalStateException("Unknown resource family '" + raw + "'");
-        }
-
-        /** Whether Mining governs this family, and therefore whether a mineable id is required. */
-        public boolean isMiningGoverned() {
-            return this != SEDIMENT;
         }
     }
 

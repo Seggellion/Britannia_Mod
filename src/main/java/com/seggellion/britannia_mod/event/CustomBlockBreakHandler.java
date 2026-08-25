@@ -58,6 +58,18 @@ public class CustomBlockBreakHandler {
             return;
         }
 
+        // The shared prerequisites, asked here rather than assumed from upstream. This handler
+        // cancels the event and empties the cell itself, which makes it an authority: it must not
+        // depend on MiningGateHandler having run at HIGH and refused first, because a cancelled
+        // event never reaches anyone and a priority change would silently reopen the hole that
+        // let strangers mine out of other people's houses. Costs one HouseBuildRights lookup on a
+        // path that is already about to rewrite the world.
+        if (com.seggellion.britannia_mod.resource.extraction.ManagedBreakAuthorization
+                .refuses(serverLevel, pos, player)) {
+            event.setCanceled(true);
+            return;
+        }
+
         boolean isStone = PickaxeMiningRules.isAllowedStoneBlock(state);
         boolean isOre = PickaxeMiningRules.isAllowedOreBlock(state);
         boolean isMineral = PickaxeMiningRules.isAllowedMineralBlock(state);

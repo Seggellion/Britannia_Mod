@@ -136,10 +136,28 @@ public final class MiningBreakGate {
             BlockState state,
             @Nullable ServerLevel level,
             @Nullable BlockPos pos) {
+        return evaluate(actor, state, level, pos, null);
+    }
+
+    /**
+     * The same evaluation with the working stack named by the caller.
+     *
+     * <p>The break flow always reads the server-side main hand — that is state the client cannot
+     * assert, and passing null here keeps that behaviour. The managed deposit service, though, has
+     * always taken the tool as an explicit parameter, and its answer must be about the stack it
+     * was actually asked about; judging a different slot than the caller named is how this gate
+     * and the deposit's own tool check briefly held two different opinions of one attempt.
+     */
+    public static Evaluation evaluate(
+            @Nullable Player actor,
+            BlockState state,
+            @Nullable ServerLevel level,
+            @Nullable BlockPos pos,
+            @Nullable net.minecraft.world.item.ItemStack tool) {
         if (MiningProvenance.isPlayerPlaced(level, pos)) {
             return new Evaluation(ResultType.NOT_APPLICABLE, Optional.empty(), Float.NaN, Float.NaN);
         }
-        return evaluateResolved(Mineables.resolve(state), subject(actor, state));
+        return evaluateResolved(Mineables.resolve(state), subject(actor, state, tool));
     }
 
     /** Pure decision core; package-visible so unit tests drive it without Minecraft bootstrap. */
@@ -186,12 +204,18 @@ public final class MiningBreakGate {
      * practice because an unresolved block answers NOT_APPLICABLE first.
      */
     static Subject subject(@Nullable Player actor, @Nullable BlockState state) {
+        return subject(actor, state, null);
+    }
+
+    /** The same snapshot judging an explicit stack; null means the server-side main hand. */
+    static Subject subject(@Nullable Player actor, @Nullable BlockState state,
+            @Nullable net.minecraft.world.item.ItemStack tool) {
         if (!(actor instanceof ServerPlayer serverPlayer)) {
             return new Subject(ActorType.NON_PLAYER, false, 0,
                     SkillManager.SkillDataState.NOT_LOADED, Float.NaN, false);
         }
-        boolean authorizedTool =
-                MiningExtractionTool.isAuthorized(state, serverPlayer.getMainHandItem());
+        boolean authorizedTool = MiningExtractionTool.isAuthorized(
+                state, tool != null ? tool : serverPlayer.getMainHandItem());
         if (ManagedExtractionPolicy.actorOf(serverPlayer) == ManagedExtractionPolicy.Actor.FAKE_PLAYER) {
             return new Subject(ActorType.AUTOMATION, isCreativeGameMode(serverPlayer),
                     FlowerProtectionService.effectivePermissionLevel(serverPlayer),
@@ -243,20 +267,10 @@ public final class MiningBreakGate {
         if (!(actor instanceof ServerPlayer serverPlayer) || evaluation.permitsBreak()) {
             return;
         }
-        // Throttle state rides on the player's own persistent data, the same place
-        // TrainingDummyService keeps its cooldown, so it cannot leak once they log out.
-        net.minecraft.nbt.CompoundTag data = serverPlayer.getPersistentData();
         String key = evaluation.type().name() + '|'
                 + evaluation.definition().map(MineableDefinition::id).orElse("-") + '|'
                 + formatSkill(evaluation.currentMining()) + '|'
                 + formatSkill(evaluation.requiredMining());
-        long now = serverPlayer.serverLevel().getGameTime();
-        if (!shouldSendDenial(data.getString(DENIAL_KEY_TAG), data.getLong(DENIAL_TICK_TAG), key, now)) {
-            return;
-        }
-        data.putString(DENIAL_KEY_TAG, key);
-        data.putLong(DENIAL_TICK_TAG, now);
-
         Component message = evaluation.type() == ResultType.INSUFFICIENT_SKILL
                 ? Component.translatable(
                         evaluation.feedbackTranslationKey(),
@@ -264,7 +278,28 @@ public final class MiningBreakGate {
                         formatSkill(evaluation.requiredMining()),
                         evaluation.definition().map(MineableDefinition::displayName).orElse("?"))
                 : Component.translatable(evaluation.feedbackTranslationKey());
-        serverPlayer.displayClientMessage(message.copy().withStyle(ChatFormatting.YELLOW), true);
+        sendThrottledDenial(serverPlayer, key, message);
+    }
+
+    /**
+     * One throttled action-bar denial, shared by every Mining refusal path.
+     *
+     * <p>The first-swing preflight made sharing necessary rather than tidy: a denial can now be
+     * spoken at the left click <em>and</em> at a completed break, and a held button re-raises the
+     * click every few ticks. One throttle state — riding on the player's own persistent data, the
+     * same place {@code TrainingDummyService} keeps its cooldown, so it cannot leak past logout —
+     * means the same refusal is voiced once wherever it fires from, while a <em>different</em>
+     * refusal still speaks immediately.
+     */
+    public static void sendThrottledDenial(ServerPlayer player, String key, Component message) {
+        net.minecraft.nbt.CompoundTag data = player.getPersistentData();
+        long now = player.serverLevel().getGameTime();
+        if (!shouldSendDenial(data.getString(DENIAL_KEY_TAG), data.getLong(DENIAL_TICK_TAG), key, now)) {
+            return;
+        }
+        data.putString(DENIAL_KEY_TAG, key);
+        data.putLong(DENIAL_TICK_TAG, now);
+        player.displayClientMessage(message.copy().withStyle(ChatFormatting.YELLOW), true);
     }
 
     /** Farming's denied-interaction resync: keep the denying client's world view honest. */

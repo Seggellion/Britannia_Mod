@@ -29,7 +29,9 @@ public final class ClientSkillTable {
     }
 
     public static float get(String skill) {
-        return snapshot.skills().getOrDefault(skill, 0f);
+        // The synced map is keyed by the server's canonical slugs; resolve the caller's spelling
+        // through the same canonicalization so an alias can never read as a phantom zero skill.
+        return snapshot.skills().getOrDefault(SkillKeys.canonical(skill), 0f);
     }
 
     public static Map<String, Float> snapshot() {

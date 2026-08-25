@@ -336,6 +336,10 @@ public final class CuratedSilicaGameTests {
 
         takeDrops(level, cell);
         ServerPlayer digger = ManagedResourceTestPlayers.survival(level, "silica-digger");
+        // Silica carries a positive Mining requirement now (skill-progression remediation);
+        // this test is about the lifecycle, so the digger is seeded past it.
+        com.seggellion.britannia_mod.skill.SkillManager.applyConfirmedValue(
+                digger, com.seggellion.britannia_mod.mining.MiningSkill.SKILL_ID, 100.0f);
         ItemStack tool = shovel();
         digger.setItemInHand(InteractionHand.MAIN_HAND, tool);
 
@@ -396,6 +400,9 @@ public final class CuratedSilicaGameTests {
         for (Attempt attempt : attempts) {
             level.setBlock(cell, BlockRegistry.SILICA_SAND_DEPOSIT.get().defaultBlockState(), 2);
             ServerPlayer player = ManagedResourceTestPlayers.survival(level, "silica-tester");
+            // Seeded past the Mining requirement so the refusal under test is the tool's alone.
+            com.seggellion.britannia_mod.skill.SkillManager.applyConfirmedValue(
+                    player, com.seggellion.britannia_mod.mining.MiningSkill.SKILL_ID, 100.0f);
             player.setItemInHand(InteractionHand.MAIN_HAND, attempt.tool());
             takeDrops(level, cell);
 

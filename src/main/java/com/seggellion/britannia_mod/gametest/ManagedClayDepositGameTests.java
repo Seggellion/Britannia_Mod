@@ -359,6 +359,11 @@ public final class ManagedClayDepositGameTests {
     private static ServerPlayer player(ServerLevel level, String name) {
         ServerPlayer player = ManagedResourceTestPlayers.survival(level, name);
         player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        // The beds are Mining-gated now (skill-progression remediation). Clay's requirement is
+        // 0.0, but the gate fails closed on unloaded skill data, so a digger needs an
+        // authoritative value on record - the same seeding every Mining suite performs.
+        com.seggellion.britannia_mod.skill.SkillManager.applyConfirmedValue(
+                player, com.seggellion.britannia_mod.mining.MiningSkill.SKILL_ID, 0.0f);
         return player;
     }
 

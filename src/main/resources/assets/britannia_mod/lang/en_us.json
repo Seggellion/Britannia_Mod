@@ -1031,6 +1031,7 @@
   "message.britannia_mod.mining.skill_unavailable": "Mining skill data is unavailable; mining is blocked.",
   "message.britannia_mod.mining.automation_blocked": "Automated mining requires a trusted player skill identity.",
   "message.britannia_mod.mining.wrong_tool": "You cannot work this with that. Mining needs a proper pickaxe.",
+  "message.britannia_mod.mining.city_protected": "The city watch does not permit mining inside the city.",
   "message.britannia_mod.mining.unresolved": "This resource cannot be verified; mining is blocked.",
   "item.britannia_mod.unidentified_seeds": "Unidentified Seeds",
   "item.britannia_mod.unidentified_flower_seeds": "Unidentified Flower Seeds",

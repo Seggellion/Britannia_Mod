@@ -128,11 +128,13 @@ public final class OreVeinContainmentGameTests {
     /**
      * The exploit milestone 0 identified, driven end to end.
      *
-     * <p>{@code CityGameModeHandler} counts a two-handed axe a special tool and puts its holder in
-     * survival; {@code StructureProtectionHandler} counts it an allowed tool and declines to
-     * refuse. Nothing else stood between the gate and vanilla breaking, and the Britannia ore
-     * blocks have no loot table — so a maxed miner with an axe deleted a vein outright, gaining
-     * nothing and leaving no debt to bring it back.
+     * <p>The retired {@code CityGameModeHandler} counted a two-handed axe a special tool and put
+     * its holder in survival; {@code StructureProtectionHandler} counts it an allowed tool and
+     * declines to refuse. Nothing else stood between the gate and vanilla breaking, and the
+     * Britannia ore blocks have no loot table — so a maxed miner with an axe deleted a vein
+     * outright, gaining nothing and leaving no debt to bring it back. The survival switch is gone
+     * now, but the gate's tool refusal this test pins is what keeps the same exploit closed for
+     * any break path that still reaches the event.
      */
     @GameTest(template = TEMPLATE)
     public static void aTwoHandedAxeCannotDestroyAGatedOreAtFullSkill(GameTestHelper helper) {

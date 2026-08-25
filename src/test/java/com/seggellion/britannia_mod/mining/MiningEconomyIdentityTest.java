@@ -126,6 +126,9 @@ class MiningEconomyIdentityTest {
                         .flatMap(resource -> resource.yield().itemId())
                         .flatMap(CommodityMappings::forId)
                         .map(CommodityMapping::itemName);
+                // A bed's yield is an ordinary item whose commodity mapping rides on the item id
+                // (clay_ball, silica_sand), so a bed declares no drop-name identity here at all.
+                case SEDIMENT -> Optional.empty();
             };
             assertEquals(declared, resolved,
                     definition.id() + " drops \"" + definition.dropName()
@@ -144,6 +147,9 @@ class MiningEconomyIdentityTest {
             boolean seeded = switch (definition.category()) {
                 case ORE, MINERAL -> SEEDED_ORES.contains(declared);
                 case STONE -> SEEDED_STONE.containsKey(declared);
+                // Unreached today: the beds declare no economy_commodity (their yield items carry
+                // the mapping). A bed that ever declares one must name a seeded commodity too.
+                case SEDIMENT -> SEEDED_ORES.contains(declared) || SEEDED_STONE.containsKey(declared);
             };
             assertTrue(seeded, definition.id() + " claims unseeded commodity '" + declared + "'");
         }
@@ -158,6 +164,12 @@ class MiningEconomyIdentityTest {
     void everyMinedResourceHasSomewhereToSell() {
         List<String> unsellable = new ArrayList<>();
         for (MineableDefinition definition : catalog.active()) {
+            // A bed sells through its ordinary yield item -- clay_ball and silica_sand both
+            // carry CommodityMappings rows -- so the drop-payload identity this rule guards
+            // (purity ores, graded stones, mineral drops) does not apply to it.
+            if (definition.category() == MineableDefinition.Category.SEDIMENT) {
+                continue;
+            }
             if (definition.economyCommodity().isEmpty()) {
                 unsellable.add(definition.id());
             }

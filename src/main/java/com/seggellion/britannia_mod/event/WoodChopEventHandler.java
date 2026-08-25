@@ -79,6 +79,16 @@ public class WoodChopEventHandler {
         BlockPos pos = event.getPos();
 
         if (usingTwoHandedAxe) {
+            // Whose ground is this, and is this even a player? Asked before the harvest through
+            // the shared boundary, because this listener cancels the event and takes the block
+            // itself -- a cancelled event never reaches StructureProtectionHandler, so this
+            // handler is the authority for its own break.
+            if (com.seggellion.britannia_mod.resource.extraction.ManagedBreakAuthorization
+                    .refuses(serverLevel, pos, player)) {
+                // Cancelled without harvesting: the tree stays standing and nothing is minted.
+                event.setCanceled(true);
+                return;
+            }
             event.setCanceled(true);
             handleAxeHarvest(serverLevel, pos, state, player);
         }

@@ -9,7 +9,6 @@ import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.teleport.BritanniaTeleportService;
 import com.seggellion.britannia_mod.teleport.TeleportDestination;
 import com.seggellion.britannia_mod.teleport.TeleportResult;
-import com.seggellion.britannia_mod.util.AxeHarvestRules;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -20,7 +19,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -152,38 +150,36 @@ public void onItemPickup(ItemEntityPickupEvent.Pre event) { // Changed to Pre
    
 
   
+    /**
+     * The two-handed axe's remaining first-click behaviour: taking down the mod ladder.
+     *
+     * <p>This handler used to be the whole of adventure wood-chopping — one swing cancelled the
+     * event and harvested the block on the spot, the same instant left-click pattern the managed
+     * deposits were cured of. Chopping now runs the ordinary break lifecycle instead: the axe
+     * carries a CAN_BREAK predicate for wood and leaves ({@code ExtractionToolPredicates}), the
+     * client digs with real crack progress, and the completed break lands in
+     * {@code WoodChopEventHandler}, which has always owned the harvest at {@code BreakEvent}.
+     *
+     * <p>The ladder stays click-driven on purpose. It is a housing convenience — collecting a
+     * placed climbing ladder — not a resource extraction: nothing is minted, nothing regenerates
+     * and no skill is asked, so it is the "legitimate interaction" category of left-click, like
+     * cutting a flower or working an oyster bed.
+     */
     @SubscribeEvent
     public void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
         Player player = event.getEntity();
         Level level = player.level();
         BlockPos pos = event.getPos();
         BlockState state = level.getBlockState(pos);
-    
+
         if (player instanceof ServerPlayer serverPlayer && !level.isClientSide()) {
-            // Check if player is in Adventure mode
             if (serverPlayer.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {
                 ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
 
-                if (heldItem.getItem() == ItemRegistry.TWO_HANDED_AXE.get()) {
-                    if (state.is(BlockRegistry.LADDER.get())) {
-                        state.getBlock().onDestroyedByPlayer(
-                                state, level, pos, player, true, state.getFluidState());
-                        event.setCanceled(true);
-                        return;
-                    }
-                    boolean allowed = AxeHarvestRules.isAllowedAxeHarvestBlock(state);
-                    LOGGER.debug("TwoHandedAxe Adventure attack: player={} block={} pos={} vanillaLog={} vanillaLeaves={} fruitTree={} allowed={}",
-                            player.getGameProfile().getName(),
-                            BuiltInRegistries.BLOCK.getKey(state.getBlock()),
-                            pos.toShortString(),
-                            state.is(net.minecraft.tags.BlockTags.LOGS),
-                            state.is(net.minecraft.tags.BlockTags.LEAVES),
-                            AxeHarvestRules.isFruitTreeBlock(state),
-                            allowed);
-                    if (level instanceof ServerLevel serverLevel && allowed) {
-                        WoodChopEventHandler.handleAxeHarvest(serverLevel, pos, state, player);
-                    }
-
+                if (heldItem.getItem() == ItemRegistry.TWO_HANDED_AXE.get()
+                        && state.is(BlockRegistry.LADDER.get())) {
+                    state.getBlock().onDestroyedByPlayer(
+                            state, level, pos, player, true, state.getFluidState());
                     event.setCanceled(true);
                 }
             }

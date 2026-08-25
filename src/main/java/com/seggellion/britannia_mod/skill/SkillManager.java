@@ -89,7 +89,7 @@ public record SkillSnapshot(SkillDataState state, float value) {
     }
 
     // Normalize key
-    final String key = skillName.toLowerCase(Locale.ROOT);
+    final String key = SkillKeys.canonical(skillName);
     LOGGER.info("trySkillGain: {}", key);
 
     // Always have a PlayerSkills map (seeded at login, but belt & suspenders here)
@@ -190,7 +190,7 @@ private static void resetAnnouncedValue(ServerPlayer player, String key, float v
 public static float awardSkillGain(ServerPlayer player, String skillName, float amount) {
     if (player == null || amount <= 0.0f) return 0.0f;
 
-    final String key = skillName.toLowerCase(Locale.ROOT);
+    final String key = SkillKeys.canonical(skillName);
     PlayerSkills p = PLAYER_SKILLS.computeIfAbsent(player.getUUID(), id -> new PlayerSkills());
     SkillDef def = SKILL_DEFS.getOrDefault(
         key,
@@ -360,7 +360,7 @@ private static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent e) {
 
 public static void setSkillAdmin(ServerPlayer player, String skillName, float value) {
         if (player == null) return;
-        String key = skillName.toLowerCase(Locale.ROOT);
+        String key = SkillKeys.canonical(skillName);
 
         // FIX 1: getUuid() -> getUUID()
         PlayerSkills p = PLAYER_SKILLS.computeIfAbsent(player.getUUID(), id -> new PlayerSkills());
@@ -424,7 +424,8 @@ private static void fetchPlayerSkills(ServerPlayer sp) {
         PlayerSkills ps = new PlayerSkills();
         for (JsonElement el : arr) {
             JsonObject o = el.getAsJsonObject();
-            ps.set(o.get("skill_name").getAsString(), o.get("value").getAsFloat());
+            ps.mergeHighest(SkillKeys.canonical(o.get("skill_name").getAsString()),
+                    o.get("value").getAsFloat());
         }
         PLAYER_SKILLS.put(sp.getUUID(), ps);
         PLAYER_SKILL_STATES.put(sp.getUUID(), SkillDataState.AVAILABLE);
@@ -496,8 +497,11 @@ private static PlayerSkills fetchPlayerSkillsAsync(ServerPlayer sp) {
         PlayerSkills ps = new PlayerSkills();
         for (JsonElement el : arr) {
             JsonObject o = el.getAsJsonObject();
-            String name = o.get("skill_name").getAsString().toLowerCase(Locale.ROOT);
-            ps.set(name, o.get("value").getAsFloat());
+            // Canonical, not merely lowercase: a historical row persisted under a legacy alias
+            // (blacksmith) lands on the canonical key (blacksmithy). If both spellings were ever
+            // persisted, the higher value wins rather than whichever row Rails returned last.
+            String name = SkillKeys.canonical(o.get("skill_name").getAsString());
+            ps.mergeHighest(name, o.get("value").getAsFloat());
         }
         return ps;
     } catch (Exception ex) {
@@ -553,10 +557,12 @@ private static Map<String, String> playerSkillQuery(ServerPlayer player) {
         }
     }
 
-// 1. The base method that accepts a UUID (Used by the Client Screen)
+// 1. The base method that accepts a UUID
     public static float getSkill(java.util.UUID playerUUID, String skillName) {
         PlayerSkills ps = PLAYER_SKILLS.get(playerUUID);
-        return (ps == null) ? 0f : ps.get(skillName);
+        // Canonical on read as well as write: a caller spelling a legacy alias (or a different
+        // case) must reach the same row the writes populated, never a phantom second skill.
+        return (ps == null) ? 0f : ps.get(SkillKeys.canonical(skillName));
     }
 
     /**
@@ -617,7 +623,7 @@ private static Map<String, String> playerSkillQuery(ServerPlayer player) {
      */
     public static void applyConfirmedValue(ServerPlayer player, String skillName, float value) {
         if (player == null || skillName == null) return;
-        String key = skillName.toLowerCase(Locale.ROOT);
+        String key = SkillKeys.canonical(skillName);
         PLAYER_SKILLS.computeIfAbsent(player.getUUID(), id -> new PlayerSkills()).set(key, value);
         resetAnnouncedValue(player, key, value);
         PLAYER_SKILL_STATES.put(player.getUUID(), SkillDataState.AVAILABLE);
@@ -653,6 +659,8 @@ private static Map<String, String> playerSkillQuery(ServerPlayer player) {
         private final Map<String, Float> map = new HashMap<>();
         float get(String s)  { return map.getOrDefault(s, 0f); }
         void  set(String s, float v){ map.put(s, v); }
+        /** For loads only: two persisted spellings canonicalizing to one key keep the higher value. */
+        void  mergeHighest(String s, float v) { map.merge(s, v, Math::max); }
         int   size() { return map.size(); }
     }
 }

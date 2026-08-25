@@ -364,20 +364,20 @@ public final class ResourceCatalog {
         String id = definition.id();
         Optional<String> reference = definition.mineableId();
 
-        if (!definition.family().isMiningGoverned()) {
-            if (reference.isPresent()) {
-                throw new IllegalStateException("Sediment resource '" + id
-                        + "' must not reference a Mining requirement; a shovel bed is not on the Mining ladder");
-            }
-            if (definition.blockIds().size() != 1) {
-                throw new IllegalStateException("Sediment resource '" + id
-                        + "' must govern exactly one block, found " + definition.blockIds());
-            }
-            return;
+        // A sediment bed used to be forbidden a mineable reference — "a shovel bed is not on the
+        // Mining ladder". The owner reversed that: every geological resource requires Mining
+        // progression, the beds included, so a bed now names its requirement in the one catalogue
+        // that holds Mining numbers, exactly as the ores do. The bed keeps its own structural
+        // rule: it stands as exactly one authored block.
+        if (definition.family() == ResourceDefinition.Family.SEDIMENT
+                && definition.blockIds().size() != 1) {
+            throw new IllegalStateException("Sediment resource '" + id
+                    + "' must govern exactly one block, found " + definition.blockIds());
         }
 
         String mineableId = reference.orElseThrow(() -> new IllegalStateException(
-                "Resource '" + id + "' is Mining-governed and must reference a mineable"));
+                "Resource '" + id + "' must reference a mineable so its Mining requirement has "
+                        + "exactly one authority"));
         MineableDefinition mineable = mineables.byId(mineableId).orElseThrow(() -> new IllegalStateException(
                 "Resource '" + id + "' references unknown mineable '" + mineableId + "'"));
         if (!mineable.active()) {
@@ -388,6 +388,7 @@ public final class ResourceCatalog {
             case ORE -> ResourceDefinition.Family.ORE;
             case STONE -> ResourceDefinition.Family.STONE;
             case MINERAL -> ResourceDefinition.Family.MINERAL;
+            case SEDIMENT -> ResourceDefinition.Family.SEDIMENT;
         };
         if (definition.family() != expected) {
             throw new IllegalStateException("Resource '" + id + "' is family " + definition.family()
