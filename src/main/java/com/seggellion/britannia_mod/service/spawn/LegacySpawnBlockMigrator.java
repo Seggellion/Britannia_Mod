@@ -60,8 +60,8 @@ public final class LegacySpawnBlockMigrator {
             "stone_trader", "meat_trader", "grain_trader", "produce_trader", "fur_leather_trader",
             "reagent_trader", "provision_trader", "textile_trader", "glass_trader", "scribe_trader"
     );
-    /** Rails economic type keys legacy merchant blocks map onto (Milestones 7 + 16 seeds). */
-    static final Set<String> MERCHANT_KEYS = Set.of("baker", "tavernkeeper", "costermonger");
+    /** Rails economic type keys legacy merchant blocks map onto (Milestones 7 + 16 seeds; farmer joined with the farming-economy restore). */
+    static final Set<String> MERCHANT_KEYS = Set.of("baker", "tavernkeeper", "costermonger", "farmer");
 
     /**
      * Housing Deed Milestone 8: the Architect post.

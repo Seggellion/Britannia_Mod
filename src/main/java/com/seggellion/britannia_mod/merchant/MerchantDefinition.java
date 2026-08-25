@@ -13,9 +13,15 @@ public record MerchantDefinition(
         String roleTitle,
         Supplier<EntityType<? extends Mob>> entityTypeSupplier,
         TraderSpawnSettings spawnSettings,
-        TraderAppearance appearance
+        TraderAppearance appearance,
+        double minimumFoodSupply
 ) {
     public EntityType<? extends Mob> entityType() {
         return entityTypeSupplier.get();
+    }
+
+    /** Whether legacy spawn maintenance must consult the city's Rails food-supply reading. */
+    public boolean requiresFoodSupply() {
+        return minimumFoodSupply > 0.0D;
     }
 }

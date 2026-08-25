@@ -6,6 +6,7 @@ import com.seggellion.britannia_mod.entity.AbstractEconomyMerchantEntity;
 import com.seggellion.britannia_mod.entity.CitizenEntity;
 import com.seggellion.britannia_mod.entity.TownPersonEntity;
 import com.seggellion.britannia_mod.merchant.MerchantDefinition;
+import com.seggellion.britannia_mod.merchant.MerchantFoodSupplyGate;
 import com.seggellion.britannia_mod.merchant.MerchantTypes;
 import com.seggellion.britannia_mod.network.CityDataSync;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
@@ -129,9 +130,33 @@ public class MerchantSpawnBlockEntity extends BlockEntity {
             return;
         }
 
-        maintainMerchant(serverLevel);
-        maintainTownspeople(serverLevel);
+        maintainUnderFoodGate(serverLevel, true);
         heartbeatIfDue(serverLevel);
+    }
+
+    /**
+     * Runs maintenance under the definition's food-supply gate. Types without a minimum (baker,
+     * tavernkeeper, costermonger) never consult the reading and behave exactly as before; a gated
+     * type (farmer) follows the sibling food-gated spawners' contract -- maintain at or above the
+     * minimum, despawn the staff below it, and do neither while Rails has never answered.
+     */
+    private void maintainUnderFoodGate(ServerLevel serverLevel, boolean includeTownspeople) {
+        MerchantDefinition definition = definitionFor(merchantType);
+        switch (MerchantFoodSupplyGate.decide(serverLevel, definition, cityName)) {
+            case SKIP -> { }
+            case DESPAWN -> despawnForInsufficientFood(serverLevel, definition);
+            case MAINTAIN -> {
+                maintainMerchant(serverLevel);
+                if (includeTownspeople) maintainTownspeople(serverLevel);
+            }
+        }
+    }
+
+    private void despawnForInsufficientFood(ServerLevel serverLevel, MerchantDefinition definition) {
+        if (merchantNpcId == null && savedMerchantData == null && townNpcIds.isEmpty()) return;
+        LOGGER.info("Merchant despawn: food supply below minimum source={} type={} city={} minimum={}",
+                sourceId, definition.configKey(), cityName, definition.minimumFoodSupply());
+        despawnTrackedNpcs(serverLevel, "despawned", "insufficient_food_supply");
     }
 
     /**
@@ -588,7 +613,7 @@ public class MerchantSpawnBlockEntity extends BlockEntity {
         if (!(level instanceof ServerLevel serverLevel)) return;
         despawnTrackedNpcs(serverLevel, "despawned", "manual_resync");
         checkCooldown = 0;
-        maintainMerchant(serverLevel);
+        maintainUnderFoodGate(serverLevel, false);
     }
 
     public void applyAndResync(String merchantType, String cityName, int townPersonAmount) {
@@ -611,8 +636,7 @@ public class MerchantSpawnBlockEntity extends BlockEntity {
             this.checkCooldown = 0;
             this.initTicks = LOAD_GRACE_TICKS;
             setChanged();
-            maintainMerchant(serverLevel);
-            maintainTownspeople(serverLevel);
+            maintainUnderFoodGate(serverLevel, true);
             return;
         }
 
@@ -624,8 +648,7 @@ public class MerchantSpawnBlockEntity extends BlockEntity {
         this.checkCooldown = 0;
         this.initTicks = LOAD_GRACE_TICKS;
         setChanged();
-        maintainMerchant(serverLevel);
-        maintainTownspeople(serverLevel);
+        maintainUnderFoodGate(serverLevel, true);
     }
 
     public void onDestroyed(ServerLevel serverLevel) {
