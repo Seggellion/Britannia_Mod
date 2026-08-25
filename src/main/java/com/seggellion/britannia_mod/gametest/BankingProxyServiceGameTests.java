@@ -18,6 +18,7 @@ import com.seggellion.britannia_mod.service.banking.BankingOpenOutcome;
 import com.seggellion.britannia_mod.service.banking.BankingProxyService;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
@@ -422,7 +423,13 @@ public final class BankingProxyServiceGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    // Own batch: this test's result arrives a tick or more after handle(), via server.execute, and
+    // the completion revalidates the teller/player pairing before it will send anything. The banking
+    // rigs install process-wide fakes and share ServiceNpcRegistryCache, so a neighbour in the same
+    // batch tearing its own registry down between this test's handle() and its completion leaves
+    // this teller unresolvable -- the result is discarded as "no longer live/in range" and the
+    // sender is never invoked. A batch of its own gives it no concurrent neighbours to be raced by.
+    @GameTest(template = TEMPLATE, timeoutTicks = 40, batch = "bankingAccountScreenCityLocal")
     public static void handleOpensTheAccountScreenWithCorrectContentInCityLocalMode(GameTestHelper helper) {
         installBankRegistry();
         UUID cityId = UUID.randomUUID();
@@ -432,37 +439,40 @@ public final class BankingProxyServiceGameTests {
         BankingOpenAccount account = new BankingOpenAccount(
                 UUID.randomUUID(), "city_local", cityId, 250, 0.0, 0, 0, 0, 1
         );
-        try {
-            BankingProxyService.useClientForTesting(new BankingOpenClient(
-                    gameTestCredentials(),
-                    (ignored, task) -> CompletableFuture.completedFuture(new BankingOpenClientResult.Success(account, java.util.List.of())),
-                    (uri, max) -> null
-            ));
-            AtomicReference<BankAccountOpenedS2CPayload> sent = new AtomicReference<>();
-            BankingProxyService.useAccountScreenSenderForTesting((player, teller, sentAccount, sentBankItems) ->
-                    sent.set(BankAccountOpenedS2CPayload.create(teller, sentAccount, sentBankItems, false)));
+        BankingProxyService.useClientForTesting(new BankingOpenClient(
+                gameTestCredentials(),
+                (ignored, task) -> CompletableFuture.completedFuture(new BankingOpenClientResult.Success(account, java.util.List.of())),
+                (uri, max) -> null
+        ));
+        AtomicReference<BankAccountOpenedS2CPayload> sent = new AtomicReference<>();
+        BankingProxyService.useAccountScreenSenderForTesting((player, teller, sentAccount, sentBankItems) ->
+                sent.set(BankAccountOpenedS2CPayload.create(teller, sentAccount, sentBankItems, false)));
 
-            ServiceNpcEntity npc = spawnBankTeller(helper, new BlockPos(1, 1, 1));
-            npc.setPersonalName("Isolde the Banker");
-            ServerPlayer player = helper.makeMockServerPlayerInLevel();
-            player.teleportTo(npc.getX() + 1.0, npc.getY(), npc.getZ());
+        ServiceNpcEntity npc = spawnBankTeller(helper, new BlockPos(1, 1, 1));
+        npc.setPersonalName("Isolde the Banker");
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.teleportTo(npc.getX() + 1.0, npc.getY(), npc.getZ());
 
-            BankingProxyService.handle(player, npc);
+        BankingProxyService.handle(player, npc);
 
-            helper.succeedWhen(() -> {
-                BankAccountOpenedS2CPayload payload = sent.get();
-                check(payload != null, "the account screen sender was never invoked for a successful OPENED result");
-                check("Britain".equals(payload.cityDisplayName()),
-                        "city-local account did not carry the resolved city display name, got " + payload.cityDisplayName());
+        // The city registry is torn down with the other seams inside succeedWhen, not in a finally.
+        // handle() hands its completion to server.execute(...), so the sender runs a tick or more
+        // later and BankAccountOpenedS2CPayload.create resolves the city display name at that
+        // point, out of this very cache. A finally here runs the instant succeedWhen registers --
+        // long before any of that -- so the cache was always empty by the time it was read, and
+        // resolveCityDisplayName returned null rather than "Britain".
+        helper.succeedWhen(() -> {
+            BankAccountOpenedS2CPayload payload = sent.get();
+            check(payload != null, "the account screen sender was never invoked for a successful OPENED result");
+            check("Britain".equals(payload.cityDisplayName()),
+                    "city-local account did not carry the resolved city display name, got " + payload.cityDisplayName());
 
-                BankingProxyService.resetClientForTesting();
-                BankingProxyService.resetAccountScreenSenderForTesting();
-                BankingProxyService.resetInFlightTrackingForTesting();
-                ServiceNpcRegistryCache.clear();
-            });
-        } finally {
+            BankingProxyService.resetClientForTesting();
+            BankingProxyService.resetAccountScreenSenderForTesting();
+            BankingProxyService.resetInFlightTrackingForTesting();
+            ServiceNpcRegistryCache.clear();
             BootstrapCityRegistryCache.clear();
-        }
+        });
     }
 
     // ---------- Slice B: every non-OPENED outcome keeps the screen closed ----------
@@ -729,7 +739,15 @@ public final class BankingProxyServiceGameTests {
         );
     }
 
+    /**
+     * Throws {@link GameTestAssertException}, never {@link IllegalStateException}. When a check runs
+     * inside a {@code succeedWhen} or sequence callback -- directly or through any helper called
+     * from one -- {@code GameTestSequence.tickAndContinue} swallows only that one type, which is how
+     * a polled condition retries until it holds. {@code GameTestInfo} ticks its sequences outside
+     * any try/catch, so anything else escapes into the server tick loop and crashes the whole
+     * GameTest server, ending the run and every result in it.
+     */
     private static void check(boolean condition, String message) {
-        if (!condition) throw new IllegalStateException(message);
+        if (!condition) throw new GameTestAssertException(message);
     }
 }

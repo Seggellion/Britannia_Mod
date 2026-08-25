@@ -12,6 +12,7 @@ import com.seggellion.britannia_mod.service.ServiceNpcTypeDefinition;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -218,7 +219,15 @@ public final class GuildmasterServiceNpcGameTests {
         check(npc.isCustomNameVisible(), scenario + " did not have a visible nameplate");
     }
 
+    /**
+     * Throws {@link GameTestAssertException}, never {@link IllegalStateException}. When a check runs
+     * inside a {@code succeedWhen} or sequence callback -- directly or through any helper called
+     * from one -- {@code GameTestSequence.tickAndContinue} swallows only that one type, which is how
+     * a polled condition retries until it holds. {@code GameTestInfo} ticks its sequences outside
+     * any try/catch, so anything else escapes into the server tick loop and crashes the whole
+     * GameTest server, ending the run and every result in it.
+     */
     private static void check(boolean condition, String message) {
-        if (!condition) throw new IllegalStateException(message);
+        if (!condition) throw new GameTestAssertException(message);
     }
 }
