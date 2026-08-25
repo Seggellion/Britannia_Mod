@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.block;
 
 import com.seggellion.britannia_mod.block.entity.OrangeTreeRootBlockEntity;
 import com.seggellion.britannia_mod.block.entity.HouseFarmPlotBlockEntity;
+import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
 import com.seggellion.britannia_mod.farming.CropDefinition;
 import com.seggellion.britannia_mod.farming.CropRegistry;
 import com.seggellion.britannia_mod.farming.FarmingActionType;
@@ -13,6 +14,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -73,10 +75,19 @@ public class OrangeFruitBlock extends Block {
                 return ItemInteractionResult.SUCCESS;
             }
 
-            dropFruitFromTree(level, pos, root, player, true);
+            if (!dropFruitFromTree(level, pos, root, player, true)) {
+                return ItemInteractionResult.SUCCESS;
+            }
             FruitTreeDefinition definition = root.definition();
             level.setBlock(pos, definition.leafBlock().get().defaultBlockState(), 3);
             root.onFruitHarvested(pos);
+
+            FarmingBlockEntity soil = root.getSoilBlockEntity(level).orElse(null);
+            if (soil != null && soil.consumeSuccessfulFertileHarvest() == 0
+                    && level instanceof ServerLevel serverLevel) {
+                root.cleanupTree(serverLevel, player, false);
+                FarmingBlock.exhaustFertileSoil(level, soil.getBlockPos(), soil);
+            }
             level.playSound(null, pos, SoundEvents.CROP_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (!player.getAbilities().instabuild) {
                 stack.hurtAndBreak(1, player, Player.getSlotForHand(hand));
@@ -99,11 +110,11 @@ public class OrangeFruitBlock extends Block {
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    public static void dropFruitFromTree(Level level, BlockPos fruitPos, OrangeTreeRootBlockEntity root, @Nullable Player player, boolean harvestedWithScissors) {
+    public static boolean dropFruitFromTree(Level level, BlockPos fruitPos, OrangeTreeRootBlockEntity root, @Nullable Player player, boolean harvestedWithScissors) {
         BlockState state = level.getBlockState(fruitPos);
         FruitTreeDefinition definition = root.definition();
         if (!state.is(definition.fruitBlock().get()) || !state.getValue(RIPE)) {
-            return;
+            return false;
         }
         int count = definition.randomFruitYield(level.getRandom());
         ItemStack harvest = root.createHarvestStack(player, count);
@@ -114,6 +125,7 @@ public class OrangeFruitBlock extends Block {
         } else {
             popResource(level, fruitPos, harvest);
         }
+        return true;
     }
 
     public String treeTypeId() {

@@ -32,6 +32,17 @@ public final class WildResourceEntries {
             4,
             6
     );
+    public static final ResourceLocation DUNG = ResourceLocation.fromNamespaceAndPath(
+            BritanniaMod.MODID, "dung"
+    );
+    public static final WildResourceTuning DUNG_TUNING = new WildResourceTuning(
+            20 * 60 * 3,
+            20 * 60 * 6,
+            20 * 60 * 20,
+            20 * 60 * 40,
+            4,
+            8
+    );
     private static boolean bootstrapped;
 
     private WildResourceEntries() {
@@ -79,7 +90,34 @@ public final class WildResourceEntries {
                 WildResourceHarvestService::harvestOyster,
                 WildResourceHarvestService::createOysterLoot
         ));
+        WildResources.registry().register(createDungEntry());
         bootstrapped = true;
+    }
+
+    static WildResourceEntry createDungEntry() {
+        return new WildResourceEntry(
+                DUNG,
+                1,
+                2,
+                DUNG_TUNING,
+                WildResourcePlacementRules::surfaceCandidate,
+                WildResourcePlacementRules::isSafeTarget,
+                WildResourcePlacementRules::isDungSupport,
+                WildResourceEntry.PlacementRule.ALLOW,
+                WildResourceEntry.PlacementRule.ALLOW,
+                WildResourceEntries::inspectDung,
+                (level, position) -> level.setBlock(
+                        position, BlockRegistry.DUNG.get().defaultBlockState(), 3
+                ),
+                (level, position, player, tool) -> WildResourceHarvestService.harvestOne(
+                        level,
+                        position,
+                        player,
+                        BlockRegistry.DUNG.get(),
+                        ItemRegistry.DUNG.get()
+                ),
+                (level, position, player) -> new ItemStack(ItemRegistry.DUNG.get())
+        );
     }
 
     private static WildResourceEntry.ExistingNodeState inspectAsh(
@@ -106,6 +144,25 @@ public final class WildResourceEntries {
             return WildResourceEntry.ExistingNodeState.OWNED_INVALID;
         }
         return fromQuery(WildResourceProximity.waterStatus(level, position));
+    }
+
+    private static WildResourceEntry.ExistingNodeState inspectDung(
+            net.minecraft.server.level.ServerLevel level,
+            net.minecraft.core.BlockPos position
+    ) {
+        return classifyDungNode(
+                level.getBlockState(position).is(BlockRegistry.DUNG.get()),
+                WildResourcePlacementRules.isDungSupport(level, position)
+        );
+    }
+
+    static WildResourceEntry.ExistingNodeState classifyDungNode(boolean expectedBlock, boolean supported) {
+        if (!expectedBlock) {
+            return WildResourceEntry.ExistingNodeState.MISSING_OR_REPLACED;
+        }
+        return supported
+                ? WildResourceEntry.ExistingNodeState.VALID
+                : WildResourceEntry.ExistingNodeState.OWNED_INVALID;
     }
 
     private static WildResourceEntry.ExistingNodeState fromQuery(WildResourceProximity.QueryResult result) {

@@ -39,6 +39,10 @@ public final class WildResourcePlacementRules {
         return isOysterSubstrate(position, new LevelPlacementView(level));
     }
 
+    public static boolean isDungSupport(ServerLevel level, BlockPos position) {
+        return isDungSupport(position, new LevelPlacementView(level));
+    }
+
     static boolean isSafeTarget(BlockPos position, PlacementView view) {
         BlockState target = view.stateAt(position);
         return target.canBeReplaced() && target.getFluidState().isEmpty() && !view.hasBlockEntity(position);
@@ -52,6 +56,12 @@ public final class WildResourcePlacementRules {
     static boolean isOysterSubstrate(BlockPos position, PlacementView view) {
         BlockState support = view.stateAt(position.below());
         return support.is(Blocks.CALCITE) || support.is(WildResourceTags.BLACK_LIPPED_OYSTER_SUBSTRATES);
+    }
+
+    /** Closed product rule: natural dung stands directly on exposed dirt or coarse dirt only. */
+    static boolean isDungSupport(BlockPos position, PlacementView view) {
+        BlockState support = view.stateAt(position.below());
+        return support.is(Blocks.DIRT) || support.is(Blocks.COARSE_DIRT);
     }
 
     static boolean isNaturalAshSupport(BlockState state) {

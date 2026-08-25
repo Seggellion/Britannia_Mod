@@ -51,6 +51,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -613,13 +614,18 @@ public class FarmingBlock extends Block implements EntityBlock {
                 toolStack.hurtAndBreak(1, player, Player.getSlotForHand(hand));
             }
 
-            boolean persistentHouseAssignment = farmBe instanceof HouseFarmPlotBlockEntity housePlot
-                    && housePlot.assignmentMatches(crop);
-            if (crop.persistsAfterHarvest() || persistentHouseAssignment) {
-                farmBe.regrowAfterHarvest(crop);
-                level.setBlock(pos, state.setValue(HAS_SEEDS, true), 3);
+            int remainingFertileHarvests = farmBe.consumeSuccessfulFertileHarvest();
+            if (remainingFertileHarvests == 0) {
+                exhaustFertileSoil(level, pos, farmBe);
             } else {
-                resetAnnualCropState(level, pos, state, farmBe);
+                boolean persistentHouseAssignment = farmBe instanceof HouseFarmPlotBlockEntity housePlot
+                        && housePlot.assignmentMatches(crop);
+                if (crop.persistsAfterHarvest() || persistentHouseAssignment) {
+                    farmBe.regrowAfterHarvest(crop);
+                    level.setBlock(pos, state.setValue(HAS_SEEDS, true), 3);
+                } else {
+                    resetAnnualCropState(level, pos, state, farmBe);
+                }
             }
 
             level.playSound(null, pos, SoundEvents.CROP_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
@@ -736,12 +742,31 @@ public class FarmingBlock extends Block implements EntityBlock {
         farmBe.clearStoredSeed();
         farmBe.clearCrop();
         if (farmBe.isCommunityPlot()) {
+            if (farmBe.hasRemainingFertility()) {
+                farmBe.startCommunitySeedWindow(level.getGameTime() + FarmingBlockEntity.COMMUNITY_SEED_WINDOW_TICKS);
+                level.setBlock(pos, state.setValue(HAS_SEEDS, false), 3);
+                return;
+            }
             level.setBlock(pos, BlockRegistry.COMMUNITY_FARM_BLOCK.get().defaultBlockState(), 3);
             return;
         }
         if (state.getBlock() instanceof FarmingBlock) {
             level.setBlock(pos, state.setValue(HAS_SEEDS, false), 3);
         }
+    }
+
+    /** Reuses the established non-fertile states after the fifth paid harvest. */
+    public static boolean exhaustFertileSoil(Level level, BlockPos pos, FarmingBlockEntity farmBe) {
+        if (!farmBe.isFertilityExhausted() || farmBe instanceof HouseFarmPlotBlockEntity) {
+            return false;
+        }
+        boolean communityPlot = farmBe.isCommunityPlot();
+        farmBe.clearStoredSeed();
+        farmBe.clearCrop();
+        BlockState exhaustedState = communityPlot
+                ? BlockRegistry.COMMUNITY_FARM_BLOCK.get().defaultBlockState()
+                : Blocks.DIRT.defaultBlockState();
+        return level.setBlock(pos, exhaustedState, 3);
     }
 
     @Override

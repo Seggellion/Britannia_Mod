@@ -47,7 +47,9 @@ public class CommunityHoedFarmBlock extends CommunityFarmBlock {
                     .setValue(FarmingBlock.HYDRATION, 1)
                     .setValue(FarmingBlock.HAS_SEEDS, false), 3);
             if (level.getBlockEntity(pos) instanceof FarmingBlockEntity farmBe) {
+                farmBe.setHydration(1);
                 farmBe.startCommunitySeedWindow(level.getGameTime() + FarmingBlockEntity.COMMUNITY_SEED_WINDOW_TICKS);
+                farmBe.initializeFertileHarvests();
             }
             level.playSound(null, pos, SoundEvents.GRAVEL_PLACE, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (player != null) {

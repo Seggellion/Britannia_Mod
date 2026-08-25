@@ -18,7 +18,9 @@ class WildResourceDocumentationTest {
                 "MAX_CHUNKS_PER_TICK", "3–6 min", "4–8 min", "squared Euclidean",
                 "minecraft:calcite", "WeaponRegistry.DAGGER", "Survival", "Adventure", "Creative",
                 "75%", "20%", "5%", "Tags.Biomes.IS_SWAMP", "WildResourceHarvestEvent",
-                "349 required GameTests", "Manual in-client checks", "no wild-resource force/debug command"
+                "Dung", "minecraft:coarse_dirt", "real non-Creative player",
+                "791 run, 790 passed", "deposit_identity_conflict",
+                "Manual in-client checks", "no wild-resource force/debug command"
         }) {
             assertTrue(documentation.contains(required), required);
         }

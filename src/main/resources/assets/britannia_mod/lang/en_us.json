@@ -1665,5 +1665,17 @@
   "message.britannia_mod.grabby.pickup.nested_container": "You cannot carry a container that holds another full container.",
   "message.britannia_mod.grabby.pickup.inventory_full": "Your pack is full.",
   "message.britannia_mod.grabby.pickup.busy": "That is busy. Try again.",
-  "message.britannia_mod.grabby.pickup.not_yours": "That was not put there by a player. It cannot be moved."
+  "message.britannia_mod.grabby.pickup.not_yours": "That was not put there by a player. It cannot be moved.",
+  "item.britannia_mod.dirt": "Dirt",
+  "item.britannia_mod.dung": "Dung",
+  "block.britannia_mod.dung": "Dung",
+  "item.britannia_mod.empty_bowl": "Empty Bowl",
+  "item.britannia_mod.bowl_of_dirt": "Bowl of Dirt",
+  "item.britannia_mod.bowl_of_fertile_dirt": "Bowl of Fertile Dirt",
+  "item.britannia_mod.bowl_of_water": "Bowl of Water",
+  "message.britannia_mod.dirt_gather.success": "You gather a handful of dirt.",
+  "message.britannia_mod.dirt_gather.cooldown": "You can gather dirt again in %s seconds.",
+  "message.britannia_mod.dirt_gather.denied_mode": "Dirt gathering is only available in Survival or Adventure mode.",
+  "message.britannia_mod.dirt_gather.out_of_reach": "That dirt is too far away.",
+  "message.britannia_mod.dirt_gather.denied_world": "You cannot gather dirt here."
 }

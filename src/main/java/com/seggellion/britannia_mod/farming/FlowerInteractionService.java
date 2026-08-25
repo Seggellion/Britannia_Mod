@@ -273,6 +273,18 @@ public final class FlowerInteractionService {
                 if (!FlowerCommunityRestoration.COMMUNITY_FARM_BLOCK_ID.equals(restoration.blockId())) {
                     return false;
                 }
+                if (soil.remainingFertileHarvests() > 0) {
+                    BlockState restoredState = BlockRegistry.FARMING_BLOCK.get().defaultBlockState()
+                            .setValue(FarmingBlock.HYDRATION, soil.hydration())
+                            .setValue(FarmingBlock.FERTILIZER, soil.fertilizerLevel())
+                            .setValue(FarmingBlock.HAS_SEEDS, false);
+                    if (!level.setBlock(pos, restoredState, 3)
+                            || !(level.getBlockEntity(pos) instanceof FarmingBlockEntity farming)) {
+                        throw new IllegalStateException("Restored community FarmingBlock is missing FarmingBlockEntity");
+                    }
+                    farming.restoreUprootedCommunityFlowerSoil(soil);
+                    return true;
+                }
                 return level.setBlock(pos, BlockRegistry.COMMUNITY_FARM_BLOCK.get().defaultBlockState(), 3);
             }
 
