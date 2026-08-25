@@ -60,13 +60,13 @@ public enum BannerPlacedGeometryFamily {
             Baseline.X_SMALL_TO_SMALL * Baseline.THIRTY_PERCENT_MORE_CLOTH,
             Baseline.MOUNT_FLUSH_INSET, 0.0, Baseline.PENNANT_POLE),
     // Drapery rather than a pennant, so the family's "narrower than small" target does not
-    // apply to it: its width is exactly doubled as asked, it takes the family's growth in height
-    // only, and it keeps a full-span pole because its cloth fills what that pole carries.
+    // apply to it: its width is exactly doubled as asked, and it takes the family's growth in
+    // height only. Its hardware is compact rather than decorative -- see Baseline#CURTAIN_POLE.
     SMALL_CURTAIN(BannerAssetAvailability.id("banner/small_curtain/geometry"), 1, 1,
             Baseline.X_SMALL,
             Baseline.X_SMALL_TO_SMALL * Baseline.CURTAIN_WIDER,
             Baseline.X_SMALL_TO_SMALL * Baseline.THIRTY_PERCENT_MORE_CLOTH,
-            Baseline.MOUNT_FLUSH_INSET, 0.0, Baseline.FULL_POLE);
+            Baseline.MOUNT_FLUSH_INSET, 0.0, Baseline.CURTAIN_POLE);
 
     /**
      * What each family drew before the owner's 2026-08-25 sizing review, and the factors that
@@ -126,6 +126,39 @@ public enum BannerPlacedGeometryFamily {
          */
         public static final double FULL_POLE = 1.0;
         public static final double PENNANT_POLE = 0.7;
+
+        /** The curtain's own cloth width, which its compact hardware is measured against. */
+        private static final double CURTAIN_CLOTH_WIDTH = X_SMALL * X_SMALL_TO_SMALL * CURTAIN_WIDER;
+
+        /**
+         * How much of that quad the curtain actually paints: its texture is opaque across the
+         * middle 62 of 128 pixels, centred.
+         */
+        private static final double CURTAIN_ARTWORK_FILL = 62.0 / 128.0;
+
+        /**
+         * The daylight left between the curtain's fabric and each wall mount. Small enough that
+         * the hardware frames the cloth, wide enough that nothing reads as intersecting.
+         */
+        public static final double CURTAIN_MOUNT_CLEARANCE = 1.0 / 16.0;
+
+        /**
+         * A deliberately compact assembly, and the one place a family departs from the roomy
+         * pole every heraldic banner gets. Small Curtain is a wall curtain rather than a
+         * standard on a rod: its hardware should frame the fabric instead of framing the
+         * transparent margin around it. Sized to a fixed target rather than a taste value --
+         * solve {@code plateInnerEdge == fabricEdge + clearance} for the span, given that a
+         * bracket centre lands {@code POLE_OVERHANG - BRACKET_INSET} inside the pole tip and its
+         * plate reaches {@link BannerPlacedAssembly#BRACKET_PLATE_HALF_WIDTH} either side.
+         * Carrying the whole quad instead left 8.3 pixels of bare pole on each side and pushed
+         * the assembly across nearly three blocks.
+         */
+        public static final double CURTAIN_POLE = CURTAIN_ARTWORK_FILL
+                + 2.0 * (CURTAIN_MOUNT_CLEARANCE
+                        + BannerPlacedAssembly.BRACKET_PLATE_HALF_WIDTH
+                        + BannerPlacedAssembly.BRACKET_INSET
+                        - BannerPlacedAssembly.POLE_OVERHANG)
+                / CURTAIN_CLOTH_WIDTH;
 
         private Baseline() {
         }

@@ -48,6 +48,13 @@ public record BannerPlacedAssembly(
     /** How far a bracket's collar sits in from the pole's tip, so the finial stays visible. */
     public static final double BRACKET_INSET = 0.125;
 
+    /**
+     * Half the width of a bracket's wall plate along the pole, mirroring
+     * {@code banner/mount/bracket}'s 4-pixel plate. Kept here so a family can work out where its
+     * hardware actually finishes when it needs to sit close to its own cloth.
+     */
+    public static final double BRACKET_PLATE_HALF_WIDTH = 2.0 / 16.0;
+
     /** Model-local point that {@link #poleCenter()} and each bracket anchor are placed at. */
     public static final Vec3 MODEL_POLE_AXIS = new Vec3(0.5, 0.5, POLE_STANDOFF);
 
