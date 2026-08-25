@@ -155,6 +155,7 @@ CraftableRegistry.init();
         WildResourceEntries.bootstrap();
         WildResourceManager.register();
         WildResourceInteractionHandler.register();
+        com.seggellion.britannia_mod.dirtgathering.DirtGatheringInteractionHandler.register();
 
         BlacksmithItemRegistry.register(modEventBus);
         DyeItemRegistry.register(modEventBus);

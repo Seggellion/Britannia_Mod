@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "britannia_mod:item/patch18/bowl_of_water"
+  }
+}

@@ -150,6 +150,7 @@ import com.seggellion.britannia_mod.block.ManagedVegetationControllerBlock;
 import com.seggellion.britannia_mod.block.ManagedFlowerBlock;
 import com.seggellion.britannia_mod.block.SulphurousAshBlock;
 import com.seggellion.britannia_mod.block.BlackLippedOysterBlock;
+import com.seggellion.britannia_mod.block.DungBlock;
 import com.seggellion.britannia_mod.block.BloodMossBlock;
 import com.seggellion.britannia_mod.block.CornStalkBlock;
 import com.seggellion.britannia_mod.block.GrapeArborBlock;
@@ -319,6 +320,17 @@ public static final DeferredHolder<Block, BlackLippedOysterBlock> BLACK_LIPPED_O
                 .mapColor(MapColor.COLOR_PURPLE)
                 .strength(0.4F)
                 .sound(SoundType.CALCITE)
+                .noCollission()
+                .noOcclusion()
+                .pushReaction(PushReaction.DESTROY))
+);
+
+public static final DeferredHolder<Block, DungBlock> DUNG = BLOCKS.register(
+        "dung",
+        () -> new DungBlock(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.COLOR_BROWN)
+                .strength(0.1F)
+                .sound(SoundType.MUD)
                 .noCollission()
                 .noOcclusion()
                 .pushReaction(PushReaction.DESTROY))

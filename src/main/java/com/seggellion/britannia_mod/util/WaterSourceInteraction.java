@@ -1,8 +1,12 @@
 package com.seggellion.britannia_mod.util;
 
+import com.seggellion.britannia_mod.bowlpreparation.BowlWaterFillingPlan;
+import com.seggellion.britannia_mod.bowlpreparation.BowlWaterFillingService;
 import com.seggellion.britannia_mod.item.PitcherItem;
 import com.seggellion.britannia_mod.item.WateringCanItem;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -21,7 +25,8 @@ public final class WaterSourceInteraction {
     public static boolean supports(ItemStack stack) {
         return stack.getItem() instanceof WateringCanItem
                 || stack.getItem() instanceof PitcherItem
-                || stack.is(Items.BUCKET);
+                || stack.is(Items.BUCKET)
+                || BowlWaterFillingService.supports(stack);
     }
 
     public static ItemInteractionResult fillFromSource(
@@ -29,17 +34,34 @@ public final class WaterSourceInteraction {
         if (!supports(stack)) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
-        if (!level.isClientSide) {
-            if (stack.getItem() instanceof WateringCanItem) {
-                WateringCanItem.setWaterCharges(stack, WateringCanItem.MAX_WATER_CHARGES);
-            } else if (stack.getItem() instanceof PitcherItem pitcher) {
-                pitcher.fillWithWater(stack);
-            } else {
-                player.setItemInHand(hand,
-                        ItemUtils.createFilledResult(stack, player, new ItemStack(Items.WATER_BUCKET)));
-            }
+        if (level.isClientSide) {
+            return ItemInteractionResult.sidedSuccess(true);
+        }
+        if (WaterSourceAccessPolicy.evaluate(level, pos, player)
+                != WaterSourceAccessPolicy.Decision.ALLOWED) {
+            return ItemInteractionResult.sidedSuccess(false);
+        }
+
+        boolean applied = true;
+        if (stack.getItem() instanceof WateringCanItem) {
+            WateringCanItem.setWaterCharges(stack, WateringCanItem.MAX_WATER_CHARGES);
+        } else if (stack.getItem() instanceof PitcherItem pitcher) {
+            pitcher.fillWithWater(stack);
+        } else if (stack.is(Items.BUCKET)) {
+            player.setItemInHand(hand,
+                    ItemUtils.createFilledResult(stack, player, new ItemStack(Items.WATER_BUCKET)));
+        } else if (player instanceof ServerPlayer serverPlayer) {
+            Optional<BowlWaterFillingPlan> plan = BowlWaterFillingService.plan(stack);
+            applied = plan.isPresent()
+                    && BowlWaterFillingService.apply(serverPlayer, hand, plan.orElseThrow())
+                    == BowlWaterFillingService.ApplyResult.APPLIED;
+        } else {
+            applied = false;
+        }
+
+        if (applied) {
             level.playSound(null, pos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS, 0.8F, 1.0F);
         }
-        return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        return ItemInteractionResult.sidedSuccess(false);
     }
 }

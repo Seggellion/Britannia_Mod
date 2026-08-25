@@ -19,8 +19,26 @@ public record FlowerSoilSnapshot(
         float organicMatter,
         FlowerSoilOrigin origin,
         Optional<FlowerCommunityRestoration> communityRestoration,
-        long communitySeedableUntilGameTime
+        long communitySeedableUntilGameTime,
+        int remainingFertileHarvests
 ) {
+    /** Source-compatible constructor for legacy/untracked flower soil. */
+    public FlowerSoilSnapshot(
+            int hydration,
+            int fertilizerLevel,
+            float nitrogen,
+            float phosphorus,
+            float potassium,
+            float organicMatter,
+            FlowerSoilOrigin origin,
+            Optional<FlowerCommunityRestoration> communityRestoration,
+            long communitySeedableUntilGameTime
+    ) {
+        this(hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter, origin,
+                communityRestoration, communitySeedableUntilGameTime,
+                FarmingBlockEntity.UNTRACKED_FERTILE_HARVESTS);
+    }
+
     public FlowerSoilSnapshot {
         if (hydration < 0 || hydration > FarmingBlockEntity.MAX_HYDRATION) {
             throw new IllegalArgumentException("Flower soil hydration must use the FarmingBlock scale 0..5: " + hydration);
@@ -46,6 +64,11 @@ public record FlowerSoilSnapshot(
         if (origin == FlowerSoilOrigin.PRIVATE_FARMING_BLOCK && communitySeedableUntilGameTime != 0L) {
             throw new IllegalArgumentException("Private FarmingBlock soil cannot contain a community seed-window time");
         }
+        if (remainingFertileHarvests < FarmingBlockEntity.UNTRACKED_FERTILE_HARVESTS
+                || remainingFertileHarvests > FarmingBlockEntity.MAX_FERTILE_HARVESTS) {
+            throw new IllegalArgumentException("Remaining fertile harvests must be untracked or use 0..5: "
+                    + remainingFertileHarvests);
+        }
     }
 
     public static FlowerSoilSnapshot privateSoil(
@@ -53,7 +76,8 @@ public record FlowerSoilSnapshot(
     ) {
         return new FlowerSoilSnapshot(
                 hydration, 0, nitrogen, phosphorus, potassium, organicMatter,
-                FlowerSoilOrigin.PRIVATE_FARMING_BLOCK, Optional.empty(), 0L
+                FlowerSoilOrigin.PRIVATE_FARMING_BLOCK, Optional.empty(), 0L,
+                FarmingBlockEntity.UNTRACKED_FERTILE_HARVESTS
         );
     }
 
@@ -63,7 +87,20 @@ public record FlowerSoilSnapshot(
     ) {
         return new FlowerSoilSnapshot(
                 hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
-                FlowerSoilOrigin.PRIVATE_FARMING_BLOCK, Optional.empty(), 0L
+                FlowerSoilOrigin.PRIVATE_FARMING_BLOCK, Optional.empty(), 0L,
+                FarmingBlockEntity.UNTRACKED_FERTILE_HARVESTS
+        );
+    }
+
+    public static FlowerSoilSnapshot privateSoil(
+            int hydration, int fertilizerLevel,
+            float nitrogen, float phosphorus, float potassium, float organicMatter,
+            int remainingFertileHarvests
+    ) {
+        return new FlowerSoilSnapshot(
+                hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
+                FlowerSoilOrigin.PRIVATE_FARMING_BLOCK, Optional.empty(), 0L,
+                remainingFertileHarvests
         );
     }
 
@@ -74,7 +111,8 @@ public record FlowerSoilSnapshot(
                 hydration, 0, nitrogen, phosphorus, potassium, organicMatter,
                 FlowerSoilOrigin.COMMUNITY_PLOT,
                 Optional.of(FlowerCommunityRestoration.currentRepositoryState()),
-                0L
+                0L,
+                FarmingBlockEntity.UNTRACKED_FERTILE_HARVESTS
         );
     }
 
@@ -87,7 +125,22 @@ public record FlowerSoilSnapshot(
                 hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
                 FlowerSoilOrigin.COMMUNITY_PLOT,
                 Optional.of(FlowerCommunityRestoration.currentRepositoryState()),
-                communitySeedableUntilGameTime
+                communitySeedableUntilGameTime,
+                FarmingBlockEntity.UNTRACKED_FERTILE_HARVESTS
+        );
+    }
+
+    public static FlowerSoilSnapshot communitySoil(
+            int hydration, int fertilizerLevel,
+            float nitrogen, float phosphorus, float potassium, float organicMatter,
+            long communitySeedableUntilGameTime, int remainingFertileHarvests
+    ) {
+        return new FlowerSoilSnapshot(
+                hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
+                FlowerSoilOrigin.COMMUNITY_PLOT,
+                Optional.of(FlowerCommunityRestoration.currentRepositoryState()),
+                communitySeedableUntilGameTime,
+                remainingFertileHarvests
         );
     }
 
@@ -102,6 +155,9 @@ public record FlowerSoilSnapshot(
         tag.putString("Origin", origin.name());
         communityRestoration.ifPresent(restoration -> tag.put("CommunityRestoration", restoration.toTag()));
         tag.putLong("CommunitySeedableUntilGameTime", communitySeedableUntilGameTime);
+        if (remainingFertileHarvests >= 0) {
+            tag.putInt("RemainingFertileHarvests", remainingFertileHarvests);
+        }
         return tag;
     }
 
@@ -115,21 +171,24 @@ public record FlowerSoilSnapshot(
                 organicMatter,
                 origin,
                 communityRestoration,
-                communitySeedableUntilGameTime
+                communitySeedableUntilGameTime,
+                remainingFertileHarvests
         );
     }
 
     public FlowerSoilSnapshot withFertilizerLevel(int fertilizerLevel) {
         return new FlowerSoilSnapshot(
                 hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
-                origin, communityRestoration, communitySeedableUntilGameTime
+                origin, communityRestoration, communitySeedableUntilGameTime,
+                remainingFertileHarvests
         );
     }
 
     public FlowerSoilSnapshot withNutrients(float nitrogen, float phosphorus, float potassium, float organicMatter) {
         return new FlowerSoilSnapshot(
                 hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
-                origin, communityRestoration, communitySeedableUntilGameTime
+                origin, communityRestoration, communitySeedableUntilGameTime,
+                remainingFertileHarvests
         );
     }
 
@@ -152,7 +211,11 @@ public record FlowerSoilSnapshot(
                 tag.getFloat("OrganicMatter"),
                 origin,
                 restoration,
-                tag.getLong("CommunitySeedableUntilGameTime")
+                tag.getLong("CommunitySeedableUntilGameTime"),
+                tag.contains("RemainingFertileHarvests")
+                        ? Math.max(0, Math.min(FarmingBlockEntity.MAX_FERTILE_HARVESTS,
+                                tag.getInt("RemainingFertileHarvests")))
+                        : FarmingBlockEntity.UNTRACKED_FERTILE_HARVESTS
         );
     }
 

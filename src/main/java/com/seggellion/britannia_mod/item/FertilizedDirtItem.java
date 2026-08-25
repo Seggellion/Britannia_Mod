@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.item;
 import com.seggellion.britannia_mod.block.CommunityFarmBlock;
 import com.seggellion.britannia_mod.block.CommunityHoedFarmBlock;
 import com.seggellion.britannia_mod.block.FarmingBlock;
+import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
 import com.seggellion.britannia_mod.farming.FarmingActionType;
 import com.seggellion.britannia_mod.farming.FarmingSkill;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
@@ -52,6 +53,10 @@ public class FertilizedDirtItem extends Item {
         if (!level.isClientSide) {
             level.setBlock(pos, BlockRegistry.FARMING_BLOCK.get().defaultBlockState()
                     .setValue(FarmingBlock.HYDRATION, 1), 3);
+            if (level.getBlockEntity(pos) instanceof FarmingBlockEntity farmBe) {
+                farmBe.setHydration(1);
+                farmBe.initializeFertileHarvests();
+            }
             level.playSound(null, pos, SoundEvents.GRAVEL_PLACE, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (context.getPlayer() != null && !context.getPlayer().getAbilities().instabuild) {
                 context.getItemInHand().shrink(1);

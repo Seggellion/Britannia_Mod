@@ -25,6 +25,12 @@ public final class WildResourceHarvestService {
             Block expectedBlock,
             Item expectedItem
     ) {
+        WildResourceHarvestPolicy.Assessment authorization =
+                WildResourceHarvestPolicy.evaluate(level, position, player);
+        if (!authorization.allowed()) {
+            authorization.explain(player);
+            return false;
+        }
         WildResourceSavedData data = WildResourceSavedData.get(level);
         WildResourceNode node = data.nodeAt(position).orElse(null);
         WildResourceEntry entry = node == null ? null : WildResources.registry().find(node.resourceId()).orElse(null);

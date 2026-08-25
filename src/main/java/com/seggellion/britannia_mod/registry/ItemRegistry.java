@@ -6,6 +6,8 @@ import com.seggellion.britannia_mod.item.DecorativeMultiblockItem;
 import com.seggellion.britannia_mod.item.AdventureLadderItem;
 import com.seggellion.britannia_mod.item.AdventureScarecrowItem;
 import com.seggellion.britannia_mod.item.PitcherItem;
+import com.seggellion.britannia_mod.bowlpreparation.BowlPreparationItem;
+import com.seggellion.britannia_mod.bowlpreparation.FertileDirtMixingItem;
 
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 import com.seggellion.britannia_mod.ModSounds;
@@ -325,6 +327,20 @@ public static final DeferredHolder<Item, Item> BANDAGE = ITEMS.register("bandage
         () -> new Item(new Item.Properties()));
 
 public static final DeferredHolder<Item, Item> EMPTY_PEWTER_BOWL = ITEMS.register("empty_pewter_bowl",
+        () -> new Item(new Item.Properties()));
+
+// Patch 18 preparation-chain identities. The main-hand bowl for each interaction owns item use.
+public static final DeferredHolder<Item, Item> DIRT = ITEMS.register("dirt",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, Item> DUNG = ITEMS.register("dung",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, BowlPreparationItem> EMPTY_BOWL = ITEMS.register("empty_bowl",
+        () -> new BowlPreparationItem(new Item.Properties()));
+public static final DeferredHolder<Item, BowlPreparationItem> BOWL_OF_DIRT = ITEMS.register("bowl_of_dirt",
+        () -> new BowlPreparationItem(new Item.Properties()));
+public static final DeferredHolder<Item, FertileDirtMixingItem> BOWL_OF_FERTILE_DIRT = ITEMS.register(
+        "bowl_of_fertile_dirt", () -> new FertileDirtMixingItem(new Item.Properties()));
+public static final DeferredHolder<Item, Item> BOWL_OF_WATER = ITEMS.register("bowl_of_water",
         () -> new Item(new Item.Properties()));
 
 public static final DeferredHolder<Item, Item> BACKPACK = ITEMS.register("backpack",

@@ -36,6 +36,7 @@ public final class WaterWellBlock extends DecorativeMultiblockBlock {
         if (!hasValidPart(state)) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
-        return WaterSourceInteraction.fillFromSource(level, pos, player, hand, stack);
+        BlockPos anchor = anchorPosition(pos, state);
+        return WaterSourceInteraction.fillFromSource(level, anchor, player, hand, stack);
     }
 }

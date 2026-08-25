@@ -123,6 +123,12 @@ public class CreativeTabRegistry {
                 }
                 safeAccept(output, ItemRegistry.TRELLIS_ITEM.get());
                 safeAccept(output, ItemRegistry.FERTILIZED_DIRT.get());
+                safeAccept(output, ItemRegistry.DIRT.get());
+                safeAccept(output, ItemRegistry.DUNG.get());
+                safeAccept(output, ItemRegistry.EMPTY_BOWL.get());
+                safeAccept(output, ItemRegistry.BOWL_OF_DIRT.get());
+                safeAccept(output, ItemRegistry.BOWL_OF_FERTILE_DIRT.get());
+                safeAccept(output, ItemRegistry.BOWL_OF_WATER.get());
                 safeAccept(output, ItemRegistry.WATERING_CAN.get());
                 
                 // 3. Processing Blocks

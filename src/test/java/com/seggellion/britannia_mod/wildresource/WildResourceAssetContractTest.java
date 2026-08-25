@@ -26,10 +26,12 @@ class WildResourceAssetContractTest {
     void blockstatesModelsAndTexturesResolve() throws IOException {
         assertBlock("sulphurous_ash_patch", "block/wild_resource/sulphurous_ash_patch");
         assertBlock("black_lipped_oyster", "block/wild_resource/black_lipped_oyster");
+        assertBlock("dung", "block/wild_resource/dung");
         assertBlock("blood_moss", "item/reagent_blood_moss");
 
         assertItem("sulphurous_ash", "item/reagent_sulphurous_ash");
         assertItem("black_pearl", "item/wild_resource/black_pearl");
+        assertItem("dung", "block/wild_resource/dung");
         assertItem("blood_moss", "item/reagent_blood_moss");
     }
 
@@ -37,6 +39,7 @@ class WildResourceAssetContractTest {
     void placeholderPngsUseProjectScaleAndTransparentBackgrounds() throws IOException {
         assertPng("block/wild_resource/sulphurous_ash_patch", 32);
         assertPng("block/wild_resource/black_lipped_oyster", 32);
+        assertPng("block/wild_resource/dung", 32);
         assertPng("item/wild_resource/black_pearl", 16);
         assertPng("item/reagent_blood_moss", 32);
     }
@@ -49,6 +52,8 @@ class WildResourceAssetContractTest {
                 "block.britannia_mod.sulphurous_ash_patch",
                 "block.britannia_mod.black_lipped_oyster",
                 "item.britannia_mod.black_pearl",
+                "item.britannia_mod.dung",
+                "block.britannia_mod.dung",
                 "item.britannia_mod.blood_moss",
                 "block.britannia_mod.blood_moss"
         )) {
@@ -61,6 +66,7 @@ class WildResourceAssetContractTest {
         );
         assertTrue(creative.contains("ItemRegistry.SULPHUROUS_ASH"));
         assertTrue(creative.contains("ItemRegistry.BLACK_PEARL"));
+        assertTrue(creative.contains("ItemRegistry.DUNG"));
         assertTrue(creative.contains("ItemRegistry.BLOOD_MOSS"));
 
         JsonObject ashLoot = readJson(RESOURCES.resolve(
@@ -69,8 +75,12 @@ class WildResourceAssetContractTest {
         JsonObject oysterLoot = readJson(RESOURCES.resolve(
                 "data/britannia_mod/loot_table/blocks/black_lipped_oyster.json"
         ));
+        JsonObject dungLoot = readJson(RESOURCES.resolve(
+                "data/britannia_mod/loot_table/blocks/dung.json"
+        ));
         assertEquals("britannia_mod:sulphurous_ash", lootItem(ashLoot));
         assertEquals("britannia_mod:black_pearl", lootItem(oysterLoot));
+        assertEquals("britannia_mod:dung", lootItem(dungLoot));
     }
 
     private static void assertBlock(String path, String expectedTexture) throws IOException {

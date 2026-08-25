@@ -36,9 +36,12 @@ import java.util.Objects;
 
 public class FarmingBlockEntity extends BlockEntity {
     public static final int MAX_HYDRATION = 5;
+    public static final int MAX_FERTILE_HARVESTS = 5;
+    public static final int UNTRACKED_FERTILE_HARVESTS = -1;
     public static final long COMMUNITY_SEED_WINDOW_TICKS = 1200L;
     private static final String OWNER_ID_KEY = "OwnerUUID";
     private static final String VISUAL_ROTATION_KEY = "VisualRotation";
+    private static final String REMAINING_FERTILE_HARVESTS_KEY = "RemainingFertileHarvests";
     private static final int GROWTH_AGE_DATA_VERSION = 3;
 
     // Kept under the first-pass field names for safe world migration.
@@ -58,6 +61,8 @@ public class FarmingBlockEntity extends BlockEntity {
     private boolean growthBlocked = false;
     private boolean communityPlot = false;
     private long seedableUntilGameTime = 0L;
+    // Missing legacy NBT remains unlimited. Only canonical fertilized-dirt application tracks 5..0.
+    private int remainingFertileHarvests = UNTRACKED_FERTILE_HARVESTS;
 
     /**
      * Whoever tilled this plot, or null for a plot nobody has claimed. Community plots ignore it
@@ -271,6 +276,43 @@ public class FarmingBlockEntity extends BlockEntity {
         return hydration > old;
     }
 
+    /** Starts the finite lifecycle owned by one canonical fertilized-dirt application. */
+    public void initializeFertileHarvests() {
+        remainingFertileHarvests = MAX_FERTILE_HARVESTS;
+        setChangedAndSync();
+    }
+
+    /**
+     * Records exactly one already-confirmed server harvest. Untracked legacy plots remain unlimited,
+     * and an exhausted plot can never underflow even if a stale interaction reaches this method.
+     *
+     * @return the remaining count, or {@link #UNTRACKED_FERTILE_HARVESTS} for a legacy plot
+     */
+    public int consumeSuccessfulFertileHarvest() {
+        if (remainingFertileHarvests <= 0) {
+            return remainingFertileHarvests;
+        }
+        remainingFertileHarvests--;
+        setChangedAndSync();
+        return remainingFertileHarvests;
+    }
+
+    public int getRemainingFertileHarvests() {
+        return remainingFertileHarvests;
+    }
+
+    public boolean hasTrackedFertility() {
+        return remainingFertileHarvests >= 0;
+    }
+
+    public boolean hasRemainingFertility() {
+        return remainingFertileHarvests > 0;
+    }
+
+    public boolean isFertilityExhausted() {
+        return remainingFertileHarvests == 0;
+    }
+
     public void startCommunitySeedWindow(long deadlineGameTime) {
         this.communityPlot = true;
         this.ownerId = null;
@@ -367,10 +409,11 @@ public class FarmingBlockEntity extends BlockEntity {
         FlowerSoilSnapshot soil = communityPlot
                 ? FlowerSoilSnapshot.communitySoil(
                         hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
-                        seedableUntilGameTime
+                        seedableUntilGameTime, remainingFertileHarvests
                 )
                 : FlowerSoilSnapshot.privateSoil(
-                        hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter
+                        hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
+                        remainingFertileHarvests
                 );
         return new FlowerConversionSnapshot(
                 farmingState,
@@ -407,6 +450,7 @@ public class FarmingBlockEntity extends BlockEntity {
         this.growthBlocked = snapshot.growthBlocked();
         this.communityPlot = snapshot.communityPlot();
         this.seedableUntilGameTime = snapshot.seedableUntilGameTime();
+        this.remainingFertileHarvests = soil.remainingFertileHarvests();
         setChangedAndSync();
     }
 
@@ -431,6 +475,33 @@ public class FarmingBlockEntity extends BlockEntity {
         growthBlocked = false;
         communityPlot = false;
         seedableUntilGameTime = 0L;
+        remainingFertileHarvests = soil.remainingFertileHarvests();
+        setChangedAndSync();
+    }
+
+    /** Restores finite community soil after a flower is permanently uprooted. */
+    public void restoreUprootedCommunityFlowerSoil(FlowerSoilSnapshot soil) {
+        Objects.requireNonNull(soil, "Flower soil restoration snapshot is required");
+        if (soil.origin() != com.seggellion.britannia_mod.farming.FlowerSoilOrigin.COMMUNITY_PLOT) {
+            throw new IllegalArgumentException("Community FarmingBlock restoration requires community soil");
+        }
+        hydration = soil.hydration();
+        nitrogen = soil.nitrogen();
+        phosphorus = soil.phosphorus();
+        potassium = soil.potassium();
+        organicMatter = soil.organicMatter();
+        storedSeedVariety = "";
+        plantedCropId = "";
+        growthProgress = 0.0f;
+        growthStage = 0;
+        tickProgress = 0;
+        rootEstablishedGameTime = -1L;
+        mature = false;
+        growthBlocked = false;
+        communityPlot = true;
+        seedableUntilGameTime = soil.communitySeedableUntilGameTime();
+        remainingFertileHarvests = soil.remainingFertileHarvests();
+        ownerId = null;
         setChangedAndSync();
     }
 
@@ -597,6 +668,9 @@ public class FarmingBlockEntity extends BlockEntity {
         tag.putBoolean("GrowthBlocked", growthBlocked);
         tag.putBoolean("CommunityPlot", communityPlot);
         tag.putLong("SeedableUntilGameTime", seedableUntilGameTime);
+        if (hasTrackedFertility()) {
+            tag.putInt(REMAINING_FERTILE_HARVESTS_KEY, remainingFertileHarvests);
+        }
         if (ownerId != null) {
             tag.putUUID(OWNER_ID_KEY, ownerId);
         }
@@ -630,6 +704,9 @@ public class FarmingBlockEntity extends BlockEntity {
         this.growthBlocked = tag.getBoolean("GrowthBlocked");
         this.communityPlot = tag.getBoolean("CommunityPlot");
         this.seedableUntilGameTime = tag.getLong("SeedableUntilGameTime");
+        this.remainingFertileHarvests = tag.contains(REMAINING_FERTILE_HARVESTS_KEY)
+                ? Math.max(0, Math.min(MAX_FERTILE_HARVESTS, tag.getInt(REMAINING_FERTILE_HARVESTS_KEY)))
+                : UNTRACKED_FERTILE_HARVESTS;
         this.ownerId = tag.hasUUID(OWNER_ID_KEY) ? tag.getUUID(OWNER_ID_KEY) : null;
         this.visualRotationQuarters = Math.floorMod(tag.getInt(VISUAL_ROTATION_KEY), 4);
         migrateLegacyGrowthStage(tag);

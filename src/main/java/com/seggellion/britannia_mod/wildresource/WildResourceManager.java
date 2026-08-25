@@ -132,7 +132,8 @@ public final class WildResourceManager {
         dimensionCursor = (start + 1) % activeLevels.size();
     }
 
-    static void reconcileLoadedChunk(ServerLevel level, ChunkPos chunk) {
+    /** Reconciles one already-loaded chunk; public for deterministic lifecycle validation. */
+    public static void reconcileLoadedChunk(ServerLevel level, ChunkPos chunk) {
         if (level.getChunkSource().getChunkNow(chunk.x, chunk.z) == null) {
             return;
         }
