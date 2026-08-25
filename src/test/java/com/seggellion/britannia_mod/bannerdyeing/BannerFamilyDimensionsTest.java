@@ -46,10 +46,11 @@ class BannerFamilyDimensionsTest {
         record Expected(BannerPlacedGeometryFamily family, double widthPx, double heightPx) {
         }
         List<Expected> expected = List.of(
-                // x-small: 6 x 6 doubled.
-                new Expected(BannerPlacedGeometryFamily.X_SMALL, 12.0, 12.0),
-                new Expected(BannerPlacedGeometryFamily.ROAD_GUARD, 12.0, 12.0),
-                new Expected(BannerPlacedGeometryFamily.SMALL_CURTAIN, 12.0, 12.0),
+                // x-small: sized to the small family so it hangs to the same depth (2026-08-25
+                // follow-up); it stays the narrow family through its artwork, not its quad.
+                new Expected(BannerPlacedGeometryFamily.X_SMALL, 20.0, 20.0),
+                new Expected(BannerPlacedGeometryFamily.ROAD_GUARD, 20.0, 20.0),
+                new Expected(BannerPlacedGeometryFamily.SMALL_CURTAIN, 20.0, 20.0),
                 // small: 10 x 10 doubled.
                 new Expected(BannerPlacedGeometryFamily.SMALL, 20.0, 20.0),
                 // medium: 22 x 22, +20% wide and +30% tall.
@@ -70,9 +71,10 @@ class BannerFamilyDimensionsTest {
     @Test
     void scaleFactorsAreExactlyWhatWasRequestedFromTheOldSizes() {
         var baselineDouble = BannerPlacedGeometryFamily.Baseline.DOUBLE;
-        assertEquals(BannerPlacedGeometryFamily.Baseline.X_SMALL * baselineDouble,
+        // x-small is derived from small rather than scaled from its own baseline.
+        assertEquals(BannerPlacedGeometryFamily.SMALL.clothWidth(),
                 BannerPlacedGeometryFamily.X_SMALL.clothWidth(), EPS);
-        assertEquals(BannerPlacedGeometryFamily.Baseline.X_SMALL * baselineDouble,
+        assertEquals(BannerPlacedGeometryFamily.SMALL.clothHeight(),
                 BannerPlacedGeometryFamily.X_SMALL.clothHeight(), EPS);
         assertEquals(BannerPlacedGeometryFamily.Baseline.SMALL * baselineDouble,
                 BannerPlacedGeometryFamily.SMALL.clothWidth(), EPS);
