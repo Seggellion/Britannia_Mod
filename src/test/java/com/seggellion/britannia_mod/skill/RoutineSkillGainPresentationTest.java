@@ -26,8 +26,13 @@ class RoutineSkillGainPresentationTest {
     private static final Path PROJECT = Path.of(System.getProperty("britannia.projectDir", "."));
 
     private static String skillManagerSource() throws Exception {
+        // The working tree's line endings are a checkout artifact (core.autocrlf), not part of
+        // the shape this test pins. Without normalization, methodBody()'s "\n}\n" terminator
+        // never matches a CRLF-materialized file, so every "body" silently extends to
+        // end-of-file and absence assertions trip on code from unrelated methods.
         return Files.readString(PROJECT.resolve(
-                "src/main/java/com/seggellion/britannia_mod/skill/SkillManager.java"));
+                "src/main/java/com/seggellion/britannia_mod/skill/SkillManager.java"))
+                .replace("\r\n", "\n");
     }
 
     @Test
