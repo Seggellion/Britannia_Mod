@@ -164,17 +164,22 @@ class BannerXSmallFamilyProportionTest {
         // Its reach now equals the small family's, which the current margin already covered, so
         // no global bounds change is needed.
         double margin = BannerPlacedRenderBounds.MOUNT_AND_CLOTH_MARGIN;
-        assertEquals(0.9375, margin, EPS, "render bounds cover Small Curtain's doubled width");
+        assertEquals(0.8125, margin, EPS, "compacting the curtain let the margin come back down");
         for (BannerPlacedGeometryFamily family : X_SMALL_FAMILIES) {
             double downward = family.clothHeight() + family.clothTopInset()
                     - family.clothLift() - family.height();
             assertTrue(downward <= margin + EPS, family + " hangs " + downward + " past the margin");
             // Small Curtain hangs wall-parallel, so its span reach is measured across its
-            // footprint rather than out from the wall like its perpendicular cousins.
+            // footprint rather than out from the wall like its perpendicular cousins. Whichever
+            // reaches further -- the cloth or the pole -- is what the bounds must cover, and
+            // since the curtain's pole was compacted its cloth is now the wider of the two.
             double along = family == BannerPlacedGeometryFamily.SMALL_CURTAIN
-                    ? (family.clothWidth() - family.width()) / 2.0 + 0.125
-                    : family.clothWidth() + BannerPlacedGeometryPlan.WALL_SIDE_CLEARANCE
-                            - family.width();
+                    ? Math.max((family.clothWidth() - family.width()) / 2.0,
+                            family.clothWidth() * family.poleArtworkSpan() / 2.0
+                                    + 0.125 - family.width() / 2.0)
+                    : Math.max(family.clothWidth() + BannerPlacedGeometryPlan.WALL_SIDE_CLEARANCE
+                                    - family.width(),
+                            family.clothWidth() * family.poleArtworkSpan() + 0.125 - family.width());
             assertTrue(along <= margin + EPS, family + " reaches " + along + " past the margin");
         }
     }

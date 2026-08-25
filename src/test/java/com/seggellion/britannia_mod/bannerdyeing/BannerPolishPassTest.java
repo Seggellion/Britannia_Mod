@@ -117,12 +117,70 @@ class BannerPolishPassTest {
                 "the drawn curtain must be exactly twice as wide as before");
         // It grows in height with its family, and keeps a pole that spans what it carries.
         assertEquals(22.8035085, px(curtain.clothHeight()), 1.0e-6);
-        assertEquals(BannerPlacedGeometryFamily.Baseline.FULL_POLE, curtain.poleArtworkSpan(), EPS);
+        assertEquals(BannerPlacedGeometryFamily.Baseline.CURTAIN_POLE, curtain.poleArtworkSpan(), EPS);
         // A wall-parallel banner keeps two brackets and no quarter turn.
         var assembly = BannerPlacedAssembly.from(
                 plan(curtain, BannerOrientation.WALL_PARALLEL), BannerOrientation.WALL_PARALLEL);
         assertEquals(2, assembly.bracketAnchors().size());
         assertEquals(0.0F, assembly.bracketExtraYRotationDegrees());
+    }
+
+    @Test
+    void theCurtainsHardwareFramesItsFabricInsteadOfTheTransparentQuadAroundIt() throws Exception {
+        // The defect: the curtain's pole carried its whole 40px quad while the fabric paints
+        // only the middle 19.375px of it, leaving 8.31px of bare pole on each side and pushing
+        // the assembly across 2.75 blocks.
+        var curtain = BannerPlacedGeometryFamily.SMALL_CURTAIN;
+        var plan = plan(curtain, BannerOrientation.WALL_PARALLEL);
+        var assembly = BannerPlacedAssembly.from(plan, BannerOrientation.WALL_PARALLEL);
+
+        assertEquals(29.375, px(assembly.poleLength()), EPS, "compact pole");
+        assertTrue(px(assembly.poleLength()) < 44.0 * 0.75,
+                "the pole must be substantially shorter than the 44px it was");
+
+        // Both mounts sit one pixel off the fabric, symmetrically.
+        double fabricHalf = BannerXSmallArtwork.visibleWidthPx(
+                "small_curtain", px(curtain.clothWidth())) / 2.0;
+        double bracketCentre = px(assembly.poleLength()) / 2.0 - px(BannerPlacedAssembly.BRACKET_INSET);
+        double plateInnerEdge = bracketCentre - px(BannerPlacedAssembly.BRACKET_PLATE_HALF_WIDTH);
+        double clearance = plateInnerEdge - fabricHalf;
+        assertEquals(px(BannerPlacedGeometryFamily.Baseline.CURTAIN_MOUNT_CLEARANCE), clearance, EPS,
+                "mount-to-fabric clearance");
+        assertTrue(clearance > 0.0, "the mount must never intersect the fabric");
+        assertTrue(clearance <= 1.0, "the mount must sit very close to the fabric");
+
+        // Symmetric by construction: the two bracket anchors straddle the cloth centre evenly.
+        var anchors = assembly.bracketAnchors();
+        assertEquals(2, anchors.size());
+        double centre = (anchors.get(0).x + anchors.get(1).x) / 2.0;
+        assertEquals(px(plan.topLeft().x + plan.topRight().x) / 2.0, px(centre), EPS,
+                "the fabric must stay centred between its mounts");
+
+        // The fabric itself is untouched by any of this.
+        assertEquals(40.0, px(curtain.clothWidth()), EPS, "fabric width is locked");
+        assertEquals(22.8035085, px(curtain.clothHeight()), 1.0e-6, "fabric height is locked");
+    }
+
+    @Test
+    void onlyTheCurtainGotCompactHardware() {
+        // Every other family keeps the roomy decorative pole it was given.
+        for (BannerPlacedGeometryFamily family : BannerPlacedGeometryFamily.values()) {
+            if (family == BannerPlacedGeometryFamily.SMALL_CURTAIN) {
+                continue;
+            }
+            double expected = family == BannerPlacedGeometryFamily.ROAD_GUARD
+                    || family == BannerPlacedGeometryFamily.X_SMALL
+                    ? BannerPlacedGeometryFamily.Baseline.PENNANT_POLE
+                    : BannerPlacedGeometryFamily.Baseline.FULL_POLE;
+            assertEquals(expected, family.poleArtworkSpan(), EPS, family + " pole span");
+        }
+        // The x-small pennants in particular keep the pole this pass's predecessor gave them.
+        assertEquals(18.0, poleLengthPx(
+                BannerPlacedGeometryFamily.ROAD_GUARD, BannerOrientation.WALL_PERPENDICULAR), 0.05);
+        assertEquals(22.0, poleLengthPx(
+                BannerPlacedGeometryFamily.SMALL, BannerOrientation.WALL_PERPENDICULAR), EPS);
+        assertEquals(28.4, poleLengthPx(
+                BannerPlacedGeometryFamily.MEDIUM, BannerOrientation.WALL_PERPENDICULAR), EPS);
     }
 
     @Test
@@ -160,6 +218,13 @@ class BannerPolishPassTest {
                                     * (orientation == BannerOrientation.WALL_PARALLEL ? 2.0 : 1.0),
                             px(BannerPlacedAssembly.from(plan, orientation).poleLength()), EPS,
                             label + " pole length");
+                    // Nothing above may quietly re-lengthen the curtain's compact hardware.
+                    if (family == BannerPlacedGeometryFamily.SMALL_CURTAIN
+                            && orientation == BannerOrientation.WALL_PARALLEL) {
+                        assertEquals(29.375,
+                                px(BannerPlacedAssembly.from(plan, orientation).poleLength()), EPS,
+                                label + " compact curtain pole");
+                    }
                 }
             }
         }

@@ -168,13 +168,19 @@ class BannerFamilyDimensionsTest {
                 // Anchor-local: the anchor cell spans y 0..1, the footprint runs to 1 - height.
                 double clothTop = 1.0 - family.clothTopInset() + family.clothLift();
                 double clothBottom = clothTop - family.clothHeight();
+                // Whichever reaches further, the cloth or the pole carrying it: a family with a
+                // compact pole (the curtain) reaches further with its cloth, one with a roomy
+                // pole reaches further with its hardware.
                 double along = orientation == BannerOrientation.WALL_PARALLEL
-                        // Parallel: cloth centres on its footprint, pole overhangs each end.
-                        ? (family.clothWidth() * family.poleArtworkSpan() - family.width()) / 2.0
-                                + BannerPlacedAssembly.POLE_OVERHANG
-                        // Perpendicular: cloth starts a clearance out from the wall face.
-                        : family.clothWidth() + BannerPlacedGeometryPlan.WALL_SIDE_CLEARANCE
-                                - family.width();
+                        // Parallel: both centre on the footprint.
+                        ? Math.max((family.clothWidth() - family.width()) / 2.0,
+                                family.clothWidth() * family.poleArtworkSpan() / 2.0
+                                        + BannerPlacedAssembly.POLE_OVERHANG - family.width() / 2.0)
+                        // Perpendicular: both start from the wall, the cloth a clearance along it.
+                        : Math.max(family.clothWidth() + BannerPlacedGeometryPlan.WALL_SIDE_CLEARANCE
+                                        - family.width(),
+                                family.clothWidth() * family.poleArtworkSpan()
+                                        + BannerPlacedAssembly.POLE_OVERHANG - family.width());
                 double reach = Math.max(Math.max(along, (1.0 - family.height()) - clothBottom),
                         clothTop - 1.0);
                 assertTrue(reach <= margin + EPS,
