@@ -71,17 +71,23 @@ class BannerPlacedClothAspectTest {
     }
 
     @Test
-    void everyFamilyProducesASquareCloth() {
+    void everyFamilyProducesItsApprovedClothAspect() {
         for (BannerPlacedGeometryFamily family : BannerPlacedGeometryFamily.values()) {
             BannerPlacedGeometryPlan plan = BannerPlacedGeometryPlan.create(
                     BannerOrientation.WALL_PARALLEL, Direction.NORTH,
                     family.width(), family.height(), family, false);
             double width = plan.topRight().subtract(plan.topLeft()).length();
             double height = plan.topLeft().y - plan.bottomLeft().y;
-            assertEquals(width, height, 1.0e-9,
-                    family + " cloth is not square (" + width + " x " + height
-                            + "); the whole square texture maps onto it, so this distorts every "
-                            + "banner in the family");
+            // The cloth was square until the owner's 2026-08-25 review asked medium and large
+            // for +20% width and +30% height. The whole square texture still maps onto the
+            // quad, so that aspect change IS a deliberate 8.3% vertical stretch of the artwork;
+            // what must never happen is an accidental one, so the aspect is pinned to exactly
+            // the approved factors rather than merely "square".
+            double approvedAspect = family.heightScale() / family.widthScale();
+            assertEquals(approvedAspect, height / width, 1.0e-9,
+                    family + " cloth aspect drifted from its approved factors (" + width + " x "
+                            + height + "); the whole square texture maps onto it, so any "
+                            + "unapproved aspect distorts every banner in the family");
         }
     }
 
@@ -127,10 +133,11 @@ class BannerPlacedClothAspectTest {
                 problems.add(file.getFileName() + ": could not read authored quad from " + geometry);
                 continue;
             }
-            BannerPlacedGeometryPlan plan = BannerPlacedGeometryPlan.create(
-                    BannerOrientation.WALL_PARALLEL, Direction.NORTH,
-                    width, height, family.orElseThrow(), false);
-            double rendered = plan.topRight().subtract(plan.topLeft()).length();
+            // Compare the family's BASELINE against the artwork, not the cloth it now draws:
+            // the owner's approved scale factors are a deliberate presentation choice layered
+            // on top, pinned exactly in BannerFamilyDimensionsTest. What this test protects is
+            // the tie underneath -- that each family is still tuned to the art it serves.
+            double rendered = family.orElseThrow().clothBaseline();
             double ratio = rendered / authored.orElseThrow();
             if (SIZE_EXEMPT.contains(family.orElseThrow())) {
                 checked++;

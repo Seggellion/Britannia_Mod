@@ -15,7 +15,7 @@
     "provisional": false
   },
   "supported_orientations": [
-    "wall_perpendicular"
+    "wall_parallel"
   ],
   "supported_mounts": [
     "britannia_mod:brass",
@@ -28,5 +28,5 @@
     "base_texture": "britannia_mod:banner/small_curtain/base_texture",
     "dye_mask": "britannia_mod:banner/small_curtain/dye_mask"
   },
-  "placement_profile": "britannia_mod:extra_small"
+  "placement_profile": "britannia_mod:extra_small_parallel"
 }

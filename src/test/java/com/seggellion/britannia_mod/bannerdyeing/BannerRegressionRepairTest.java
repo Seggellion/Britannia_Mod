@@ -93,18 +93,18 @@ class BannerRegressionRepairTest {
                 medium.bottomLeft(), medium.bottomRight())) {
             assertTrue(corner.z <= 1.0 + 1.0e-9, "cloth corner inside the wall: " + corner);
         }
-        // The negative medium inset pins the wall-side edge exactly at the wall face and sends
-        // the whole overhang outward.
+        // Every perpendicular cloth starts exactly at the wall face and runs outward from it,
+        // which is also where the assembly pins its pole.
         assertEquals(1.0, medium.topLeft().z, 1.0e-9);
-        double clothWidth = 1 - 2.0 * BannerPlacedGeometryFamily.MEDIUM.horizontalInset();
-        assertEquals(1.0 - clothWidth, medium.topRight().z, 1.0e-9);
+        assertEquals(1.0 - BannerPlacedGeometryFamily.MEDIUM.clothWidth(),
+                medium.topRight().z, 1.0e-9);
 
-        // Positive insets keep their historical symmetric placement.
         BannerPlacedGeometryPlan small = BannerPlacedGeometryPlan.create(
                 BannerOrientation.WALL_PERPENDICULAR, Direction.NORTH, 1, 1,
                 BannerPlacedGeometryFamily.SMALL, false);
-        assertEquals(1.0 - BannerPlacedGeometryFamily.SMALL.horizontalInset(),
-                small.topLeft().z, 1.0e-9);
+        assertEquals(1.0, small.topLeft().z, 1.0e-9);
+        assertEquals(1.0 - BannerPlacedGeometryFamily.SMALL.clothWidth(),
+                small.topRight().z, 1.0e-9);
     }
 
     @Test
@@ -132,6 +132,37 @@ class BannerRegressionRepairTest {
         assertEquals(1, perpendicularAssembly.bracketAnchors().size());
         assertEquals(0.0F, parallelAssembly.bracketExtraYRotationDegrees());
         assertEquals(90.0F, perpendicularAssembly.bracketExtraYRotationDegrees());
+    }
+
+    @Test
+    void theCatalogueKeepsItsIntendedMixtureOfParallelAndPerpendicularBanners() throws Exception {
+        var snapshot = DyeResolverFixtures.productionSnapshot();
+        var byId = new java.util.TreeMap<String, List<BannerOrientation>>();
+        for (var definition : snapshot.banners().activeDefinitions()) {
+            byId.put(definition.id().toString(), definition.supportedOrientations());
+        }
+        // Small Curtain is drapery: parallel, unlike the rest of its x-small group.
+        assertEquals(List.of(BannerOrientation.WALL_PARALLEL),
+                byId.get("britannia_mod:small_curtain"), "small_curtain");
+        // Representative wall families stay parallel...
+        for (String parallel : List.of("britannia_mod:tournament_curtain", "britannia_mod:ankh_pennon")) {
+            assertEquals(List.of(BannerOrientation.WALL_PARALLEL), byId.get(parallel), parallel);
+        }
+        // ...and representative non-wall families stay perpendicular, including the rest of
+        // small_curtain's own group, so reclassifying it did not flatten the catalogue.
+        for (String perpendicular : List.of("britannia_mod:argent_shield", "britannia_mod:iron_ward",
+                "britannia_mod:road_guard")) {
+            assertEquals(List.of(BannerOrientation.WALL_PERPENDICULAR),
+                    byId.get(perpendicular), perpendicular);
+        }
+        long parallelCount = byId.values().stream()
+                .filter(list -> list.equals(List.of(BannerOrientation.WALL_PARALLEL))).count();
+        long perpendicularCount = byId.values().stream()
+                .filter(list -> list.equals(List.of(BannerOrientation.WALL_PERPENDICULAR))).count();
+        assertEquals(byId.size(), parallelCount + perpendicularCount,
+                "every definition must declare exactly one orientation");
+        assertTrue(parallelCount > 0 && perpendicularCount > 0,
+                "the catalogue must keep both orientations in use");
     }
 
     @Test

@@ -65,12 +65,17 @@ public record BannerPlacedAssembly(
 
         Vec3 span = geometry.topRight().subtract(geometry.topLeft());
         Vec3 spanUnit = span.normalize();
+        // The assembly hangs on the MOUNT LINE, not on the cloth's top edge. They are the same
+        // height for every family except one that lifts its cloth to meet artwork margin (see
+        // BannerPlacedGeometryFamily#clothLift) -- reading the cloth there would carry the pole
+        // and brackets up with it and close no gap at all.
         Vec3 clothTopCentre = geometry.topLeft().add(span.scale(0.5));
+        Vec3 mountCentre = new Vec3(clothTopCentre.x, geometry.poleLineY(), clothTopCentre.z);
 
         // Work in a 1-D coordinate along the span axis, measured from the anchor block's centre.
         // Dotting with spanUnit drops the normal component, so this is unaffected by the cloth
         // being offset toward the wall.
-        Vec3 axisOrigin = new Vec3(0.5, geometry.topLeft().y, 0.5);
+        Vec3 axisOrigin = new Vec3(0.5, geometry.poleLineY(), 0.5);
         double clothStart = geometry.topLeft().subtract(axisOrigin).dot(spanUnit);
         double clothEnd = geometry.topRight().subtract(axisOrigin).dot(spanUnit);
         double clothMiddle = (clothStart + clothEnd) / 2.0;
@@ -90,12 +95,12 @@ public record BannerPlacedAssembly(
         // from there, so anchoring the perpendicular bracket that far out from the wall face
         // lands its plate exactly on the wall.
         List<Vec3> brackets = parallel
-                ? List.of(pointAt(clothTopCentre, spanUnit, clothMiddle, poleStart + BRACKET_INSET),
-                          pointAt(clothTopCentre, spanUnit, clothMiddle, poleEnd - BRACKET_INSET))
-                : List.of(pointAt(clothTopCentre, spanUnit, clothMiddle, -0.5 + POLE_STANDOFF));
+                ? List.of(pointAt(mountCentre, spanUnit, clothMiddle, poleStart + BRACKET_INSET),
+                          pointAt(mountCentre, spanUnit, clothMiddle, poleEnd - BRACKET_INSET))
+                : List.of(pointAt(mountCentre, spanUnit, clothMiddle, -0.5 + POLE_STANDOFF));
 
         return new BannerPlacedAssembly(
-                pointAt(clothTopCentre, spanUnit, clothMiddle, (poleStart + poleEnd) / 2.0),
+                pointAt(mountCentre, spanUnit, clothMiddle, (poleStart + poleEnd) / 2.0),
                 poleLength,
                 -geometry.frontNormal().toYRot(),
                 brackets,

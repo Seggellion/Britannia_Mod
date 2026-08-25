@@ -81,7 +81,7 @@ class GeneratedBannerCatalogueTest {
         assertEquals(4, decodeFolder("material_palettes", MaterialPalette.CODEC));
         assertEquals(7, decodeFolder("pigments", PigmentDefinition.CODEC));
         assertEquals(2, decodeFolder("banner_mounts", MountDefinition.CODEC));
-        assertEquals(10, decodeFolder("placement_profiles", PlacementProfile.CODEC));
+        assertEquals(11, decodeFolder("placement_profiles", PlacementProfile.CODEC));
     }
 
     @Test
@@ -126,7 +126,10 @@ class GeneratedBannerCatalogueTest {
                 .map(definition -> definition.placementProfile().toString()).collect(java.util.stream.Collectors.toSet());
         assertEquals(Set.of("britannia_mod:large_parallel", "britannia_mod:medium_parallel",
                 "britannia_mod:small",
-                "britannia_mod:extra_small", "britannia_mod:medium_perpendicular"), profiles);
+                "britannia_mod:extra_small", "britannia_mod:medium_perpendicular",
+                // Small Curtain hangs parallel while the rest of its x-small group projects,
+                // so it needs the one extra-small profile carrying parallel mount geometry.
+                "britannia_mod:extra_small_parallel"), profiles);
     }
 
     @Test
@@ -135,7 +138,7 @@ class GeneratedBannerCatalogueTest {
         assertEquals(4, result.snapshot().materialPalettes().activeCount());
         assertEquals(7, result.snapshot().pigments().activeCount());
         assertEquals(2, result.snapshot().mounts().activeCount());
-        assertEquals(10, result.snapshot().placementProfiles().activeCount());
+        assertEquals(11, result.snapshot().placementProfiles().activeCount());
         assertTrue(result.snapshot().fabricMaterials().activeEntries().keySet().stream()
                 .anyMatch(id -> id.toString().equals("britannia_mod:cotton")));
         assertEquals(Set.of("britannia_mod:brass", "britannia_mod:iron"),

@@ -5,42 +5,99 @@ import java.util.Arrays;
 import java.util.Optional;
 import net.minecraft.resources.ResourceLocation;
 
-/** Catalogue geometry resources mapped to their exact persisted footprint support. */
+/**
+ * Catalogue geometry resources mapped to their exact persisted footprint support and to the
+ * placed cloth each family draws.
+ *
+ * <h2>Units</h2>
+ * Every dimension here is in BLOCKS, the unit the placed renderer works in. One block is 16
+ * Minecraft model pixels, so a Blockbench measurement converts as {@code pixels / 16.0}.
+ *
+ * <h2>Cloth size</h2>
+ * A family's cloth is stated outright as {@link #clothWidth()} x {@link #clothHeight()} rather
+ * than derived from one symmetric inset, because the two axes no longer scale together. The
+ * baselines in {@link Baseline} are the measured means of each group's authored Blockbench
+ * quads (element bounds divided by their UV fraction), which is what tied the placed cloth to
+ * the artwork in the first place; the owner's 2026-08-25 review then scaled each family from
+ * that baseline. Writing every constant as {@code baseline * factor} keeps both halves of that
+ * history legible and lets the tests assert the same arithmetic rather than a copied literal.
+ *
+ * <p>The cloth is no longer square. Because the renderer maps the whole 128x128 sprite onto the
+ * quad, a family whose width and height scale by different factors renders its artwork with the
+ * same aspect change -- for medium and large that is the requested 1.3/1.2 = 8.3% vertical
+ * stretch, applied to real geometry rather than to the UVs.
+ */
 public enum BannerPlacedGeometryFamily {
-    LARGE(BannerAssetAvailability.id("banner/placeholder/large"), 2, 2, 0.03125, 0.0625),
-    MEDIUM_WALL(BannerAssetAvailability.id("banner/placeholder/medium_wall"), 2, 2, 0.125, 0.125),
-    // The only family whose footprint is not square (1x2), and so the only one whose cloth
-    // width could not simply be inset from its footprint: a square cloth (see
-    // BannerPlacedGeometryPlan) sized to the authored artwork has to be WIDER than the one
-    // block it is anchored in, which a positive inset cannot express. 1.375 blocks is the mean
-    // of the 14 medium definitions' own authored quads (their geometry.json element bounds
-    // divided by their UV fraction, range 1.301-1.495), so every one of them renders within
-    // ~6% of its Blockbench size. The overhang is transparent margin -- the visible artwork is
-    // 62-77% of the texture width, i.e. 0.85-1.05 blocks, so it still reads as a one-block
-    // banner. The previous 0.25 inset gave a 0.5 x 1.9375 cloth: a 74% horizontal squeeze.
-    MEDIUM(BannerAssetAvailability.id("banner/placeholder/medium"), 1, 2, -0.1875, 0.03125),
-    SMALL(BannerAssetAvailability.id("banner/placeholder/small"), 1, 1, 0.1875, 0.1875),
-    X_SMALL(BannerAssetAvailability.id("banner/placeholder/x_small"), 1, 1, 0.3125, 0.3125),
-    ROAD_GUARD(BannerAssetAvailability.id("banner/road_guard/geometry"), 1, 1, 0.3125, 0.3125),
-    SMALL_CURTAIN(BannerAssetAvailability.id("banner/small_curtain/geometry"), 1, 1, 0.3125, 0.3125);
+    LARGE(BannerAssetAvailability.id("banner/placeholder/large"), 2, 2,
+            Baseline.LARGE, Baseline.WIDER, Baseline.TALLER, 0.0625, 3.0 / 16.0),
+    // Declared 2x2 and currently unreachable: every medium-wall definition ships 1x2 and so
+    // resolves to MEDIUM. Kept in step with MEDIUM so it stays right if 2x2 wall art lands.
+    MEDIUM_WALL(BannerAssetAvailability.id("banner/placeholder/medium_wall"), 2, 2,
+            Baseline.MEDIUM_WALL, Baseline.WIDER, Baseline.TALLER, 0.125, 0.0),
+    // The only family whose footprint is not square (1x2), and the only one whose cloth cannot
+    // be expressed as a positive inset: sized to the authored artwork it has to be WIDER than
+    // the one block it is anchored in. Baseline 1.375 is the mean of the 14 medium definitions'
+    // own authored quads (range 1.301-1.495), so each renders within ~6% of its Blockbench
+    // size. The overhang is transparent margin -- the visible artwork is 62-77% of the texture
+    // width -- so it still reads as a one-block banner.
+    MEDIUM(BannerAssetAvailability.id("banner/placeholder/medium"), 1, 2,
+            Baseline.MEDIUM, Baseline.WIDER, Baseline.TALLER, 0.03125, 0.0),
+    SMALL(BannerAssetAvailability.id("banner/placeholder/small"), 1, 1,
+            Baseline.SMALL, Baseline.DOUBLE, Baseline.DOUBLE, 0.1875, 0.0),
+    X_SMALL(BannerAssetAvailability.id("banner/placeholder/x_small"), 1, 1,
+            Baseline.X_SMALL, Baseline.DOUBLE, Baseline.DOUBLE, 0.3125, 0.0),
+    ROAD_GUARD(BannerAssetAvailability.id("banner/road_guard/geometry"), 1, 1,
+            Baseline.X_SMALL, Baseline.DOUBLE, Baseline.DOUBLE, 0.3125, 0.0),
+    SMALL_CURTAIN(BannerAssetAvailability.id("banner/small_curtain/geometry"), 1, 1,
+            Baseline.X_SMALL, Baseline.DOUBLE, Baseline.DOUBLE, 0.3125, 0.0);
+
+    /**
+     * What each family drew before the owner's 2026-08-25 sizing review, and the factors that
+     * review applied. Held in a nested type so the enum constants above can reference them:
+     * an enum constant cannot read a static field of its own enum during initialization.
+     */
+    public static final class Baseline {
+        public static final double LARGE = 1.9375;
+        public static final double MEDIUM_WALL = 1.75;
+        public static final double MEDIUM = 1.375;
+        public static final double SMALL = 0.625;
+        public static final double X_SMALL = 0.375;
+
+        /** Owner-requested scale factors from those baselines. */
+        public static final double WIDER = 1.2;
+        public static final double TALLER = 1.3;
+        public static final double DOUBLE = 2.0;
+
+        private Baseline() {
+        }
+    }
 
     private final ResourceLocation geometryId;
     private final int width;
     private final int height;
-    private final double horizontalInset;
-    private final double verticalInset;
+    private final double clothBaseline;
+    private final double widthScale;
+    private final double heightScale;
+    private final double clothTopInset;
+    private final double clothLift;
 
     BannerPlacedGeometryFamily(
             ResourceLocation geometryId,
             int width,
             int height,
-            double horizontalInset,
-            double verticalInset) {
+            double clothBaseline,
+            double widthScale,
+            double heightScale,
+            double clothTopInset,
+            double clothLift) {
         this.geometryId = geometryId;
         this.width = width;
         this.height = height;
-        this.horizontalInset = horizontalInset;
-        this.verticalInset = verticalInset;
+        this.clothBaseline = clothBaseline;
+        this.widthScale = widthScale;
+        this.heightScale = heightScale;
+        this.clothTopInset = clothTopInset;
+        this.clothLift = clothLift;
     }
 
     public ResourceLocation geometryId() {
@@ -55,12 +112,65 @@ public enum BannerPlacedGeometryFamily {
         return height;
     }
 
-    public double horizontalInset() {
-        return horizontalInset;
+    /** Placed cloth extent along the banner's span axis, in blocks. */
+    public double clothWidth() {
+        return clothBaseline * widthScale;
     }
 
+    /** Placed cloth drop below its own top edge, in blocks. */
+    public double clothHeight() {
+        return clothBaseline * heightScale;
+    }
+
+    /**
+     * The cloth width this family was tuned to before the owner's 2026-08-25 sizing review: the
+     * mean full-texture quad its group's authored Blockbench geometry implies. Kept separate
+     * from the scale factors so the tie between a family and its artwork stays assertable even
+     * as the owner rescales the presentation.
+     */
+    public double clothBaseline() {
+        return clothBaseline;
+    }
+
+    /** Owner-approved multiple of {@link #clothBaseline()} this family's cloth is drawn at. */
+    public double widthScale() {
+        return widthScale;
+    }
+
+    /** Owner-approved multiple of {@link #clothBaseline()} this family's cloth hangs at. */
+    public double heightScale() {
+        return heightScale;
+    }
+
+    /** How far the mount line sits below the anchor block's top face, in blocks. */
+    public double clothTopInset() {
+        return clothTopInset;
+    }
+
+    /**
+     * How far the cloth alone is raised above the mount line, in blocks. Only LARGE uses it:
+     * its artwork carries roughly 3 model pixels of transparent margin above the painted cloth
+     * (tournament_curtain's alpha starts 13 rows into a 128px texture, which is 3.1 pixels of
+     * a 31-pixel cloth), so a geometrically connected banner still read as hanging detached
+     * below its pole. Raising the cloth without raising the assembly closes that gap;
+     * {@link BannerPlacedAssembly} reads {@link BannerPlacedGeometryPlan#poleLineY()} precisely
+     * so the pole and brackets stay where they are.
+     */
+    public double clothLift() {
+        return clothLift;
+    }
+
+    /**
+     * Historical accessor: the symmetric horizontal inset this family's cloth implies against
+     * its own footprint. Negative when the cloth is wider than the blocks it is anchored in.
+     */
+    public double horizontalInset() {
+        return (width - clothWidth()) / 2.0;
+    }
+
+    /** Historical accessor for {@link #clothTopInset()}, which positions the top edge only. */
     public double verticalInset() {
-        return verticalInset;
+        return clothTopInset;
     }
 
     public boolean supports(int persistedWidth, int persistedHeight) {
@@ -73,8 +183,8 @@ public enum BannerPlacedGeometryFamily {
 
     /**
      * Custom item geometry does not change the placed footprint. Real catalogue geometry lives
-     * under {@code banner/<group>/...}, so the group directory selects the family whose insets
-     * were tuned for that group's authored artwork; matching by footprint alone collapsed every
+     * under {@code banner/<group>/...}, so the group directory selects the family whose cloth
+     * was tuned for that group's authored artwork; matching by footprint alone collapsed every
      * 1x1 banner into {@link #X_SMALL} (small-family cloth at 57% of its authored size). Only
      * geometry from outside the catalogue groups falls through to the synchronized approved
      * dimensions and the most compact matching placed convention.
@@ -98,7 +208,7 @@ public enum BannerPlacedGeometryFamily {
 
     /**
      * The catalogue group encoded in a real geometry path. Both medium groups share
-     * {@link #MEDIUM}: its inset was tuned from all 14 medium definitions' authored quads
+     * {@link #MEDIUM}: its cloth was tuned from all 14 medium definitions' authored quads
      * (the two groups' own means differ by 0.014 blocks), while their placed presentations
      * differ by orientation, not cloth size. {@code banner/medium_wall/} must be tested before
      * {@code banner/medium/} would ever match it as a prefix.
