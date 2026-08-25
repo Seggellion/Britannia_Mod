@@ -8,7 +8,6 @@
   },
   "requires_wall_support": true,
   "orientation_mount_geometry": {
-    "wall_parallel": "britannia_mod:banner/mount/wall_parallel",
     "wall_perpendicular": "britannia_mod:banner/mount/wall_perpendicular"
   }
 }

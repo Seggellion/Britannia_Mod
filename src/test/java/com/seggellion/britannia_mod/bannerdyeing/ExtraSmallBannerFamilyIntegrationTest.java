@@ -81,7 +81,9 @@ class ExtraSmallBannerFamilyIntegrationTest {
             assertEquals(1, entry.widthBlocks(), entry.id());
             assertEquals(1, entry.heightBlocks(), entry.id());
             assertEquals(Boolean.FALSE, entry.dimensionsProvisional(), entry.id());
-            assertEquals(List.of("wall_parallel", "wall_perpendicular"),
+            // Owner ruling 2026-08-24: the non-wall families (x-small, small, medium) hang
+            // perpendicular; only medium-wall and large lie parallel against the wall.
+            assertEquals(List.of("wall_perpendicular"),
                     entry.supportedOrientations(), entry.id());
             assertEquals(List.of("britannia_mod:brass", "britannia_mod:iron"),
                     entry.supportedMounts(), entry.id());
@@ -172,25 +174,23 @@ class ExtraSmallBannerFamilyIntegrationTest {
                 "src/main/resources/data/britannia_mod/placement_profiles/extra_small.json")))
                 .getAsJsonObject();
         JsonObject mounts = profile.getAsJsonObject("orientation_mount_geometry");
-        ResourceLocation parallelId = ResourceLocation.parse(mounts.get("wall_parallel").getAsString());
+        // The extra-small profile is perpendicular-only after the owner's orientation ruling;
+        // its key set must exactly equal the family's supported orientations.
+        assertEquals(java.util.Set.of("wall_perpendicular"), mounts.keySet());
         ResourceLocation perpendicularId = ResourceLocation.parse(mounts.get("wall_perpendicular").getAsString());
+        // The parallel mount belongs to the wall families now, and stays a distinct model.
+        ResourceLocation parallelId = ResourceLocation.parse("britannia_mod:banner/mount/wall_parallel");
         assertNotEquals(parallelId, perpendicularId);
         assertNotEquals(Files.readString(model("mount/wall_parallel")),
                 Files.readString(model("mount/wall_perpendicular")));
 
         for (Direction facing : Direction.Plane.HORIZONTAL) {
-            BannerPlacedGeometryPlan parallel = BannerPlacedGeometryPlan.create(
-                    BannerOrientation.WALL_PARALLEL, facing, 1, 1,
-                    BannerPlacedGeometryFamily.X_SMALL, false, Optional.of(parallelId));
             BannerPlacedGeometryPlan perpendicular = BannerPlacedGeometryPlan.create(
                     BannerOrientation.WALL_PERPENDICULAR, facing, 1, 1,
                     BannerPlacedGeometryFamily.X_SMALL, false, Optional.of(perpendicularId));
-            assertEquals(Optional.of(parallelId), parallel.mountGeometry());
             assertEquals(Optional.of(perpendicularId), perpendicular.mountGeometry());
-            assertEquals(1.25, parallel.mountTopRight().distanceTo(parallel.mountTopLeft()), 1.0e-12);
             assertEquals(1.125, perpendicular.mountTopRight().distanceTo(
                     perpendicular.mountTopLeft()), 1.0e-12);
-            assertNotEquals(parallel.mountTopLeft(), perpendicular.mountTopLeft());
         }
     }
 

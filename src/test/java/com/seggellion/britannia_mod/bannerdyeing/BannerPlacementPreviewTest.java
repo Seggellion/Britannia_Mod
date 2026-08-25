@@ -47,21 +47,27 @@ class BannerPlacementPreviewTest {
     void parallelAndPerpendicularExposeDimensionsOrientationMountAndOrderedCells() {
         ItemStack stack = stack("road_guard");
         BannerInstanceState before = item.stateAccess().read(stack).orElseThrow();
-        for (BannerOrientation orientation : BannerOrientation.values()) {
-            PreviewWorld world = new PreviewWorld();
-            world.protectionKnown = true;
-            var preview = preview(stack, orientation, world);
-            assertEquals(BannerPlacementPreviewStatus.VALID, preview.status());
-            assertEquals(1, preview.dimensions().widthBlocks());
-            assertEquals(1, preview.dimensions().heightBlocks());
-            assertEquals(1, preview.cells().size());
-            assertEquals(BannerCellRole.ANCHOR, preview.cells().getFirst().role());
-            assertEquals(0, preview.cells().stream()
-                    .filter(cell -> cell.role() == BannerCellRole.PART).count());
-            assertEquals(orientation, preview.orientation());
-            assertEquals(before.mountId(), preview.mountId());
-            assertEquals(before, item.stateAccess().read(stack).orElseThrow());
-        }
+        // Owner ruling 2026-08-24: x-small banners hang perpendicular only, so the preview
+        // must classify a parallel request as unsupported rather than rendering it.
+        PreviewWorld world = new PreviewWorld();
+        world.protectionKnown = true;
+        var preview = preview(stack, BannerOrientation.WALL_PERPENDICULAR, world);
+        assertEquals(BannerPlacementPreviewStatus.VALID, preview.status());
+        assertEquals(1, preview.dimensions().widthBlocks());
+        assertEquals(1, preview.dimensions().heightBlocks());
+        assertEquals(1, preview.cells().size());
+        assertEquals(BannerCellRole.ANCHOR, preview.cells().getFirst().role());
+        assertEquals(0, preview.cells().stream()
+                .filter(cell -> cell.role() == BannerCellRole.PART).count());
+        assertEquals(BannerOrientation.WALL_PERPENDICULAR, preview.orientation());
+        assertEquals(before.mountId(), preview.mountId());
+        assertEquals(before, item.stateAccess().read(stack).orElseThrow());
+
+        PreviewWorld parallelWorld = new PreviewWorld();
+        parallelWorld.protectionKnown = true;
+        var parallel = preview(stack, BannerOrientation.WALL_PARALLEL, parallelWorld);
+        assertEquals(BannerPlacementPreviewStatus.UNSUPPORTED_ORIENTATION, parallel.status());
+        assertEquals(before, item.stateAccess().read(stack).orElseThrow());
     }
 
     @Test

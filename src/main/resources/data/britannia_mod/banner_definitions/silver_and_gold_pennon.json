@@ -15,7 +15,6 @@
     "provisional": false
   },
   "supported_orientations": [
-    "wall_parallel",
     "wall_perpendicular"
   ],
   "supported_mounts": [

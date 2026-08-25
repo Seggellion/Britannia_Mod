@@ -54,7 +54,7 @@ public final class BannerLifecycleGameTests {
     private static final BannerDefinitionId ARGENT_SHIELD = BannerDefinitionId.parse("britannia_mod:argent_shield");
     /** Parallel-only 1x2 medium-wall. */
     private static final BannerDefinitionId ANKH_PENNON = BannerDefinitionId.parse("britannia_mod:ankh_pennon");
-    /** Dual-orientation 1x1 x-small. */
+    /** Perpendicular-only 1x1 x-small (owner ruling 2026-08-24: non-wall families hang perpendicular). */
     private static final BannerDefinitionId ROAD_GUARD = BannerDefinitionId.parse("britannia_mod:road_guard");
     private static final MountId BRASS = MountId.parse("britannia_mod:brass");
     private static final MountId IRON = MountId.parse("britannia_mod:iron");
@@ -202,7 +202,10 @@ public final class BannerLifecycleGameTests {
     }
 
     @GameTest(batch = BATCH, template = TEMPLATE)
-    public static void sneakusecyclesorientationsoadualbannerplacesperpendicular(GameTestHelper helper) {
+    public static void nonwallbannersplaceperpendicularwithoutanycycling(GameTestHelper helper) {
+        // The regression the owner observed in-game: small and x-small banners carried a
+        // dual-orientation scaffold default, so they placed parallel every session. They are
+        // non-wall designs and must place perpendicular straight from the item, no sneak-cycle.
         ServerPlayer player = pinnedPlayer(helper);
         BlockPos wall = buildWall(helper);
         ItemStack stack = banner(helper, ROAD_GUARD, BRASS);
@@ -211,11 +214,16 @@ public final class BannerLifecycleGameTests {
         BlockPos absoluteWall = helper.absolutePos(wall);
         BlockHitResult hit = new BlockHitResult(
                 Vec3.atCenterOf(absoluteWall).add(0, 0, -0.5), Direction.NORTH, absoluteWall, false);
+        // Sneak-use still answers (only-supported-mode feedback) and must not place or crash.
         player.setShiftKeyDown(true);
         var cycled = stack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, hit));
         player.setShiftKeyDown(false);
         if (!cycled.consumesAction()) {
-            helper.fail("sneak-use orientation cycle refused: " + cycled);
+            helper.fail("sneak-use orientation feedback refused: " + cycled);
+        }
+        if (helper.getLevel().getBlockState(helper.absolutePos(wall.relative(Direction.NORTH)))
+                .getBlock() instanceof BannerBlock) {
+            helper.fail("sneak-use placed the banner instead of reporting orientation");
         }
         BlockPos anchor = place(helper, player, stack, wall);
         helper.assertBlockProperty(anchor, BannerBlock.ORIENTATION, BannerOrientation.WALL_PERPENDICULAR);

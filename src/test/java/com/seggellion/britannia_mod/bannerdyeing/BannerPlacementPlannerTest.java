@@ -62,7 +62,7 @@ class BannerPlacementPlannerTest {
     void validConfiguredOneByOneBannerBuildsExactOneCellPlan() {
         ItemStack stack = natural(SMALL);
         FakeWorld world = new FakeWorld();
-        BannerPlacementPlanningResult result = plan(stack, production, true, Direction.EAST, world);
+        BannerPlacementPlanningResult result = planPerpendicular(stack, production, true, Direction.EAST, world);
         assertTrue(result.successful());
         var plan = result.plan().orElseThrow();
         assertEquals(new BlockPos(1, 0, 0), plan.anchorPos());
@@ -160,34 +160,41 @@ class BannerPlacementPlannerTest {
     @Test
     void verticalFaceOccupiedBoundsSupportAndProtectionFailuresAreDistinct() {
         assertEquals(BannerPlacementFailure.INVALID_CLICKED_FACE,
-                plan(natural(SMALL), production, true, Direction.UP, new FakeWorld()).failure());
+                planPerpendicular(natural(SMALL), production, true, Direction.UP, new FakeWorld()).failure());
         FakeWorld occupied = new FakeWorld(); occupied.replaceable = false;
         assertEquals(BannerPlacementFailure.TARGET_OCCUPIED,
-                plan(natural(SMALL), production, true, Direction.NORTH, occupied).failure());
+                planPerpendicular(natural(SMALL), production, true, Direction.NORTH, occupied).failure());
         FakeWorld bounds = new FakeWorld(); bounds.inBounds = false;
         assertEquals(BannerPlacementFailure.WORLD_BOUND_FAILURE,
-                plan(natural(SMALL), production, true, Direction.NORTH, bounds).failure());
+                planPerpendicular(natural(SMALL), production, true, Direction.NORTH, bounds).failure());
         FakeWorld support = new FakeWorld(); support.support = false;
         assertEquals(BannerPlacementFailure.INVALID_WALL_SUPPORT,
-                plan(natural(SMALL), production, true, Direction.NORTH, support).failure());
+                planPerpendicular(natural(SMALL), production, true, Direction.NORTH, support).failure());
         FakeWorld denied = new FakeWorld(); denied.allowed = false;
         assertEquals(BannerPlacementFailure.PROTECTED_PLACEMENT,
-                plan(natural(SMALL), production, true, Direction.NORTH, denied).failure());
+                planPerpendicular(natural(SMALL), production, true, Direction.NORTH, denied).failure());
     }
 
     @Test
     void blockEntityCreationAndStateTransferPreflightFailuresAreDistinct() {
         FakeWorld noEntity = new FakeWorld(); noEntity.canCreate = false;
         assertEquals(BannerPlacementFailure.BLOCK_ENTITY_CREATION_FAILURE,
-                plan(natural(SMALL), production, true, Direction.NORTH, noEntity).failure());
+                planPerpendicular(natural(SMALL), production, true, Direction.NORTH, noEntity).failure());
         FakeWorld noTransfer = new FakeWorld(); noTransfer.canAccept = false;
         assertEquals(BannerPlacementFailure.STATE_TRANSFER_FAILURE,
-                plan(natural(SMALL), production, true, Direction.NORTH, noTransfer).failure());
+                planPerpendicular(natural(SMALL), production, true, Direction.NORTH, noTransfer).failure());
     }
 
     private static BannerPlacementPlanningResult plan(
             ItemStack stack, RegistrySnapshot snapshot, boolean available, Direction face, FakeWorld world) {
         return BannerPlacementPlanner.plan(item, stack, snapshot, available, BlockPos.ZERO, face, block, partBlock, world);
+    }
+
+    /** The small family is perpendicular-only since the owner's 2026-08-24 orientation ruling. */
+    private static BannerPlacementPlanningResult planPerpendicular(
+            ItemStack stack, RegistrySnapshot snapshot, boolean available, Direction face, FakeWorld world) {
+        return BannerPlacementPlanner.plan(item, stack, snapshot, available,
+                BannerOrientation.WALL_PERPENDICULAR, BlockPos.ZERO, face, block, partBlock, world);
     }
 
     private static ItemStack natural(BannerDefinitionId id) {

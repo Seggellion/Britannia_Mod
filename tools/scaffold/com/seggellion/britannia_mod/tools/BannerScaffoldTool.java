@@ -419,7 +419,6 @@ public final class BannerScaffoldTool {
             textures.add(banner.dyeMask);
             if (Set.of("britannia_mod:extra_small", "britannia_mod:small")
                     .contains(banner.placementProfile)) {
-                geometries.add("britannia_mod:banner/mount/wall_parallel");
                 geometries.add("britannia_mod:banner/mount/wall_perpendicular");
             } else if (Set.of("britannia_mod:medium_parallel", "britannia_mod:large_parallel")
                     .contains(banner.placementProfile)) {
@@ -553,7 +552,6 @@ public final class BannerScaffoldTool {
         root.add("dimensions", dimensions);
         root.addProperty("requires_wall_support", true);
         JsonObject mounts = new JsonObject();
-        mounts.addProperty("wall_parallel", "britannia_mod:banner/mount/wall_parallel");
         mounts.addProperty("wall_perpendicular", "britannia_mod:banner/mount/wall_perpendicular");
         root.add("orientation_mount_geometry", mounts);
         return root;
@@ -570,7 +568,6 @@ public final class BannerScaffoldTool {
         root.add("dimensions", dimensions);
         root.addProperty("requires_wall_support", true);
         JsonObject mounts = new JsonObject();
-        mounts.addProperty("wall_parallel", "britannia_mod:banner/mount/wall_parallel");
         mounts.addProperty("wall_perpendicular", "britannia_mod:banner/mount/wall_perpendicular");
         root.add("orientation_mount_geometry", mounts);
         return root;
