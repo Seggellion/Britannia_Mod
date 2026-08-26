@@ -234,7 +234,7 @@ public final class ResourceDepositMaterializationGameTests {
                 "the approved preview must carry the authored radius");
         ResourceDepositMaterializationProtocol.Operation operation = operation(
                 request, approved.evaluation(),
-                UUID.fromString("15151515-1515-4515-8515-151515151515"));
+                UUID.randomUUID());
         DepositLedger ledger = DepositLedger.get(level);
         int ledgerBefore = ledger.size();
 
