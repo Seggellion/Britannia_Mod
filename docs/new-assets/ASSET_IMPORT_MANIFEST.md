@@ -56,7 +56,7 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 | Requested asset | Proposed/existing registry ID | Status | Placeholder proposal |
 |---|---|---|---|
 | Ibis, white/scarlet | `ibis` with persistent variant | `PLACEHOLDER` | White source imported unchanged; UV-safe scarlet recolor and all runtime behavior implemented in Milestone 6 |
-| Moongate visual replacement | existing `moongate_block` | `PLACEHOLDER` | Existing ID uses one logical block; static floor plus camera-facing vertical layers are uniformly enlarged 20% |
+| Moongate visual replacement | existing `moongate_block` | `PLACEHOLDER` | Existing ID uses one logical block; the permanent camera-facing portal is enlarged 35%, while dormant summon-floor geometry remains unregistered and unrendered |
 | Merchant carts, six colors | `merchant_cart_<color>` | `PLACEHOLDER` | Six final IDs client-render at 1.2 scale with a `-0.4`-block grounding correction; red/purple use temporary purchased art and four variants use vanilla-color placeholders |
 | Training dummy | `training_dummy` | `PLACEHOLDER` | Implemented in Milestone 7; purchased punching-bag art re-authored to exact 32×48 visible bounds and must be replaced later |
 | Fountain | `fountain` | `PLACEHOLDER` | Temporary source art renders 30% larger from a centered 3x3x3 structure with matching basin/pillar collision |
@@ -109,11 +109,11 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Source textures: `moongate\portal_texture.png` through `portal_texture6.png`.
 - Format/checksum: Blockbench `.bbmodel` `a22ccc954d3f7b8a36670c017da4f506d0bb18b326700f416b1e8931d0dd48a7`; texture checksums are recorded in the inventory evidence. Textures are ARGB and range from 32×32 to animated strips of 128×1536.
 - Import status: `PLACEHOLDER` — implemented in Milestone 10 under the existing final ID with temporary purchased art.
-- Final targets: existing `MoongateBlock` and `moongate_block` registration; static `moongate_base` model; camera-facing `moongate_billboard` rendered by `MoongateBlockEntityRenderer`; six temporary source textures under `textures/block/new_assets/moongate`; existing teleport handler/tick handler unchanged. The legacy top block/item IDs remain registered only for old-save compatibility.
+- Final targets: existing `MoongateBlock` and `moongate_block` registration; camera-facing `moongate_billboard` rendered by `MoongateBlockEntityRenderer`; dormant, unregistered `moongate_summon_base` asset retained for a future summoning feature; six temporary source textures under `textures/block/new_assets/moongate`; existing teleport handler/tick handler unchanged. The legacy top block/item IDs remain registered only for old-save compatibility.
 - Required behavior: preserve existing destination/configuration, mount/escort, and cooldown behavior while moving to one logical block.
 - Dimensions/animation: raw bounds x `-16..16`, y `-1.5..41.5`, z `-16..16`; `idle` 3s and `spawn` 1.5s. Owner target is 32 voxels high.
 - Collision: portal interaction volume must be deliberate and must not use the raw 32×32×43 bounds unchanged.
-- Notes/blockers: Milestone 10 scaled x/z by one half and translated/scaled y from `-1.5..41.5` to `0..32`, preserving the layered planes and animated atlases. The post-closure pass split the fixed floor from vertical translucent layers so the portal continuously follows camera yaw. The corrective pass applies the requested uniform 1.2 render scale to both the static base and block-entity billboard while preserving the split-render architecture and teleport logic. `moongate_top` is invisible and self-removing but remains registered for migration safety. The paired-dungeon system was deliberately left unchanged.
+- Notes/blockers: Milestone 10 scaled x/z by one half and translated/scaled y from `-1.5..41.5` to `0..32`, preserving the layered planes and animated atlases. The post-closure pass split the fixed floor from vertical translucent layers so the portal continuously follows camera yaw. The permanent block now renders only the billboard at 1.35 scale; the two floor planes are retained only as the dormant `moongate_summon_base` asset. Teleport logic remains independent and unchanged. `moongate_top` is invisible and self-removing but remains registered for migration safety. The paired-dungeon system was deliberately left unchanged.
 
 ### 3. Merchant carts — six colors
 
@@ -472,7 +472,7 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 
 | Requested asset | Source model | Measured source bounds | Required envelope | Re-authoring required |
 |---|---|---|---|---|
-| Moongate | `moongate\portal.bbmodel` | 32×43×32 voxels (x/y/z) | One logical block, uniformly enlarged 20% | Milestone 10 normalized the source; the corrective pass applies exact 1.2 scaling to the static base and camera-facing billboard without changing teleport behavior |
+| Moongate | `moongate\portal.bbmodel` | 32×43×32 voxels (x/y/z) | One logical block; permanent billboard enlarged 35% | Milestone 10 normalized the source; the permanent block renders only its camera-facing billboard at 1.35 scale, while the dormant summon base remains separate and teleport behavior is unchanged |
 | Training dummy | `training_dummy.zip::.../fv_punching_bag_gray.bbmodel` | 20×44×14 voxels | 32×48-voxel visible structure occupying 2×3 blocks | Completed in Milestone 7: transformed to exact 32×48×14 bounds, retimed to a one-second one-shot hit, and paired with separate atomic 2×3 occupancy/collision |
 | Ladder | `shizuart_farmer_props.zip::.../farmer_stepladder.json` | about 18×36×32 voxels | 3 blocks/48 voxels high, double-sided and climbable | Completed in Milestone 5: extended/rebuilt to x `0..16`, y `-16..32`, z `0..16`, rendered from the middle structure cell, with independent double-sided traversal collision |
 | Loom | `Nexo Assets - Tailoring Station.zip::.../loom.json` | about 32×32×36 voxels | 2 blocks wide × 3 blocks/48 voxels high | Completed in Milestone 3: re-authored to exact 32×48×16 bounds across the authoritative 2×1×3 structure |

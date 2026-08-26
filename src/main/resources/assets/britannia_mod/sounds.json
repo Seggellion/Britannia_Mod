@@ -9,6 +9,17 @@
       }
     ]
   },
+  "permanent_moongate_hum": {
+    "sounds": [
+      {
+        "name": "britannia_mod:moongate_hum",
+        "stream": false,
+        "volume": 1.0,
+        "pitch": 1.0,
+        "attenuation_distance": 10
+      }
+    ]
+  },
   "moongate_teleport": {
     "sounds": [
       {
