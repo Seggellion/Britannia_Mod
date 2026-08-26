@@ -270,3 +270,105 @@ idea {
         downloadJavadoc = true
     }
 }
+
+// ---------------------------------------------------------------------------
+// Build identity
+// ---------------------------------------------------------------------------
+// mod_version alone cannot answer "is the server running the build we think it
+// is": it does not change on every fix, and a stale jar keeps the version of
+// whatever build it came from. That question has now cost two investigations,
+// so the commit is baked into the artifact and reported by /grabby env. This is
+// not a second version system - mod_version remains the mod's version, and this
+// only records which source state produced this particular file.
+
+def gitOutput = { List<String> command ->
+    providers.exec {
+        commandLine command
+        // A source export with no .git must still build; the value becomes "unknown".
+        ignoreExitValue = true
+    }.standardOutput.asText
+}
+
+def gitHeadProvider = gitOutput(['git', 'rev-parse', 'HEAD'])
+def gitBranchProvider = gitOutput(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
+def gitStatusProvider = gitOutput(['git', 'status', '--porcelain'])
+
+tasks.register('generateBuildInfo') {
+    description = 'Records the commit, branch and build time this artifact was produced from.'
+    def outputDir = layout.buildDirectory.dir('generated/sources/buildInfo')
+    def head = gitHeadProvider
+    def branch = gitBranchProvider
+    def status = gitStatusProvider
+    def version = mod_version
+    outputs.dir(outputDir)
+    // Deliberately never up to date. The file is 6 lines, and a build timestamp
+    // that silently belongs to an earlier build is worse than no timestamp: the
+    // whole point of this file is that it can be trusted without argument.
+    outputs.upToDateWhen { false }
+    doLast {
+        def read = { provider, fallback ->
+            try {
+                def value = provider.getOrElse('').trim()
+                value.isEmpty() ? fallback : value
+            } catch (Exception ignored) {
+                fallback
+            }
+        }
+        def dirty
+        try {
+            dirty = !status.getOrElse('').trim().isEmpty()
+        } catch (Exception ignored) {
+            dirty = false
+        }
+        def file = outputDir.get().file('britannia_mod_build.properties').asFile
+        file.parentFile.mkdirs()
+        file.text = [
+                "mod.version=${version}",
+                "git.head=${read(head, 'unknown')}",
+                "git.branch=${read(branch, 'unknown')}",
+                "git.dirty=${dirty}",
+                "build.timestamp=${java.time.Instant.now()}",
+                ''
+        ].join('\n')
+    }
+}
+
+sourceSets.main.resources.srcDir tasks.named('generateBuildInfo')
+
+tasks.register('artifactIdentity') {
+    description = 'Prints the exact identity of every built jar, for deployment verification.'
+    dependsOn tasks.named('jar'), tasks.named('jarJar')
+    // Everything the closure needs is captured as a local. Referencing `layout` or `logger`
+    // from inside doLast reaches back into the script object, which the configuration cache
+    // refuses.
+    def plainJar = tasks.named('jar', Jar).flatMap { it.archiveFile }
+    def bundledJar = tasks.named('jarJar', Jar).flatMap { it.archiveFile }
+    def buildInfoFile = layout.buildDirectory
+            .file('generated/sources/buildInfo/britannia_mod_build.properties')
+    doLast {
+        def describe = { java.io.File file, String note ->
+            if (!file.exists()) {
+                println "  (missing) ${file.name}"
+                return
+            }
+            def digest = java.security.MessageDigest.getInstance('SHA-256')
+            file.eachByte(8192) { buffer, length -> digest.update(buffer, 0, length) }
+            println "  ${file.name}  ${note}"
+            println "    size   : ${file.length()} bytes"
+            println "    sha256 : ${digest.digest().encodeHex().toString()}"
+        }
+        println ''
+        println '=== Britannia artifact identity ==='
+        // The plain jar carries no dependencies. GeckoLib and nanohttpd are embedded by
+        // Jar-in-Jar into the -all jar, so that is the one a server without a separate
+        // GeckoLib install needs.
+        describe(bundledJar.get().asFile, '<- deploy this one unless GeckoLib is installed separately')
+        describe(plainJar.get().asFile, '(no bundled dependencies)')
+        def info = buildInfoFile.get().asFile
+        if (info.exists()) {
+            println '  build metadata (baked into both):'
+            info.readLines().findAll { !it.isBlank() }.each { println "    ${it}" }
+        }
+        println '==================================='
+    }
+}

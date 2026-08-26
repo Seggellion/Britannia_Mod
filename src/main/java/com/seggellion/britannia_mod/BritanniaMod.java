@@ -384,6 +384,13 @@ public void onServerStarted(ServerStartedEvent event) {
     com.seggellion.britannia_mod.economy.TraderSaleReservationRecovery.reportStrandedReservations(event.getServer());
     // Vendor/Trader Milestone 20: regional TownPerson population convergence.
     com.seggellion.britannia_mod.population.TownPersonPopulationManager.start(event.getServer());
+    // Grabby Hands server-parity milestone: records which artifact is actually running and warns
+    // if vanilla spawn protection is armed. That radius drops every non-operator block-use packet
+    // before PlayerInteractEvent.RightClickBlock is posted, which is the one thing on the whole
+    // interaction path that behaves differently on a dedicated server than in single player -- and
+    // it does so with no message to the player and, until now, no line in the log.
+    com.seggellion.britannia_mod.grabbyhands.diagnostics.GrabbyEnvironmentReport
+            .logAtStartup(event.getServer());
 }
 
 public void onServerTick(ServerTickEvent.Post event) {
