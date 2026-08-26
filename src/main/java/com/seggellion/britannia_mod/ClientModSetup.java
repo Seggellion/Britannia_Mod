@@ -48,7 +48,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import com.seggellion.britannia_mod.block.LargeForgeRenderer;
 import com.seggellion.britannia_mod.block.BlueTentRenderer;
-import com.seggellion.britannia_mod.block.AdaptiveRoofRenderer;
 import com.seggellion.britannia_mod.block.PurpleTentRenderer;
 import com.seggellion.britannia_mod.block.renderer.ArmoireRenderer;
 import com.seggellion.britannia_mod.block.renderer.TrainingDummyRenderer;
@@ -484,7 +483,6 @@ public class ClientModSetup {
         // Block Entity Renderers
         event.registerBlockEntityRenderer(BlockRegistry.BLUE_TENT_BLOCK_ENTITY_TYPE.get(), BlueTentRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.PURPLE_TENT_BLOCK_ENTITY_TYPE.get(), PurpleTentRenderer::new);
-        event.registerBlockEntityRenderer(BlockEntityRegistry.ADAPTIVE_ROOF.get(), AdaptiveRoofRenderer::new);
         event.registerBlockEntityRenderer(
                 BlockEntityRegistry.DISPLAY_CASE.get(), DisplayCaseBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(com.seggellion.britannia_mod.registry.GrabbyRegistry.PLACED_ITEM_BLOCK_ENTITY.get(),

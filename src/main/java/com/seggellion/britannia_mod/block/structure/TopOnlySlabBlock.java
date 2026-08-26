@@ -103,6 +103,17 @@ public VoxelShape getBlockSupportShape(BlockState state,
                                             : super.getBlockSupportShape(state, level, pos);
 }
 
+    @Override
+    public VoxelShape getOcclusionShape(BlockState state,
+                                        BlockGetter level,
+                                        BlockPos pos) {
+        // SUPPORTS_LANTERN mirrors whether the acquired lower half exists. The terrain
+        // renderer uses this state-only shape to decide which directional baked-quad
+        // buckets to request and where light/AO may be occluded.
+        return state.getValue(SUPPORTS_LANTERN) ? Shapes.block()
+                                                : super.getOcclusionShape(state, level, pos);
+    }
+
     // (optional) keep the visual/collision outline consistent
     @Override
     public VoxelShape getCollisionShape(BlockState state,
