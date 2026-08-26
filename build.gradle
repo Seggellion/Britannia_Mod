@@ -336,28 +336,38 @@ tasks.register('generateBuildInfo') {
 sourceSets.main.resources.srcDir tasks.named('generateBuildInfo')
 
 tasks.register('artifactIdentity') {
-    description = 'Prints the exact identity of the built jar, for deployment verification.'
-    dependsOn tasks.named('jar')
+    description = 'Prints the exact identity of every built jar, for deployment verification.'
+    dependsOn tasks.named('jar'), tasks.named('jarJar')
     // Everything the closure needs is captured as a local. Referencing `layout` or `logger`
     // from inside doLast reaches back into the script object, which the configuration cache
     // refuses.
-    def jarFile = tasks.named('jar', Jar).flatMap { it.archiveFile }
+    def plainJar = tasks.named('jar', Jar).flatMap { it.archiveFile }
+    def bundledJar = tasks.named('jarJar', Jar).flatMap { it.archiveFile }
     def buildInfoFile = layout.buildDirectory
             .file('generated/sources/buildInfo/britannia_mod_build.properties')
     doLast {
-        def file = jarFile.get().asFile
-        def digest = java.security.MessageDigest.getInstance('SHA-256')
-        file.eachByte(8192) { buffer, length -> digest.update(buffer, 0, length) }
-        def sha = digest.digest().encodeHex().toString()
-        def info = buildInfoFile.get().asFile
+        def describe = { java.io.File file, String note ->
+            if (!file.exists()) {
+                println "  (missing) ${file.name}"
+                return
+            }
+            def digest = java.security.MessageDigest.getInstance('SHA-256')
+            file.eachByte(8192) { buffer, length -> digest.update(buffer, 0, length) }
+            println "  ${file.name}  ${note}"
+            println "    size   : ${file.length()} bytes"
+            println "    sha256 : ${digest.digest().encodeHex().toString()}"
+        }
         println ''
         println '=== Britannia artifact identity ==='
-        println "  filename : ${file.name}"
-        println "  path     : ${file.absolutePath}"
-        println "  size     : ${file.length()} bytes"
-        println "  sha256   : ${sha}"
+        // The plain jar carries no dependencies. GeckoLib and nanohttpd are embedded by
+        // Jar-in-Jar into the -all jar, so that is the one a server without a separate
+        // GeckoLib install needs.
+        describe(bundledJar.get().asFile, '<- deploy this one unless GeckoLib is installed separately')
+        describe(plainJar.get().asFile, '(no bundled dependencies)')
+        def info = buildInfoFile.get().asFile
         if (info.exists()) {
-            info.readLines().findAll { !it.isBlank() }.each { println "  ${it}" }
+            println '  build metadata (baked into both):'
+            info.readLines().findAll { !it.isBlank() }.each { println "    ${it}" }
         }
         println '==================================='
     }
