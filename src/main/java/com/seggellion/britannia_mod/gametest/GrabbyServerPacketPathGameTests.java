@@ -413,6 +413,60 @@ public final class GrabbyServerPacketPathGameTests {
     }
 
     /**
+     * Scenery refuses an administrator too, which rules out one theory of the production report.
+     *
+     * <h2>What this test was written to prove, and what it actually proved</h2>
+     *
+     * <p>It was written expecting the opposite. {@code GrabbyPolicy.mayMutate} contains
+     * {@code if (!grabbyManaged) return administrator}, so a creative or operator-level-2 player
+     * appeared able to move authored scenery - which would have neatly explained why single-player
+     * testing passed while an ordinary Adventure player on the dedicated server was refused.
+     *
+     * <p>It does not. Both live transactions check provenance <em>before</em> they consult policy:
+     * {@code GrabbyPickupTransaction} returns {@code NOT_GRABBY_MANAGED} and
+     * {@code GrabbyDestructionTransaction} returns its equivalent, several statements above the
+     * {@code mayMutate} call. That administrator clause is unreachable from either path, and nothing
+     * in production calls the world-aware {@code mayMove}/{@code mayDestroy} entry points that could
+     * reach it. {@code GrabbyPolicyTest} exercises the rule as a function, which is why the gap was
+     * not visible there.
+     *
+     * <p>So the protection is stronger than the policy function alone suggests, and "the tester was
+     * an operator" cannot by itself explain a chair that works in single player and not on the
+     * server. The one administrator difference that <em>is</em> reachable on the pickup path is
+     * {@code insideForeignStructure}, covered as a rule by
+     * {@code GrabbyPolicyTest.insideSomebodyElsesStructureOrdinaryPlayersAreRefusedButStaffAreNot}.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void sceneryRefusesEvenAnAdministratorThroughTheServerPacketPath(GameTestHelper helper) {
+        BlockPos floor = floorAt(helper, 3, 3);
+        BlockPos scenery = floor.above();
+        helper.getLevel().setBlockAndUpdate(scenery, BlockRegistry.WOODEN_CHAIR.get().defaultBlockState());
+
+        ServerPlayer player = joinedAdventurePlayer(helper, floor.offset(2, 0, 2));
+        try {
+            check(!GrabbyProvenanceAccess.grabbyManaged(helper.getLevel(), scenery),
+                    "the scenery chair was already player-placed, so this proves nothing");
+
+            // The single-player tester's standing, and nothing else about the scenario changes.
+            player.setGameMode(GameType.CREATIVE);
+            check(player.isCreative(), "the test player did not actually become an administrator");
+
+            emptyHandsAndSneak(player);
+            sneakEmptyHandedClickOnTopOf(player, scenery);
+
+            check(helper.getLevel().getBlockState(scenery).is(BlockRegistry.WOODEN_CHAIR.get()),
+                    "an administrator carried authored scenery off through Grabby Hands; the "
+                            + "provenance-before-policy ordering in GrabbyPickupTransaction has been "
+                            + "changed and scenery protection is now weaker than it was");
+            check(countInInventory(player, ItemRegistry.WOODEN_CHAIR_ITEM.get()) == 0,
+                    "scenery arrived in an administrator's pack");
+        } finally {
+            disconnect(helper, player);
+        }
+        helper.succeed();
+    }
+
+    /**
      * A refusal from the packet layer is completely silent, which is the defect class itself.
      *
      * <p>Out of reach is the one packet-layer gate this rig can actually trip — spawn protection

@@ -81,16 +81,29 @@ public final class GrabbyDiagnosticsCommand {
                         + " in " + level.dimension().location())
                 .withStyle(ChatFormatting.GOLD), false);
         for (GrabbyInteractionDiagnosis.Gate gate : diagnosis.gates()) {
-            source.sendSuccess(() -> Component.literal("  " + gate)
-                    .withStyle(gate.refuses() ? ChatFormatting.RED : ChatFormatting.GRAY), false);
+            source.sendSuccess(() -> Component.literal("  " + gate).withStyle(styleOf(gate)), false);
         }
-        diagnosis.firstRefusal().ifPresentOrElse(
-                gate -> source.sendSuccess(() -> Component.literal(
-                        "  -> first refusal: [" + gate.layer() + "] " + gate.question())
-                        .withStyle(ChatFormatting.RED), false),
-                () -> source.sendSuccess(() -> Component.literal(
-                        "  -> nothing refuses; a sneak + right-click here would pick the object up")
-                        .withStyle(ChatFormatting.GREEN), false));
+        boolean refused = diagnosis.firstRefusal().isPresent();
+        source.sendSuccess(() -> Component.literal(diagnosis.verdict())
+                .withStyle(refused ? ChatFormatting.RED : ChatFormatting.GREEN), false);
+        if (!refused) {
+            source.sendSuccess(() -> Component.literal(
+                    "  (a sneak + right-click here would pick the object up)")
+                    .withStyle(ChatFormatting.GREEN), false);
+        }
         return 1;
+    }
+
+    /**
+     * Grey for facts, green for a gate that passed, red for the one that did not.
+     *
+     * <p>The colouring is the whole readability budget of this command: the output is long, and an
+     * operator copying it out of chat needs the refusing line to be findable at a glance.
+     */
+    private static ChatFormatting styleOf(GrabbyInteractionDiagnosis.Gate gate) {
+        if (gate.informational()) {
+            return ChatFormatting.GRAY;
+        }
+        return gate.refuses() ? ChatFormatting.RED : ChatFormatting.DARK_GREEN;
     }
 }

@@ -270,3 +270,91 @@ idea {
         downloadJavadoc = true
     }
 }
+
+// ---------------------------------------------------------------------------
+// Build identity
+// ---------------------------------------------------------------------------
+// mod_version alone cannot answer "is the server running the build we think it
+// is": it does not change on every fix, and a stale jar keeps the version of
+// whatever build it came from. That question has now cost two investigations,
+// so the commit is baked into the artifact and reported by /grabby env. This is
+// not a second version system - mod_version remains the mod's version, and this
+// only records which source state produced this particular file.
+
+def gitOutput = { List<String> command ->
+    providers.exec {
+        commandLine command
+        // A source export with no .git must still build; the value becomes "unknown".
+        ignoreExitValue = true
+    }.standardOutput.asText
+}
+
+def gitHeadProvider = gitOutput(['git', 'rev-parse', 'HEAD'])
+def gitBranchProvider = gitOutput(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
+def gitStatusProvider = gitOutput(['git', 'status', '--porcelain'])
+
+tasks.register('generateBuildInfo') {
+    description = 'Records the commit, branch and build time this artifact was produced from.'
+    def outputDir = layout.buildDirectory.dir('generated/sources/buildInfo')
+    def head = gitHeadProvider
+    def branch = gitBranchProvider
+    def status = gitStatusProvider
+    def version = mod_version
+    outputs.dir(outputDir)
+    // Deliberately never up to date. The file is 6 lines, and a build timestamp
+    // that silently belongs to an earlier build is worse than no timestamp: the
+    // whole point of this file is that it can be trusted without argument.
+    outputs.upToDateWhen { false }
+    doLast {
+        def read = { provider, fallback ->
+            try {
+                def value = provider.getOrElse('').trim()
+                value.isEmpty() ? fallback : value
+            } catch (Exception ignored) {
+                fallback
+            }
+        }
+        def dirty
+        try {
+            dirty = !status.getOrElse('').trim().isEmpty()
+        } catch (Exception ignored) {
+            dirty = false
+        }
+        def file = outputDir.get().file('britannia_mod_build.properties').asFile
+        file.parentFile.mkdirs()
+        file.text = [
+                "mod.version=${version}",
+                "git.head=${read(head, 'unknown')}",
+                "git.branch=${read(branch, 'unknown')}",
+                "git.dirty=${dirty}",
+                "build.timestamp=${java.time.Instant.now()}",
+                ''
+        ].join('\n')
+    }
+}
+
+sourceSets.main.resources.srcDir tasks.named('generateBuildInfo')
+
+tasks.register('artifactIdentity') {
+    description = 'Prints the exact identity of the built jar, for deployment verification.'
+    dependsOn tasks.named('jar')
+    def jarFile = tasks.named('jar', Jar).flatMap { it.archiveFile }
+    doLast {
+        def file = jarFile.get().asFile
+        def digest = java.security.MessageDigest.getInstance('SHA-256')
+        file.eachByte(8192) { buffer, length -> digest.update(buffer, 0, length) }
+        def sha = digest.digest().encodeHex().toString()
+        def info = new File(layout.buildDirectory.get().asFile,
+                'generated/sources/buildInfo/britannia_mod_build.properties')
+        logger.lifecycle('')
+        logger.lifecycle('=== Britannia artifact identity ===')
+        logger.lifecycle("  filename : ${file.name}")
+        logger.lifecycle("  path     : ${file.absolutePath}")
+        logger.lifecycle("  size     : ${file.length()} bytes")
+        logger.lifecycle("  sha256   : ${sha}")
+        if (info.exists()) {
+            info.readLines().findAll { !it.isBlank() }.each { logger.lifecycle("  ${it}") }
+        }
+        logger.lifecycle('===================================')
+    }
+}

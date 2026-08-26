@@ -1,7 +1,11 @@
 package com.seggellion.britannia_mod.grabbyhands;
 
 import com.seggellion.britannia_mod.grabbyhands.diagnostics.GrabbySpawnProtection;
+import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.GameTestServer;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.dedicated.DedicatedServer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -41,6 +45,41 @@ class GrabbySpawnProtectionTest {
     private static final boolean OPS_PRESENT = false;
     private static final boolean IS_OP = true;
     private static final boolean NOT_OP = false;
+
+    @Nested
+    @DisplayName("no test server in this repository can be a dedicated server")
+    class ServerKind {
+
+        /**
+         * The reason this rule needs a unit test at all.
+         *
+         * <p>{@code isUnderSpawnProtection} is only overridden on {@code DedicatedServer}. Every
+         * server this project can start in a test - {@code GameTestServer} - inherits
+         * {@code MinecraftServer}'s bare {@code return false}, and so does the
+         * {@code IntegratedServer} behind single player. No scenario test can therefore reach the
+         * refusing branch, however it is named, so the rule is asserted directly instead.
+         */
+        @Test
+        @DisplayName("GameTestServer is not a DedicatedServer, so no GameTest can reach the refusing branch")
+        void gameTestServerCannotExposeTheDivergence() {
+            assertFalse(DedicatedServer.class.isAssignableFrom(GameTestServer.class),
+                    "if a GameTestServer ever became a DedicatedServer, a GameTest could cover this "
+                            + "for real and GrabbyServerPacketPathGameTests should be extended to do so");
+        }
+
+        @Test
+        @DisplayName("IntegratedServer is not a DedicatedServer either, which is why single player passes")
+        void integratedServerCannotExposeTheDivergence() {
+            assertFalse(DedicatedServer.class.isAssignableFrom(IntegratedServer.class));
+        }
+
+        @Test
+        @DisplayName("both inherit MinecraftServer, whose implementation is unconditionally permissive")
+        void bothInheritTheFlatFalse() {
+            assertTrue(MinecraftServer.class.isAssignableFrom(GameTestServer.class));
+            assertTrue(MinecraftServer.class.isAssignableFrom(IntegratedServer.class));
+        }
+    }
 
     @Nested
     @DisplayName("the same click, on the two kinds of server")

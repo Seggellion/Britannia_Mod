@@ -18,6 +18,7 @@ import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * What kind of server this is, which artifact it is running, and whether anything about the
@@ -36,6 +37,9 @@ import java.util.List;
 public final class GrabbyEnvironmentReport {
     private static final Logger LOGGER = LogUtils.getLogger();
 
+    /** Written into the jar root by the {@code generateBuildInfo} Gradle task. */
+    private static final String BUILD_INFO_RESOURCE = "/britannia_mod_build.properties";
+
     /** Computed at most once: hashing the jar is cheap but not free, and it cannot change at runtime. */
     private static volatile String cachedArtifactFingerprint;
 
@@ -46,11 +50,38 @@ public final class GrabbyEnvironmentReport {
     public static List<String> lines(@Nullable MinecraftServer server) {
         List<String> lines = new ArrayList<>();
         lines.add("artifact: " + artifactFingerprint());
+        lines.add("build: " + buildProvenance());
         lines.add("neoforge: " + FMLLoader.versionInfo().neoForgeVersion()
                 + "  minecraft: " + FMLLoader.versionInfo().mcVersion());
         lines.add("server: " + serverKind(server));
         lines.addAll(spawnProtectionLines(server));
         return lines;
+    }
+
+    /**
+     * The commit this artifact was built from, baked in by the {@code generateBuildInfo} Gradle task.
+     *
+     * <p>The SHA-256 above proves two files are the same file; this says which source state produced
+     * it, which is the question an operator actually asks. A build from a dirty working tree says so,
+     * because "it matches the branch" is not the same claim as "it matches what was committed".
+     */
+    public static String buildProvenance() {
+        Properties properties = new Properties();
+        try (InputStream in = GrabbyEnvironmentReport.class.getResourceAsStream(BUILD_INFO_RESOURCE)) {
+            if (in == null) {
+                return "no build metadata on the classpath (built without generateBuildInfo?)";
+            }
+            properties.load(in);
+        } catch (Exception exception) {
+            return "unreadable build metadata: " + exception.getClass().getSimpleName();
+        }
+        String dirty = properties.getProperty("git.dirty", "unknown");
+        return "version=" + properties.getProperty("mod.version", "unknown")
+                + " commit=" + properties.getProperty("git.head", "unknown")
+                + " branch=" + properties.getProperty("git.branch", "unknown")
+                + " dirtyWorkingTree=" + dirty
+                + " built=" + properties.getProperty("build.timestamp", "unknown")
+                + ("true".equals(dirty) ? "  <-- built from uncommitted changes" : "");
     }
 
     /**

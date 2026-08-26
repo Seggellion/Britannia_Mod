@@ -11,7 +11,8 @@
     "PlayerListInvokerMixin",
     "PlayerListAccessorMixin",
     "OreVeinifierMixin",
-    "FishingRodCastSoundMixin"
+    "FishingRodCastSoundMixin",
+    "ServerGamePacketListenerAccessorMixin"
   ],
   "client": [
     "LoadingScreenPanoramaMixin",
