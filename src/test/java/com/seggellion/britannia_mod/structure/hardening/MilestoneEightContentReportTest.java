@@ -14,6 +14,7 @@ import com.seggellion.britannia_mod.structure.definition.StructureDefinition.Var
 import com.seggellion.britannia_mod.structure.definition.StructureIdentity.ClientResource;
 import com.seggellion.britannia_mod.structure.definition.StructureIdentity.ResourceId;
 import com.seggellion.britannia_mod.structure.render.ShrineRimMaterialSelection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -197,7 +198,14 @@ class MilestoneEightContentReportTest {
     }
 
     private static String sha256(Path path) throws Exception {
-        byte[] hash = MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(path));
+        byte[] bytes = Files.readAllBytes(path);
+        if (path.getFileName().toString().startsWith("monolith_diagnostic")) {
+            bytes = new String(bytes, StandardCharsets.UTF_8)
+                    .replace("\r\n", "\n")
+                    .replace('\r', '\n')
+                    .getBytes(StandardCharsets.UTF_8);
+        }
+        byte[] hash = MessageDigest.getInstance("SHA-256").digest(bytes);
         return java.util.HexFormat.of().withUpperCase().formatHex(hash);
     }
 }

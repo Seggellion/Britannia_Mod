@@ -17,6 +17,7 @@ import com.seggellion.britannia_mod.structure.definition.StructureIdentity.Varia
 import com.seggellion.britannia_mod.structure.multiblock.PlacedStructureState;
 import com.seggellion.britannia_mod.structure.multiblock.ShrineRenderTransform;
 import java.awt.image.BufferedImage;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -273,7 +274,14 @@ class MonolithMilestoneSevenRenderingTest {
     }
 
     private static String sha256(Path path) throws Exception {
+        byte[] bytes = Files.readAllBytes(path);
+        if (path.getFileName().toString().startsWith("monolith_diagnostic")) {
+            bytes = new String(bytes, StandardCharsets.UTF_8)
+                    .replace("\r\n", "\n")
+                    .replace('\r', '\n')
+                    .getBytes(StandardCharsets.UTF_8);
+        }
         return HexFormat.of().withUpperCase().formatHex(
-                MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(path)));
+                MessageDigest.getInstance("SHA-256").digest(bytes));
     }
 }

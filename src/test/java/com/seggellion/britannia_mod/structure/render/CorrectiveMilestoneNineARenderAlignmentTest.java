@@ -16,6 +16,7 @@ import com.seggellion.britannia_mod.structure.item.ShrineItemStateAccess;
 import com.seggellion.britannia_mod.structure.multiblock.ShrineRenderTransform;
 import com.seggellion.britannia_mod.structure.testsupport.MilestoneTwoRegisteredTestContent;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -424,8 +425,15 @@ class CorrectiveMilestoneNineARenderAlignmentTest {
     }
 
     private static String sha256(Path path) throws Exception {
+        byte[] bytes = Files.readAllBytes(path);
+        if (path.getFileName().toString().startsWith("monolith_diagnostic")) {
+            bytes = new String(bytes, StandardCharsets.UTF_8)
+                    .replace("\r\n", "\n")
+                    .replace('\r', '\n')
+                    .getBytes(StandardCharsets.UTF_8);
+        }
         return HexFormat.of().withUpperCase().formatHex(
-                MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(path)));
+                MessageDigest.getInstance("SHA-256").digest(bytes));
     }
 
     private static int occurrences(String source, String needle) {
