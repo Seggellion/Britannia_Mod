@@ -102,7 +102,7 @@ public final class OreVeinContainmentGameTests {
 
         // Skill is deliberately at the top of the ladder: the point is that satisfying the
         // requirement must not be sufficient on its own.
-        ServerPlayer miner = miner(helper, 100.0f, tool);
+        ServerPlayer miner = miner(helper, 150.0f, tool);
 
         // Assert the *reason*, not just the outcome. A bare hand and a vanilla pickaxe are also
         // refused incidentally by StructureProtectionHandler, so a test that only checked "the
@@ -121,7 +121,8 @@ public final class OreVeinContainmentGameTests {
                 what + " must not produce a drop of any kind");
         check(!scheduled(level, absolute),
                 what + " must not create a restoration record");
-        check(MiningSkill.awardForBreak(miner, level.getBlockState(absolute), absolute) == 0.0f,
+        check(MiningSkill.checkMiningAttempt(miner, level.getBlockState(absolute), absolute)
+                        .skillGained() == 0.0f,
                 what + " must award no Mining");
     }
 
@@ -188,7 +189,7 @@ public final class OreVeinContainmentGameTests {
         BlockPos absolute = helper.absolutePos(NODE);
         helper.setBlock(NODE, BlockRegistry.VERITE_ORE.get());
 
-        ServerPlayer miner = miner(helper, 100.0f, new ItemStack(ToolRegistry.PICKAXE.get()));
+        ServerPlayer miner = miner(helper, 150.0f, new ItemStack(ToolRegistry.PICKAXE.get()));
         miner.gameMode.destroyBlock(absolute);
 
         check(!level.getBlockState(absolute).is(BlockRegistry.VERITE_ORE.get()),

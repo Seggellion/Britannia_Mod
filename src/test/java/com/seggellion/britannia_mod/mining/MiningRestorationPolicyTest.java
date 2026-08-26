@@ -193,7 +193,7 @@ class MiningRestorationPolicyTest {
         assertTrue(provenanceCheck > 0, "the managed flow must check provenance");
         assertTrue(provenanceCheck < flow.indexOf("recordBrokenBlock"),
                 "provenance must be checked before restoration is scheduled");
-        assertTrue(provenanceCheck < flow.indexOf("MiningSkill.awardForBreak"),
-                "provenance must be checked before Mining is awarded");
+        assertTrue(provenanceCheck < flow.indexOf("MiningSkill.checkMiningAttempt"),
+                "provenance must be checked before the Mining attempt is resolved");
     }
 }

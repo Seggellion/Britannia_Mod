@@ -1029,6 +1029,7 @@
   "item.britannia_mod.purity_ore_item": "Ore",
   "item.britannia_mod.grade_stone_item": "Stone",
   "message.britannia_mod.mining.insufficient": "You need %2$s Mining to mine %3$s. Current Mining: %1$s.",
+  "message.britannia_mod.mining.extraction_failed": "You fail to extract anything usable.",
   "message.britannia_mod.mining.skill_unavailable": "Mining skill data is unavailable; mining is blocked.",
   "message.britannia_mod.mining.automation_blocked": "Automated mining requires a trusted player skill identity.",
   "message.britannia_mod.mining.wrong_tool": "You cannot work this with that. Mining needs a proper pickaxe.",

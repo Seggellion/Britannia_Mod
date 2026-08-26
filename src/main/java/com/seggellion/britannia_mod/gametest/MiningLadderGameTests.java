@@ -91,12 +91,15 @@ public final class MiningLadderGameTests {
             }
 
             helper.setBlock(relative, tier.block());
-            SkillManager.applyConfirmedValue(miner, MiningSkill.SKILL_ID, tier.required());
+            // Qualifying is no longer the same as succeeding: at exactly the requirement a tier
+            // sits mid-window and the extraction roll is a coin toss. required + 100 is at or
+            // above every tier's MaxSkill, where RunUO makes the check a certainty.
+            SkillManager.applyConfirmedValue(miner, MiningSkill.SKILL_ID, tier.required() + 100.0f);
             miner.gameMode.destroyBlock(pos);
 
             helper.assertBlockNotPresent(tier.block(), relative);
             check(BrokenBlockDataStorage.get(level).getBrokenBlocks().containsKey(pos),
-                    tier.id() + " did not schedule its restoration at exactly " + tier.required());
+                    tier.id() + " did not schedule its restoration once fully qualified");
 
             // Leave a clean ledger for the next tier.
             BrokenBlockTracker.removeBlock(level, pos);
@@ -140,14 +143,17 @@ public final class MiningLadderGameTests {
         miner.getInventory().clearContent();
         miner.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ToolRegistry.PICKAXE.get()));
 
-        for (float skill : new float[] {0.0f, 50.0f, 99.9f}) {
+        // Stone is 0/0/100, so these are the values at or above its MaxSkill, where harvesting is
+        // certain. That stone still *trains* a miner at 0 -- where it cannot yet be harvested at
+        // all -- is the beginner ramp, proved in MiningApprovedInvariantsGameTests.
+        for (float skill : new float[] {100.0f, 120.0f, 150.0f}) {
             helper.setBlock(relative, Blocks.STONE);
             SkillManager.applyConfirmedValue(miner, MiningSkill.SKILL_ID, skill);
             miner.gameMode.destroyBlock(pos);
 
             helper.assertBlockNotPresent(Blocks.STONE, relative);
             check(BrokenBlockDataStorage.get(level).getBrokenBlocks().containsKey(pos),
-                    "Stone must stay a renewable training resource at skill " + skill);
+                    "Stone must stay a renewable harvestable resource at skill " + skill);
             BrokenBlockTracker.removeBlock(level, pos);
         }
         helper.succeed();

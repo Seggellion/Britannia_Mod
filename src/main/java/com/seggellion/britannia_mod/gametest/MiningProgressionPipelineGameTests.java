@@ -37,7 +37,7 @@ import java.util.List;
  * <h2>What each test closes</h2>
  * <ul>
  *   <li><b>Skill gain through the production path.</b> The suite already proved
- *       {@code MiningSkill.awardForBreak} trains Mining when <em>called directly</em>
+ *       {@code MiningSkill.checkMiningAttempt} trains Mining when <em>called directly</em>
  *       ({@code MiningSkillGameTests.repeatedStoneActivationsTrainMining}), and that one real break
  *       awards <em>at most</em> one activation — an assertion that also passes when the answer is
  *       zero. Nothing asserted that a real dig awards anything at all, so the wiring between the

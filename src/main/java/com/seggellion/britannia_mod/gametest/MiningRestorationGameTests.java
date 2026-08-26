@@ -105,7 +105,7 @@ public final class MiningRestorationGameTests {
         helper.setBlock(floorRelative, Blocks.STONE);
         helper.setBlock(targetRelative, Blocks.AIR);
 
-        ServerPlayer player = miner(helper, 20.0f);
+        ServerPlayer player = miner(helper, 150.0f);
         ItemStack cobblestone = new ItemStack(Blocks.COBBLESTONE.asItem(), 4);
         player.setItemInHand(InteractionHand.MAIN_HAND, cobblestone);
 
@@ -155,7 +155,7 @@ public final class MiningRestorationGameTests {
         BlockPos relative = new BlockPos(1, 1, 1);
         BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, BlockRegistry.SILVER_ORE.get());
-        ServerPlayer player = miner(helper, 60.0f);
+        ServerPlayer player = miner(helper, 150.0f);
 
         check(!MiningProvenance.isPlayerPlaced(level, absolute), "precondition: nothing marked here");
         player.gameMode.destroyBlock(absolute);
@@ -240,8 +240,10 @@ public final class MiningRestorationGameTests {
         helper.setBlock(firstRelative, Blocks.STONE);
         helper.setBlock(secondRelative, Blocks.STONE);
 
-        ServerPlayer low = miner(helper, 0.0f);
-        ServerPlayer high = miner(helper, 80.0f);
+        // Both stand at or above stone's MaxSkill (0/0/100) so each harvest is certain; the test
+        // is about two miners and two nodes staying independent, not about the success roll.
+        ServerPlayer low = miner(helper, 100.0f);
+        ServerPlayer high = miner(helper, 120.0f);
         low.gameMode.destroyBlock(first);
         high.gameMode.destroyBlock(second);
 
