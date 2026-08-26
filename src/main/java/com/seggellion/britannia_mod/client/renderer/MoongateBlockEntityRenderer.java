@@ -17,6 +17,7 @@ import net.minecraft.world.phys.AABB;
 
 /** Y-axis billboard renderer for the animated vertical city-moongate layers. */
 public final class MoongateBlockEntityRenderer implements BlockEntityRenderer<MoongateBlockEntity> {
+    static final float VISUAL_SCALE = 1.35F;
     public static final ModelResourceLocation BILLBOARD_MODEL = ModelResourceLocation.standalone(
             ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/moongate_billboard"));
 
@@ -39,7 +40,8 @@ public final class MoongateBlockEntityRenderer implements BlockEntityRenderer<Mo
 
         poseStack.pushPose();
         poseStack.translate(0.5D, 0.0D, 0.5D);
-        poseStack.scale(1.2F, 1.2F, 1.2F);
+        // Scale around the block's horizontal center while keeping Y=0 ground-anchored.
+        poseStack.scale(VISUAL_SCALE, VISUAL_SCALE, VISUAL_SCALE);
         poseStack.mulPose(Axis.YP.rotationDegrees(-minecraft.gameRenderer.getMainCamera().getYRot()));
         poseStack.translate(-0.5D, 0.0D, -0.5D);
         VertexConsumer consumer = bufferSource.getBuffer(RenderType.translucent());
@@ -58,6 +60,10 @@ public final class MoongateBlockEntityRenderer implements BlockEntityRenderer<Mo
 
     @Override
     public AABB getRenderBoundingBox(MoongateBlockEntity entity) {
-        return new AABB(entity.getBlockPos()).expandTowards(0.0D, 1.0D, 0.0D).inflate(0.5D);
+        // The source billboard is two blocks high; at 1.35x it reaches Y=2.7.
+        // A three-block-tall box with a small horizontal rotation margin prevents culling.
+        return new AABB(entity.getBlockPos())
+                .inflate(0.25D, 0.0D, 0.25D)
+                .expandTowards(0.0D, 2.0D, 0.0D);
     }
 }

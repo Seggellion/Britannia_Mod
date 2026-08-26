@@ -49,14 +49,20 @@ function Shift-Y($model, [double]$offset) {
     }
 }
 
-# Split the existing city-gate model into a static floor and a camera-facing vertical model.
+# Split the imported source into the permanent camera-facing visual and dormant future
+# summoning/emergence floor geometry. The permanent Moongate never renders the latter.
 $fullGate = Get-Content -Raw -LiteralPath (Join-Path $models 'moongate_block.json') | ConvertFrom-Json
-$baseGate = $fullGate | ConvertTo-Json -Depth 100 | ConvertFrom-Json
-$baseGate.elements = @($fullGate.elements | Select-Object -Last 2)
+$summonBaseGate = $fullGate | ConvertTo-Json -Depth 100 | ConvertFrom-Json
+$summonBaseGate.credit = 'Dormant summon/emergence floor geometry retained for a future Summoned Moongate feature'
+$summonBaseGate.elements = @($fullGate.elements | Select-Object -Last 2)
 $billboardGate = $fullGate | ConvertTo-Json -Depth 100 | ConvertFrom-Json
 $billboardGate.elements = @($fullGate.elements | Select-Object -First 5)
-Write-Json (Join-Path $models 'moongate_base.json') $baseGate
+Write-Json (Join-Path $models 'moongate_block.json') $billboardGate
 Write-Json (Join-Path $models 'moongate_billboard.json') $billboardGate
+Write-Json (Join-Path $models 'moongate_summon_base.json') $summonBaseGate
+Write-Json (Join-Path $states 'moongate_block.json') ([ordered]@{
+    variants = [ordered]@{ '' = [ordered]@{ model = 'britannia_mod:block/moongate_block' } }
+})
 
 # Derive bottom/middle/top hedge slices from the already imported source-atlas model.
 $hedgeSource = Get-Content -Raw -LiteralPath (Join-Path $newModels 'hedge_bush.json') | ConvertFrom-Json

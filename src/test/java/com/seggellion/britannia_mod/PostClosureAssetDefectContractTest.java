@@ -62,20 +62,21 @@ class PostClosureAssetDefectContractTest {
     }
 
     @Test
-    void moongateUsesStaticFloorAndCameraFacingVerticalLayers() throws Exception {
+    void permanentMoongateUsesOnlyTheLargerCameraFacingVisual() throws Exception {
         JsonObject state = json(ASSETS.resolve("blockstates/moongate_block.json"));
-        assertEquals("britannia_mod:block/moongate_base",
+        assertEquals("britannia_mod:block/moongate_block",
                 state.getAsJsonObject("variants").getAsJsonObject("").get("model").getAsString());
-        assertEquals(2, json(ASSETS.resolve("models/block/moongate_base.json"))
+        assertEquals(2, json(ASSETS.resolve("models/block/moongate_summon_base.json"))
                 .getAsJsonArray("elements").size());
         assertEquals(5, json(ASSETS.resolve("models/block/moongate_billboard.json"))
                 .getAsJsonArray("elements").size());
+        assertFalse(Files.exists(ASSETS.resolve("models/block/moongate_base.json")));
         String renderer = javaSource("client/renderer/MoongateBlockEntityRenderer.java");
         assertTrue(renderer.contains("getMainCamera().getYRot()"));
         assertTrue(renderer.contains("Axis.YP.rotationDegrees"));
-        assertTrue(renderer.contains("poseStack.scale(1.2F, 1.2F, 1.2F)"));
-        assertTrue(javaSource("client/ClientModelHandler.java")
-                .contains("new DecorativeScaledModel(model, 1.2F, 0.5F, 0.0F, 0.5F)"));
+        assertTrue(renderer.contains("VISUAL_SCALE = 1.35F"));
+        assertTrue(renderer.contains("expandTowards(0.0D, 2.0D, 0.0D)"));
+        assertTrue(javaSource("block/MoongateBlock.java").contains("return RenderShape.INVISIBLE"));
     }
 
     @Test

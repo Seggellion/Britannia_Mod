@@ -1,4 +1,5 @@
 {
+    "credit":  "Dormant summon/emergence floor geometry retained for a future Summoned Moongate feature",
     "parent":  "minecraft:block/block",
     "ambientocclusion":  false,
     "render_type":  "minecraft:translucent",

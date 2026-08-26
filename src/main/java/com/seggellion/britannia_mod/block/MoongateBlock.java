@@ -2,27 +2,30 @@ package com.seggellion.britannia_mod.block;
 
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.ModSounds;
+import com.seggellion.britannia_mod.block.entity.MoongateBlockEntity;
+import com.seggellion.britannia_mod.client.sound.MoongateAmbientSoundManager;
+import com.seggellion.britannia_mod.registry.BlockRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.util.RandomSource;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.world.entity.Entity;
-import org.slf4j.Logger;
 import org.jetbrains.annotations.Nullable;
-import com.seggellion.britannia_mod.block.entity.MoongateBlockEntity;
+import org.slf4j.Logger;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -45,14 +48,26 @@ public class MoongateBlock extends Block implements EntityBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        // The floor layers remain a normal block model; the vertical portal is camera-facing.
-        return RenderShape.MODEL;
+        // The permanent gate is rendered only by its camera-facing block-entity renderer.
+        // Summoning/emergence floor geometry is deliberately not part of this render path.
+        return RenderShape.INVISIBLE;
     }
 
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new MoongateBlockEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            Level level, BlockState state, BlockEntityType<T> type) {
+        if (!level.isClientSide || type != BlockRegistry.MOONGATE_BLOCK_ENTITY_TYPE.get()) {
+            return null;
+        }
+        return (tickLevel, tickPos, tickState, blockEntity) ->
+                MoongateAmbientSoundManager.tick(tickLevel, tickPos);
     }
 
     @Override
@@ -126,21 +141,7 @@ public class MoongateBlock extends Block implements EntityBlock {
     @Override
     public void animateTick(BlockState stateIn, Level worldIn, BlockPos pos, RandomSource rand) {
         if (rand.nextFloat() < 0.1F) {
-            SoundEvent soundEvent = ModSounds.MOONGATE_HUM.get();
-
-            if (soundEvent == null) {
-                LOGGER.error("SoundEvent MOONGATE_HUM is null!");
-            }
             worldIn.addParticle(ParticleTypes.GLOW, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 0, 0, 1); // Blue-tinted glow particles
-
-            worldIn.playLocalSound(
-                pos,
-                soundEvent,
-                net.minecraft.sounds.SoundSource.BLOCKS,
-                0.5F,
-                1.0F,
-                false
-            );
         }
     }
 }

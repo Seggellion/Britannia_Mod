@@ -56,15 +56,6 @@ public class ClientModelHandler {
                 LOGGER.info("DecorativeScaledModel applied to {}", mrl);
                 return;
             }
-            if (id.getNamespace().equals(BritanniaMod.MODID)
-                    && path.equals("moongate_block")
-                    && !mrl.variant().equals("inventory")
-                    && !(model instanceof DecorativeScaledModel)) {
-                event.getModels().replace(mrl,
-                        new DecorativeScaledModel(model, 1.2F, 0.5F, 0.0F, 0.5F));
-                LOGGER.info("DecorativeScaledModel applied to {}", mrl);
-                return;
-            }
             if (mrl.variant().equals("inventory")) return;
             if (id.getNamespace().equals(BritanniaMod.MODID)
                     && id.getPath().contains(targetPath)) {

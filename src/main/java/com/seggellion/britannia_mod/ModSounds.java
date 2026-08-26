@@ -115,7 +115,14 @@ public static final EntitySoundGroup GARGOYLE_STONE = registerEntitySounds("garg
     // =========================================
     public static final DeferredHolder<SoundEvent, SoundEvent> MOONGATE_HUM = SOUND_EVENTS.register(
             "moongate_hum", 
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":moongate_hum"))
+            () -> SoundEvent.createVariableRangeEvent(
+                    ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "moongate_hum"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> PERMANENT_MOONGATE_HUM = SOUND_EVENTS.register(
+            "permanent_moongate_hum",
+            () -> SoundEvent.createFixedRangeEvent(
+                    ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "permanent_moongate_hum"), 10.0F)
     );
 
     public static final DeferredHolder<SoundEvent, SoundEvent> MOONGATE_TELEPORT = SOUND_EVENTS.register(
