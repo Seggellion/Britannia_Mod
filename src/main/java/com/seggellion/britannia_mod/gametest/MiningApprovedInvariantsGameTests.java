@@ -311,27 +311,121 @@ public final class MiningApprovedInvariantsGameTests {
     }
 
     /**
-     * The beginner path, deterministically. Ordinary stone is 0/0/100, so a miner at 0 is qualified
-     * and has a 0% extraction chance -- and RunUO's {@code || skill.Base < 10.0} ramp trains them
-     * anyway. That ramp is what carries a new miner off the floor.
+     * The reported live defect, through the production break path.
+     *
+     * <p>A miner at Mining 0.4 with the project pickaxe saw ordinary stone break, reappear, and
+     * report "you fail to extract anything usable" -- because stone is 0/0/100 and the RunUO roll
+     * gave them {@code (0.4 - 0) / 100}. Stone is the terrain a player tunnels through, not a vein
+     * that may refuse them, so a qualified miner always excavates it.
      */
     @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 100)
-    public static void abeginnerFailsToExtractStoneButStillLearns(GameTestHelper helper) {
+    public static void abeginnerExcavatesOrdinaryStoneAndIsPaidForIt(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
         BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, Blocks.STONE);
 
-        ServerPlayer novice = miner(helper, "inv-beginner", 0.0f, GameType.SURVIVAL, 0);
-        MiningSkill.AttemptResult result =
-                MiningSkill.checkMiningAttempt(novice, level.getBlockState(absolute), absolute);
+        ServerPlayer novice = miner(helper, "inv-dig-04", 0.4f, GameType.SURVIVAL, 0);
+        novice.gameMode.destroyBlock(absolute);
 
-        check(!result.extracted(), "stone at Mining 0 is a certain extraction failure (0/0/100)");
-        check(result.skillGained() > 0.0f,
-                "the beginner ramp must train a qualified miner below skill 10 regardless");
-        helper.assertBlockPresent(Blocks.STONE, relative);
+        helper.assertBlockNotPresent(Blocks.STONE, relative);
+
+        List<ItemEntity> drops = dropsNear(helper, absolute);
+        List<ItemEntity> graded = drops.stream()
+                .filter(entity -> entity.getItem().getItem() instanceof GradeStoneItem).toList();
+        check(graded.size() == 1,
+                "a qualified excavation must pay exactly one graded stone, got " + graded.size());
+        check(drops.stream().noneMatch(entity ->
+                        entity.getItem().getItem() == Blocks.STONE.asItem()
+                                || entity.getItem().getItem() == Blocks.COBBLESTONE.asItem()),
+                "the vanilla block item must never accompany the canonical reward");
+
+        ItemStack stack = graded.get(0).getItem();
+        int grade = ((GradeStoneItem) stack.getItem()).getGradeValue(stack);
+        check(grade >= 1 && grade <= 5, "grade must stay in its random 1-5 band, got " + grade);
+
+        check(hasRestoreRecord(level, absolute),
+                "excavation must enrol exactly one restoration obligation");
+        helper.succeed();
+    }
+
+    /** Mining 0 digs too: ordinary stone requires 0, so every player qualifies from the start. */
+    @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 100)
+    public static void miningZeroStillExcavatesOrdinaryStone(GameTestHelper helper) {
+        BlockPos relative = new BlockPos(1, 1, 1);
+        BlockPos absolute = helper.absolutePos(relative);
+        helper.setBlock(relative, Blocks.STONE);
+
+        ServerPlayer novice = miner(helper, "inv-dig-zero", 0.0f, GameType.SURVIVAL, 0);
+        novice.gameMode.destroyBlock(absolute);
+
+        helper.assertBlockNotPresent(Blocks.STONE, relative);
+        check(dropsNear(helper, absolute).stream()
+                        .anyMatch(entity -> entity.getItem().getItem() instanceof GradeStoneItem),
+                "Mining 0 must still be paid for the stone it removes");
+        helper.succeed();
+    }
+
+    /**
+     * Excavation does not depend on the gain roll. A miner far above the beginner ramp and at the
+     * skill cap gains nothing from ordinary stone, and must still dig it out.
+     */
+    @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 100)
+    public static void stoneExcavatesEvenWhenTheGainRollGivesNothing(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos relative = new BlockPos(1, 1, 1);
+        BlockPos absolute = helper.absolutePos(relative);
+        helper.setBlock(relative, Blocks.STONE);
+
+        // At 100 the gain chance is zero by construction, so this isolates extraction from gain.
+        ServerPlayer master = miner(helper, "inv-dig-capped", 100.0f, GameType.SURVIVAL, 0);
+        MiningSkill.AttemptResult result =
+                MiningSkill.checkMiningAttempt(master, level.getBlockState(absolute), absolute);
+
+        check(result.extracted(), "a capped miner must still excavate stone");
+        check(result.skillGained() == 0.0f, "and must gain nothing from it");
+        helper.succeed();
+    }
+
+    /**
+     * The hard gate survives the correction: deterministic does not mean ungated. Volcanic rock
+     * requires 45, and creative plus op level 4 does not change that.
+     */
+    @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 100)
+    public static void ahigherTierStoneStillRefusesBelowItsGate(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos relative = new BlockPos(1, 1, 1);
+        BlockPos absolute = helper.absolutePos(relative);
+        helper.setBlock(relative, BlockRegistry.VOLCANIC_ROCK.get());
+
+        ServerPlayer admin = miner(helper, "inv-volcanic-low", 44.9f, GameType.CREATIVE, 4);
+        admin.gameMode.destroyBlock(absolute);
+
+        helper.assertBlockPresent(BlockRegistry.VOLCANIC_ROCK.get(), relative);
+        check(dropsNear(helper, absolute).isEmpty(), "a refused excavation must drop nothing");
         check(!hasRestoreRecord(level, absolute),
-                "a failed extraction must never enrol restoration debt");
+                "a refused excavation must not enrol restoration debt");
+        check(SkillManager.getSkill(admin, MiningSkill.SKILL_ID) == 44.9f,
+                "an unqualified resource must not train the miner");
+        helper.succeed();
+    }
+
+    /** And at exactly its requirement it excavates, with no roll standing in the way. */
+    @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 100)
+    public static void ahigherTierStoneExcavatesExactlyAtItsGate(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos relative = new BlockPos(1, 1, 1);
+        BlockPos absolute = helper.absolutePos(relative);
+        helper.setBlock(relative, BlockRegistry.VOLCANIC_ROCK.get());
+
+        ServerPlayer quarrier = miner(helper, "inv-volcanic-at", 45.0f, GameType.SURVIVAL, 0);
+        quarrier.gameMode.destroyBlock(absolute);
+
+        helper.assertBlockNotPresent(BlockRegistry.VOLCANIC_ROCK.get(), relative);
+        check(dropsNear(helper, absolute).stream()
+                        .anyMatch(entity -> entity.getItem().getItem() instanceof GradeStoneItem),
+                "volcanic rock must pay graded stone at exactly its requirement");
+        check(hasRestoreRecord(level, absolute), "and enrol its restoration");
         helper.succeed();
     }
 

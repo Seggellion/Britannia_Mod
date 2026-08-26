@@ -60,7 +60,10 @@ class MiningAttemptProgressionTest {
         assertWindow("coal", 10.0f, 0.0f, 80.0f);
     }
 
-    /** Entry-tier resources inherit RunUO's Iron window, which is what opens the beginner path. */
+    /**
+     * Entry-tier resources inherit RunUO's Iron window. The window still governs their gain
+     * difficulty even where it no longer governs extraction, which is why stone keeps one.
+     */
     @Test
     void entryTierResourcesUseTheBeginnerWindow() {
         assertWindow("stone", 0.0f, 0.0f, 100.0f);
@@ -99,16 +102,22 @@ class MiningAttemptProgressionTest {
 
     // ------------------------------------------------------------------ the success curve itself
 
-    /** RunUO's bounded chance: certain failure at the floor, certain success at the ceiling. */
+    /**
+     * RunUO's bounded chance: certain failure at the floor, certain success at the ceiling.
+     *
+     * <p>Measured on iron, not stone. Iron shares stone's 0/0/100 window but is an ore, so it still
+     * rolls; the stone family extracts deterministically because it is the terrain the player digs
+     * through. See {@code MiningExtractionModeTest}.
+     */
     @Test
     void theSuccessCurveIsBoundedByTheWindow() {
-        MineableDefinition stone = definition("stone");
-        assertEquals(0.0f, MiningProgression.successChance(0.0f, stone), 0.0f,
-                "a beginner on stone is qualified but cannot yet succeed");
-        assertEquals(0.5f, MiningProgression.successChance(50.0f, stone), 1.0e-4f);
-        assertEquals(1.0f, MiningProgression.successChance(100.0f, stone), 0.0f,
+        MineableDefinition iron = definition("iron");
+        assertEquals(0.0f, MiningProgression.successChance(0.0f, iron), 0.0f,
+                "a beginner on iron is qualified but cannot yet succeed");
+        assertEquals(0.5f, MiningProgression.successChance(50.0f, iron), 1.0e-4f);
+        assertEquals(1.0f, MiningProgression.successChance(100.0f, iron), 0.0f,
                 "at MaxSkill the check is a certainty, with no RNG involved");
-        assertEquals(1.0f, MiningProgression.successChance(150.0f, stone), 0.0f);
+        assertEquals(1.0f, MiningProgression.successChance(150.0f, iron), 0.0f);
     }
 
     /**

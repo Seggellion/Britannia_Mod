@@ -97,10 +97,17 @@ public final class MiningSkill {
      * teaches them nothing. That is deliberate — you train on what you can actually work.
      *
      * <h2>The beginner ramp</h2>
-     * {@code SkillCheck.CheckSkill} ends with {@code || skill.Base < 10.0}, forcing a gain below
-     * 10 whatever the roll said. That is what makes an entry window survivable: ordinary stone is
-     * 0/0/100, so a miner at 0 has a 0% chance of extracting anything, and without the ramp they
-     * would be relying on an ordinary gain roll to escape a dead stop. Reproduced here.
+     * {@code SkillCheck.CheckSkill} ends with {@code || skill.Base < 10.0}, forcing a gain below 10
+     * whatever the roll said. Reproduced here, and it still matters for the ore families, where a
+     * new miner rolling against a window they sit at the bottom of would otherwise inch forward on
+     * ordinary gain rolls alone. Stone no longer depends on it to be playable -- the terrain is
+     * excavated deterministically once qualified -- but the ramp remains the shared rule.
+     *
+     * <h2>Two extraction modes</h2>
+     * Whether the block comes out is {@link MiningProgression#successChance}'s answer, and it
+     * differs by family: ores roll against their window, the stone family does not roll at all.
+     * That is deliberate and is documented on {@link MiningProgression.ExtractionMode}. Nothing in
+     * this method needs to know which is which.
      */
     public static AttemptResult checkMiningAttempt(
             @Nullable Player actor, BlockState state, BlockPos pos) {
