@@ -41,7 +41,7 @@ import org.slf4j.Logger;
  * UUID and only opens if the player holds a matching {@link HouseKeyItem} or
  * the house is public.
  */
-public class LockableDoorBlock extends DoorBlock implements EntityBlock {
+public class LockableDoorBlock extends AutoClosingDoorBlock implements EntityBlock {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public LockableDoorBlock(BlockSetType type, Properties props) {
@@ -84,6 +84,7 @@ public class LockableDoorBlock extends DoorBlock implements EntityBlock {
                 // round of neighbour updates. Writing the same state twice is a no-op, so this
                 // cannot loop.
                 level.setBlock(pos, state.setValue(POWERED, signal).setValue(OPEN, false), 2);
+                automaticCloseAfterTransition(level, pos, state, state.getValue(OPEN), false);
             }
             return;
         }
@@ -117,11 +118,15 @@ public class LockableDoorBlock extends DoorBlock implements EntityBlock {
         if (!(state.getBlock() instanceof LockableDoorBlock)) return;
 
         BlockPos lower = lowerHalf(pos, state);
+        BlockState lowerState = server.getBlockState(lower);
+        boolean wasOpen = lowerState.getOptionalValue(OPEN).orElse(state.getValue(OPEN));
         boolean signal = hasRedstoneSignal(server, lower);
         boolean open = !locked && signal;
 
         applyToHalf(server, lower, open, signal);
         applyToHalf(server, lower.above(), open, signal);
+        ((LockableDoorBlock) state.getBlock()).automaticCloseAfterTransition(
+                server, pos, state, wasOpen, open);
     }
 
     private static void applyToHalf(Level level, BlockPos pos, boolean open, boolean powered) {
@@ -221,6 +226,7 @@ private InteractionResult tryOpenDoor(BlockState state, Level level, BlockPos po
 
     boolean open = state.getValue(OPEN);
     level.setBlock(pos, state.setValue(OPEN, !open), 10);
+    automaticCloseAfterTransition(level, pos, state, open, !open);
     level.playSound(null, pos,
             open ? type().doorClose() : type().doorOpen(),
             SoundSource.BLOCKS,

@@ -17,6 +17,7 @@ import com.seggellion.britannia_mod.structure.definition.StructureIdentity.Varia
 import com.seggellion.britannia_mod.structure.multiblock.PlacedStructureState;
 import com.seggellion.britannia_mod.structure.multiblock.ShrineRenderTransform;
 import java.awt.image.BufferedImage;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -157,11 +158,11 @@ class MonolithMilestoneSevenRenderingTest {
         }
         assertEquals("37206E78E694552627786A5EC750124C15792C1346023D52755392FCFEB65CEF",
                 sha256(ALTERNATE_TEXTURE));
-        assertEquals("A7CBF5A25B1AC8FC82245C1140363B6EF83FAEE66F8EF54F2AD2F01A9F03E9D7",
+        assertEquals("359C2D29B0B16EDD58EB2765812F6E80140D5F215D634DE98D1110A96991572D",
                 sha256(ALTERNATE_MODEL));
         assertEquals("11988200CE334883AADC39B1BE48AB337B21D62690222538F5A1946D48B5766B",
                 sha256(EXISTING_TEXTURE));
-        assertEquals("E52C59EE4B6977E4BBE3C9996CF0B8AF247F2BEB71AEA54076A3CCEFB73F7AB9",
+        assertEquals("C2F22F3B6D35AB4D29D8E559EC55507877925E2981C26E3EC163B7D905596192",
                 sha256(EXISTING_MODEL));
         assertNotEquals(sha256(EXISTING_TEXTURE), sha256(ALTERNATE_TEXTURE));
         // The first atlas half is intentionally shared sarsen_stone_1; the accent halves differ.
@@ -203,7 +204,7 @@ class MonolithMilestoneSevenRenderingTest {
         }
         assertEquals("77FEDD7BFF29F867B47B63B337BAD7443CF1595FE972A0D7B0A1B68DD1E9D724",
                 sha256(CRYSTALLINE_TEXTURE));
-        assertEquals("5C8F6DB37C81C213831FABCEB963A35FF53E9CAE8B8F47E9E62D648CA1CDC601",
+        assertEquals("6921FBF2F68B341517730524C407F101F39F4758ACEC95BA4865208361C9338A",
                 sha256(CRYSTALLINE_MODEL));
         assertNotEquals(sha256(EXISTING_TEXTURE), sha256(CRYSTALLINE_TEXTURE));
         assertNotEquals(sha256(ALTERNATE_TEXTURE), sha256(CRYSTALLINE_TEXTURE));
@@ -273,7 +274,14 @@ class MonolithMilestoneSevenRenderingTest {
     }
 
     private static String sha256(Path path) throws Exception {
+        byte[] bytes = Files.readAllBytes(path);
+        if (path.getFileName().toString().startsWith("monolith_diagnostic")) {
+            bytes = new String(bytes, StandardCharsets.UTF_8)
+                    .replace("\r\n", "\n")
+                    .replace('\r', '\n')
+                    .getBytes(StandardCharsets.UTF_8);
+        }
         return HexFormat.of().withUpperCase().formatHex(
-                MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(path)));
+                MessageDigest.getInstance("SHA-256").digest(bytes));
     }
 }

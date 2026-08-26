@@ -19,7 +19,7 @@ import net.minecraft.world.phys.Vec3;
 /** Independent Jhelom-wide population policy; ibis never consume the generic city-animal cap. */
 public final class JhelomIbisPopulation {
     public static final String CITY_NAME = "Jhelom";
-    public static final int MAX_POPULATION = 15;
+    public static final int MAX_POPULATION = 25;
 
     private JhelomIbisPopulation() {
     }
