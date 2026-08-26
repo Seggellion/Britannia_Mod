@@ -27,7 +27,7 @@ class OwnerAdjustmentContractTest {
     void jhelomPopulationIsAutomaticLoadedChunkBoundAndOverworldOnly() throws Exception {
         String population = javaSource("spawner/JhelomIbisPopulation.java");
         String citySpawner = javaSource("spawner/CitySpawner.java");
-        assertTrue(population.contains("MAX_POPULATION = 15"));
+        assertTrue(population.contains("MAX_POPULATION = 25"));
         assertTrue(population.contains("Level.OVERWORLD.equals(level.dimension())"));
         assertTrue(population.contains("level.hasChunkAt(column)"));
         assertTrue(population.contains("CitySpawnRules.SPAWN_ATTEMPTS"));

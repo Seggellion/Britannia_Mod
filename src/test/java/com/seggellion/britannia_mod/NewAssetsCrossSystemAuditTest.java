@@ -137,7 +137,7 @@ class NewAssetsCrossSystemAuditTest {
     void functionalSystemsRemainIntegratedAndSilkIsExplicitlyDeferred() throws Exception {
         String ibisPopulation = javaSource("spawner/JhelomIbisPopulation.java");
         String citySpawner = javaSource("spawner/CitySpawner.java");
-        assertTrue(ibisPopulation.contains("MAX_POPULATION = 15"));
+        assertTrue(ibisPopulation.contains("MAX_POPULATION = 25"));
         assertTrue(ibisPopulation.contains("CITY_NAME = \"Jhelom\""));
         assertTrue(citySpawner.contains("JhelomIbisPopulation.tick(level)"));
 

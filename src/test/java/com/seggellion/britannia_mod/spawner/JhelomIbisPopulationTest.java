@@ -27,7 +27,7 @@ class JhelomIbisPopulationTest {
         List<AABB> areas = CityRegistry.getCityAreas(JhelomIbisPopulation.CITY_NAME);
 
         assertEquals(3, areas.size());
-        assertEquals(15, JhelomIbisPopulation.MAX_POPULATION);
+        assertEquals(25, JhelomIbisPopulation.MAX_POPULATION);
         for (AABB area : areas) {
             assertTrue(JhelomIbisPopulation.isInsideAny(area.getCenter(), areas));
         }
@@ -35,12 +35,12 @@ class JhelomIbisPopulationTest {
     }
 
     @Test
-    void excessCalculationEnforcesAnExactFifteenBirdCap() {
+    void excessCalculationEnforcesAnExactTwentyFiveBirdCap() {
         assertEquals(0, JhelomIbisPopulation.excessFor(0));
-        assertEquals(0, JhelomIbisPopulation.excessFor(14));
-        assertEquals(0, JhelomIbisPopulation.excessFor(15));
-        assertEquals(1, JhelomIbisPopulation.excessFor(16));
-        assertEquals(10, JhelomIbisPopulation.excessFor(25));
+        assertEquals(0, JhelomIbisPopulation.excessFor(24));
+        assertEquals(0, JhelomIbisPopulation.excessFor(25));
+        assertEquals(1, JhelomIbisPopulation.excessFor(26));
+        assertEquals(10, JhelomIbisPopulation.excessFor(35));
     }
 
     @Test
