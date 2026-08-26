@@ -1672,6 +1672,7 @@
   "message.britannia_mod.grabby.pickup.nested_container": "You cannot carry a container that holds another full container.",
   "message.britannia_mod.grabby.pickup.inventory_full": "Your pack is full.",
   "message.britannia_mod.grabby.pickup.busy": "That is busy. Try again.",
+  "message.britannia_mod.grabby.pickup.off_hand_occupied": "Empty your off hand as well to pick that up.",
   "message.britannia_mod.grabby.pickup.not_yours": "That was not put there by a player. It cannot be moved.",
   "item.britannia_mod.dirt": "Dirt",
   "item.britannia_mod.dung": "Dung",

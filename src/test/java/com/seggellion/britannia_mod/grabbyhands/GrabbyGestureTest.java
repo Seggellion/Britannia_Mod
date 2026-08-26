@@ -112,6 +112,36 @@ class GrabbyGestureTest {
                 "the decorator tool check must come first, or it would be shadowed");
     }
 
+    /**
+     * The production defect, as a rule.
+     *
+     * <p>Reported as "Grabby Hands does nothing on the server" and chased through two milestones of
+     * packet-path analysis before the player found it themselves: the off hand had an item in it.
+     * The pickup gesture requires both hands empty, so the handler found no pickup, no axe swing and
+     * nothing to place, and returned in silence.
+     */
+    @Test
+    void anOccupiedOffHandIsANearMissRatherThanANonEvent() {
+        ItemStack torch = new ItemStack(Items.TORCH);
+        assertFalse(GrabbyGesture.isPickupGesture(true, empty(), torch),
+                "the rule itself is unchanged: an occupied off hand is not the pickup gesture");
+        assertTrue(GrabbyGesture.offHandBlocksPickup(true, empty(), torch),
+                "but it is close enough to deserve an explanation");
+    }
+
+    @Test
+    void nothingElseCountsAsThatNearMiss() {
+        ItemStack torch = new ItemStack(Items.TORCH);
+        assertFalse(GrabbyGesture.offHandBlocksPickup(false, empty(), torch),
+                "standing upright is not an attempted pickup");
+        assertFalse(GrabbyGesture.offHandBlocksPickup(true, empty(), empty()),
+                "both hands empty is the real gesture, not a near miss");
+        assertFalse(GrabbyGesture.offHandBlocksPickup(true, torch, torch),
+                "a full main hand means the player is using the item, not reaching for the object");
+        assertFalse(GrabbyGesture.offHandBlocksPickup(true, torch, empty()),
+                "a full main hand is visible to the player; there is nothing to point out");
+    }
+
     @Test
     void theHandlerRunsAtHighestPriorityOnTheRightClickPathOnly() throws IOException {
         // Priority is load-bearing: at anything lower, ChairBlock.useWithoutItem seats the player and

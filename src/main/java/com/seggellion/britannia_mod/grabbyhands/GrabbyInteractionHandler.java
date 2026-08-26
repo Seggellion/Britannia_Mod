@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.grabbyhands;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -62,6 +63,12 @@ public final class GrabbyInteractionHandler {
                 player.isShiftKeyDown(), player.getMainHandItem(), player.getOffhandItem())) {
             handlePickup(event, level, player);
             return;
+        }
+        if (GrabbyGesture.offHandBlocksPickup(
+                player.isShiftKeyDown(), player.getMainHandItem(), player.getOffhandItem())) {
+            explainOccupiedOffHand(level, player, event.getPos());
+            // Deliberately falls through rather than returning. Nothing is consumed, so whatever the
+            // off-hand item does against this block still happens exactly as it did before.
         }
         if (GrabbyGesture.isAxeGesture(player.getMainHandItem())) {
             handleAxe(event, level, player);
@@ -141,6 +148,27 @@ public final class GrabbyInteractionHandler {
             return;
         }
         consume(event, result.succeeded());
+    }
+
+    /**
+     * Tells a player whose only mistake was the hand they were not looking at.
+     *
+     * <p>Scoped as narrowly as the message is useful. It speaks only when the object under the
+     * cursor is one this player could actually have picked up — an enrolled type, placed by a
+     * player — so an occupied off hand stays silent against scenery, against blocks Grabby Hands
+     * does not own, and against thin air. Sneaking with a torch in the off hand is an ordinary thing
+     * to do and must not produce a running commentary.
+     *
+     * <p>Provenance is read directly rather than by running the pickup transaction: nothing may be
+     * claimed, captured or mutated to produce a hint.
+     */
+    private void explainOccupiedOffHand(ServerLevel level, ServerPlayer player, BlockPos pos) {
+        BlockPos root = GrabbyRootResolver.resolveRoot(GrabbyWorld.of(level), pos);
+        if (!GrabbyEligibility.movableType(level.getBlockState(root))
+                || !GrabbyProvenanceAccess.grabbyManaged(level, root)) {
+            return;
+        }
+        explain(player, "message.britannia_mod.grabby.pickup.off_hand_occupied");
     }
 
     /**

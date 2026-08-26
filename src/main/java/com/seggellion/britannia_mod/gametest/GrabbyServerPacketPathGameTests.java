@@ -24,6 +24,7 @@ import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
@@ -406,6 +407,59 @@ public final class GrabbyServerPacketPathGameTests {
                     "a chair the world placed was carried off through the packet path");
             check(countInInventory(player, ItemRegistry.WOODEN_CHAIR_ITEM.get()) == 0,
                     "scenery arrived in an ordinary player's pack");
+        } finally {
+            disconnect(helper, player);
+        }
+        helper.succeed();
+    }
+
+    /**
+     * The production reproduction, exactly: the off hand was not empty.
+     *
+     * <p>This is what "Grabby Hands does nothing on the dedicated server" actually was. The player
+     * emptied the hand they could see, sneaked, and clicked their own chair. The off hand held
+     * something they had stopped noticing, so {@code isPickupGesture} was false, {@code isAxeGesture}
+     * was false, {@code handlePlacement} found an empty main hand and returned - and the whole
+     * interaction produced no message, no log line and no change. Emptying the off hand fixed it.
+     *
+     * <p>The rule is not relaxed here and this test does not ask for it to be: it pins that an
+     * occupied off hand still takes nothing, and that the identical gesture one item later works.
+     * The behaviour change that accompanies it is that the near miss now speaks
+     * ({@code message.britannia_mod.grabby.pickup.off_hand_occupied}), which a GameTest cannot
+     * observe - {@code GrabbyGestureTest} covers the rule that decides when it is said.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void anOccupiedOffHandTakesNothingAndEmptyingItWorks(GameTestHelper helper) {
+        BlockPos floor = floorAt(helper, 3, 3);
+        BlockPos target = floor.above();
+        ServerPlayer player = joinedAdventurePlayer(helper, floor.offset(2, 0, 2));
+        try {
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ItemRegistry.WOODEN_CHAIR_ITEM.get()));
+            useItemOnTopOf(player, floor);
+            check(helper.getLevel().getBlockState(target).is(BlockRegistry.WOODEN_CHAIR.get()),
+                    "the chair was not placed");
+            check(GrabbyProvenanceAccess.grabbyManaged(helper.getLevel(), target),
+                    "the placed chair carries no player provenance, which would confound this test");
+
+            // The reported state: main hand empty, sneaking, something in the off hand.
+            player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            player.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Items.TORCH));
+            player.setShiftKeyDown(true);
+            sneakEmptyHandedClickOnTopOf(player, target);
+
+            check(helper.getLevel().getBlockState(target).is(BlockRegistry.WOODEN_CHAIR.get()),
+                    "an occupied off hand picked the chair up; the gesture rule has changed");
+            check(countInInventory(player, ItemRegistry.WOODEN_CHAIR_ITEM.get()) == 0,
+                    "the chair reached the pack despite the occupied off hand");
+
+            // One item later, nothing else different.
+            player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+            sneakEmptyHandedClickOnTopOf(player, target);
+
+            check(helper.getLevel().getBlockState(target).isAir(),
+                    "emptying the off hand did not make the documented gesture work");
+            check(countInInventory(player, ItemRegistry.WOODEN_CHAIR_ITEM.get()) == 1,
+                    "the chair did not come back exactly once");
         } finally {
             disconnect(helper, player);
         }
