@@ -338,23 +338,27 @@ sourceSets.main.resources.srcDir tasks.named('generateBuildInfo')
 tasks.register('artifactIdentity') {
     description = 'Prints the exact identity of the built jar, for deployment verification.'
     dependsOn tasks.named('jar')
+    // Everything the closure needs is captured as a local. Referencing `layout` or `logger`
+    // from inside doLast reaches back into the script object, which the configuration cache
+    // refuses.
     def jarFile = tasks.named('jar', Jar).flatMap { it.archiveFile }
+    def buildInfoFile = layout.buildDirectory
+            .file('generated/sources/buildInfo/britannia_mod_build.properties')
     doLast {
         def file = jarFile.get().asFile
         def digest = java.security.MessageDigest.getInstance('SHA-256')
         file.eachByte(8192) { buffer, length -> digest.update(buffer, 0, length) }
         def sha = digest.digest().encodeHex().toString()
-        def info = new File(layout.buildDirectory.get().asFile,
-                'generated/sources/buildInfo/britannia_mod_build.properties')
-        logger.lifecycle('')
-        logger.lifecycle('=== Britannia artifact identity ===')
-        logger.lifecycle("  filename : ${file.name}")
-        logger.lifecycle("  path     : ${file.absolutePath}")
-        logger.lifecycle("  size     : ${file.length()} bytes")
-        logger.lifecycle("  sha256   : ${sha}")
+        def info = buildInfoFile.get().asFile
+        println ''
+        println '=== Britannia artifact identity ==='
+        println "  filename : ${file.name}"
+        println "  path     : ${file.absolutePath}"
+        println "  size     : ${file.length()} bytes"
+        println "  sha256   : ${sha}"
         if (info.exists()) {
-            info.readLines().findAll { !it.isBlank() }.each { logger.lifecycle("  ${it}") }
+            info.readLines().findAll { !it.isBlank() }.each { println "  ${it}" }
         }
-        logger.lifecycle('===================================')
+        println '==================================='
     }
 }

@@ -8,3 +8,10 @@ pluginManagement {
 plugins {
     id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
 }
+
+// Without this, Gradle names the project after whatever directory it was checked out
+// into - so the deployable jar is called Britannia_Mod-0.1.8.jar from the canonical
+// clone and customwallblock-tjunction-fix-a614dc-0.1.8.jar from a worktree. A release
+// artifact whose filename depends on a developer's directory is a deployment hazard,
+// and renaming it by hand on the way to the server is how the wrong jar gets deployed.
+rootProject.name = 'britannia_mod'
