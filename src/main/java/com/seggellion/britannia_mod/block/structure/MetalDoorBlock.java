@@ -18,7 +18,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import com.seggellion.britannia_mod.registry.BritanniaBlockSetTypes;
 
 
-public class MetalDoorBlock extends DoorBlock {
+public class MetalDoorBlock extends AutoClosingDoorBlock {
 
     public MetalDoorBlock() {
         super(
@@ -48,6 +48,8 @@ public class MetalDoorBlock extends DoorBlock {
         boolean open = state.getValue(OPEN);
         state = state.setValue(OPEN, !open);
         level.setBlock(pos, state, 10);
+
+        automaticCloseAfterTransition(level, pos, state.setValue(OPEN, open), open, !open);
 
         level.playSound(
             null, pos,

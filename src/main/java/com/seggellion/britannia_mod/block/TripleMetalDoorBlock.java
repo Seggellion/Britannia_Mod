@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
-public class TripleMetalDoorBlock extends DoorBlock {
+public class TripleMetalDoorBlock extends AutoClosingDoorBlock {
     public static final EnumProperty<TripleBlockPart> TRIPLE_PART = EnumProperty.create("part", TripleBlockPart.class);
 
     public TripleMetalDoorBlock() {
@@ -153,6 +153,8 @@ public class TripleMetalDoorBlock extends DoorBlock {
                 level.setBlock(targetPos, targetState.setValue(OPEN, isOpen), 10);
             }
         }
+
+        automaticCloseAfterTransition(level, pos, state, !isOpen, isOpen);
         
         // Play sound directly to the level using the BlockSetType sounds
         level.playSound(
@@ -168,6 +170,37 @@ public class TripleMetalDoorBlock extends DoorBlock {
         level.gameEvent(player, isOpen ? net.minecraft.world.level.gameevent.GameEvent.BLOCK_OPEN : net.minecraft.world.level.gameevent.GameEvent.BLOCK_CLOSE, pos);
 
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    @Override
+    protected BlockPos automaticCloseBasePos(BlockPos pos, BlockState state) {
+        return switch (state.getValue(TRIPLE_PART)) {
+            case MIDDLE -> pos.below();
+            case UPPER -> pos.below(2);
+            case LOWER -> pos;
+        };
+    }
+
+    @Override
+    protected int automaticCloseHeight() {
+        return 3;
+    }
+
+    @Override
+    protected void closeAutomatically(net.minecraft.server.level.ServerLevel level, BlockPos basePos,
+                                      BlockState baseState) {
+        for (int i = 0; i < automaticCloseHeight(); i++) {
+            BlockPos partPos = basePos.above(i);
+            BlockState partState = level.getBlockState(partPos);
+            if (partState.is(this) && partState.getValue(OPEN)) {
+                level.setBlock(partPos, partState.setValue(OPEN, false), 10);
+            }
+        }
+
+        level.playSound(null, basePos, this.type().doorClose(),
+                net.minecraft.sounds.SoundSource.BLOCKS, 1.0F,
+                level.getRandom().nextFloat() * 0.1F + 0.9F);
+        level.gameEvent(null, net.minecraft.world.level.gameevent.GameEvent.BLOCK_CLOSE, basePos);
     }
 
 }

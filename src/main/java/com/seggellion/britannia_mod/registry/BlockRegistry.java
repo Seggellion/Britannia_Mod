@@ -134,6 +134,7 @@ import com.seggellion.britannia_mod.block.TopOakWallBlock;
 import com.seggellion.britannia_mod.block.MetalDoorBlock;
 import com.seggellion.britannia_mod.block.TripleMetalDoorBlock;
 import com.seggellion.britannia_mod.block.LockableDoorBlock;
+import com.seggellion.britannia_mod.block.AutoClosingDoorBlock;
 import com.seggellion.britannia_mod.block.ThinWall;
 import com.seggellion.britannia_mod.block.ThreeHeightLightBlock;
 import com.seggellion.britannia_mod.block.CaveFloorBlock;
@@ -173,7 +174,6 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.ChainBlock;
 import com.seggellion.britannia_mod.block.ArchitectSpawnBlock;
-import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -2402,7 +2402,7 @@ public static final DeferredHolder<Block, Block> LOCKABLE_METAL_DOOR = BLOCKS.re
 
 public static final DeferredHolder<Block, Block> WOODEN_GATE = BLOCKS.register(
     "wooden_gate",
-    () -> new DoorBlock(
+    () -> new AutoClosingDoorBlock(
             BritanniaBlockSetTypes.WOODEN_GATE,
             BlockBehaviour.Properties.of()
                 .mapColor(MapColor.WOOD)
@@ -2418,7 +2418,7 @@ public static final DeferredHolder<Block, Block> IRON_FENCE_GATE = BLOCKS.regist
 
 public static final DeferredHolder<Block, Block> WOOD_DOOR = BLOCKS.register(
     "wood_door",
-    () -> new DoorBlock(
+    () -> new AutoClosingDoorBlock(
             BritanniaBlockSetTypes.WOOD_DOOR,
             BlockBehaviour.Properties.of()
                 .mapColor(MapColor.WOOD)
