@@ -10,6 +10,9 @@ import com.seggellion.britannia_mod.city.BootstrapCityRegistrySnapshot;
 import com.seggellion.britannia_mod.entity.TownPersonEntity;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
+import com.seggellion.britannia_mod.service.EconomicNpcRegistryCache;
+import com.seggellion.britannia_mod.service.EconomicNpcRegistrySnapshot;
+import com.seggellion.britannia_mod.service.EconomicNpcTypeDefinition;
 import com.seggellion.britannia_mod.service.EconomicNpcTypeKeys;
 import com.seggellion.britannia_mod.service.spawn.LegacySpawnBlockMigrationLedger;
 import com.seggellion.britannia_mod.service.spawn.LegacySpawnBlockMigrator;
@@ -26,6 +29,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -53,6 +57,7 @@ public final class LegacySpawnBlockMigrationGameTests {
         BootstrapCityRegistryCache.replace(BootstrapCityRegistrySnapshot.available(List.of(
                 new BootstrapCityDefinition(cityId, "Britain")
         )));
+        installEconomicRegistry("tavernkeeper", "vendor", "britannia_mod:tavernkeeper");
         try {
             helper.setBlock(relative, BlockRegistry.MERCHANT_SPAWN_BLOCK.get());
             MerchantSpawnBlockEntity legacy = requireMerchant(level, absolute);
@@ -113,6 +118,7 @@ public final class LegacySpawnBlockMigrationGameTests {
             check(townPerson.isAlive(), "TownPersons must be preserved through migration");
         } finally {
             BootstrapCityRegistryCache.clear();
+            EconomicNpcRegistryCache.clear();
         }
         helper.succeed();
     }
@@ -126,6 +132,7 @@ public final class LegacySpawnBlockMigrationGameTests {
         BootstrapCityRegistryCache.replace(BootstrapCityRegistrySnapshot.available(List.of(
                 new BootstrapCityDefinition(cityId, "Trinsic")
         )));
+        installEconomicRegistry("wood_trader", "trader", "britannia_mod:wood_merchant");
         try {
             helper.setBlock(relative, BlockRegistry.TRADER_SPAWN_BLOCK.get());
             TraderSpawnBlockEntity legacy = requireTrader(level, absolute);
@@ -141,6 +148,7 @@ public final class LegacySpawnBlockMigrationGameTests {
             check(cityId.equals(post.getCityPublicId()), "trader migration lost the city");
         } finally {
             BootstrapCityRegistryCache.clear();
+            EconomicNpcRegistryCache.clear();
         }
         helper.succeed();
     }
@@ -153,6 +161,9 @@ public final class LegacySpawnBlockMigrationGameTests {
         BootstrapCityRegistryCache.replace(BootstrapCityRegistrySnapshot.available(List.of(
                 new BootstrapCityDefinition(UUID.randomUUID(), "Britain")
         )));
+        // Rails knows the type, so these blocks are refused for the reasons this test is named
+        // after rather than being stopped earlier by the rematerialization guard.
+        installEconomicRegistry("baker", "vendor", "britannia_mod:baker");
         try {
             // Blank city: nothing to migrate; the block stays.
             helper.setBlock(new BlockPos(1, 1, 3), BlockRegistry.MERCHANT_SPAWN_BLOCK.get());
@@ -179,6 +190,7 @@ public final class LegacySpawnBlockMigrationGameTests {
                     "no-op migrations must write no receipts");
         } finally {
             BootstrapCityRegistryCache.clear();
+            EconomicNpcRegistryCache.clear();
         }
         helper.succeed();
     }
@@ -197,6 +209,67 @@ public final class LegacySpawnBlockMigrationGameTests {
         check(level.getBlockEntity(absolute) instanceof MerchantSpawnBlockEntity,
                 "the legacy block must remain until the registry is available");
         helper.succeed();
+    }
+
+    /**
+     * The defect the farmer exposed: a key the mod knows locally but Rails has never published
+     * used to convert anyway, destroying a working merchant and leaving a post nothing could
+     * staff -- which is what an admin sees as "my merchant block turned into a broken Service NPC
+     * spawner". The city registry is healthy here, so only the rematerialization guard can be
+     * what refuses.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void aKeyRailsCannotRematerializeKeepsItsMerchantBlock(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos relative = new BlockPos(5, 1, 5);
+        BlockPos absolute = helper.absolutePos(relative);
+        BootstrapCityRegistryCache.replace(BootstrapCityRegistrySnapshot.available(List.of(
+                new BootstrapCityDefinition(UUID.randomUUID(), "Britain")
+        )));
+        // Rails publishes a DIFFERENT vendor, so the registry is genuinely synced -- this is not
+        // the "backend unreachable" case, it is "this type is not one Rails knows".
+        installEconomicRegistry("baker", "vendor", "britannia_mod:baker");
+        try {
+            helper.setBlock(relative, BlockRegistry.MERCHANT_SPAWN_BLOCK.get());
+            MerchantSpawnBlockEntity legacy = requireMerchant(level, absolute);
+            legacy.setCityName("Britain");
+            legacy.setMerchantType("farmer");
+
+            check(!LegacySpawnBlockMigrator.migrateMerchantBlock(level, legacy),
+                    "a type Rails cannot rematerialize must not migrate");
+            check(level.getBlockEntity(absolute) instanceof MerchantSpawnBlockEntity,
+                    "the merchant block must survive: it is the only thing that can still staff this post");
+            check("farmer".equals(requireMerchant(level, absolute).getMerchantType()),
+                    "the refused block must keep its merchant configuration");
+            check(LegacySpawnBlockMigrationLedger.get(level)
+                            .find(level.dimension().location().toString(), absolute) == null,
+                    "a refused migration must write no rollback receipt");
+
+            // Once Rails publishes the type, the very same block converts on a later tick.
+            installEconomicRegistry("farmer", "vendor", "britannia_mod:farmer");
+            check(LegacySpawnBlockMigrator.migrateMerchantBlock(level, legacy),
+                    "the conversion must resume by itself once Rails can rematerialize the type");
+            check(EconomicNpcTypeKeys.prefixed("farmer")
+                            .equals(requirePost(level, absolute).getServiceNpcTypeKey()),
+                    "the resumed migration must carry economic:farmer");
+        } finally {
+            BootstrapCityRegistryCache.clear();
+            EconomicNpcRegistryCache.clear();
+        }
+        helper.succeed();
+    }
+
+    /**
+     * States the Rails economic rows a migration now requires before it will destroy a legacy
+     * block: the authoritative side must be able to rebuild the NPC, or the conversion strands an
+     * unstaffable post. Production receives these through the world bootstrap; a GameTest has no
+     * Rails, so the rows are declared here.
+     */
+    static void installEconomicRegistry(String key, String kind, String entityTypeKey) {
+        EconomicNpcRegistryCache.replace(new EconomicNpcRegistrySnapshot(1, "gametest", Map.of(
+                key, new EconomicNpcTypeDefinition(
+                        key, key, kind, key, entityTypeKey, true, true, 1L)
+        )));
     }
 
     private static MerchantSpawnBlockEntity requireMerchant(ServerLevel level, BlockPos pos) {

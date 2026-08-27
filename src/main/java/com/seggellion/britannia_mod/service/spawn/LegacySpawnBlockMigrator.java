@@ -10,6 +10,8 @@ import com.seggellion.britannia_mod.city.BootstrapCityDefinition;
 import com.seggellion.britannia_mod.city.BootstrapCityRegistrySnapshot;
 import com.seggellion.britannia_mod.merchant.MerchantTypes;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
+import com.seggellion.britannia_mod.service.EconomicNpcRegistryCache;
+import com.seggellion.britannia_mod.service.EconomicNpcTypeDefinition;
 import com.seggellion.britannia_mod.service.EconomicNpcTypeKeys;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -126,6 +128,22 @@ public final class LegacySpawnBlockMigrator {
             return false;
         }
 
+        if (!railsCanRematerialize(economicKey)) {
+            // The conversion is one-way and destroys the block: the legacy NPC is despawned and
+            // the family-specific block is replaced by a post that only Rails can staff. Knowing
+            // the key locally is not enough to justify that -- Rails must also be able to build
+            // the entity again, which is precisely what
+            // ServiceNpcAssignmentReconciler.reconcileEconomic requires. Without this check a key
+            // present in knownKeys but absent from the Rails registry converts anyway and strands
+            // an unstaffable post that reads as a broken Service NPC spawner, taking the merchant
+            // with it. Staying legacy is the safe half: the merchant keeps working, and the
+            // conversion happens by itself on a later tick once Rails publishes the type.
+            LOGGER.warn("Legacy {} spawn block at {} keeps legacy behavior: the Rails economic registry "
+                            + "cannot rematerialize '{}' yet (type absent or carrying no entity mapping)",
+                    kind, pos, economicKey);
+            return false;
+        }
+
         BootstrapCityRegistrySnapshot cities = BootstrapCityRegistryCache.snapshot();
         if (!cities.available()) return false;
         BootstrapCityDefinition city = findCityByName(cities, cityName);
@@ -177,6 +195,26 @@ public final class LegacySpawnBlockMigrator {
                     kind, pos, error);
         }
         return true;
+    }
+
+    /**
+     * Whether the authoritative pipeline could put this NPC back in the world.
+     *
+     * <p>Deliberately the same two conditions {@code reconcileEconomic} materializes on -- the
+     * type is published by Rails, and it names an entity to build. {@code active} and {@code
+     * spawnable} are NOT required: those are runtime staffing decisions Rails is entitled to flip
+     * either way, and a post is the right home for such an NPC regardless. What must never happen
+     * is destroying a working legacy block for a type the authoritative side has never heard of.
+     *
+     * <p>An empty registry (Rails unreachable, or the bootstrap section never delivered) answers
+     * false for every key, which is the intended fail-safe: no backend, no conversion.
+     */
+    private static boolean railsCanRematerialize(String economicKey) {
+        EconomicNpcTypeDefinition definition = EconomicNpcRegistryCache.snapshot()
+                .economicNpcTypes().get(economicKey);
+        return definition != null
+                && definition.minecraftEntityTypeKey() != null
+                && !definition.minecraftEntityTypeKey().isBlank();
     }
 
     @Nullable
