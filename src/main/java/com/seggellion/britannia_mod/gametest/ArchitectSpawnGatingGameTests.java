@@ -10,6 +10,7 @@ import com.seggellion.britannia_mod.entity.ArchitectEntity;
 import com.seggellion.britannia_mod.entity.TownPersonEntity;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
+import com.seggellion.britannia_mod.service.EconomicNpcRegistryCache;
 import com.seggellion.britannia_mod.service.EconomicNpcTypeKeys;
 import com.seggellion.britannia_mod.service.spawn.LegacySpawnBlockMigrationLedger;
 import com.seggellion.britannia_mod.service.spawn.LegacySpawnBlockMigrator;
@@ -297,14 +298,23 @@ public final class ArchitectSpawnGatingGameTests {
         return post;
     }
 
+    /**
+     * A resolvable city AND the Rails economic row for the Architect: migration will not destroy a
+     * legacy block unless the authoritative side can rebuild the NPC afterwards, so a scene that
+     * expects a conversion has to state both halves. Production receives the row through the world
+     * bootstrap, published by the Architect's own vendor seed.
+     */
     private static void withCity(UUID cityId, Runnable body) {
         BootstrapCityRegistryCache.replace(BootstrapCityRegistrySnapshot.available(List.of(
                 new BootstrapCityDefinition(cityId, "Britain")
         )));
+        LegacySpawnBlockMigrationGameTests.installEconomicRegistry(
+                ARCHITECT_VENDOR, "vendor", "britannia_mod:architect");
         try {
             body.run();
         } finally {
             BootstrapCityRegistryCache.clear();
+            EconomicNpcRegistryCache.clear();
         }
     }
 

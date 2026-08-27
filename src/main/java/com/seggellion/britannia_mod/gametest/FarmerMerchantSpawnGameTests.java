@@ -153,6 +153,11 @@ public final class FarmerMerchantSpawnGameTests {
         UUID cityId = UUID.randomUUID();
         BootstrapCityRegistryCache.replace(BootstrapCityRegistrySnapshot.available(List.of(
                 new BootstrapCityDefinition(cityId, city))));
+        // Rails must be able to rebuild the farmer before the merchant block may be destroyed;
+        // without this row the block correctly stays a merchant, which is the sibling test
+        // aKeyRailsCannotRematerializeKeepsItsMerchantBlock.
+        LegacySpawnBlockMigrationGameTests.installEconomicRegistry(
+                "farmer", "vendor", "britannia_mod:farmer");
         try {
             MerchantSpawnBlockEntity spawner = placeSpawner(helper);
             spawner.applyAndResync("farmer", city, 0);
@@ -178,6 +183,29 @@ public final class FarmerMerchantSpawnGameTests {
                     "the legacy-managed farmer must despawn so the authoritative pipeline can staff the post");
         } finally {
             BootstrapCityRegistryCache.clear();
+            com.seggellion.britannia_mod.service.EconomicNpcRegistryCache.clear();
+        }
+        helper.succeed();
+    }
+
+    /**
+     * The farmer is a MERCHANT, and stays one. Its entity belongs to the same
+     * {@code AbstractEconomyMerchantEntity} family the other merchants use and shares nothing with
+     * the Service NPC entity, so no amount of shared post plumbing can present it as a service
+     * NPC. Cheap to assert and it fails loudly if anyone re-points the definition.
+     */
+    @GameTest(template = TEMPLATE, batch = BATCH)
+    public static void everyMerchantTypeResolvesToTheMerchantEntityFamily(GameTestHelper helper) {
+        for (String key : com.seggellion.britannia_mod.merchant.MerchantTypes.configKeys()) {
+            var definition = com.seggellion.britannia_mod.merchant.MerchantTypes.byId(key);
+            var entity = definition.entityType().create(helper.getLevel());
+            check(entity != null, "merchant type " + key + " could not build its entity");
+            check(entity instanceof com.seggellion.britannia_mod.entity.AbstractEconomyMerchantEntity,
+                    "merchant type " + key + " built " + entity.getType()
+                            + ", which is not a merchant-family entity");
+            check(!(entity instanceof com.seggellion.britannia_mod.entity.ServiceNpcEntity),
+                    "merchant type " + key + " must never resolve to a Service NPC");
+            entity.discard();
         }
         helper.succeed();
     }

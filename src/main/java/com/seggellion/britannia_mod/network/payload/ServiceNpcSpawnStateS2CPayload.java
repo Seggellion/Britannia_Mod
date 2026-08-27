@@ -5,6 +5,9 @@ import com.seggellion.britannia_mod.block.entity.ServiceNpcSpawnBlockEntity;
 import com.seggellion.britannia_mod.city.BootstrapCityDefinition;
 import com.seggellion.britannia_mod.city.BootstrapCityRegistryCache;
 import com.seggellion.britannia_mod.menu.ServiceNpcSpawnMenu;
+import com.seggellion.britannia_mod.service.EconomicNpcRegistryCache;
+import com.seggellion.britannia_mod.service.EconomicNpcTypeDefinition;
+import com.seggellion.britannia_mod.service.EconomicNpcTypeKeys;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistryCache;
 import com.seggellion.britannia_mod.service.ServiceNpcTypeDefinition;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnEligibility;
@@ -186,8 +189,27 @@ public record ServiceNpcSpawnStateS2CPayload(
         }
 
         UUID cityId = blockEntity.getCityPublicId();
-        String typeKey = blockEntity.getServiceNpcTypeKey();
-        ServiceNpcTypeDefinition storedType = typeKey == null ? null : typeSnapshot.serviceNpcTypes().get(typeKey);
+        // The block stores an economic selection prefixed (`economic:farmer`) while the dropdown
+        // above is built from BARE registry keys, and the submit handler re-prefixes on the way
+        // back in. Reporting the stored spelling therefore matched no option and rendered every
+        // migrated vendor post -- baker included -- as "Unavailable (economic:...)" under an
+        // "Invalid Service NPC type" banner, which is what makes a converted merchant look like a
+        // broken Service NPC spawner. The screen speaks bare keys; translate once, here.
+        String storedTypeKey = blockEntity.getServiceNpcTypeKey();
+        boolean economicSelection = EconomicNpcTypeKeys.isEconomic(storedTypeKey);
+        String typeKey = economicSelection ? EconomicNpcTypeKeys.strip(storedTypeKey) : storedTypeKey;
+        ServiceNpcTypeDefinition storedType = typeKey == null || economicSelection
+                ? null
+                : typeSnapshot.serviceNpcTypes().get(typeKey);
+        // An economic post is validated against the registry that actually owns it. Eligibility
+        // below stays service-only by design: it reports taught skills, which economic types do
+        // not have, and it already treats an absent definition as nothing to say.
+        EconomicNpcTypeDefinition storedEconomicType = economicSelection
+                ? EconomicNpcRegistryCache.snapshot().economicNpcTypes().get(typeKey)
+                : null;
+        boolean storedSelectionValid = economicSelection
+                ? storedEconomicType != null && storedEconomicType.active() && storedEconomicType.spawnable()
+                : storedType != null && storedType.active() && storedType.spawnable();
         // Evaluated against the SAVED selection, not whatever the admin is currently browsing in
         // the dropdown: this payload is only rebuilt on open/save/refresh, and reporting a city's
         // economy against an unsaved selection would show a verdict for a configuration Rails has
@@ -224,7 +246,7 @@ public record ServiceNpcSpawnStateS2CPayload(
                 cityId,
                 networkTypeKey,
                 cityAvailable && cityId != null && citySnapshot.cities().containsKey(cityId),
-                typeAvailable && storedType != null && storedType.active() && storedType.spawnable(),
+                typeAvailable && storedSelectionValid,
                 blockEntity.isEnabled(),
                 blockEntity.getConfigurationRevision(),
                 blockEntity.getRegistrationState(),
