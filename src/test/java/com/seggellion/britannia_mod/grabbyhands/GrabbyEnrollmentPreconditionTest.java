@@ -71,9 +71,15 @@ class GrabbyEnrollmentPreconditionTest {
      * {@code DecorativeMultiblockItem} does not — it builds a cell structure around an anchor — but it
      * implements {@code GrabbyStructurePlacementItem}, so Grabby runs the item's own placement path
      * and asks it where the anchor went instead of assuming the clicked position.
+     *
+     * <p>{@code CrateItem} qualifies the second way, as a subclass of {@code DecorativeMultiblockItem}
+     * that inherits that same seam. It changes only which support a crate accepts and which way a
+     * stacked one faces; both {@code grabbyPlacementRoot} and {@code useOn} still derive the anchor
+     * from one shared {@code placementFacing}, so the position Grabby checks policy against is the
+     * position the crate lands on.
      */
     private static final Set<String> NON_REPOSITIONING_ITEM_CLASSES =
-            Set.of("BlockItem", "WineBottleBlockItem", "DecorativeMultiblockItem");
+            Set.of("BlockItem", "WineBottleBlockItem", "DecorativeMultiblockItem", "CrateItem");
 
     @Test
     void everyEnrolledBlockIsBackedByAProvenanceCapableBlockEntity() throws IOException {

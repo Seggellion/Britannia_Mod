@@ -7,9 +7,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -52,6 +56,30 @@ public final class CrateBlock extends DecorativeMultiblockBlock implements Entit
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return hasValidPart(state) && isRoot(state) ? new CrateBlockEntity(pos, state) : null;
+    }
+
+    /**
+     * Yields the click to the held crate so a crate can be stacked on a crate.
+     *
+     * <p>Minecraft runs the block interaction before the item's, and {@link #useWithoutItem} consumes
+     * it by opening this crate. Without this the placement item is never reached at all, and a crate
+     * could only ever be stacked by sneaking. {@code SKIP_DEFAULT_BLOCK_INTERACTION} is the one result
+     * that neither consumes the action nor falls through to {@code useWithoutItem}, so the held crate's
+     * own {@code useOn} runs and stays the single authority on whether the placement is legal.
+     *
+     * <p>Scoped to a crate on an upward face: every other item, face, and the empty hand still open
+     * this crate exactly as before.
+     */
+    @Override
+    protected ItemInteractionResult useItemOn(
+            ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+            InteractionHand hand, BlockHitResult hit) {
+        if (hit.getDirection() == Direction.UP
+                && stack.getItem() instanceof BlockItem blockItem
+                && blockItem.getBlock() instanceof CrateBlock) {
+            return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+        }
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     @Override

@@ -35,8 +35,17 @@ public class DecorativeMultiblockItem extends BlockItem implements GrabbyStructu
     @Override
     public BlockPos grabbyPlacementRoot(BlockPlaceContext context) {
         DecorativeMultiblockBlock block = (DecorativeMultiblockBlock) getBlock();
-        Direction facing = context.getHorizontalDirection().getOpposite();
-        return block.anchorForMinimumPosition(context.getClickedPos(), facing);
+        return block.anchorForMinimumPosition(context.getClickedPos(), placementFacing(context));
+    }
+
+    /**
+     * The horizontal facing the placed structure will take.
+     *
+     * <p>A single seam so that {@link #grabbyPlacementRoot} and {@link #useOn} can never disagree
+     * about orientation, and so a subclass can derive it from the world instead of the player.
+     */
+    protected Direction placementFacing(BlockPlaceContext context) {
+        return context.getHorizontalDirection().getOpposite();
     }
 
     @Override
@@ -49,7 +58,7 @@ public class DecorativeMultiblockItem extends BlockItem implements GrabbyStructu
         ItemStack stack = context.getItemInHand();
         BlockPlaceContext placeContext = new BlockPlaceContext(context);
         DecorativeMultiblockBlock block = (DecorativeMultiblockBlock) getBlock();
-        Direction facing = placeContext.getHorizontalDirection().getOpposite();
+        Direction facing = placementFacing(placeContext);
         BlockPos anchor = grabbyPlacementRoot(placeContext);
 
         List<PlacementCell> placement = new ArrayList<>(block.cells().size());

@@ -2,6 +2,7 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.item.RaisedBlockItem;
+import com.seggellion.britannia_mod.item.CrateItem;
 import com.seggellion.britannia_mod.item.DecorativeMultiblockItem;
 import com.seggellion.britannia_mod.item.AdventureLadderItem;
 import com.seggellion.britannia_mod.item.AdventureScarecrowItem;
@@ -2451,9 +2452,9 @@ public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
     public static final DeferredHolder<Item, Item> LOOM_ITEM = ITEMS.register("loom", () -> new DecorativeMultiblockItem(BlockRegistry.LOOM.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> SPINNING_WHEEL_ITEM = ITEMS.register("spinning_wheel", () -> new BlockItem(BlockRegistry.SPINNING_WHEEL.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> DISPLAY_CASE_ITEM = ITEMS.register("display_case", () -> new DecorativeMultiblockItem(BlockRegistry.DISPLAY_CASE.get(), new Item.Properties()));
-    public static final DeferredHolder<Item, Item> SMALL_CRATE_ITEM = ITEMS.register("small_crate", () -> new DecorativeMultiblockItem(BlockRegistry.SMALL_CRATE.get(), new Item.Properties()));
-    public static final DeferredHolder<Item, Item> MEDIUM_CRATE_ITEM = ITEMS.register("medium_crate", () -> new DecorativeMultiblockItem(BlockRegistry.MEDIUM_CRATE.get(), new Item.Properties()));
-    public static final DeferredHolder<Item, Item> LARGE_CRATE_ITEM = ITEMS.register("large_crate", () -> new DecorativeMultiblockItem(BlockRegistry.LARGE_CRATE.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> SMALL_CRATE_ITEM = ITEMS.register("small_crate", () -> new CrateItem(BlockRegistry.SMALL_CRATE.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> MEDIUM_CRATE_ITEM = ITEMS.register("medium_crate", () -> new CrateItem(BlockRegistry.MEDIUM_CRATE.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> LARGE_CRATE_ITEM = ITEMS.register("large_crate", () -> new CrateItem(BlockRegistry.LARGE_CRATE.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> WATER_WELL_ITEM = ITEMS.register("water_well", () -> new DecorativeMultiblockItem(BlockRegistry.WATER_WELL.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> LADDER_ITEM = ITEMS.register("ladder", () -> new AdventureLadderItem(BlockRegistry.LADDER.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> TRAINING_DUMMY_ITEM = ITEMS.register("training_dummy", () -> new DecorativeMultiblockItem(BlockRegistry.TRAINING_DUMMY.get(), new Item.Properties()));

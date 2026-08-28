@@ -7,6 +7,7 @@ import com.seggellion.britannia_mod.block.HedgeBushBlock;
 import com.seggellion.britannia_mod.block.PoolOfBloodBlock;
 import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
 import com.seggellion.britannia_mod.block.CrateBlock;
+import com.seggellion.britannia_mod.block.CrateShapes;
 import com.seggellion.britannia_mod.block.WaterWellBlock;
 import com.seggellion.britannia_mod.block.LadderMultiblockBlock;
 import com.seggellion.britannia_mod.block.LoomBlock;
@@ -2689,7 +2690,7 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
                             .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
                     9, "container.britannia_mod.small_crate",
                     0, 0, 0, 0, 0, 0,
-                    (x, y, z) -> Block.box(2, 0, 2, 14, 11, 14)));
+                    (x, y, z) -> CrateShapes.SMALL));
 
     public static final DeferredHolder<Block, CrateBlock> MEDIUM_CRATE = BLOCKS.register("medium_crate", () ->
             new CrateBlock(
@@ -2697,7 +2698,7 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
                             .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
                     27, "container.britannia_mod.medium_crate",
                     0, 0, 0, 0, 0, 0,
-                    (x, y, z) -> Block.box(1, 0, 1, 15, 14, 15)));
+                    (x, y, z) -> CrateShapes.MEDIUM));
 
     public static final DeferredHolder<Block, CrateBlock> LARGE_CRATE = BLOCKS.register("large_crate", () ->
             new CrateBlock(
@@ -2705,11 +2706,7 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
                             .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
                     54, "container.britannia_mod.large_crate",
                     0, 1, 0, 1, 0, 1,
-                    (x, y, z) -> {
-                        double maxX = x == 0 ? 16.0D : 12.0D;
-                        double maxZ = z == 0 ? 16.0D : 6.0D;
-                        return Block.box(0, 0, 0, maxX, y == 0 ? 16.0D : 3.0D, maxZ);
-                    }));
+                    CrateShapes::largeCell));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CrateBlockEntity>> CRATE_BLOCK_ENTITY_TYPE =
             BLOCK_ENTITY_TYPES.register("crate", () -> BlockEntityType.Builder.of(
