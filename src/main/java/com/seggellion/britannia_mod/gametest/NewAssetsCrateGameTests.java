@@ -313,6 +313,162 @@ public final class NewAssetsCrateGameTests {
         helper.succeed();
     }
 
+    /**
+     * A crate in hand against a side face is a request to open the crate, not to stack it.
+     *
+     * <p>Grabby Hands used to consume this click. Its placement attempt failed on the upward-face rule
+     * and every failure was treated as handled, so the interaction the player actually made never
+     * reached the crate: no stack, no menu, no message. Grabby now declines a click that was never a
+     * placement gesture, which puts the crate's own behaviour back in charge.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void aSideClickWithACrateInHandOpensTheCrateRatherThanBeingSwallowed(
+            GameTestHelper helper) {
+        BlockPos floor = new BlockPos(2, 1, 2);
+        ServerPlayer player = builder(helper, floor);
+        helper.setBlock(floor, Blocks.STONE);
+        BlockPos crate = placeByHand(helper, player, ItemRegistry.SMALL_CRATE_ITEM.get(), floor);
+        check(helper.getLevel().getBlockState(crate).is(BlockRegistry.SMALL_CRATE.get()),
+                "the crate under test was never placed");
+
+        for (Direction face : Direction.values()) {
+            if (face == Direction.UP) {
+                continue;
+            }
+            clickFace(helper, player, new ItemStack(ItemRegistry.SMALL_CRATE_ITEM.get()),
+                    floor.above(), face);
+            check(player.containerMenu instanceof ChestMenu,
+                    "a crate held against the " + face + " face swallowed the interaction "
+                            + "instead of opening the crate");
+            player.closeContainer();
+            // Not "is air": the downward neighbour is the floor the crate stands on. What matters is
+            // that no crate was stacked where the player asked to open one.
+            check(!helper.getLevel().getBlockState(crate.relative(face))
+                            .is(BlockRegistry.SMALL_CRATE.get()),
+                    "a " + face + " click placed a crate where the player asked to open one");
+        }
+
+        disconnect(helper, player);
+        helper.succeed();
+    }
+
+    /** The plainest interaction of all, and the one a swallowed click would be least forgivable on. */
+    @GameTest(template = TEMPLATE)
+    public static void aCrateStillOpensForAnEmptyHand(GameTestHelper helper) {
+        BlockPos floor = new BlockPos(2, 1, 2);
+        ServerPlayer player = builder(helper, floor);
+        helper.setBlock(floor, Blocks.STONE);
+        BlockPos crate = placeByHand(helper, player, ItemRegistry.SMALL_CRATE_ITEM.get(), floor);
+        check(helper.getLevel().getBlockState(crate).is(BlockRegistry.SMALL_CRATE.get()),
+                "the crate under test was never placed");
+
+        clickFace(helper, player, ItemStack.EMPTY, floor.above(), Direction.UP);
+
+        check(player.containerMenu instanceof ChestMenu, "a crate no longer opens for an empty hand");
+        player.closeContainer();
+
+        disconnect(helper, player);
+        helper.succeed();
+    }
+
+    /**
+     * The control: an enrolled block that is not a crate must keep the behaviour it already had.
+     *
+     * <p>Same gesture, same target, different item. A stool places from an ordinary
+     * {@code BlockItem}, so it never declares a placement gesture and Grabby goes on claiming the
+     * click and setting the stool down beside the crate — which is the proof that this milestone
+     * narrowed arbitration for structures that place upward only, and changed nothing else.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void anUnrelatedGrabbyItemKeepsItsSideClickPlacement(GameTestHelper helper) {
+        BlockPos floor = new BlockPos(2, 1, 2);
+        BlockPos beside = new BlockPos(2, 1, 1);
+        ServerPlayer player = builder(helper, floor);
+        helper.setBlock(floor, Blocks.STONE);
+        helper.setBlock(beside, Blocks.STONE);
+        BlockPos crate = placeByHand(helper, player, ItemRegistry.SMALL_CRATE_ITEM.get(), floor);
+        check(helper.getLevel().getBlockState(crate).is(BlockRegistry.SMALL_CRATE.get()),
+                "the crate under test was never placed");
+
+        clickFace(helper, player, new ItemStack(ItemRegistry.STOOL_ITEM.get()),
+                floor.above(), Direction.NORTH);
+
+        check(helper.getLevel().getBlockState(helper.absolutePos(beside.above()))
+                        .is(BlockRegistry.STOOL.get()),
+                "an unrelated Grabby item stopped placing from a side click");
+        check(!(player.containerMenu instanceof ChestMenu),
+                "an unrelated Grabby item now opens the crate instead of placing");
+
+        disconnect(helper, player);
+        helper.succeed();
+    }
+
+    /**
+     * The large crate's tightened shapes, held against the behaviour they could have broken.
+     *
+     * <p>Milestone 1 pulled the far cells in from the 12 and 6 voxels they claimed to the half voxel
+     * the model actually reaches. That is a change to geometry only, but geometry is what every cell
+     * of a multiblock is for, so each of the eight is exercised in turn: it must still open the one
+     * root inventory, and breaking it must still take the whole crate down and drop its contents
+     * exactly once.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void everyLargeCrateCellStillOpensTheRootAndDismantlesTheWholeCrate(
+            GameTestHelper helper) {
+        CrateBlock block = BlockRegistry.LARGE_CRATE.get();
+        Direction facing = Direction.NORTH;
+        BlockPos anchor = helper.absolutePos(new BlockPos(2, 1, 2));
+        ServerPlayer player = builder(helper, new BlockPos(2, 1, 2));
+
+        for (DecorativeMultiblockBlock.Cell cell : block.cells()) {
+            place(helper, block, anchor, facing);
+            BlockPos cellPos = block.worldPosition(anchor, facing, cell);
+            String which = "cell " + cell.part();
+
+            check(helper.getLevel().getBlockEntity(anchor) instanceof CrateBlockEntity,
+                    which + ": the root lost its inventory");
+            CrateBlockEntity crate = (CrateBlockEntity) helper.getLevel().getBlockEntity(anchor);
+            crate.setItem(0, new ItemStack(Items.EMERALD, 2));
+
+            BlockState cellState = helper.getLevel().getBlockState(cellPos);
+            check(cellState.is(block), which + ": did not materialise");
+            check(block.anchorPosition(cellPos, cellState).equals(anchor),
+                    which + ": no longer resolves to the root");
+
+            // Opening from this cell has to reach the one inventory, whichever corner was clicked.
+            cellState.useWithoutItem(helper.getLevel(), player,
+                    new BlockHitResult(Vec3.atCenterOf(cellPos), Direction.UP, cellPos, false));
+            check(player.containerMenu instanceof ChestMenu,
+                    which + ": did not open the root inventory");
+            player.closeContainer();
+
+            block.onDestroyedByPlayer(
+                    cellState, helper.getLevel(), cellPos, player, true, cellState.getFluidState());
+            for (DecorativeMultiblockBlock.Cell other : block.cells()) {
+                check(!helper.getLevel().getBlockState(block.worldPosition(anchor, facing, other))
+                                .is(block),
+                        which + ": breaking it orphaned another cell");
+            }
+
+            int emeralds = 0;
+            int crates = 0;
+            for (ItemEntity entity : helper.getLevel()
+                    .getEntitiesOfClass(ItemEntity.class, new AABB(anchor).inflate(5.0D))) {
+                if (entity.getItem().is(Items.EMERALD)) {
+                    emeralds += entity.getItem().getCount();
+                } else if (entity.getItem().is(ItemRegistry.LARGE_CRATE_ITEM.get())) {
+                    crates += entity.getItem().getCount();
+                }
+                entity.discard();
+            }
+            check(emeralds == 2, which + ": contents were lost or duplicated");
+            check(crates == 1, which + ": did not drop exactly one crate");
+        }
+
+        disconnect(helper, player);
+        helper.succeed();
+    }
+
     /* ─── helpers ────────────────────────────────────────────── */
 
     /**

@@ -118,6 +118,26 @@ class CrateStackingInteractionTest {
             "yielding must not fall through to the crate's own menu");
     }
 
+    /**
+     * The same rule, stated where Grabby Hands can read it.
+     *
+     * <p>Grabby reaches crate placement before the block does, so the block's own answer above is only
+     * half the arbitration. {@code isPlacementGesture} is what lets Grabby tell a stacking attempt
+     * from a click meant for the crate, and it has to agree exactly with the upward-face rule
+     * {@code useOn} enforces — a disagreement would either swallow interactions again or claim clicks
+     * placement cannot honour.
+     */
+    @Test
+    void onlyAnUpwardFaceCountsAsAPlacementGesture() {
+        CrateItem item = new CrateItem(crate, new Item.Properties());
+        for (Direction face : Direction.values()) {
+            BlockHitResult hit =
+                    new BlockHitResult(Vec3.atCenterOf(BlockPos.ZERO), face, BlockPos.ZERO, false);
+            assertEquals(face == Direction.UP, item.isPlacementGesture(hit),
+                    face + " was misjudged as a placement gesture");
+        }
+    }
+
     /* ─── helpers ────────────────────────────────────────────── */
 
     private static ItemInteractionResult interact(ItemStack held, Direction face) {

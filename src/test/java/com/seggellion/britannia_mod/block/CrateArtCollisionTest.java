@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.block;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.JsonArray;
@@ -13,6 +14,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.level.EmptyBlockGetter;
@@ -121,6 +123,58 @@ class CrateArtCollisionTest {
             assertEquals(CrateShapes.SMALL.max(Direction.Axis.Y), shape.max(Direction.Axis.Y), 1.0E-6D,
                 facing + " changed the crate's height");
         }
+    }
+
+    /**
+     * The large crate's shapes shrank; its structure did not.
+     *
+     * <p>Tightening the far cells to the half voxel the model reaches is only safe if it stays a
+     * change of geometry alone. Existing large crates are saved with {@code PART} 0..7, so every one
+     * of those eight cells has to keep resolving to the one root, and none of them may end up with an
+     * empty shape - a cell that collides with nothing is a hole in an object the player can see.
+     */
+    @Test
+    void theLargeCrateKeepsEightSolidCellsResolvingToOneRoot() {
+        CrateBlock large = crate(54, 1, 1, 1, CrateShapes::largeCell);
+
+        assertEquals(8, large.cells().size(), "the large crate lost a cell");
+        assertEquals(1, large.cells().stream()
+                .map(cell -> large.stateFor(Direction.SOUTH, cell))
+                .filter(large::isRoot)
+                .count(), "the large crate no longer has exactly one root");
+
+        for (DecorativeMultiblockBlock.Cell cell : large.cells()) {
+            BlockState state = large.stateFor(Direction.SOUTH, cell);
+            assertTrue(large.hasValidPart(state), "PART " + cell.part() + " stopped resolving");
+
+            VoxelShape shape = large.getShape(state, EmptyBlockGetter.INSTANCE, null,
+                CollisionContext.empty());
+            assertFalse(shape.isEmpty(), "cell " + cell.part() + " collides with nothing at all");
+
+            // Every cell answers for the whole object, which is what lets a player break or open a
+            // large crate by any corner they can actually see.
+            assertEquals(BlockPos.ZERO,
+                large.anchorPosition(large.worldPosition(BlockPos.ZERO, Direction.SOUTH, cell), state),
+                "cell " + cell.part() + " no longer resolves back to its anchor");
+        }
+    }
+
+    /**
+     * The body a player walks into stays solid.
+     *
+     * <p>The correction only ever removed collision from cells the model does not reach. The root
+     * cell carries the crate's bulk, so it has to remain a full block - anything less would be a
+     * player walking through the middle of a crate they can see.
+     */
+    @Test
+    void theLargeCrateRootCellStillFillsItsBlock() {
+        VoxelShape root = CrateShapes.largeCell(0, 0, 0);
+        assertEquals(0.0D, root.min(Direction.Axis.X), 1.0E-6D);
+        assertEquals(1.0D, root.max(Direction.Axis.X), 1.0E-6D);
+        assertEquals(0.0D, root.min(Direction.Axis.Y), 1.0E-6D);
+        assertEquals(1.0D, root.max(Direction.Axis.Y), 1.0E-6D);
+        assertEquals(0.0D, root.min(Direction.Axis.Z), 1.0E-6D);
+        assertEquals(1.0D, root.max(Direction.Axis.Z), 1.0E-6D);
     }
 
     /** No crate may reach the top of its block, or it would never have needed a support exception. */

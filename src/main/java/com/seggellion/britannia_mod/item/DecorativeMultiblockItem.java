@@ -19,6 +19,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.BlockHitResult;
 
 /** Transactional placement item for {@link DecorativeMultiblockBlock}. */
 public class DecorativeMultiblockItem extends BlockItem implements GrabbyStructurePlacementItem {
@@ -46,6 +47,19 @@ public class DecorativeMultiblockItem extends BlockItem implements GrabbyStructu
      */
     protected Direction placementFacing(BlockPlaceContext context) {
         return context.getHorizontalDirection().getOpposite();
+    }
+
+    /**
+     * Only an upward face, which is the same rule {@link #useOn} enforces one line in.
+     *
+     * <p>Stated here as well so Grabby Hands can tell a refused placement from a click that was never
+     * a placement. Without it, holding one of these structures turned every click on an enrolled block
+     * into a swallowed interaction: the attempt failed on the face check, Grabby consumed it anyway,
+     * and the block the player was actually pointing at never got the chance to respond.
+     */
+    @Override
+    public boolean isPlacementGesture(BlockHitResult hit) {
+        return hit.getDirection() == Direction.UP;
     }
 
     @Override
