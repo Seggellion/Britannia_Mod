@@ -192,6 +192,10 @@ CraftableRegistry.init();
         MoongateTickHandler.registerTickEvent(NeoForge.EVENT_BUS);
         NeoForge.EVENT_BUS.register(new ForgeEventHandler());
         NeoForge.EVENT_BUS.register(new PlayerEventHandler());
+        // Crate Column milestone 6: remembers which logical crate a swing began on, so a column
+        // that repacks mid-break cannot redirect the destruction onto a neighbour's crate.
+        NeoForge.EVENT_BUS.register(
+                new com.seggellion.britannia_mod.event.CrateStackBreakHandler());
         NeoForge.EVENT_BUS.register(new FlowerInteractionHandler());
         NeoForge.EVENT_BUS.register(new HouseFarmPlotInteractionHandler());
         NeoForge.EVENT_BUS.register(new ManagedVegetationInteractionHandler());

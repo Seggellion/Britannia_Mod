@@ -94,6 +94,22 @@ public final class LogicalCrate {
         ContainerHelper.saveAllItems(tag, items, registries);
     }
 
+    /**
+     * Hands this crate's storage out, once, and leaves it empty.
+     *
+     * <p>Only for a crate that has already been removed from its column. The stacks are moved rather
+     * than copied, so from this point exactly one place holds them and nothing can drop them twice;
+     * clearing is the half that makes that true.
+     */
+    public NonNullList<ItemStack> takeContents() {
+        NonNullList<ItemStack> taken = NonNullList.withSize(items.size(), ItemStack.EMPTY);
+        for (int slot = 0; slot < items.size(); slot++) {
+            taken.set(slot, items.get(slot));
+        }
+        items.clear();
+        return taken;
+    }
+
     public int slotCount() {
         return items.size();
     }

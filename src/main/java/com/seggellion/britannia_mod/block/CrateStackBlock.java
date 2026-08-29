@@ -2,14 +2,19 @@ package com.seggellion.britannia_mod.block;
 
 import com.seggellion.britannia_mod.block.entity.CrateStackBlockEntity;
 import com.seggellion.britannia_mod.crate.CrateStackLayout;
+import com.seggellion.britannia_mod.crate.CrateStackBreakTargets;
+import com.seggellion.britannia_mod.crate.CrateStackBreakTransaction;
 import com.seggellion.britannia_mod.crate.CrateStackShapes;
 import com.seggellion.britannia_mod.crate.CrateStackSlice;
 import com.seggellion.britannia_mod.crate.CrateStackTargetResolver;
 import com.seggellion.britannia_mod.crate.LogicalCrateMenuProvider;
+import java.util.Optional;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
@@ -203,32 +208,66 @@ public class CrateStackBlock extends Block implements EntityBlock {
     }
 
     /**
-     * Refuses destruction until the break milestone lands.
+     * Destroys the one crate the player aimed at, and keeps the column if anything is left.
      *
-     * <h2>Why this is here</h2>
+     * <h2>Returning false is the point</h2>
      *
-     * <p>Players can now build compact columns in ordinary play, and taking one apart is genuinely
-     * hard: a column carries several inventories inside one block entity, its cells must shrink in
-     * step, and the client predicts block removal that the server has to correct. None of that exists
-     * yet. Until it does, a half-implemented break would silently remove a cell and leave the column
-     * inconsistent — with real player inventories inside it.
+     * <p>A player breaking a crate out of a column has destroyed a crate, not a block position. When
+     * other crates remain, the position must survive — so this reports that it did not remove the
+     * block. The client has already predicted the block gone, and reconciles when the server
+     * acknowledges the swing: {@code BlockStatePredictionHandler} restores the state it last heard
+     * about, which repairs the predicted air without a corrective packet. The fresh layout follows a
+     * tick later, because NeoForge's snapshot restore would otherwise put the destroyed crate back on
+     * screen.
      *
-     * <p>So a column simply cannot be broken. That is visibly wrong and completely safe, which is the
-     * right way round for something holding other people's belongings. The break milestone replaces
-     * this with per-crate destruction; nothing else should ever need it.
+     * <p>When the last crate goes the position should go too, so that case returns true and lets
+     * vanilla remove it. {@code crate_stack} has an empty loot table, so vanilla removal drops
+     * nothing — every drop a column produces comes from the transaction, exactly once.
+     *
+     * <p>A swing with no captured target destroys nothing and keeps the column. That covers a break
+     * begun before this rule existed, a target that expired, and a crate another player removed
+     * first; falling back to whichever crate now occupies that height would destroy one the player
+     * never aimed at.
      */
     @Override
     public boolean onDestroyedByPlayer(
             BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest,
             FluidState fluid) {
-        return false;
-    }
 
-    /** Unbreakable by hand, for the same reason, and without pretending it is merely very hard. */
-    @Override
-    public float getDestroyProgress(
-            BlockState state, Player player, BlockGetter level, BlockPos pos) {
-        return 0.0F;
+        if (!(level instanceof ServerLevel server) || !(player instanceof ServerPlayer serverPlayer)) {
+            return false;
+        }
+        BlockPos root = rootOf(pos, state);
+        Optional<CrateStackBreakTargets.CrateStackBreakTarget> target =
+                CrateStackBreakTargets.current(serverPlayer, root);
+        if (target.isEmpty()) {
+            return false;
+        }
+        CrateStackBreakTransaction.Result result =
+                CrateStackBreakTransaction.breakCrate(server, root, target.get().crateId(), player);
+        CrateStackBreakTargets.recordCompletion(serverPlayer, root);
+
+        if (!result.removedCrate()) {
+            return false;
+        }
+        if (!result.columnIsEmpty()) {
+            return false;
+        }
+        // Nothing left to hold the position, so the column goes. This override is what removes the
+        // block - returning true only reports that it did, exactly as NeoForge's default does by
+        // calling removeBlock itself. Cells come down from the top and the root last, under the
+        // mutation guard so releasing them is never read as a second destruction.
+        return duringMutation(() -> {
+            for (int cell = CrateStackLayout.MAX_CELLS - 1; cell >= 1; cell--) {
+                BlockPos above = root.above(cell);
+                BlockState found = server.getBlockState(above);
+                if (found.getBlock() instanceof CrateStackBlock && !isRoot(found)
+                        && rootOf(above, found).equals(root)) {
+                    server.removeBlock(above, false);
+                }
+            }
+            return server.removeBlock(root, false);
+        });
     }
 
     /** What this cell shows, resolved from whichever cell owns the column. */

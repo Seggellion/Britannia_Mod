@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.OptionalInt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -165,6 +166,27 @@ public final class CrateStackColumnSync {
                 level.sendBlockUpdated(pos, state, state, Block.UPDATE_ALL);
             }
         }
+    }
+
+    /**
+     * Tells clients about a column on the next tick rather than this one.
+     *
+     * <p>For breaking specifically. A client predicts that the block it broke is gone, and when the
+     * server acknowledges the swing it restores whatever state it last heard about — including, through
+     * NeoForge's snapshot restore, the block entity as it stood <em>before</em> the break. A layout
+     * sent during the same tick is overwritten by that restore, leaving the client drawing the crate
+     * the player just destroyed. Sending a tick later puts the fresh layout after the acknowledgement,
+     * which is the only ordering that survives it.
+     */
+    public static void notifyClientsNextTick(ServerLevel level, BlockPos root) {
+        BlockPos immutable = root.immutable();
+        level.getServer().tell(new TickTask(
+                level.getServer().getTickCount() + 1,
+                () -> {
+                    if (level.getBlockState(immutable).getBlock() instanceof CrateStackBlock) {
+                        notifyClients(level, immutable, reconcile(level, immutable));
+                    }
+                }));
     }
 
     /** Reconciles a column found at {@code root}, if there is one. */
