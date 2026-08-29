@@ -57,9 +57,19 @@ public final class CrateLargeStackGameTests {
     /** The lid a second large crate rests on. */
     private static final int LID = 1900;
 
-    /** Which is this far below the first cell that crate is allowed to occupy. */
-    private static final int ORIGIN =
-            LID - CrateFoundation.ROOT_CELL_ABOVE_ANCHOR * CrateStackLayout.CELL_HUNDREDTHS;
+    /** How far above its own origin a large crate's visible bottom - its base rim - sits. */
+    private static final int VISIBLE_BASE = 100;
+
+    /**
+     * Where a crate standing on that lid has to start.
+     *
+     * <p>The lid it rests on, less the floor of the first cell it may occupy, less the height of its
+     * own base rim above its origin: 1900 - 3200 - 100. Leaving out that last term is what left the
+     * crate hovering a voxel above the lid.
+     */
+    private static final int ORIGIN = LID
+            - CrateFoundation.ROOT_CELL_ABOVE_ANCHOR * CrateStackLayout.CELL_HUNDREDTHS
+            - VISIBLE_BASE;
 
     private CrateLargeStackGameTests() {
     }

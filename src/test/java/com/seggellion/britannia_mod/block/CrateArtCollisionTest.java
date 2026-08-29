@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.seggellion.britannia_mod.crate.CrateFoundation;
+import com.seggellion.britannia_mod.crate.CrateStackLayout;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -24,6 +26,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.registries.GameData;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -215,6 +218,51 @@ class CrateArtCollisionTest {
     }
 
     /** The model's bounds in block pixels, with element rotations baked in as the game bakes them. */
+    /**
+     * A large crate standing on another has to touch it.
+     *
+     * <h2>What this pins</h2>
+     *
+     * <p>Two numbers decide where a stacked large crate goes: the lid it rests on and its own visible
+     * bottom. Both come from the authored model, and neither can be read off the collision shapes -
+     * those start at zero for every cell, which says nothing about where the art begins. So they are
+     * measured here, from the model itself, and the offset the game uses is checked against them.
+     *
+     * <p>The measurement has to account for rotation. Four of the crate's elements are diagonal slats
+     * written with a {@code from} of 0.5 and then turned forty-five degrees, which lifts them to 1.47;
+     * reading their raw values put the visible bottom half a voxel too low and left the crate hovering
+     * a whole voxel above the lid. {@code boundsOf} rotates first, which is the point.
+     */
+    @Test
+    @DisplayName("a large crate stacked on a large crate rests on its lid")
+    void stackedLargeCratesTouch() throws IOException {
+        Box art = boundsOf("large_crate");
+        int lidTop = hundredths(art.y1());
+        int visibleBottom = hundredths(art.y0());
+
+        assertEquals(1900, lidTop, "the large crate's lid moved; the stacking offset follows it");
+        assertEquals(100, visibleBottom,
+                "the large crate's visible bottom moved; CrateShapes.LARGE_VISIBLE_BASE has to follow");
+        assertEquals(visibleBottom,
+                (int) Math.round(CrateShapes.LARGE_VISIBLE_BASE
+                        * CrateStackLayout.HUNDREDTHS_PER_VOXEL),
+                "LARGE_VISIBLE_BASE no longer matches the model it describes");
+
+        // Where the upper crate's art actually ends up: its own cell floor, plus the offset the game
+        // gives it, plus however far above its origin its art begins.
+        int cellFloor = CrateFoundation.ROOT_CELL_ABOVE_ANCHOR * CrateStackLayout.CELL_HUNDREDTHS;
+        int offset = CrateFoundation.originForRestingLarge(crate(54, 1, 1, 1, CrateShapes::largeCell));
+        int restsAt = cellFloor + offset + visibleBottom;
+
+        assertEquals(lidTop, restsAt,
+                "a stacked large crate would sit " + (restsAt - lidTop)
+                        + " hundredths of a voxel off the lid it is supposed to be resting on");
+    }
+
+    private static int hundredths(double voxels) {
+        return (int) Math.round(voxels * CrateStackLayout.HUNDREDTHS_PER_VOXEL);
+    }
+
     private static Box boundsOf(String model) throws IOException {
         Path path = MODELS.resolve(model.endsWith(".old") ? model : model + ".json");
         JsonObject json = JsonParser

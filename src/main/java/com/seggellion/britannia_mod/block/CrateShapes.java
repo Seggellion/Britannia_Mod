@@ -26,6 +26,20 @@ public final class CrateShapes {
     /** Bounds of {@code block/new_assets/medium_crate.json}. */
     public static final VoxelShape MEDIUM = Block.box(1.265D, 0.0D, 0.61D, 15.515D, 11.6D, 14.86D);
 
+    /**
+     * How far above its own origin a large crate's visible bottom sits, in voxels.
+     *
+     * <p>Its base rim, and the lowest thing anyone can see of it. Not the same as the model's raw
+     * minimum: four of its elements are diagonal slats written with a {@code from} of 0.5 and then
+     * rotated forty-five degrees, which lifts them to 1.47 - so the raw envelope reads half a voxel
+     * lower than anything the crate actually shows.
+     *
+     * <p>Measured rather than derived because the collision shapes cannot say it: they start at zero
+     * for every cell, which is right for standing on the ground and useless for deciding where a crate
+     * standing on another one has to be put. {@code CrateArtCollisionTest} holds this to the model.
+     */
+    public static final double LARGE_VISIBLE_BASE = 1.0D;
+
     private CrateShapes() {
     }
 

@@ -159,7 +159,8 @@ public final class CrateItem extends DecorativeMultiblockItem {
         BlockPos anchor = CrateFoundation.columnRootFor(foundation.get());
         if (level.getBlockEntity(anchor) instanceof CrateBlockEntity resting
                 && level.getBlockState(anchor).getBlock() instanceof CrateBlock foundationCrate) {
-            resting.setOriginHundredths(CrateFoundation.originFor(foundationCrate));
+            resting.setOriginHundredths(
+                    CrateFoundation.originForRestingLarge(foundationCrate));
             // The crate is drawn by cells other than its own, so those have to be told as well.
             for (int cell = -1; cell <= 1; cell++) {
                 BlockPos pos = anchor.above(cell);

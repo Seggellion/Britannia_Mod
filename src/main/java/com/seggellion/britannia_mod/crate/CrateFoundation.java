@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.crate;
 
 import com.seggellion.britannia_mod.block.CrateBlock;
+import com.seggellion.britannia_mod.block.CrateShapes;
 import com.seggellion.britannia_mod.block.CrateStackBlock;
 import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
 import com.seggellion.britannia_mod.block.entity.CrateBlockEntity;
@@ -104,6 +105,23 @@ public final class CrateFoundation {
     public static int originFor(CrateBlock crate) {
         return topHundredths(crate)
                 - ROOT_CELL_ABOVE_ANCHOR * CrateStackLayout.CELL_HUNDREDTHS;
+    }
+
+    /**
+     * The origin a large crate resting on this foundation takes.
+     *
+     * <h2>Why this is not the same as a column's</h2>
+     *
+     * <p>A column is packed by art: each crate's authored minimum is subtracted when it is drawn, so
+     * aligning a column's origin with the lid puts the bottom crate's art on the lid. A large crate is
+     * drawn from its raw model instead, and that model's visible bottom - its base rim - sits a voxel
+     * above its own origin. Using the column's origin therefore left the crate hovering by exactly
+     * that voxel, which is the gap this corrects.
+     */
+    public static int originForRestingLarge(CrateBlock foundation) {
+        return originFor(foundation)
+                - (int) Math.round(
+                        CrateShapes.LARGE_VISIBLE_BASE * CrateStackLayout.HUNDREDTHS_PER_VOXEL);
     }
 
     /** Where a column resting on the foundation anchored here puts its root. */
