@@ -101,18 +101,14 @@ public final class CrateStackAppendPathGameTests {
     /* ─── large crates ───────────────────────────────────────── */
 
     /**
-     * A large crate will not perch on a large one.
+     * A large crate will not perch on a compact column.
      *
-     * <p>A compact crate on a large one is a foundation stack and is covered by
-     * {@code CrateStackFoundationGameTests}; these are the combinations that stay refused, because
-     * the large crate's two-block envelope has no compact representation.
+     * <p>What a crate may stand on now has three answers, and only this one is still a refusal. A
+     * compact crate on a large crate is a founded column, covered by
+     * {@code CrateStackFoundationGameTests}; a large crate on a large crate stands on its lid, covered
+     * by {@code CrateLargeStackGameTests}. A large crate over a column has neither representation: the
+     * column's top is wherever its crates happen to reach, which no two-block structure can rest on.
      */
-    @GameTest(template = TEMPLATE)
-    public static void aLargeCrateWillNotPerchOnALargeCrate(GameTestHelper helper) {
-        refusedOnTopOf(helper, large(), large());
-    }
-
-    /** A large crate will not perch on a compact column either. */
     @GameTest(template = TEMPLATE)
     public static void aLargeCrateWillNotPerchOnACompactColumn(GameTestHelper helper) {
         refusedOnTopOf(helper, small(), large());

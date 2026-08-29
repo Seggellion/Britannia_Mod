@@ -2,10 +2,13 @@ package com.seggellion.britannia_mod.client.model;
 
 import com.seggellion.britannia_mod.block.CrateBlock;
 import com.seggellion.britannia_mod.crate.CrateFoundation;
+import com.seggellion.britannia_mod.crate.CrateStackLayout;
 import com.seggellion.britannia_mod.crate.CrateStackSlice;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
@@ -54,6 +57,16 @@ public final class CrateFoundationBakedModel extends BakedModelWrapper<BakedMode
     /** The part of a column resting on this crate that falls inside the cell above it. */
     public static final ModelProperty<CrateStackSlice> OVERHANG = new ModelProperty<>();
 
+    /** A large crate standing on this crate's lid, drawn from here for the sake of its lighting. */
+    public static final ModelProperty<RestingLarge> RESTING = new ModelProperty<>();
+
+    /** A crate this cell has to draw on another cell's behalf, and how far up it belongs. */
+    public record RestingLarge(@Nullable BlockState state, float liftBlocks) {
+    }
+
+    /** Marks a crate whose art another cell has taken responsibility for. */
+    private static final RestingLarge DRAWN_ELSEWHERE = new RestingLarge(null, 0.0F);
+
     /** Crates are cutout, whatever the crate underneath them draws with. */
     private static final ChunkRenderTypeSet CUTOUT =
             ChunkRenderTypeSet.of(RenderType.cutout());
@@ -62,11 +75,30 @@ public final class CrateFoundationBakedModel extends BakedModelWrapper<BakedMode
         super(originalModel);
     }
 
+    /** The model underneath this wrapper, so another cell can draw it without recursing. */
+    public BakedModel unwrapped() {
+        return originalModel;
+    }
+
     @Override
     public ModelData getModelData(
             BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData modelData) {
+        // A crate standing on another crate's lid is drawn by that lid, because a chunk lights
+        // geometry against the block that emitted it and this crate's own cells sit a whole cell too
+        // high for that to come out right.
+        if (CrateFoundation.isFoundedLarge(level, pos, state)) {
+            return modelData.derive().with(RESTING, DRAWN_ELSEWHERE).build();
+        }
         if (!carriesOverhang(state)) {
             return modelData;
+        }
+        Optional<CrateFoundation.FoundedLarge> resting = CrateFoundation.largeOn(level, pos, state);
+        if (resting.isPresent()) {
+            float lift = (resting.get().originHundredths() + CrateStackLayout.CELL_HUNDREDTHS)
+                    / (float) (CrateStackLayout.HUNDREDTHS_PER_VOXEL * 16);
+            return modelData.derive()
+                    .with(RESTING, new RestingLarge(resting.get().state(), lift))
+                    .build();
         }
         return CrateFoundation.columnOn(level, pos, state)
                 .map(founded -> modelData.derive().with(OVERHANG, founded.overhang()).build())
@@ -88,6 +120,14 @@ public final class CrateFoundationBakedModel extends BakedModelWrapper<BakedMode
             ModelData modelData,
             @Nullable RenderType renderType) {
 
+        RestingLarge resting = modelData.get(RESTING);
+        if (resting == DRAWN_ELSEWHERE) {
+            // Another cell is drawing this crate, in a place where its lighting comes out right.
+            return List.of();
+        }
+        if (resting != null) {
+            return side != null ? List.of() : restingQuads(resting, random, renderType);
+        }
         // Every cell but the one carrying an overhang draws exactly what it always drew.
         if (!carriesOverhang(state)) {
             return super.getQuads(state, side, random, modelData, renderType);
@@ -103,8 +143,29 @@ public final class CrateFoundationBakedModel extends BakedModelWrapper<BakedMode
         return quads;
     }
 
+    /** The crate standing on this lid, drawn from here and lifted to where it really is. */
+    private static List<BakedQuad> restingQuads(
+            RestingLarge resting, RandomSource random, @Nullable RenderType renderType) {
+
+        BakedModel model = Minecraft.getInstance().getBlockRenderer()
+                .getBlockModel(resting.state());
+        if (model instanceof CrateFoundationBakedModel wrapped) {
+            // Its own wrapper declines to draw it, which is the point - unwrap and draw the art.
+            model = wrapped.unwrapped();
+        }
+        List<BakedQuad> quads = new ArrayList<>();
+        CrateStackBakedModel.appendShiftedModel(
+                model, resting.state(), resting.liftBlocks(), random, renderType, quads);
+        return quads;
+    }
+
     @Override
     public ChunkRenderTypeSet getRenderTypes(BlockState state, RandomSource random, ModelData data) {
-        return carriesOverhang(state) ? CUTOUT : super.getRenderTypes(state, random, data);
+        if (data.get(RESTING) == DRAWN_ELSEWHERE) {
+            return ChunkRenderTypeSet.none();
+        }
+        return carriesOverhang(state) || data.get(RESTING) != null
+                ? CUTOUT
+                : super.getRenderTypes(state, random, data);
     }
 }

@@ -141,11 +141,27 @@ public final class CrateStackBakedModel extends BakedModelWrapper<BakedModel> {
             float offsetY,
             List<BakedQuad> into) {
 
-        BlockState crateState = crateStateFor(entry.variant(), entry.facing());
-        addShifted(crateModel.getQuads(crateState, null, random, ModelData.EMPTY, renderType),
-                offsetY, into);
+        appendShiftedModel(crateModel, crateStateFor(entry.variant(), entry.facing()),
+                offsetY, random, renderType, into);
+    }
+
+    /**
+     * Every bucket of one model, moved along Y.
+     *
+     * <p>Shared with the foundation model, which uses it to draw a whole large crate standing on
+     * another crate's lid rather than one crate out of a column.
+     */
+    public static void appendShiftedModel(
+            BakedModel model,
+            BlockState state,
+            float offsetY,
+            RandomSource random,
+            @Nullable RenderType renderType,
+            List<BakedQuad> into) {
+
+        addShifted(model.getQuads(state, null, random, ModelData.EMPTY, renderType), offsetY, into);
         for (Direction face : Direction.values()) {
-            addShifted(crateModel.getQuads(crateState, face, random, ModelData.EMPTY, renderType),
+            addShifted(model.getQuads(state, face, random, ModelData.EMPTY, renderType),
                     offsetY, into);
         }
     }

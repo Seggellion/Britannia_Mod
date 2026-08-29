@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.crate;
 import com.seggellion.britannia_mod.block.CrateBlock;
 import com.seggellion.britannia_mod.block.CrateStackBlock;
 import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
+import com.seggellion.britannia_mod.block.entity.CrateBlockEntity;
 import com.seggellion.britannia_mod.block.entity.CrateStackBlockEntity;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -10,6 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
@@ -196,6 +198,108 @@ public final class CrateFoundation {
             stack.setOriginHundredths(0);
             CrateStackColumnSync.notifyClients(
                     level, root, CrateStackColumnSync.reconcile(level, root, stack));
+        }
+    }
+
+    /**
+     * Whether this cell is part of a foundation's lid - the level a crate placed on top rests against.
+     *
+     * <p>Wider than {@link #carriesOverhang}: a compact column is one block across and only ever meets
+     * the cell above the anchor, but a large crate standing on another covers the whole lid, so all
+     * four of its cells count as support.
+     */
+    public static boolean isLidCell(CrateBlock crate, BlockState state) {
+        if (!isFoundation(state)) {
+            return false;
+        }
+        return crate.cell(state).y() == ROOT_CELL_ABOVE_ANCHOR - 1;
+    }
+
+    /**
+     * The large crate resting on the foundation this position belongs to, if there is one.
+     *
+     * <p>Recognised by state rather than by position alone: a crate two cells above another is only
+     * standing on it if it says it is, which is what stops a crate someone built on a platform from
+     * being drawn sunk into the one below.
+     */
+    public static Optional<FoundedLarge> largeOn(BlockGetter level, BlockPos pos, BlockState state) {
+        return anchorAt(level, pos, state).flatMap(anchor -> {
+            BlockPos upper = columnRootFor(anchor);
+            BlockState upperState = level.getBlockState(upper);
+            if (!(upperState.getBlock() instanceof CrateBlock crate)
+                    || !crate.isRoot(upperState)
+                    || !isFoundation(upperState)
+                    || !(level.getBlockEntity(upper) instanceof CrateBlockEntity resting)
+                    || !resting.hasFoundation()) {
+                return Optional.empty();
+            }
+            return Optional.of(new FoundedLarge(anchor, upper, upperState, resting));
+        });
+    }
+
+    /** Whether this crate is itself standing on another crate's lid. */
+    public static boolean isFoundedLarge(BlockGetter level, BlockPos pos, BlockState state) {
+        if (!isFoundation(state) || !(state.getBlock() instanceof CrateBlock crate)) {
+            return false;
+        }
+        BlockPos anchor = crate.anchorPosition(pos, state);
+        return level.getBlockEntity(anchor) instanceof CrateBlockEntity crateEntity
+                && crateEntity.hasFoundation();
+    }
+
+    /**
+     * How far below its own cells a crate at this position is drawn, in blocks.
+     *
+     * <p>Zero for everything that stands on the ground, which is almost everything.
+     */
+    public static double originBlocksAt(BlockGetter level, BlockPos pos, BlockState state) {
+        if (!(state.getBlock() instanceof CrateBlock crate) || !crate.hasValidPart(state)) {
+            return 0.0D;
+        }
+        BlockPos anchor = crate.anchorPosition(pos, state);
+        if (!(level.getBlockEntity(anchor) instanceof CrateBlockEntity crateEntity)) {
+            return 0.0D;
+        }
+        return crateEntity.originHundredths()
+                / (double) (CrateStackLayout.HUNDREDTHS_PER_VOXEL * 16);
+    }
+
+    /**
+     * Whatever of a crate standing above this position hangs down into it.
+     *
+     * <p>A large crate resting on another begins at that crate's lid, well below the first cell it is
+     * allowed to occupy, so its body reaches down through cells belonging to the crate underneath. Each
+     * of those cells contributes the slice that is genuinely inside it, which is what lets a ray meet
+     * the crate from any direction: a ray only ever tests the blocks it actually passes through.
+     */
+    public static VoxelShape restingAbove(BlockGetter level, BlockPos pos) {
+        VoxelShape reaching = Shapes.empty();
+        for (int above = 1; above <= ROOT_CELL_ABOVE_ANCHOR; above++) {
+            BlockPos higher = pos.above(above);
+            BlockState state = level.getBlockState(higher);
+            if (!(state.getBlock() instanceof CrateBlock crate) || !crate.hasValidPart(state)) {
+                continue;
+            }
+            double origin = originBlocksAt(level, higher, state);
+            if (origin == 0.0D) {
+                continue;
+            }
+            VoxelShape slice = CrateStackShapes.shiftIntoCell(
+                    crate.authoredShape(state), origin + above);
+            if (!slice.isEmpty()) {
+                reaching = Shapes.or(reaching, slice);
+            }
+        }
+        return reaching;
+    }
+
+    /** A large crate standing on another large crate's lid. */
+    public record FoundedLarge(
+            BlockPos foundationAnchor, BlockPos anchor, BlockState state, CrateBlockEntity crate) {
+
+        /** How far below its own cells this crate is drawn. */
+        public int originHundredths() {
+            return crate.originHundredths();
         }
     }
 

@@ -13,10 +13,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.component.CustomData;
+import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
@@ -28,6 +33,7 @@ import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
@@ -37,7 +43,19 @@ import net.minecraft.world.level.block.state.BlockState;
 public final class CrateBlockEntity extends BlockEntity
         implements MenuProvider, Container, GrabbyProvenanceHolder, GrabbyPortableState {
     private NonNullList<ItemStack> items;
+    private static final String TAG_ORIGIN = "OriginOffset";
+
     private GrabbyInstanceState grabbyState = GrabbyInstanceState.worldPlaced();
+
+    /**
+     * How far below its own cells this crate's art is drawn, in hundredths of a voxel.
+     *
+     * <p>Zero for every crate that stands on the ground, which is every crate saved before crates
+     * could stand on each other - so the field is absent from their data and reads back as zero
+     * without a migration. Negative for a large crate resting on another large crate's lid, which is
+     * below the first cell it is allowed to occupy.
+     */
+    private int originHundredths;
 
     private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
         @Override
@@ -82,6 +100,9 @@ public final class CrateBlockEntity extends BlockEntity
         super.saveAdditional(tag, registries);
         ContainerHelper.saveAllItems(tag, items, registries);
         grabbyState.write(tag);
+        if (originHundredths != 0) {
+            tag.putInt(TAG_ORIGIN, originHundredths);
+        }
     }
 
     @Override
@@ -90,6 +111,84 @@ public final class CrateBlockEntity extends BlockEntity
         items = NonNullList.withSize(getContainerSize(), ItemStack.EMPTY);
         ContainerHelper.loadAllItems(tag, items, registries);
         grabbyState = GrabbyInstanceState.read(tag);
+        originHundredths = tag.getInt(TAG_ORIGIN);
+    }
+
+    /* ─── standing on another crate ──────────────────────────── */
+
+    /** How far below its own cells this crate's art is drawn. Zero for a crate on the ground. */
+    public int originHundredths() {
+        return originHundredths;
+    }
+
+    /** Whether this crate is resting on something below the cells it occupies. */
+    public boolean hasFoundation() {
+        return originHundredths != 0;
+    }
+
+    /** Moves the whole crate to a new physical origin, contents and identity untouched. */
+    public void setOriginHundredths(int origin) {
+        if (origin != originHundredths) {
+            originHundredths = origin;
+            setChanged();
+        }
+    }
+
+    /**
+     * What a client needs to draw this crate, which is where it stands and nothing else.
+     *
+     * <p>Deliberately not {@code saveAdditional}: a large crate holds fifty-four slots, and
+     * broadcasting them to everyone who can see it - on every change - to decide a rendering offset
+     * would be an enormous amount of traffic for a picture that never shows an item. Contents reach a
+     * player through the menu they open, exactly as before.
+     */
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        if (originHundredths != 0) {
+            tag.putInt(TAG_ORIGIN, originHundredths);
+        }
+        return tag;
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    /**
+     * Reads that offset back and asks for a redraw, for the same reason a column does.
+     *
+     * <p>A block entity change does not mark a chunk section dirty, and this crate is chunk-baked
+     * terrain, so without this a crate that started resting on another would keep its old geometry
+     * until something unrelated disturbed the section.
+     */
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        originHundredths = tag.getInt(TAG_ORIGIN);
+        redraw();
+    }
+
+    @Override
+    public void onDataPacket(
+            Connection net, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider registries) {
+        CompoundTag tag = packet.getTag();
+        if (tag != null) {
+            handleUpdateTag(tag, registries);
+        }
+    }
+
+    /** Marks the sections this crate draws into as needing a rebuild. Client only. */
+    private void redraw() {
+        if (level == null || !level.isClientSide) {
+            return;
+        }
+        for (int cell = -1; cell <= 2; cell++) {
+            BlockPos pos = worldPosition.above(cell);
+            level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos),
+                    Block.UPDATE_ALL);
+        }
     }
 
     @Override
@@ -125,6 +224,9 @@ public final class CrateBlockEntity extends BlockEntity
         // Provenance is stamped fresh by the placement transaction; carrying the old placer would be
         // both pointless and misleading.
         data.remove(GrabbyInstanceState.TAG_KEY);
+        // Where a crate was standing is a fact about that spot, not about the crate. A carried crate
+        // that remembered it would be drawn sunk into the ground wherever it was put down next.
+        data.remove(TAG_ORIGIN);
         BlockItem.setBlockEntityData(portable, getType(), data);
     }
 

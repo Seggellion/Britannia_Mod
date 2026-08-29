@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.item;
 
 import com.seggellion.britannia_mod.block.CrateBlock;
 import com.seggellion.britannia_mod.block.CrateStackBlock;
+import com.seggellion.britannia_mod.block.entity.CrateBlockEntity;
 import com.seggellion.britannia_mod.block.entity.CrateStackBlockEntity;
 import com.seggellion.britannia_mod.crate.CrateFoundation;
 import com.seggellion.britannia_mod.crate.CrateStackLayout;
@@ -17,6 +18,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
@@ -67,8 +69,10 @@ public final class CrateItem extends DecorativeMultiblockItem {
         }
         BlockPos target = context.getClickedPos();
         BlockState targetState = level.getBlockState(target);
-        if (isCompactVariant() && CrateFoundation.isFoundation(targetState)) {
-            return ontoFoundation(context, level, target, targetState, player);
+        if (CrateFoundation.isFoundation(targetState)) {
+            return isCompactVariant()
+                    ? ontoFoundation(context, level, target, targetState, player)
+                    : largeOntoFoundation(context, level, target, targetState);
         }
         if (!CrateStackPlacement.isCompactTarget(level, target)
                 || !isCompactVariant()) {
@@ -124,6 +128,46 @@ public final class CrateItem extends DecorativeMultiblockItem {
         CrateStackPlacement.Result founded = CrateStackPlacement.placeOnFoundation(
                 level, anchor.get(), player, context.getItemInHand());
         return founded.succeeded() ? InteractionResult.SUCCESS : InteractionResult.FAIL;
+    }
+
+    /**
+     * Stands one large crate on another's lid.
+     *
+     * <p>The placement itself is the ordinary multiblock one: a click on the lid resolves to the cell
+     * above it, which is the first level the upper crate is allowed to occupy, so the structure is
+     * built exactly where it always would be. All that is added afterwards is the offset that says how
+     * far below those cells the crate is actually drawn - which is the lid's height, the same origin a
+     * compact column standing there would take.
+     *
+     * <p>Nothing is merged. Each crate keeps its own block entity and its own fifty-four slots; one of
+     * them simply knows it is standing on the other.
+     */
+    private InteractionResult largeOntoFoundation(
+            UseOnContext context, ServerLevel level, BlockPos target, BlockState targetState) {
+
+        Optional<BlockPos> foundation = CrateFoundation.anchorAt(level, target, targetState);
+        if (foundation.isEmpty() || !onLid(level, foundation.get(), targetState, context)) {
+            return InteractionResult.PASS;
+        }
+        if (CrateFoundation.largeOn(level, target, targetState).isPresent()) {
+            return InteractionResult.PASS;
+        }
+        InteractionResult placed = super.useOn(context);
+        if (!placed.consumesAction()) {
+            return placed;
+        }
+        BlockPos anchor = CrateFoundation.columnRootFor(foundation.get());
+        if (level.getBlockEntity(anchor) instanceof CrateBlockEntity resting
+                && level.getBlockState(anchor).getBlock() instanceof CrateBlock foundationCrate) {
+            resting.setOriginHundredths(CrateFoundation.originFor(foundationCrate));
+            // The crate is drawn by cells other than its own, so those have to be told as well.
+            for (int cell = -1; cell <= 1; cell++) {
+                BlockPos pos = anchor.above(cell);
+                level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos),
+                        Block.UPDATE_ALL);
+            }
+        }
+        return placed;
     }
 
     /**
@@ -198,6 +242,12 @@ public final class CrateItem extends DecorativeMultiblockItem {
         if (isCompactSupport(support)) {
             return isCompactVariant();
         }
+        // The lid of a large crate holds up another large crate. A compact crate arriving here has
+        // already been turned away by useOn, which packs those into a column instead.
+        if (support.getBlock() instanceof CrateBlock lower
+                && CrateFoundation.isLidCell(lower, support)) {
+            return !isCompactVariant();
+        }
         if (isCrate(support)) {
             return false;
         }
@@ -213,6 +263,32 @@ public final class CrateItem extends DecorativeMultiblockItem {
                 && crate.hasValidPart(state)
                 && crate.cells().size() == 1
                 && CrateVariant.forSlotCount(crate.slotCount()).isPresent();
+    }
+
+    /**
+     * Puts a crate standing on a large crate's lid in the same place whichever part of the lid was
+     * clicked.
+     *
+     * <p>Ordinary placement works outward from the cell the player hit, which is right when the
+     * destination is a single block and wrong here: a large crate presents four cells of lid, so
+     * clicking the far corner would build the crate above a corner rather than above the crate. The
+     * anchor is taken from the crate underneath instead, so all four give one answer.
+     */
+    @Override
+    public BlockPos grabbyPlacementRoot(BlockPlaceContext context) {
+        if (context.getClickedFace() == Direction.UP && !isCompactVariant()) {
+            BlockPos lid = context.getClickedPos().below();
+            BlockState below = context.getLevel().getBlockState(lid);
+            if (below.getBlock() instanceof CrateBlock lower
+                    && CrateFoundation.isLidCell(lower, below)) {
+                Optional<BlockPos> anchor =
+                        CrateFoundation.anchorAt(context.getLevel(), lid, below);
+                if (anchor.isPresent()) {
+                    return CrateFoundation.columnRootFor(anchor.get());
+                }
+            }
+        }
+        return super.grabbyPlacementRoot(context);
     }
 
     /**

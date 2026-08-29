@@ -4,6 +4,7 @@ import com.seggellion.britannia_mod.block.entity.CrateBlockEntity;
 import com.seggellion.britannia_mod.crate.CrateFoundation;
 import com.seggellion.britannia_mod.crate.CrateStackBreakTargets;
 import com.seggellion.britannia_mod.crate.CrateStackBreakTransaction;
+import com.seggellion.britannia_mod.crate.CrateStackLayout;
 import com.seggellion.britannia_mod.crate.CrateStackShapes;
 import com.seggellion.britannia_mod.crate.CrateStackTargetResolver;
 import com.seggellion.britannia_mod.crate.LogicalCrateMenuProvider;
@@ -122,12 +123,23 @@ public final class CrateBlock extends DecorativeMultiblockBlock implements Entit
     public VoxelShape getShape(
             BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         VoxelShape own = authoredShape(state);
-        if (level == null || pos == null || !CrateFoundation.carriesOverhang(this, state)) {
+        if (level == null || pos == null) {
             return own;
         }
+        // Standing on another crate lowers this cell's own art out of its cell.
+        double origin = CrateFoundation.originBlocksAt(level, pos, state);
+        if (origin != 0.0D) {
+            own = CrateStackShapes.shiftIntoCell(own, origin);
+        }
+        // And a crate standing on this one reaches down into here.
+        own = Shapes.or(own, CrateFoundation.restingAbove(level, pos));
+        if (!CrateFoundation.carriesOverhang(this, state)) {
+            return own;
+        }
+        VoxelShape withOwn = own;
         return CrateFoundation.columnOn(level, pos, state)
-                .map(founded -> Shapes.or(own, CrateStackShapes.cellShape(founded.overhang())))
-                .orElse(own);
+                .map(founded -> Shapes.or(withOwn, CrateStackShapes.cellShape(founded.overhang())))
+                .orElse(withOwn);
     }
 
     @Override
@@ -139,6 +151,19 @@ public final class CrateBlock extends DecorativeMultiblockBlock implements Entit
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }
+        // A large crate standing on this one keeps its own fifty-four slots, and its body reaches
+        // down through this cell. Height decides which of the two a click meant, exactly as it does
+        // for a column.
+        Optional<InteractionResult> restingLarge = CrateFoundation.largeOn(level, pos, state)
+                .filter(resting -> aboveLid(level, resting.foundationAnchor(), hit))
+                .flatMap(resting -> level.getBlockEntity(resting.anchor())
+                        instanceof CrateBlockEntity upper
+                        ? Optional.of(open(player, upper))
+                        : Optional.empty());
+        if (restingLarge.isPresent()) {
+            return restingLarge.get();
+        }
+
         // A crate resting on this crate's lid keeps its own inventory. Which of the two a click means
         // is decided by height alone: the column owns everything from the lid upwards, this crate
         // everything below, so neither can take the other's clicks.
@@ -164,6 +189,22 @@ public final class CrateBlock extends DecorativeMultiblockBlock implements Entit
         return InteractionResult.PASS;
     }
 
+    /** Opens one crate, whichever of a stacked pair the click turned out to mean. */
+    private static InteractionResult open(Player player, CrateBlockEntity crate) {
+        player.openMenu(crate);
+        return InteractionResult.CONSUME;
+    }
+
+    /** Whether a hit landed at or above a foundation crate's lid, which is where the crate above starts. */
+    private static boolean aboveLid(Level level, BlockPos foundationAnchor, BlockHitResult hit) {
+        if (!(level.getBlockState(foundationAnchor).getBlock() instanceof CrateBlock foundation)) {
+            return false;
+        }
+        int height = (int) Math.round((hit.getLocation().y - foundationAnchor.getY())
+                * 16 * CrateStackLayout.HUNDREDTHS_PER_VOXEL);
+        return height >= CrateFoundation.topHundredths(foundation);
+    }
+
     /**
      * Breaks a crate resting on this crate's lid rather than this crate, when that is what was aimed
      * at.
@@ -178,6 +219,13 @@ public final class CrateBlock extends DecorativeMultiblockBlock implements Entit
     @Override
     public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player,
             boolean willHarvest, FluidState fluid) {
+        // Stacked large crates cannot be taken apart yet. Breaking one would have to decide what
+        // becomes of the other's fifty-four slots, and that transaction has not been written - so
+        // until it is, the answer is that nothing happens at all, which cannot lose anything.
+        if (CrateFoundation.isFoundedLarge(level, pos, state)
+                || CrateFoundation.largeOn(level, pos, state).isPresent()) {
+            return false;
+        }
         if (level instanceof ServerLevel server && player instanceof ServerPlayer serverPlayer) {
             Optional<CrateFoundation.Founded> founded =
                     CrateFoundation.columnOn(level, pos, state);

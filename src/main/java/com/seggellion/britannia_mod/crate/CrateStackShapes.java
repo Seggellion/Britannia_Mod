@@ -63,6 +63,16 @@ public final class CrateStackShapes {
      * moved outside the unit cube is exactly the fragile thing this project has been bitten by
      * before. Nothing here mutates the shape it was given.
      */
+    /**
+     * A shape moved along Y, keeping only what still lies inside one cell.
+     *
+     * <p>Public because a large crate standing on another is expressed the same way: each cell it
+     * touches contributes the slice of it that is really inside that cell, and nothing else.
+     */
+    public static VoxelShape shiftIntoCell(VoxelShape shape, double offsetBlocks) {
+        return clipToCell(shape, offsetBlocks);
+    }
+
     private static VoxelShape clipToCell(VoxelShape shape, double offsetBlocks) {
         VoxelShape clipped = Shapes.empty();
         for (AABB box : shape.toAabbs()) {
