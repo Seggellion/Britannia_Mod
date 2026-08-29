@@ -85,6 +85,16 @@ public enum CrateVariant {
     }
 
     /**
+     * The title a player sees over this crate's inventory.
+     *
+     * <p>The same key the standalone crate block uses, because a player opening a crate inside a
+     * column is opening a crate. Nothing about the column belongs in that title.
+     */
+    public String containerTitleKey() {
+        return "container.britannia_mod." + serializedName() + "_crate";
+    }
+
+    /**
      * The variant a saved name refers to, or empty if it refers to nothing this build knows.
      *
      * <p>Empty rather than a default: guessing a variant would guess an inventory size, and an

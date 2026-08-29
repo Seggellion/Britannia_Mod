@@ -4,6 +4,8 @@ import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.block.CrateBlock;
 import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
 import com.seggellion.britannia_mod.block.entity.CrateBlockEntity;
+import com.seggellion.britannia_mod.block.entity.CrateStackBlockEntity;
+import com.seggellion.britannia_mod.crate.CrateVariant;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.core.BlockPos;
@@ -108,10 +110,13 @@ public final class NewAssetsCrateGameTests {
      */
 
     /**
-     * The milestone in one test: an ordinary right-click, no sneaking, and the crate below stays shut.
+     * An ordinary right-click, no sneaking, and the crate below stays shut.
      *
-     * <p>Both halves matter. A fix that placed the crate but also opened the one underneath would be
-     * just as wrong as the defect it replaced.
+     * <p>The stacking half of this now produces a compact column rather than a second block: the
+     * milestone that made crates touch replaced one-crate-per-position placement for the small and
+     * medium crates. What has not changed, and is what this test still guards, is that the click is
+     * a placement and not an opening — a fix that stacked the crate but also opened the one
+     * underneath would be just as wrong as the defect it replaced.
      */
     @GameTest(template = TEMPLATE)
     public static void plainRightClickStacksACrateAndLeavesTheLowerCrateShut(GameTestHelper helper) {
@@ -123,14 +128,19 @@ public final class NewAssetsCrateGameTests {
         check(helper.getLevel().getBlockState(lower).is(BlockRegistry.SMALL_CRATE.get()),
                 "a crate could no longer be placed on ordinary ground");
 
-        BlockPos upper = placeByHand(helper, player, ItemRegistry.SMALL_CRATE_ITEM.get(), floor.above());
-        check(helper.getLevel().getBlockState(upper).is(BlockRegistry.SMALL_CRATE.get()),
-                "a plain right-click on a crate top did not stack a crate");
+        placeByHand(helper, player, ItemRegistry.SMALL_CRATE_ITEM.get(), floor.above());
+        check(helper.getLevel().getBlockState(lower).is(BlockRegistry.CRATE_STACK.get()),
+                "a plain right-click on a crate top did not build a compact column");
         check(!(player.containerMenu instanceof ChestMenu),
                 "stacking a crate opened the crate underneath it");
-        check(helper.getLevel().getBlockEntity(lower) instanceof CrateBlockEntity
-                        && helper.getLevel().getBlockEntity(upper) instanceof CrateBlockEntity,
+        CrateStackBlockEntity column = (CrateStackBlockEntity) helper.getLevel().getBlockEntity(lower);
+        check(column != null && column.crateCount() == 2,
+                "the column should hold both crates");
+        check(column.containerFor(column.bottomCrate().id())
+                        != column.containerFor(column.topCrate().id()),
                 "a stacked crate did not get its own inventory");
+        check(helper.getLevel().getBlockState(lower.above()).isAir(),
+                "a crate was left floating above the column");
 
         disconnect(helper, player);
         helper.succeed();
@@ -172,15 +182,17 @@ public final class NewAssetsCrateGameTests {
         ServerPlayer player = builder(helper, floor);
         helper.setBlock(floor, Blocks.STONE);
 
-        placeByHand(helper, player, ItemRegistry.MEDIUM_CRATE_ITEM.get(), floor);
-        BlockPos small = placeByHand(helper, player, ItemRegistry.SMALL_CRATE_ITEM.get(), floor.above());
-        check(helper.getLevel().getBlockState(small).is(BlockRegistry.SMALL_CRATE.get()),
-                "a small crate would not stack on a medium crate");
+        BlockPos root = placeByHand(helper, player, ItemRegistry.MEDIUM_CRATE_ITEM.get(), floor);
+        placeByHand(helper, player, ItemRegistry.SMALL_CRATE_ITEM.get(), floor.above());
 
-        BlockPos medium = placeByHand(
-                helper, player, ItemRegistry.MEDIUM_CRATE_ITEM.get(), floor.above(2));
-        check(helper.getLevel().getBlockState(medium).is(BlockRegistry.MEDIUM_CRATE.get()),
-                "a medium crate would not stack on a small crate");
+        CrateStackBlockEntity column = (CrateStackBlockEntity) helper.getLevel().getBlockEntity(root);
+        check(column != null && column.crateCount() == 2,
+                "a small crate would not stack on a medium crate");
+        check(column.topCrate().variant() == CrateVariant.SMALL, "the wrong variant was appended");
+        check(column.bottomCrate().variant() == CrateVariant.MEDIUM,
+                "the standing medium crate was not carried into the column");
+        check(column.totalHeightHundredths() == 1866,
+                "medium plus small should pack to 18.66 voxels");
 
         disconnect(helper, player);
         helper.succeed();
@@ -197,21 +209,27 @@ public final class NewAssetsCrateGameTests {
         CrateBlock block = BlockRegistry.SMALL_CRATE.get();
         place(helper, block, helper.absolutePos(floor.above()), Direction.WEST);
 
-        BlockPos upper = placeByHand(helper, player, ItemRegistry.SMALL_CRATE_ITEM.get(), floor.above());
-        BlockState stacked = helper.getLevel().getBlockState(upper);
-        check(stacked.is(block), "the crate did not stack at all");
-        check(stacked.getValue(CrateBlock.FACING) == Direction.WEST,
+        placeByHand(helper, player, ItemRegistry.SMALL_CRATE_ITEM.get(), floor.above());
+
+        BlockPos root = helper.absolutePos(floor.above());
+        CrateStackBlockEntity column = (CrateStackBlockEntity) helper.getLevel().getBlockEntity(root);
+        check(column != null && column.crateCount() == 2, "the crate did not stack at all");
+        check(column.topCrate().facing() == Direction.WEST,
                 "a stacked crate ignored the facing of the crate it sits on");
+        check(column.bottomCrate().facing() == Direction.WEST,
+                "promotion lost the standing crate's facing");
 
         disconnect(helper, player);
         helper.succeed();
     }
 
     /**
-     * Two crates in a stack are two containers, and removing one must not reach into the other.
+     * Two legacy crates one above the other are two containers, and breaking one leaves the other.
      *
-     * <p>This is the property the whole milestone is subordinate to: a stacking fix that merged or
-     * spilled an inventory would be worse than no stacking at all.
+     * <p>Built directly rather than by hand, because hand-stacking now produces a compact column
+     * instead. This pairing still exists — worlds saved before compact columns hold it, and nothing
+     * migrates them — so the guarantee it stands for is still worth holding: an ordinary crate is its
+     * own container, and destroying its neighbour reaches nothing of its own.
      */
     @GameTest(template = TEMPLATE)
     public static void stackedCratesKeepSeparateInventoriesWhenOneIsBroken(GameTestHelper helper) {
@@ -219,8 +237,10 @@ public final class NewAssetsCrateGameTests {
         ServerPlayer player = builder(helper, floor);
         helper.setBlock(floor, Blocks.STONE);
 
-        BlockPos lower = placeByHand(helper, player, ItemRegistry.SMALL_CRATE_ITEM.get(), floor);
-        BlockPos upper = placeByHand(helper, player, ItemRegistry.SMALL_CRATE_ITEM.get(), floor.above());
+        BlockPos lower = helper.absolutePos(floor.above());
+        BlockPos upper = lower.above();
+        place(helper, BlockRegistry.SMALL_CRATE.get(), lower, Direction.NORTH);
+        place(helper, BlockRegistry.SMALL_CRATE.get(), upper, Direction.NORTH);
         CrateBlockEntity below = (CrateBlockEntity) helper.getLevel().getBlockEntity(lower);
         CrateBlockEntity above = (CrateBlockEntity) helper.getLevel().getBlockEntity(upper);
         check(below != null && above != null && below != above,
@@ -304,8 +324,10 @@ public final class NewAssetsCrateGameTests {
         ItemRegistry.SMALL_CRATE_ITEM.get().useOn(
                 new UseOnContext(player, InteractionHand.MAIN_HAND, upwardHit(helper, floor.above())));
 
-        check(helper.getLevel().getBlockState(lower.above()).is(BlockRegistry.SMALL_CRATE.get()),
+        check(helper.getLevel().getBlockState(lower).is(BlockRegistry.CRATE_STACK.get()),
                 "the call Grabby Hands makes could not stack a crate");
+        check(((CrateStackBlockEntity) helper.getLevel().getBlockEntity(lower)).crateCount() == 2,
+                "the Grabby placement call did not add a second crate");
         check(!(player.containerMenu instanceof ChestMenu),
                 "the Grabby placement call opened the crate below");
 

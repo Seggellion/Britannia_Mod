@@ -23,6 +23,8 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -32,6 +34,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 /**
@@ -250,6 +253,28 @@ public class CrateStackBlockEntity extends BlockEntity {
      */
     public LogicalCrateContainer containerFor(int crateId) {
         return new LogicalCrateContainer(this, crateId);
+    }
+
+    /**
+     * Sounds a crate where that crate actually is, not where its column starts.
+     *
+     * <p>A crate can sit three blocks above the root, and a chest sound arriving from the floor when
+     * the player opened the crate at eye level reads as a bug even when nothing is wrong. The height
+     * comes from the layout, so it follows the crate through every repack.
+     */
+    public void playCrateSound(int crateId, SoundEvent sound) {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+        CratePlacement placement = placementOf(crateId);
+        double centreHundredths = placement == null
+                ? 0.0D
+                : (placement.baseHundredths() + placement.topHundredths()) / 2.0D;
+        Vec3 at = new Vec3(
+                worldPosition.getX() + 0.5D,
+                worldPosition.getY() + centreHundredths / (CrateStackLayout.HUNDREDTHS_PER_VOXEL * 16),
+                worldPosition.getZ() + 0.5D);
+        level.playSound(null, at.x, at.y, at.z, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
     }
 
     /**

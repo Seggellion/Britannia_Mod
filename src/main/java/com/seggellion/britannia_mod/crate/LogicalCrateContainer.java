@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.crate;
 
+import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.block.entity.CrateStackBlockEntity;
 import java.util.Objects;
 import net.minecraft.core.NonNullList;
@@ -126,19 +127,35 @@ public final class LogicalCrateContainer implements Container {
         return stack.isValidContainerFor(crateId, player);
     }
 
+    /**
+     * Counts this player against this crate, and sounds only if the crate was shut.
+     *
+     * <p>Per crate, not per column: a column is one block entity, so a single opener count would make
+     * opening any crate report every crate in it as in use — which decides chest sounds now and, in a
+     * later milestone, whether Grabby Hands will carry a crate somebody is looking inside.
+     */
     @Override
     public void startOpen(Player player) {
         LogicalCrate crate = crate();
-        if (crate != null && !player.isSpectator()) {
-            crate.incrementOpeners();
+        if (crate == null || player.isSpectator()) {
+            return;
+        }
+        boolean wasShut = crate.openerCount() == 0;
+        crate.incrementOpeners();
+        if (wasShut) {
+            stack.playCrateSound(crateId, ModSounds.CHEST_OPEN.value());
         }
     }
 
     @Override
     public void stopOpen(Player player) {
         LogicalCrate crate = crate();
-        if (crate != null && !player.isSpectator()) {
-            crate.decrementOpeners();
+        if (crate == null || player.isSpectator()) {
+            return;
+        }
+        crate.decrementOpeners();
+        if (crate.openerCount() == 0) {
+            stack.playCrateSound(crateId, ModSounds.CHEST_CLOSE.value());
         }
     }
 }

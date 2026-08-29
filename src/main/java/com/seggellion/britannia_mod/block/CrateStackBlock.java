@@ -4,11 +4,20 @@ import com.seggellion.britannia_mod.block.entity.CrateStackBlockEntity;
 import com.seggellion.britannia_mod.crate.CrateStackLayout;
 import com.seggellion.britannia_mod.crate.CrateStackShapes;
 import com.seggellion.britannia_mod.crate.CrateStackSlice;
+import com.seggellion.britannia_mod.crate.CrateStackTargetResolver;
+import com.seggellion.britannia_mod.crate.LogicalCrateMenuProvider;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -17,6 +26,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -139,6 +150,85 @@ public class CrateStackBlock extends Block implements EntityBlock {
     @Override
     public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
         return ItemStack.EMPTY;
+    }
+
+    /**
+     * Yields the click to a held crate only when it is aimed at the top of the column.
+     *
+     * <p>The same rule the standalone crate follows, and the same reason: Minecraft runs the block's
+     * interaction before the item's, so without this a crate held over a column would open it rather
+     * than stack onto it. Anything else — another item, another face, an empty hand — falls through to
+     * {@link #useWithoutItem} and opens the crate being aimed at.
+     */
+    @Override
+    protected ItemInteractionResult useItemOn(
+            ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+            InteractionHand hand, BlockHitResult hit) {
+
+        if (hit.getDirection() != Direction.UP
+                || !(stack.getItem() instanceof BlockItem blockItem)
+                || !(blockItem.getBlock() instanceof CrateBlock)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+        if (!(level.getBlockEntity(rootOf(pos, state)) instanceof CrateStackBlockEntity stackEntity)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+        // Only the exposed lid of the whole column is a stacking gesture. Crates pack flush, so a ray
+        // arriving from outside cannot reach an interior surface, but the height is checked rather
+        // than assumed so a hit from anywhere else still opens a crate.
+        return CrateStackTargetResolver.isColumnTop(stackEntity, rootOf(pos, state), hit)
+                ? ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION
+                : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    /**
+     * Opens the crate the player is pointing at, whichever cell of the column they clicked.
+     *
+     * <p>The position clicked is not the crate's identity: a column's crates all share one block
+     * entity, and the one being opened is decided by where the ray met the stack.
+     */
+    @Override
+    protected InteractionResult useWithoutItem(
+            BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
+        }
+        return CrateStackTargetResolver.resolve(level, hit)
+                .map(target -> {
+                    player.openMenu(new LogicalCrateMenuProvider(target.stack(), target.crateId()));
+                    return InteractionResult.CONSUME;
+                })
+                .orElse(InteractionResult.PASS);
+    }
+
+    /**
+     * Refuses destruction until the break milestone lands.
+     *
+     * <h2>Why this is here</h2>
+     *
+     * <p>Players can now build compact columns in ordinary play, and taking one apart is genuinely
+     * hard: a column carries several inventories inside one block entity, its cells must shrink in
+     * step, and the client predicts block removal that the server has to correct. None of that exists
+     * yet. Until it does, a half-implemented break would silently remove a cell and leave the column
+     * inconsistent — with real player inventories inside it.
+     *
+     * <p>So a column simply cannot be broken. That is visibly wrong and completely safe, which is the
+     * right way round for something holding other people's belongings. The break milestone replaces
+     * this with per-crate destruction; nothing else should ever need it.
+     */
+    @Override
+    public boolean onDestroyedByPlayer(
+            BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest,
+            FluidState fluid) {
+        return false;
+    }
+
+    /** Unbreakable by hand, for the same reason, and without pretending it is merely very hard. */
+    @Override
+    public float getDestroyProgress(
+            BlockState state, Player player, BlockGetter level, BlockPos pos) {
+        return 0.0F;
     }
 
     /** What this cell shows, resolved from whichever cell owns the column. */
