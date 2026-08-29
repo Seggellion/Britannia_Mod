@@ -18,6 +18,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
@@ -27,6 +28,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -215,6 +217,87 @@ public final class CrateStackFoundationGameTests {
         check(helper.getLevel().getBlockEntity(fixture.anchor()) instanceof CrateBlockEntity,
                 "a refused placement damaged the large crate");
         finish(helper, fixture);
+    }
+
+    /* ─── breaking what stands on it ─────────────────────────── */
+
+    /**
+     * Breaking a crate off the lid takes that crate and nothing else.
+     *
+     * <p>The crate is physically inside a cell the large crate owns, so the swing arrives as a swing
+     * at the large crate's block. Getting this wrong destroys a fifty-four slot inventory because the
+     * player aimed at a nine-slot one, which is why it is driven through the real break action rather
+     * than by handing the block a target.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void breakingACrateOffTheLidLeavesTheLargeCrateIntact(GameTestHelper helper) {
+        Fixture fixture = largeCrate(helper, Direction.NORTH);
+        fixture.large().setItem(0, new ItemStack(Items.EMERALD, 5));
+        click(fixture, new ItemStack(small(), 8), lidHit(fixture));
+        CrateStackBlockEntity column = column(helper, fixture);
+        click(fixture, new ItemStack(small(), 8), columnTopHit(fixture, column));
+
+        check(column.crateCount() == 2, "the fixture needs two crates on the lid");
+        int bottom = column.crates().get(0).id();
+        int top = column.crates().get(1).id();
+        column.containerFor(top).setItem(0, new ItemStack(Items.DIAMOND, 2));
+
+        breakBottomCrate(helper, fixture);
+
+        check(helper.getLevel().getBlockState(fixture.anchor()).getBlock() instanceof CrateBlock,
+                "aiming at a small crate destroyed the large crate under it");
+        check(helper.getLevel().getBlockEntity(fixture.anchor()) instanceof CrateBlockEntity,
+                "the large crate lost its block entity");
+        check(fixture.large().getItem(0).is(Items.EMERALD),
+                "the large crate's own fifty-four slots were disturbed");
+
+        CrateStackBlockEntity after = column(helper, fixture);
+        check(after.crateById(bottom) == null, "the aimed crate was not destroyed");
+        check(after.crateById(top) != null, "the wrong crate was destroyed");
+        check(after.containerFor(top).getItem(0).is(Items.DIAMOND),
+                "the surviving crate lost its contents");
+        check(after.originHundredths() == ORIGIN,
+                "the column stopped resting on the lid after a break");
+        finish(helper, fixture);
+    }
+
+    /**
+     * Aims at the lowest crate on the lid and swings, through the whole real path.
+     *
+     * <p>Level with the crate and looking along -X, so only the yaw matters; the aim is checked before
+     * the swing so a fixture that stopped pointing at the crate says so rather than passing quietly.
+     */
+    private static void breakBottomCrate(GameTestHelper helper, Fixture fixture) {
+        ServerPlayer player = fixture.player();
+        player.setGameMode(GameType.CREATIVE);
+        player.getAbilities().instabuild = true;
+        player.onUpdateAbilities();
+
+        BlockPos anchor = fixture.anchor();
+        // Halfway up the bottom crate: the lid is at 19 voxels and a small crate is 7.15 tall.
+        double eye = anchor.getY() + (LID + 350) / (double) CrateStackLayout.CELL_HUNDREDTHS;
+        player.absMoveTo(anchor.getX() + 2.5D, eye - player.getEyeHeight(),
+                anchor.getZ() + 0.5D);
+        player.setYRot(90.0F);
+        player.setXRot(0.0F);
+        player.setYHeadRot(90.0F);
+        player.yRotO = 90.0F;
+        player.xRotO = 0.0F;
+        player.yHeadRotO = 90.0F;
+        player.setOldPosAndRot();
+
+        HitResult aimed = player.pick(player.blockInteractionRange(), 1.0F, false);
+        check(aimed instanceof BlockHitResult hit
+                        && hit.getType() == HitResult.Type.BLOCK
+                        && CrateFoundation.columnOn(helper.getLevel(), hit.getBlockPos(),
+                                helper.getLevel().getBlockState(hit.getBlockPos())).isPresent(),
+                "the fixture is not pointing at a crate on the lid; aimed at "
+                        + aimed.getLocation());
+        BlockPos clicked = ((BlockHitResult) aimed).getBlockPos();
+
+        player.gameMode.handleBlockBreakAction(
+                clicked, ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK,
+                Direction.NORTH, helper.getLevel().getMaxBuildHeight(), 1);
     }
 
     /* ─── losing the foundation ──────────────────────────────── */

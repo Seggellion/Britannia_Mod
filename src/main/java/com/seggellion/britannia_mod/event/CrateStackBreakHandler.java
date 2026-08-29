@@ -75,11 +75,14 @@ public final class CrateStackBreakHandler {
         // Partial tick 1.0 reads the rotation the player last reported, not the one before it.
         // A swing is judged by where they were looking when they clicked, and Entity.pick
         // interpolates from the previous tick at 0.0 - which aims a tick into the past.
+        // Both positions are resolved to a column the same way. Asking which column the ray landed
+        // on with a different rule than the packet was asked is how a swing at a crate resting on a
+        // large crate came to be judged as disagreeing with itself, and a disagreement here means no
+        // target - which left the swing to destroy the large crate underneath instead.
         HitResult aimed = player.pick(player.blockInteractionRange(), 1.0F, false);
         if (!(aimed instanceof BlockHitResult hit)
                 || hit.getType() != HitResult.Type.BLOCK
-                || !CrateStackBlock.rootOf(hit.getBlockPos(),
-                        player.level().getBlockState(hit.getBlockPos())).equals(root)) {
+                || !root.equals(columnRootAt(player, hit.getBlockPos()))) {
             CrateStackBreakTargets.clear(player);
             return;
         }
