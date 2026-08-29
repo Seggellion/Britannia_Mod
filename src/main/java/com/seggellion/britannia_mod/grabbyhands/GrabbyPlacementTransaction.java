@@ -52,7 +52,7 @@ public final class GrabbyPlacementTransaction {
         // Asked before anything is resolved or claimed, because a click that was never a placement
         // request must leave the world and the block's own behaviour exactly as it found them.
         if (held.getItem() instanceof GrabbyStructurePlacementItem structure
-                && !structure.isPlacementGesture(hit)) {
+                && !structure.isPlacementGesture(world.blockState(hit.getBlockPos()), hit)) {
             return GrabbyPlacementResult.refused(GrabbyPlacementOutcome.NOT_A_PLACEMENT_GESTURE);
         }
 

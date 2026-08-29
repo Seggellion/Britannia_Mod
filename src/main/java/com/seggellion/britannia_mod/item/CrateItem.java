@@ -3,9 +3,12 @@ package com.seggellion.britannia_mod.item;
 import com.seggellion.britannia_mod.block.CrateBlock;
 import com.seggellion.britannia_mod.block.CrateStackBlock;
 import com.seggellion.britannia_mod.block.entity.CrateStackBlockEntity;
+import com.seggellion.britannia_mod.crate.CrateFoundation;
+import com.seggellion.britannia_mod.crate.CrateStackLayout;
 import com.seggellion.britannia_mod.crate.CrateStackPlacement;
 import com.seggellion.britannia_mod.crate.CrateStackTargetResolver;
 import com.seggellion.britannia_mod.crate.CrateVariant;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -15,6 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * Placement item for the crate family, where a crate top counts as support.
@@ -62,6 +66,10 @@ public final class CrateItem extends DecorativeMultiblockItem {
             return super.useOn(context);
         }
         BlockPos target = context.getClickedPos();
+        BlockState targetState = level.getBlockState(target);
+        if (isCompactVariant() && CrateFoundation.isFoundation(targetState)) {
+            return ontoFoundation(context, level, target, targetState, player);
+        }
         if (!CrateStackPlacement.isCompactTarget(level, target)
                 || !isCompactVariant()) {
             return super.useOn(context);
@@ -81,6 +89,81 @@ public final class CrateItem extends DecorativeMultiblockItem {
                 level, target, player, context.getItemInHand(),
                 context.getHorizontalDirection().getOpposite());
         return result.succeeded() ? InteractionResult.SUCCESS : InteractionResult.FAIL;
+    }
+
+    /**
+     * Puts this crate on a large crate's lid, or on the column already standing there.
+     *
+     * <p>The large crate is a foundation, not a member: nothing is promoted and its inventory is never
+     * touched. A first crate starts a new column two cells up whose origin is the lid's height; every
+     * one after that is an ordinary append to that column, so the foundation offset keeps applying
+     * without anything else having to know about it.
+     */
+    private InteractionResult ontoFoundation(
+            UseOnContext context, ServerLevel level, BlockPos target, BlockState targetState,
+            Player player) {
+
+        Optional<CrateFoundation.Founded> standing =
+                CrateFoundation.columnOn(level, target, targetState);
+        if (standing.isPresent()) {
+            CrateFoundation.Founded founded = standing.get();
+            if (!CrateStackTargetResolver.isColumnTop(founded.stack(), founded.root(),
+                    context.getClickedFace(), context.getClickLocation())) {
+                return InteractionResult.PASS;
+            }
+            CrateStackPlacement.Result appended = CrateStackPlacement.place(
+                    level, founded.root(), player, context.getItemInHand(),
+                    context.getHorizontalDirection().getOpposite());
+            return appended.succeeded() ? InteractionResult.SUCCESS : InteractionResult.FAIL;
+        }
+
+        Optional<BlockPos> anchor = CrateFoundation.anchorAt(level, target, targetState);
+        if (anchor.isEmpty() || !onLid(level, anchor.get(), targetState, context)) {
+            return InteractionResult.PASS;
+        }
+        CrateStackPlacement.Result founded = CrateStackPlacement.placeOnFoundation(
+                level, anchor.get(), player, context.getItemInHand());
+        return founded.succeeded() ? InteractionResult.SUCCESS : InteractionResult.FAIL;
+    }
+
+    /**
+     * Whether a click landed on the foundation's actual lid rather than anywhere else on it.
+     *
+     * <p>A large crate presents several upward faces, and only the top of its lid is a place a crate
+     * can rest. The height is measured against the crate's own authored top so the rule follows the
+     * art rather than the two-block envelope the multiblock happens to occupy.
+     */
+    private static boolean onLid(
+            ServerLevel level, BlockPos anchor, BlockState state, UseOnContext context) {
+        if (!(state.getBlock() instanceof CrateBlock foundation)) {
+            return false;
+        }
+        int height = (int) Math.round(
+                (context.getClickLocation().y - anchor.getY())
+                        * 16 * CrateStackLayout.HUNDREDTHS_PER_VOXEL);
+        return Math.abs(height - CrateFoundation.topHundredths(foundation)) <= 1;
+    }
+
+    /**
+     * A crate landing on another crate is this item's business, not Grabby's.
+     *
+     * <p>Grabby places on the sixteen-voxel grid: it works out the cell above the one clicked and puts
+     * the structure there. That is the floating crate this line of work removed, and once a compact
+     * column is standing in that cell it is occupied, so Grabby reads a real stacking request as a
+     * failed placement and swallows it — which is how a crate clicked onto a large crate's lid stopped
+     * reaching {@link #useOn} at all.
+     *
+     * <p>Saying no here is a statement about ownership rather than legality: the click still happens,
+     * it simply reaches the crate's own placement path, which knows how to pack a column and where a
+     * foundation's lid is. Every other target — ground, a table, anything that is not a crate — is
+     * unaffected and still places through Grabby exactly as before.
+     */
+    @Override
+    public boolean isPlacementGesture(BlockState clicked, BlockHitResult hit) {
+        if (clicked.getBlock() instanceof CrateBlock || clicked.getBlock() instanceof CrateStackBlock) {
+            return false;
+        }
+        return super.isPlacementGesture(clicked, hit);
     }
 
     /** Whether this item's own crate is one a compact column carries. */

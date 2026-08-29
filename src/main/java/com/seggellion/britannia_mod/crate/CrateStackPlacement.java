@@ -2,6 +2,8 @@ package com.seggellion.britannia_mod.crate;
 
 import com.seggellion.britannia_mod.block.CrateBlock;
 import com.seggellion.britannia_mod.block.CrateStackBlock;
+import com.seggellion.britannia_mod.registry.BlockRegistry;
+import net.minecraft.world.level.block.Block;
 import com.seggellion.britannia_mod.block.entity.CrateStackBlockEntity;
 import java.util.ArrayList;
 import java.util.List;
@@ -151,7 +153,8 @@ public final class CrateStackPlacement {
                 ? Direction.NORTH
                 : stack.topCrate().facing();
 
-        Result preflight = preflight(level, root, stack.crates(), stack.nextCrateId(), variant, facing);
+        Result preflight = preflight(level, root, stack.crates(), stack.nextCrateId(), variant, facing,
+                stack.originHundredths());
         if (preflight != null) {
             return preflight;
         }
@@ -230,11 +233,12 @@ public final class CrateStackPlacement {
             List<LogicalCrate> existing,
             int nextId,
             CrateVariant variant,
-            Direction facing) {
+            Direction facing,
+            int originHundredths) {
 
         List<LogicalCrate> projected = new ArrayList<>(existing);
         projected.add(new LogicalCrate(nextId, variant, facing));
-        CrateStackLayout layout = CrateStackLayout.of(projected);
+        CrateStackLayout layout = CrateStackLayout.of(projected, originHundredths);
         if (!CrateStackLayout.withinCap(layout.totalHundredths())) {
             return Result.refused(Refusal.AT_HEIGHT_CAP);
         }
@@ -244,6 +248,81 @@ public final class CrateStackPlacement {
             return Result.refused(Refusal.AT_HEIGHT_CAP);
         }
         return blocked == null ? null : Result.refused(Refusal.OBSTRUCTED);
+    }
+
+    /**
+     * Starts a compact column on a large crate's lid.
+     *
+     * <h2>Why this is not promotion</h2>
+     *
+     * <p>Promotion converts a crate into a column and moves its inventory across. Nothing of the kind
+     * happens here: the large crate is untouched, keeps its block entity and its fifty-four slots, and
+     * simply has a separate column built above it. The only thing it contributes is the height its lid
+     * reaches, which becomes the new column's origin.
+     *
+     * <p>Everything is decided before anything is written. If a cell the column would need is taken,
+     * or the world refuses the block, the large crate, its contents and the held stack are all exactly
+     * as they were, because nothing had been changed yet.
+     */
+    public static Result placeOnFoundation(
+            ServerLevel level, BlockPos anchor, Player player, ItemStack held) {
+
+        BlockState anchorState = level.getBlockState(anchor);
+        if (!(anchorState.getBlock() instanceof CrateBlock foundation)
+                || !CrateFoundation.isFoundation(anchorState)) {
+            return Result.refused(Refusal.NOT_A_TARGET);
+        }
+        Optional<CrateVariant> heldVariant = variantOf(held);
+        if (heldVariant.isEmpty()) {
+            return Result.refused(Refusal.HELD_VARIANT_NOT_SUPPORTED);
+        }
+        Optional<NonNullList<ItemStack>> carried = carriedContents(level, held, heldVariant.get());
+        if (carried == null) {
+            return Result.refused(Refusal.HELD_CRATE_CARRIES_STATE);
+        }
+
+        BlockPos root = CrateFoundation.columnRootFor(anchor);
+        int origin = CrateFoundation.originFor(foundation);
+        Direction facing = anchorState.hasProperty(CrateBlock.FACING)
+                ? anchorState.getValue(CrateBlock.FACING)
+                : Direction.NORTH;
+
+        CrateStackLayout planned = CrateStackLayout.of(
+                List.of(new LogicalCrate(0, heldVariant.get(), facing)), origin);
+        if (!CrateStackLayout.withinCap(planned.totalHundredths())) {
+            return Result.refused(Refusal.AT_HEIGHT_CAP);
+        }
+        if (!CrateStackColumnSync.isAvailableFor(level, root, root)) {
+            return Result.refused(Refusal.OBSTRUCTED);
+        }
+        if (CrateStackColumnSync.preflight(level, root, planned.requiredCells()) != null) {
+            return Result.refused(Refusal.OBSTRUCTED);
+        }
+
+        boolean placed = CrateStackBlock.duringMutation(() -> level.setBlock(
+                root,
+                BlockRegistry.CRATE_STACK.get().defaultBlockState()
+                        .setValue(CrateStackBlock.PART, 0),
+                Block.UPDATE_ALL | Block.UPDATE_SUPPRESS_DROPS));
+        if (!placed || !(level.getBlockEntity(root) instanceof CrateStackBlockEntity stack)) {
+            return Result.refused(Refusal.WORLD_REFUSED);
+        }
+        stack.setOriginHundredths(origin);
+        OptionalInt id = carried.isEmpty()
+                ? stack.appendCrate(heldVariant.get(), facing)
+                : stack.appendCrate(heldVariant.get(), facing, carried.get());
+        if (id.isEmpty()) {
+            CrateStackBlock.duringMutation(() -> level.removeBlock(root, false));
+            return Result.refused(Refusal.AT_HEIGHT_CAP);
+        }
+        stack.setChanged();
+        CrateStackColumnSync.notifyClients(
+                level, root, CrateStackColumnSync.reconcile(level, root, stack));
+        announce(level, anchor, player);
+        if (!player.hasInfiniteMaterials()) {
+            held.shrink(1);
+        }
+        return Result.placed(id.getAsInt());
     }
 
     /* ─── the held item ──────────────────────────────────────── */

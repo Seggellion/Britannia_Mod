@@ -3,8 +3,13 @@ package com.seggellion.britannia_mod.crate;
 /**
  * Where one crate ended up when its column was packed.
  *
- * <p>Heights are hundredths of a voxel measured from the column's floor, so the root cell spans
+ * <p>Heights are hundredths of a voxel measured from the root cell's floor, so the root cell spans
  * {@code 0} to {@link CrateStackLayout#CELL_HUNDREDTHS} and the cell above continues from there.
+ *
+ * <p>A base may be negative. A column standing on a large crate begins at that crate's lid, which is
+ * nineteen voxels up inside a two-cell structure — thirteen voxels below the first cell the column is
+ * allowed to own. Those crates sit in cell {@code -1}, which is the foundation's cell, and every
+ * division below floors rather than truncating so that they land there instead of in cell zero.
  * Deliberately carries an id rather than an index: the crate this describes keeps its identity across
  * every repack, and an index would not.
  *
@@ -26,7 +31,7 @@ public record CratePlacement(int crateId, int baseHundredths, int topHundredths)
 
     /** The first world cell this crate reaches into, counting from the root at zero. */
     public int firstCell() {
-        return baseHundredths / CrateStackLayout.CELL_HUNDREDTHS;
+        return Math.floorDiv(baseHundredths, CrateStackLayout.CELL_HUNDREDTHS);
     }
 
     /**
@@ -36,7 +41,7 @@ public record CratePlacement(int crateId, int baseHundredths, int topHundredths)
      * the cell it filled, not to the empty one it merely touches.
      */
     public int lastCell() {
-        return (topHundredths - 1) / CrateStackLayout.CELL_HUNDREDTHS;
+        return Math.floorDiv(topHundredths - 1, CrateStackLayout.CELL_HUNDREDTHS);
     }
 
     public boolean occupiesCell(int cell) {

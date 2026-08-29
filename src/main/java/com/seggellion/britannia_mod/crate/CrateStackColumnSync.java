@@ -74,7 +74,8 @@ public final class CrateStackColumnSync {
         // What the column will look like if this succeeds, worked out without changing it.
         List<LogicalCrate> projected = new ArrayList<>(stack.crates());
         projected.add(new LogicalCrate(stack.nextCrateId(), variant, facing));
-        int neededCells = CrateStackLayout.of(projected).requiredCells();
+        int neededCells =
+                CrateStackLayout.of(projected, stack.originHundredths()).requiredCells();
 
         GrowthRefusal blocked = preflight(level, root, neededCells);
         if (blocked != null) {
@@ -202,7 +203,7 @@ public final class CrateStackColumnSync {
      * <p>True for empty replaceable space and for a cell this column already owns; false for anything
      * else, including another column's cells.
      */
-    private static boolean isAvailableFor(ServerLevel level, BlockPos pos, BlockPos root) {
+    public static boolean isAvailableFor(ServerLevel level, BlockPos pos, BlockPos root) {
         BlockState present = level.getBlockState(pos);
         if (isContinuationOf(level, pos, present, root)) {
             return true;

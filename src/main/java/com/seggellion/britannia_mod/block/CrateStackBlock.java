@@ -255,8 +255,18 @@ public class CrateStackBlock extends Block implements EntityBlock {
         }
         // Nothing left to hold the position, so the column goes. This override is what removes the
         // block - returning true only reports that it did, exactly as NeoForge's default does by
-        // calling removeBlock itself. Cells come down from the top and the root last, under the
-        // mutation guard so releasing them is never read as a second destruction.
+        // calling removeBlock itself.
+        return removeColumn(server, root);
+    }
+
+    /**
+     * Takes an emptied column out of the world, cells first and the root last.
+     *
+     * <p>Under the mutation guard so releasing the cells is never read as a second destruction. Also
+     * called by a large crate finishing off a column that was standing on it, which is why it is here
+     * rather than inline in the destruction path.
+     */
+    public static boolean removeColumn(ServerLevel server, BlockPos root) {
         return duringMutation(() -> {
             for (int cell = CrateStackLayout.MAX_CELLS - 1; cell >= 1; cell--) {
                 BlockPos above = root.above(cell);

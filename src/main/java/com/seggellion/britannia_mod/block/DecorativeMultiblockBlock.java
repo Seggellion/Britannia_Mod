@@ -174,6 +174,17 @@ public class DecorativeMultiblockBlock extends Block {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return authoredShape(state);
+    }
+
+    /**
+     * The shape this cell was authored with, before any subclass adds anything to it.
+     *
+     * <p>Separated from {@link #getShape} so a subclass that answers for a neighbouring structure -
+     * a large crate carrying a compact column on its lid - can still ask what its own art measures
+     * without calling back into its own override.
+     */
+    public VoxelShape authoredShape(BlockState state) {
         int part = state.getValue(PART);
         if (part >= shapes.size()) {
             return Shapes.empty();

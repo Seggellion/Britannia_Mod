@@ -40,38 +40,72 @@ public final class CrateStackLayout {
     public static final int MAX_HEIGHT_HUNDREDTHS = MAX_CELLS * CELL_HUNDREDTHS;
 
     private static final CrateStackLayout EMPTY =
-            new CrateStackLayout(List.of(), 0, 0);
+            new CrateStackLayout(List.of(), 0, 0, 0);
 
     private final List<CratePlacement> placements;
+    private final int originHundredths;
     private final int totalHundredths;
     private final int requiredCells;
 
-    private CrateStackLayout(List<CratePlacement> placements, int totalHundredths, int requiredCells) {
+    private CrateStackLayout(
+            List<CratePlacement> placements,
+            int originHundredths,
+            int totalHundredths,
+            int requiredCells) {
         this.placements = placements;
+        this.originHundredths = originHundredths;
         this.totalHundredths = totalHundredths;
         this.requiredCells = requiredCells;
     }
 
     /**
-     * Packs crates bottom upwards, each resting directly on the one below.
+     * Packs crates bottom upwards from the root cell's own floor.
      *
      * <p>Order is the column read from the ground up, so the first entry is the crate a player stands
      * beside and the last is the one on top.
      */
     public static CrateStackLayout of(List<LogicalCrate> crates) {
+        return of(crates, 0);
+    }
+
+    /**
+     * Packs crates bottom upwards from a chosen height, each resting directly on the one below.
+     *
+     * <h2>Why an origin exists</h2>
+     *
+     * <p>A freestanding column starts on its root cell's floor, and its origin is zero. A column
+     * standing on a large crate starts on that crate's lid instead - nineteen voxels up inside a
+     * structure that owns two cells, so the first cell the column may own begins thirteen voxels
+     * <em>above</em> where its bottom crate has to rest. That column's origin is negative, and its
+     * lowest crates live in the foundation's cell rather than in one of its own.
+     *
+     * <p>This is the only place the offset is applied. Rendering, collision, selection, targeting and
+     * cell count all read the placements this produces, so none of them carries an offset of its own
+     * and none of them can disagree with the others about where a crate physically is.
+     *
+     * @param originHundredths where the bottom crate's art begins, relative to the root cell's floor
+     */
+    public static CrateStackLayout of(List<LogicalCrate> crates, int originHundredths) {
         Objects.requireNonNull(crates, "crates");
         if (crates.isEmpty()) {
-            return EMPTY;
+            return originHundredths == 0
+                    ? EMPTY
+                    : new CrateStackLayout(List.of(), originHundredths, originHundredths, 0);
         }
         List<CratePlacement> packed = new ArrayList<>(crates.size());
-        int base = 0;
+        int base = originHundredths;
         for (LogicalCrate crate : crates) {
             int top = base + crate.heightHundredths();
             packed.add(new CratePlacement(crate.id(), base, top));
             base = top;
         }
+        // A column always owns the cell its block entity stands in, even when every crate it holds
+        // hangs below that cell on a foundation.
         return new CrateStackLayout(
-                Collections.unmodifiableList(packed), base, cellsFor(base));
+                Collections.unmodifiableList(packed),
+                originHundredths,
+                base,
+                Math.max(1, cellsFor(base)));
     }
 
     /**
@@ -97,8 +131,23 @@ public final class CrateStackLayout {
         return placements;
     }
 
+    /**
+     * Where the bottom crate's art begins, relative to the root cell's floor.
+     *
+     * <p>Zero for a freestanding column; negative for one resting on a foundation below its root.
+     */
+    public int originHundredths() {
+        return originHundredths;
+    }
+
+    /** The top of the column, measured from the root cell's floor. */
     public int totalHundredths() {
         return totalHundredths;
+    }
+
+    /** How much crate the column holds, which is its height ignoring where it starts. */
+    public int crateHeightHundredths() {
+        return totalHundredths - originHundredths;
     }
 
     /** The packed height in voxels, for messages and debugging rather than for arithmetic. */

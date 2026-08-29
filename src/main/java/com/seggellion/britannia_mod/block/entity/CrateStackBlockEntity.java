@@ -1,6 +1,6 @@
 package com.seggellion.britannia_mod.block.entity;
 
-import com.seggellion.britannia_mod.block.CrateStackBlock;
+
 import com.seggellion.britannia_mod.crate.CratePlacement;
 import com.seggellion.britannia_mod.crate.CrateStackLayout;
 import com.seggellion.britannia_mod.crate.CrateStackSlice;
@@ -79,9 +79,19 @@ public class CrateStackBlockEntity extends BlockEntity {
     private static final String TAG_ID = "Id";
     private static final String TAG_VARIANT = "Variant";
     private static final String TAG_FACING = "Facing";
+    private static final String TAG_ORIGIN = "OriginOffset";
 
     private final List<LogicalCrate> crates = new ArrayList<>();
     private int nextCrateId;
+
+    /**
+     * Where the bottom crate rests, relative to this cell's floor.
+     *
+     * <p>Zero for every column that stands on the ground, which is every column saved before
+     * foundations existed - so the field is absent from their data and reads back as zero without a
+     * migration. Negative for a column resting on a large crate, whose lid is below this cell.
+     */
+    private int originHundredths;
 
     /** Recomputed rather than saved: it is a pure function of the crate list. */
     @Nullable
@@ -143,9 +153,33 @@ public class CrateStackBlockEntity extends BlockEntity {
      */
     public CrateStackLayout layout() {
         if (layout == null) {
-            layout = CrateStackLayout.of(crates);
+            layout = CrateStackLayout.of(crates, originHundredths);
         }
         return layout;
+    }
+
+    /** Where this column's bottom crate rests, relative to this cell's floor. */
+    public int originHundredths() {
+        return originHundredths;
+    }
+
+    /**
+     * Moves the whole column to a new physical origin.
+     *
+     * <p>Used when a column is founded on a large crate, and again if that foundation is later
+     * removed. Nothing about the crates changes - the same ids, in the same order, holding the same
+     * items - only the height their packing starts from.
+     */
+    public void setOriginHundredths(int origin) {
+        if (origin != originHundredths) {
+            originHundredths = origin;
+            repack();
+        }
+    }
+
+    /** Whether this column rests on something below its own cell. */
+    public boolean hasFoundation() {
+        return originHundredths != 0;
     }
 
     public int totalHeightHundredths() {
@@ -242,7 +276,7 @@ public class CrateStackBlockEntity extends BlockEntity {
      * lose an item.
      */
     public void repack() {
-        layout = CrateStackLayout.of(crates);
+        layout = CrateStackLayout.of(crates, originHundredths);
         setChanged();
     }
 
@@ -377,12 +411,13 @@ public class CrateStackBlockEntity extends BlockEntity {
         if (level == null || !level.isClientSide) {
             return;
         }
-        for (int cell = 0; cell < Math.max(requiredCellCount(), 1); cell++) {
+        // From the foundation cell below the root, which draws whatever hangs into it, up through
+        // every cell the column owns.
+        int lowest = hasFoundation() ? -1 : 0;
+        for (int cell = lowest; cell < Math.max(requiredCellCount(), 1); cell++) {
             BlockPos pos = worldPosition.above(cell);
             BlockState state = level.getBlockState(pos);
-            if (state.getBlock() instanceof CrateStackBlock) {
-                level.sendBlockUpdated(pos, state, state, Block.UPDATE_ALL);
-            }
+            level.sendBlockUpdated(pos, state, state, Block.UPDATE_ALL);
         }
     }
 
@@ -403,6 +438,11 @@ public class CrateStackBlockEntity extends BlockEntity {
         }
         tag.put(TAG_CRATES, saved);
         tag.putInt(TAG_NEXT_ID, nextCrateId);
+        // Written only when it is not the default, so a freestanding column's data is byte for byte
+        // what it was before foundations existed.
+        if (originHundredths != 0) {
+            tag.putInt(TAG_ORIGIN, originHundredths);
+        }
     }
 
     /**
@@ -434,6 +474,8 @@ public class CrateStackBlockEntity extends BlockEntity {
         super.loadAdditional(tag, registries);
         crates.clear();
         layout = null;
+        // Absent for every column saved before foundations existed, which is exactly right for them.
+        originHundredths = tag.getInt(TAG_ORIGIN);
 
         Set<Integer> seenIds = new HashSet<>();
         int height = 0;
@@ -472,12 +514,16 @@ public class CrateStackBlockEntity extends BlockEntity {
         }
 
         nextCrateId = tag.getInt(TAG_NEXT_ID);
+        if (!crates.isEmpty() && originHundredths != 0) {
+            LOGGER.debug("[crate-stack] {} loaded on a foundation at {} hundredths",
+                    worldPosition, originHundredths);
+        }
         if (nextCrateId <= highestId) {
             LOGGER.warn("[crate-stack] {} would reissue crate ids from {}; raising past {}",
                     worldPosition, nextCrateId, highestId);
             nextCrateId = highestId + 1;
         }
-        layout = CrateStackLayout.of(crates);
+        layout = CrateStackLayout.of(crates, originHundredths);
     }
 
     private static Direction readFacing(CompoundTag entry) {

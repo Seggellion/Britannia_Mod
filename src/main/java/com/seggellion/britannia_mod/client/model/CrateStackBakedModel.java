@@ -104,15 +104,32 @@ public final class CrateStackBakedModel extends BakedModelWrapper<BakedModel> {
             return List.of();
         }
         List<BakedQuad> quads = new ArrayList<>();
+        appendSlice(slice, 0.0D, random, renderType, quads);
+        return quads;
+    }
+
+    /**
+     * Draws one cell's worth of crates, lifted by however far the drawing block is from that cell.
+     *
+     * <p>Shared with the foundation model. A large crate draws the part of a column that hangs into
+     * the cell above it, and does so from its own anchor one cell lower, so it passes a whole cell of
+     * extra lift; a column cell draws its own slice and passes none.
+     */
+    public static void appendSlice(
+            CrateStackSlice slice,
+            double extraLiftBlocks,
+            RandomSource random,
+            @Nullable RenderType renderType,
+            List<BakedQuad> into) {
+
         for (CrateStackSlice.Entry entry : slice.entries()) {
             BakedModel crateModel = modelFor(entry.variant(), entry.facing());
             if (crateModel == null) {
                 continue;
             }
-            float offsetY = (float) entry.offsetBlocks();
-            collectShifted(crateModel, entry, random, renderType, offsetY, quads);
+            collectShifted(crateModel, entry, random, renderType,
+                    (float) (entry.offsetBlocks() + extraLiftBlocks), into);
         }
-        return quads;
     }
 
     /** Every bucket of the crate's own model, lifted into this cell's space. */

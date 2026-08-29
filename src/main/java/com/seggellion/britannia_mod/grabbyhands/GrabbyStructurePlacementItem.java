@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.grabbyhands;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
 /**
@@ -53,5 +54,20 @@ public interface GrabbyStructurePlacementItem {
      */
     default boolean isPlacementGesture(BlockHitResult hit) {
         return true;
+    }
+
+    /**
+     * The same question, told what was clicked on.
+     *
+     * <p>Some items own placements Grabby's grid arithmetic cannot express. A crate put on another
+     * crate is packed into a compact column rather than set on the sixteen-voxel grid above it, so the
+     * destination Grabby would work out is not where the crate goes — and once a column is standing
+     * there that destination is occupied, which Grabby reads as a failed placement and consumes. The
+     * click was a real request, just not one Grabby can answer, so the item has to be able to say so.
+     *
+     * @param clicked the state of the block the ray landed on
+     */
+    default boolean isPlacementGesture(BlockState clicked, BlockHitResult hit) {
+        return isPlacementGesture(hit);
     }
 }

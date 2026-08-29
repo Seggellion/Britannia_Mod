@@ -1,10 +1,13 @@
 package com.seggellion.britannia_mod.event;
 
 import com.seggellion.britannia_mod.block.CrateStackBlock;
+import com.seggellion.britannia_mod.crate.CrateFoundation;
 import com.seggellion.britannia_mod.crate.CrateStackBreakTargets;
 import com.seggellion.britannia_mod.crate.CrateStackTargetResolver;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -53,11 +56,11 @@ public final class CrateStackBreakHandler {
     }
 
     private static void capture(ServerPlayer player, BlockPos clicked) {
-        if (!(player.level().getBlockState(clicked).getBlock() instanceof CrateStackBlock)) {
+        BlockPos root = columnRootAt(player, clicked);
+        if (root == null) {
             CrateStackBreakTargets.clear(player);
             return;
         }
-        BlockPos root = CrateStackBlock.rootOf(clicked, player.level().getBlockState(clicked));
 
         // A held mouse button does not stop when a crate breaks: the client sees the block go and
         // immediately begins on whatever it now aims at, which on a column is the next crate down.
@@ -85,6 +88,24 @@ public final class CrateStackBreakHandler {
                 target -> CrateStackBreakTargets.capture(
                         player, target.root(), target.crateId(), clicked),
                 () -> CrateStackBreakTargets.clear(player));
+    }
+
+    /**
+     * The column a swing at this position is aimed at, whichever block owns the position.
+     *
+     * <p>Usually one of the column's own cells. It can also be a large crate: a column standing on one
+     * begins at its lid, so its lowest crates are physically inside a cell the large crate owns, and a
+     * player breaking one of them is swinging at the large crate's block.
+     */
+    @Nullable
+    private static BlockPos columnRootAt(ServerPlayer player, BlockPos clicked) {
+        BlockState state = player.level().getBlockState(clicked);
+        if (state.getBlock() instanceof CrateStackBlock) {
+            return CrateStackBlock.rootOf(clicked, state);
+        }
+        return CrateFoundation.columnOn(player.level(), clicked, state)
+                .map(CrateFoundation.Founded::root)
+                .orElse(null);
     }
 
     /** A player who leaves takes their half-finished swing with them. */

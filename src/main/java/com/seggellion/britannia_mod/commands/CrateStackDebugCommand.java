@@ -155,6 +155,16 @@ public final class CrateStackDebugCommand {
         source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
                 "  %d crates, %.2f voxels, %d cells",
                 stack.crateCount(), stack.layout().totalVoxels(), stack.requiredCellCount())), false);
+        // Which surface the column is standing on is the first thing worth knowing when what is drawn
+        // and what is recorded disagree, so it is reported even when there is no foundation.
+        source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
+                "  origin %+.2f voxels (%s)",
+                stack.originHundredths()
+                        / (double) com.seggellion.britannia_mod.crate.CrateStackLayout
+                                .HUNDREDTHS_PER_VOXEL,
+                stack.hasFoundation()
+                        ? "resting on a foundation below " + root
+                        : "freestanding")), false);
         for (LogicalCrate crate : stack.crates()) {
             CratePlacement placement = stack.placementOf(crate.id());
             source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,

@@ -65,7 +65,11 @@ public final class CrateStackTargetResolver {
         BlockPos clicked = hit.getBlockPos();
         BlockState state = level.getBlockState(clicked);
         if (!(state.getBlock() instanceof CrateStackBlock)) {
-            return Optional.empty();
+            // A crate resting on a large crate's lid is physically inside the large crate's cell, so
+            // this is where a hit on it actually arrives.
+            return CrateFoundation.columnOn(level, clicked, state)
+                    .flatMap(founded -> crateAt(founded.stack(), founded.root(), hit.getLocation())
+                            .map(crateId -> new Target(founded.stack(), founded.root(), crateId)));
         }
         BlockPos root = CrateStackBlock.rootOf(clicked, state);
         if (!(level.getBlockEntity(root) instanceof CrateStackBlockEntity stack)) {
@@ -96,6 +100,12 @@ public final class CrateStackTargetResolver {
     public static Optional<Integer> crateAtHeight(CrateStackBlockEntity stack, int heightHundredths) {
         CrateStackLayout layout = stack.layout();
         if (layout.isEmpty()) {
+            return Optional.empty();
+        }
+        // Below where the column begins is not the column. For a freestanding stack that is the cell
+        // floor and nothing changes; for one standing on a large crate it is the lid, and without this
+        // every click on the foundation beneath would resolve to the bottom crate.
+        if (heightHundredths < layout.originHundredths()) {
             return Optional.empty();
         }
         for (CratePlacement placement : layout.placements()) {
