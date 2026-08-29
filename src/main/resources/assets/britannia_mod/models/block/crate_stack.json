@@ -1,0 +1,6 @@
+{
+    "__comment": "A crate column draws itself from the crates it holds; the renderer milestone owns that. Only the particle texture is needed until then.",
+    "textures": {
+        "particle": "britannia_mod:block/new_assets/small_crate"
+    }
+}

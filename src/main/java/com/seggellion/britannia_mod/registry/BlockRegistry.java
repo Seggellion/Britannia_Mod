@@ -8,6 +8,7 @@ import com.seggellion.britannia_mod.block.PoolOfBloodBlock;
 import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
 import com.seggellion.britannia_mod.block.CrateBlock;
 import com.seggellion.britannia_mod.block.CrateShapes;
+import com.seggellion.britannia_mod.block.CrateStackBlock;
 import com.seggellion.britannia_mod.block.WaterWellBlock;
 import com.seggellion.britannia_mod.block.LadderMultiblockBlock;
 import com.seggellion.britannia_mod.block.LoomBlock;
@@ -115,6 +116,7 @@ import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BlacksmithSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BritanniaChestBlockEntity;
 import com.seggellion.britannia_mod.block.entity.CrateBlockEntity;
+import com.seggellion.britannia_mod.block.entity.CrateStackBlockEntity;
 import com.seggellion.britannia_mod.block.entity.ArmoireBlockEntity;
 import com.seggellion.britannia_mod.block.BritanniaSpawnBlock;
 import com.seggellion.britannia_mod.block.ChessBoardBlock;
@@ -2712,6 +2714,23 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
             BLOCK_ENTITY_TYPES.register("crate", () -> BlockEntityType.Builder.of(
                     CrateBlockEntity::new,
                     SMALL_CRATE.get(), MEDIUM_CRATE.get(), LARGE_CRATE.get()).build(null));
+
+    /**
+     * The compact crate column: several crates a player sees separately, sharing one position.
+     *
+     * <p>Deliberately has no item, no recipe and no creative-tab entry. Players go on holding
+     * {@code small_crate} and {@code medium_crate}; this is only what a position becomes once two of
+     * them occupy it, and nothing but promotion produces one.
+     */
+    public static final DeferredHolder<Block, CrateStackBlock> CRATE_STACK = BLOCKS.register(
+            "crate_stack", () -> new CrateStackBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F)
+                            .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK)));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CrateStackBlockEntity>>
+            CRATE_STACK_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register("crate_stack",
+                    () -> BlockEntityType.Builder.of(
+                            CrateStackBlockEntity::new, CRATE_STACK.get()).build(null));
 
     public static final DeferredHolder<Block, WaterWellBlock> WATER_WELL = BLOCKS.register("water_well", () ->
             new WaterWellBlock(
