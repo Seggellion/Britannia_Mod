@@ -1,5 +1,16 @@
 {
     "variants": {
-        "": { "model": "britannia_mod:block/crate_stack" }
+        "part=0": {
+            "model": "britannia_mod:block/crate_stack"
+        },
+        "part=1": {
+            "model": "britannia_mod:block/crate_stack"
+        },
+        "part=2": {
+            "model": "britannia_mod:block/crate_stack"
+        },
+        "part=3": {
+            "model": "britannia_mod:block/crate_stack"
+        }
     }
 }

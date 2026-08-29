@@ -56,6 +56,10 @@ public class CommandRegistry {
         // protection in particular - drop the interaction where no handler can report it.
         com.seggellion.britannia_mod.commands.GrabbyDiagnosticsCommand.register(event.getDispatcher());
 
+        // Crate Column milestone 4: operator scaffolding for building compact columns before
+        // top-click stacking exists. Disposable once players can build them by hand.
+        com.seggellion.britannia_mod.commands.CrateStackDebugCommand.register(event.getDispatcher());
+
         // Register additional command classes here
     }
 }

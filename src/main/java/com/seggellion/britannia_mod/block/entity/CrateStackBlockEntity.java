@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.block.entity;
 
 import com.seggellion.britannia_mod.crate.CratePlacement;
 import com.seggellion.britannia_mod.crate.CrateStackLayout;
+import com.seggellion.britannia_mod.crate.CrateStackSlice;
 import com.seggellion.britannia_mod.crate.CrateVariant;
 import com.seggellion.britannia_mod.crate.LogicalCrate;
 import com.seggellion.britannia_mod.crate.LogicalCrateContainer;
@@ -22,6 +23,9 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -152,6 +156,15 @@ public class CrateStackBlockEntity extends BlockEntity {
         return layout().placementOf(crateId);
     }
 
+    /**
+     * What one of this column's cells has to draw and collide with.
+     *
+     * <p>The single projection both views read, so the picture and the hitbox cannot drift apart.
+     */
+    public CrateStackSlice sliceFor(int cell) {
+        return CrateStackSlice.of(layout(), crates, cell);
+    }
+
     /* ─── changing the column ────────────────────────────────── */
 
     /**
@@ -262,13 +275,43 @@ public class CrateStackBlockEntity extends BlockEntity {
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
+        writeColumn(tag, registries, true);
+    }
+
+    /**
+     * What a client needs to draw this column, and nothing more.
+     *
+     * <p>Rendering a column takes a variant, a facing and an order; it does not take the items. A
+     * column can hold eight inventories, so sending their contents to everyone who can see it would
+     * broadcast up to two hundred item stacks — with components — every time a crate was added, for a
+     * picture that never shows them. Menus synchronise their own contents when a player opens one.
+     */
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        writeColumn(tag, registries, false);
+        return tag;
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    /**
+     * @param withItems whether to include inventories, which only the save path wants
+     */
+    private void writeColumn(CompoundTag tag, HolderLookup.Provider registries, boolean withItems) {
         ListTag saved = new ListTag();
         for (LogicalCrate crate : crates) {
             CompoundTag entry = new CompoundTag();
             entry.putInt(TAG_ID, crate.id());
             entry.putString(TAG_VARIANT, crate.variant().serializedName());
             entry.putString(TAG_FACING, crate.facing().getSerializedName());
-            crate.saveItemsTo(entry, registries);
+            if (withItems) {
+                crate.saveItemsTo(entry, registries);
+            }
             saved.add(entry);
         }
         tag.put(TAG_CRATES, saved);

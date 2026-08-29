@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.crate;
 
 import com.seggellion.britannia_mod.block.CrateBlock;
+import com.seggellion.britannia_mod.block.CrateStackBlock;
 import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
 import com.seggellion.britannia_mod.block.entity.CrateBlockEntity;
 import com.seggellion.britannia_mod.block.entity.CrateStackBlockEntity;
@@ -106,7 +107,8 @@ public final class CrateStackPromotion {
         // old block entity cannot also be spilled by it.
         boolean swapped = crate.duringMutation(() -> level.setBlock(
                 pos,
-                BlockRegistry.CRATE_STACK.get().defaultBlockState(),
+                BlockRegistry.CRATE_STACK.get().defaultBlockState()
+                        .setValue(CrateStackBlock.PART, 0),
                 Block.UPDATE_ALL | Block.UPDATE_SUPPRESS_DROPS));
 
         if (!swapped || !(level.getBlockEntity(pos) instanceof CrateStackBlockEntity stack)) {
@@ -123,6 +125,10 @@ public final class CrateStackPromotion {
             return Result.refused(Refusal.WORLD_REFUSED);
         }
         stack.setChanged();
+        // A single crate needs only its root cell, but reconciling now means every column in the
+        // world reaches the same state by the same path, whatever it was promoted from.
+        CrateStackColumnSync.notifyClients(
+                level, pos, CrateStackColumnSync.reconcile(level, pos, stack));
         return Result.promoted(stack, id.getAsInt());
     }
 

@@ -27,22 +27,52 @@ import java.util.Optional;
 public enum CrateVariant {
 
     /** {@code small_crate}: one row, model bounds Y 0.00 - 7.15. */
-    SMALL(715, 9),
+    SMALL(0, 715, 9),
 
     /** {@code medium_crate}: three rows, model bounds Y 0.09 - 11.60. */
-    MEDIUM(1151, 27);
+    MEDIUM(9, 1160, 27);
 
-    private final int heightHundredths;
+    private final int authoredMinYHundredths;
+    private final int authoredMaxYHundredths;
     private final int slotCount;
 
-    CrateVariant(int heightHundredths, int slotCount) {
-        this.heightHundredths = heightHundredths;
+    CrateVariant(int authoredMinYHundredths, int authoredMaxYHundredths, int slotCount) {
+        this.authoredMinYHundredths = authoredMinYHundredths;
+        this.authoredMaxYHundredths = authoredMaxYHundredths;
         this.slotCount = slotCount;
     }
 
     /** The vertical space one of these occupies in a column, in hundredths of a voxel. */
     public int heightHundredths() {
-        return heightHundredths;
+        return authoredMaxYHundredths - authoredMinYHundredths;
+    }
+
+    /**
+     * Where this variant's art begins inside its own model space.
+     *
+     * <p>Zero for the small crate, nine hundredths for the medium one. The distinction is the whole
+     * reason a packed base is not a model origin: a crate has to be drawn so that its <em>art</em>
+     * lands on the crate below, which means shifting it by this much less than the packed base.
+     * Keeping the number here is what stops it being written out again in the renderer, in the shape
+     * builder, and in whatever reads the layout next.
+     */
+    public int authoredMinYHundredths() {
+        return authoredMinYHundredths;
+    }
+
+    /** Where this variant's art ends inside its own model space. */
+    public int authoredMaxYHundredths() {
+        return authoredMaxYHundredths;
+    }
+
+    /**
+     * How far to move this variant's model so its art rests on {@code packedBaseHundredths}.
+     *
+     * <p>The one formula every view of the column shares. Rendering and collision both use it, which
+     * is what keeps a crate's hitbox where the player can see it.
+     */
+    public int renderOffsetHundredths(int packedBaseHundredths) {
+        return packedBaseHundredths - authoredMinYHundredths;
     }
 
     public int slotCount() {
