@@ -69,7 +69,10 @@ public final class CrateStackBreakHandler {
         // The packet says which cell was clicked, not where on it. The server does its own raycast,
         // at the player's real interaction range, and only trusts it if it agrees with the packet -
         // otherwise a stale or spoofed aim could pick a crate the player is not looking at.
-        HitResult aimed = player.pick(player.blockInteractionRange(), 0.0F, false);
+        // Partial tick 1.0 reads the rotation the player last reported, not the one before it.
+        // A swing is judged by where they were looking when they clicked, and Entity.pick
+        // interpolates from the previous tick at 0.0 - which aims a tick into the past.
+        HitResult aimed = player.pick(player.blockInteractionRange(), 1.0F, false);
         if (!(aimed instanceof BlockHitResult hit)
                 || hit.getType() != HitResult.Type.BLOCK
                 || !CrateStackBlock.rootOf(hit.getBlockPos(),
