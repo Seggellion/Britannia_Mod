@@ -25,6 +25,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
@@ -93,6 +94,20 @@ public final class CrateBlock extends DecorativeMultiblockBlock implements Entit
             return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
         }
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    /**
+     * Lets the cell holding a column's overhang draw, when every other non-root cell stays invisible.
+     *
+     * <p>Chunk geometry is lit against the block it is emitted from, so a crate resting on this
+     * crate's lid has to be drawn by the cell it is physically inside - not by the anchor a cell
+     * below, which is where its light and ambient occlusion would then be sampled from.
+     */
+    @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return CrateFoundation.carriesOverhang(this, state)
+                ? RenderShape.MODEL
+                : super.getRenderShape(state);
     }
 
     /**

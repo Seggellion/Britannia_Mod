@@ -7,6 +7,7 @@ import com.seggellion.britannia_mod.block.entity.CrateBlockEntity;
 import com.seggellion.britannia_mod.block.entity.CrateStackBlockEntity;
 import com.seggellion.britannia_mod.crate.CrateFoundation;
 import com.seggellion.britannia_mod.crate.CrateStackLayout;
+import com.seggellion.britannia_mod.crate.CrateStackSlice;
 import com.seggellion.britannia_mod.crate.CrateVariant;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
@@ -26,6 +27,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -217,6 +219,61 @@ public final class CrateStackFoundationGameTests {
         check(helper.getLevel().getBlockEntity(fixture.anchor()) instanceof CrateBlockEntity,
                 "a refused placement damaged the large crate");
         finish(helper, fixture);
+    }
+
+    /* ─── which cell draws the overhang ─────────────────────── */
+
+    /**
+     * A founded crate is drawn by the cell it is physically inside.
+     *
+     * <h2>What this is really testing</h2>
+     *
+     * <p>Chunk geometry is lit against the block that emits it. {@code ModelBlockRenderer} takes each
+     * quad's bounds relative to that block and uses them - and their {@code 1 - f} complements - as
+     * ambient occlusion blend weights. A crate drawn from a block a whole cell below itself has a Y
+     * around 1.9, a complement around -0.9, and a weighted sum of light values with negative weights
+     * collapses toward zero. That is a black crate, and it showed on the medium first because the
+     * medium is the taller crate and so reached furthest out of range.
+     *
+     * <p>So the invariant is not about colour, which no headless test can see. It is that every crate
+     * a cell draws lies inside that cell. Hold that and the weights stay in range; break it and the
+     * lighting degenerates again.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void aFoundedCrateIsDrawnByTheCellItSitsIn(GameTestHelper helper) {
+        for (Item held : new Item[] {small(), medium()}) {
+            Fixture fixture = largeCrate(helper, Direction.NORTH);
+            click(fixture, new ItemStack(held, 8), lidHit(fixture));
+            column(helper, fixture);
+
+            BlockPos anchor = fixture.anchor();
+            BlockPos overhangCell = anchor.above();
+            BlockState anchorState = helper.getLevel().getBlockState(anchor);
+            BlockState overhangState = helper.getLevel().getBlockState(overhangCell);
+            CrateBlock large = BlockRegistry.LARGE_CRATE.get();
+
+            check(!CrateFoundation.carriesOverhang(large, anchorState),
+                    "the anchor must not draw the overhang; drawing it from a cell below is what "
+                            + "made the crate black");
+            check(CrateFoundation.carriesOverhang(large, overhangState),
+                    "the cell the crate actually sits in does not claim it");
+            check(overhangState.getRenderShape() == RenderShape.MODEL,
+                    "the cell holding the overhang cannot draw at all, so nothing would appear");
+
+            CrateStackSlice overhang = CrateFoundation.columnOn(
+                    helper.getLevel(), overhangCell, overhangState).orElseThrow().overhang();
+            check(!overhang.isEmpty(), "the cell holding the crate was handed nothing to draw");
+            for (CrateStackSlice.Entry entry : overhang.entries()) {
+                check(entry.artBaseHundredths() >= 0
+                                && entry.artTopHundredths() <= CrateStackLayout.CELL_HUNDREDTHS,
+                        "a " + entry.variant() + " crate is drawn from "
+                                + entry.artBaseHundredths() + " to " + entry.artTopHundredths()
+                                + ", outside the cell drawing it - which is what sends ambient "
+                                + "occlusion weights negative and renders it black");
+            }
+            clear(helper, fixture);
+        }
+        helper.succeed();
     }
 
     /* ─── breaking what stands on it ─────────────────────────── */

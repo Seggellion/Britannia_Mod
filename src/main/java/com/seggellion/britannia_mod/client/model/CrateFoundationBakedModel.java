@@ -1,7 +1,7 @@
 package com.seggellion.britannia_mod.client.model;
 
+import com.seggellion.britannia_mod.block.CrateBlock;
 import com.seggellion.britannia_mod.crate.CrateFoundation;
-import com.seggellion.britannia_mod.crate.CrateStackLayout;
 import com.seggellion.britannia_mod.crate.CrateStackSlice;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,19 +35,24 @@ import net.neoforged.neoforge.client.model.data.ModelProperty;
  * crate looks up and draws the part that reaches down. Neither owns the crates it draws, and in both
  * cases the geometry lands in the section that actually contains it.
  *
- * <p>Only the large crate's anchor is drawn at all — {@code getRenderShape} makes the other seven
- * cells invisible and the authored model spans the whole structure from there — so the overhang is
- * lifted by one whole cell to land in the cell above the anchor, which is where it belongs.
+ * <h2>Drawn by the cell that contains it</h2>
+ *
+ * <p>The overhang is emitted by the cell it physically sits in, not by the anchor a cell below, and
+ * that is not a tidiness point — it is the whole reason this class exists in its current shape.
+ * Chunk geometry is lit against the block it is emitted from: {@code ModelBlockRenderer} records each
+ * quad's bounds relative to that block and hands them to ambient occlusion as blend weights, together
+ * with their {@code 1 - f} complements. A quad drawn a whole cell above its own block has a Y of
+ * around 1.9, so its complement is about -0.9, and a weighted sum of light values with negative
+ * weights collapses towards zero. That is what a black crate is.
+ *
+ * <p>The large crate normally draws its whole structure from its anchor and leaves its other seven
+ * cells invisible. The one cell carrying an overhang is opened up in {@code getRenderShape} purely so
+ * it can draw that overhang - it never draws the large crate's own art, which the anchor still owns.
  */
 public final class CrateFoundationBakedModel extends BakedModelWrapper<BakedModel> {
 
     /** The part of a column resting on this crate that falls inside the cell above it. */
     public static final ModelProperty<CrateStackSlice> OVERHANG = new ModelProperty<>();
-
-    /** How far the overhang is lifted: it lives one cell above the block that draws it. */
-    private static final double LIFT_BLOCKS =
-            CrateStackLayout.CELL_HUNDREDTHS
-                    / (double) (CrateStackLayout.HUNDREDTHS_PER_VOXEL * 16);
 
     /** Crates are cutout, whatever the crate underneath them draws with. */
     private static final ChunkRenderTypeSet CUTOUT =
@@ -60,9 +65,19 @@ public final class CrateFoundationBakedModel extends BakedModelWrapper<BakedMode
     @Override
     public ModelData getModelData(
             BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData modelData) {
+        if (!carriesOverhang(state)) {
+            return modelData;
+        }
         return CrateFoundation.columnOn(level, pos, state)
                 .map(founded -> modelData.derive().with(OVERHANG, founded.overhang()).build())
                 .orElse(modelData);
+    }
+
+    /** Whether this state is the one cell of a large crate a column can hang into. */
+    private static boolean carriesOverhang(@Nullable BlockState state) {
+        return state != null
+                && state.getBlock() instanceof CrateBlock crate
+                && CrateFoundation.carriesOverhang(crate, state);
     }
 
     @Override
@@ -73,25 +88,23 @@ public final class CrateFoundationBakedModel extends BakedModelWrapper<BakedMode
             ModelData modelData,
             @Nullable RenderType renderType) {
 
-        List<BakedQuad> own = super.getQuads(state, side, random, modelData, renderType);
-        CrateStackSlice overhang = modelData.get(OVERHANG);
-        // Only the unculled bucket carries the overhang, for the same reason the column's own model
-        // uses it: these quads were baked for a different block and would be culled against the wrong
-        // neighbours.
-        if (side != null || overhang == null || overhang.isEmpty()) {
-            return own;
+        // Every cell but the one carrying an overhang draws exactly what it always drew.
+        if (!carriesOverhang(state)) {
+            return super.getQuads(state, side, random, modelData, renderType);
         }
-        List<BakedQuad> quads = new ArrayList<>(own);
-        CrateStackBakedModel.appendSlice(overhang, LIFT_BLOCKS, random, renderType, quads);
+        CrateStackSlice overhang = modelData.get(OVERHANG);
+        // Only the unculled bucket, for the same reason the column's own model uses it: these quads
+        // were baked for a different block and would be culled against the wrong neighbours.
+        if (side != null || overhang == null || overhang.isEmpty()) {
+            return List.of();
+        }
+        List<BakedQuad> quads = new ArrayList<>();
+        CrateStackBakedModel.appendSlice(overhang, 0.0D, random, renderType, quads);
         return quads;
     }
 
     @Override
     public ChunkRenderTypeSet getRenderTypes(BlockState state, RandomSource random, ModelData data) {
-        ChunkRenderTypeSet own = super.getRenderTypes(state, random, data);
-        CrateStackSlice overhang = data.get(OVERHANG);
-        return overhang == null || overhang.isEmpty()
-                ? own
-                : ChunkRenderTypeSet.union(own, CUTOUT);
+        return carriesOverhang(state) ? CUTOUT : super.getRenderTypes(state, random, data);
     }
 }
