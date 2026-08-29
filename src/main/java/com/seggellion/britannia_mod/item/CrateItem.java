@@ -90,11 +90,46 @@ public final class CrateItem extends DecorativeMultiblockItem {
                 && CrateVariant.forSlotCount(crate.slotCount()).isPresent();
     }
 
+    /**
+     * A crate holds up a crate only when both are ones a compact column carries.
+     *
+     * <h2>Why the other combinations are refused rather than allowed</h2>
+     *
+     * <p>Ordinary placement puts a structure on the sixteen-voxel grid, one block above the block it
+     * was dropped on. That is exactly right when the thing underneath fills its block, and wrong for
+     * every crate, because no crate does. A compact pair never reaches this method — {@link #useOn}
+     * takes those clicks and packs them into a column instead — so anything arriving here is a
+     * combination columns do not carry, and the large crate is all of them: its art stops nineteen
+     * voxels up inside a two-block-tall structure, so a crate placed on the grid above it hangs
+     * thirteen voxels clear of the lid with daylight in between.
+     *
+     * <p>Refusing costs the player nothing. The support check runs before a single cell is written or
+     * an item consumed, so a refused click leaves the world and the hand exactly as they were, and the
+     * crate underneath still opens on any other face. A visibly wrong placement is worse than none:
+     * the player can see the gap, and nothing about it suggests the game meant it.
+     */
     @Override
     protected boolean mayUseSupport(
             UseOnContext context, Player player, BlockPos supportPosition, ItemStack stack) {
-        return isCrate(context.getLevel().getBlockState(supportPosition))
-                || super.mayUseSupport(context, player, supportPosition, stack);
+        BlockState support = context.getLevel().getBlockState(supportPosition);
+        if (isCompactSupport(support)) {
+            return isCompactVariant();
+        }
+        if (isCrate(support)) {
+            return false;
+        }
+        return super.mayUseSupport(context, player, supportPosition, stack);
+    }
+
+    /** Whether this is a crate a column packs against, rather than one it leaves on the grid. */
+    private static boolean isCompactSupport(BlockState state) {
+        if (state.getBlock() instanceof CrateStackBlock) {
+            return true;
+        }
+        return state.getBlock() instanceof CrateBlock crate
+                && crate.hasValidPart(state)
+                && crate.cells().size() == 1
+                && CrateVariant.forSlotCount(crate.slotCount()).isPresent();
     }
 
     /**

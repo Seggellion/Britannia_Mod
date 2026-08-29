@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.block.entity;
 
+import com.seggellion.britannia_mod.block.CrateStackBlock;
 import com.seggellion.britannia_mod.crate.CratePlacement;
 import com.seggellion.britannia_mod.crate.CrateStackLayout;
 import com.seggellion.britannia_mod.crate.CrateStackSlice;
@@ -23,6 +24,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.Connection;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.network.protocol.Packet;
@@ -31,6 +33,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -322,6 +325,65 @@ public class CrateStackBlockEntity extends BlockEntity {
     @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    /* ─── keeping the picture honest ─────────────────────────── */
+
+    /**
+     * Redraws the column whenever a client is told what it now holds.
+     *
+     * <h2>Why this is needed at all</h2>
+     *
+     * <p>A column's crates are chunk-baked terrain, not a block-entity renderer, and a chunk section
+     * is only rebuilt when a block in it changes. Adding a crate that fits inside the cells the column
+     * already occupies changes no block at all — the column simply gets taller inside its own space —
+     * so the server sends the new layout with a block update carrying the state the client already
+     * has. {@code LevelChunk.setBlockState} returns null for a state identical to the one in place,
+     * {@code Level.setBlock} gives up on that null before it reaches {@code sendBlockUpdated}, and
+     * {@code sendBlockUpdated} is the only route to {@code LevelRenderer.blockChanged}. The section is
+     * therefore never marked dirty, and the crate stays invisible until something unrelated disturbs
+     * it — while being fully present in every other respect, because menus, targeting and collision
+     * all read this block entity, which did receive the update.
+     *
+     * <p>{@code requestModelDataUpdate} does not close the gap: it records the position for a model
+     * data refresh and nothing more. So the redraw is asked for explicitly, once the new column is
+     * loaded, for every cell the column occupies — each cell bakes its own slice, so each one's
+     * section has to be rebuilt.
+     */
+    @Override
+    public void onDataPacket(
+            Connection net, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider registries) {
+        super.onDataPacket(net, packet, registries);
+        redrawColumn();
+    }
+
+    /** The same redraw for the copy that arrives with a chunk rather than as a change. */
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        super.handleUpdateTag(tag, registries);
+        redrawColumn();
+    }
+
+    /**
+     * Marks every section this column draws into as needing a rebuild.
+     *
+     * <p>Client only, and deliberately routed through {@code sendBlockUpdated} rather than
+     * {@code setBlocksDirty}: on a client level the former reaches
+     * {@code LevelRenderer.blockChanged}, which marks the surrounding sections dirty unconditionally,
+     * while the latter is gated on the two states rendering differently — and here they are the same
+     * state, which is the entire problem.
+     */
+    private void redrawColumn() {
+        if (level == null || !level.isClientSide) {
+            return;
+        }
+        for (int cell = 0; cell < Math.max(requiredCellCount(), 1); cell++) {
+            BlockPos pos = worldPosition.above(cell);
+            BlockState state = level.getBlockState(pos);
+            if (state.getBlock() instanceof CrateStackBlock) {
+                level.sendBlockUpdated(pos, state, state, Block.UPDATE_ALL);
+            }
+        }
     }
 
     /**
