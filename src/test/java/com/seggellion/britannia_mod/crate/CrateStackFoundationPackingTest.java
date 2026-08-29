@@ -202,6 +202,65 @@ class CrateStackFoundationPackingTest {
     }
 
     @Nested
+    @DisplayName("how much of the root cell a founded column actually fills")
+    class RootCellVisibility {
+
+        /**
+         * How many hundredths of the root cell hold crate art.
+         *
+         * <p>The root cell is the one the column's block entity stands in. When it holds no art the
+         * block is invisible while still occupying a position, so a player sees empty air they cannot
+         * build in — which is the whole question these answer.
+         */
+        private int filled(CrateVariant... variants) {
+            int total = 0;
+            for (CratePlacement placement : founded(variants).placements()) {
+                total += Math.max(0, Math.min(placement.topHundredths(), CrateStackLayout.CELL_HUNDREDTHS)
+                        - Math.max(placement.baseHundredths(), 0));
+            }
+            return total;
+        }
+
+        @Test
+        @DisplayName("one crate leaves the root cell completely empty")
+        void oneCrateFillsNothing() {
+            assertEquals(0, filled(CrateVariant.SMALL));
+            assertEquals(0, filled(CrateVariant.MEDIUM));
+        }
+
+        @Test
+        @DisplayName("two crates already reach into it")
+        void twoCratesReachIt() {
+            // A second small crate spans [-585, 130): 1.30 voxels of it are inside the root cell.
+            assertEquals(130, filled(CrateVariant.SMALL, CrateVariant.SMALL));
+            assertEquals(1002, filled(CrateVariant.MEDIUM, CrateVariant.MEDIUM));
+            assertEquals(566, filled(CrateVariant.SMALL, CrateVariant.MEDIUM));
+            assertEquals(566, filled(CrateVariant.MEDIUM, CrateVariant.SMALL));
+        }
+
+        @Test
+        @DisplayName("and beyond two it is substantially full")
+        void deeperColumnsFillIt() {
+            assertEquals(845, filled(CrateVariant.SMALL, CrateVariant.SMALL, CrateVariant.SMALL));
+            assertEquals(1560, filled(CrateVariant.SMALL, CrateVariant.SMALL, CrateVariant.SMALL,
+                    CrateVariant.SMALL));
+        }
+
+        @Test
+        @DisplayName("so an invisible reserved cell is only ever the single-crate case")
+        void onlyOneCrateIsInvisible() {
+            // Stated as the rule rather than as four numbers, because it is the rule that decides
+            // whether the reservation is worth a second storage representation to remove.
+            assertEquals(0, filled(CrateVariant.SMALL));
+            assertEquals(0, filled(CrateVariant.MEDIUM));
+            assertTrue(filled(CrateVariant.SMALL, CrateVariant.SMALL) > 0);
+            assertTrue(filled(CrateVariant.MEDIUM, CrateVariant.MEDIUM) > 0);
+            assertTrue(filled(CrateVariant.SMALL, CrateVariant.MEDIUM) > 0);
+            assertTrue(filled(CrateVariant.MEDIUM, CrateVariant.SMALL) > 0);
+        }
+    }
+
+    @Nested
     @DisplayName("freestanding columns are untouched")
     class Unchanged {
 
