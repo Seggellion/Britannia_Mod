@@ -157,6 +157,11 @@ public class DecorativeMultiblockBlock extends Block {
                 .below(cell.y());
     }
 
+    /** Whether a structure is being reshuffled right now, so its half-finished state is not read. */
+    public static boolean isMutating() {
+        return MUTATING.get();
+    }
+
     public <T> T duringMutation(Supplier<T> mutation) {
         boolean previous = MUTATING.get();
         MUTATING.set(true);

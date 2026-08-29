@@ -11,7 +11,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.BlockGetter;
+import com.mojang.logging.LogUtils;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import org.slf4j.Logger;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -41,6 +44,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * first place, one level up.
  */
 public final class CrateFoundation {
+
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     /**
      * How far above a foundation's anchor the column it carries puts its root cell.
@@ -318,6 +323,62 @@ public final class CrateFoundation {
         /** How far below its own cells this crate is drawn. */
         public int originHundredths() {
             return crate.originHundredths();
+        }
+    }
+
+    /**
+     * Lets go of a large crate standing on a foundation that is disappearing.
+     *
+     * <h2>Why this has to exist</h2>
+     *
+     * <p>A crate standing on another is drawn by the crate underneath it, because that is the cell its
+     * art is physically inside. Take the lower crate away and the upper one is still entirely there -
+     * eight cells, its own block entity, its fifty-four slots - with nothing left in the world that
+     * knows how to draw it. It becomes solid, selectable, unbreakable and completely invisible, which
+     * is a far worse thing to leave behind than a gap.
+     *
+     * <p>So it settles onto its own cell floor, exactly as a column does when its foundation goes. It
+     * rises by the height of the lid it was resting on, and from that moment it is an ordinary large
+     * crate: drawn by itself, breakable, and holding everything it held before.
+     */
+    public static void releaseRestingLarge(ServerLevel level, BlockPos anchor) {
+        BlockPos resting = columnRootFor(anchor);
+        if (level.getBlockEntity(resting) instanceof CrateBlockEntity crate && crate.hasFoundation()) {
+            settle(level, resting, crate);
+        }
+    }
+
+    /**
+     * Puts a crate back on its own floor when whatever it was standing on has gone.
+     *
+     * <p>The recovery path for a world that already contains one of these, and the reason the check is
+     * a lookup rather than remembered state: a crate that has lost its foundation cannot be told, so
+     * it has to be able to notice.
+     */
+    public static void repairIfOrphaned(ServerLevel level, BlockPos pos, BlockState state) {
+        if (!isFoundedLarge(level, pos, state) || !(state.getBlock() instanceof CrateBlock crate)) {
+            return;
+        }
+        BlockPos anchor = crate.anchorPosition(pos, state);
+        if (foundationUnder(level, anchor).isPresent()) {
+            return;
+        }
+        if (level.getBlockEntity(anchor) instanceof CrateBlockEntity orphan && orphan.hasFoundation()) {
+            LOGGER.info("[crate] {} was standing on a crate that has gone; settling it onto its own "
+                    + "floor so it can be seen and removed", anchor);
+            settle(level, anchor, orphan);
+        }
+    }
+
+    /** Drops a crate's origin back to its own cell floor and tells everyone that can see it. */
+    private static void settle(ServerLevel level, BlockPos anchor, CrateBlockEntity crate) {
+        crate.setOriginHundredths(0);
+        // Its art used to be emitted by cells below it, so those need rebuilding too, and its own
+        // cells have to start drawing it.
+        for (int cell = -ROOT_CELL_ABOVE_ANCHOR; cell <= ROOT_CELL_ABOVE_ANCHOR; cell++) {
+            BlockPos pos = anchor.above(cell);
+            BlockState state = level.getBlockState(pos);
+            level.sendBlockUpdated(pos, state, state, Block.UPDATE_ALL);
         }
     }
 

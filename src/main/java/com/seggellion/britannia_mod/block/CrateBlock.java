@@ -25,6 +25,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -249,11 +250,30 @@ public final class CrateBlock extends DecorativeMultiblockBlock implements Entit
         return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
     }
 
+    /**
+     * Notices when the crate this one was standing on has gone.
+     *
+     * <p>The dismantle path covers a crate taken apart properly. This covers everything else - a
+     * command that erased the cells underneath, or a world that already contains one from before the
+     * release path existed - because a crate whose foundation vanished is invisible until something
+     * puts it back on its own floor, and an invisible solid block is not something a player can
+     * reason about or get rid of.
+     */
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor,
+            BlockPos neighborPos, boolean moving) {
+        super.neighborChanged(state, level, pos, neighbor, neighborPos, moving);
+        if (level instanceof ServerLevel server && !isMutating()) {
+            CrateFoundation.repairIfOrphaned(server, pos, state);
+        }
+    }
+
     @Override
     protected void beforeDismantle(ServerLevel level, BlockPos anchor, Direction facing) {
         // Anything resting on this crate's lid keeps its crates and its contents; it simply loses the
         // thing it was standing on and settles onto its own floor.
         CrateFoundation.releaseColumn(level, anchor);
+        CrateFoundation.releaseRestingLarge(level, anchor);
         if (level.getBlockEntity(anchor) instanceof CrateBlockEntity crate) {
             Containers.dropContents(level, anchor, crate);
             level.updateNeighbourForOutputSignal(anchor, this);
