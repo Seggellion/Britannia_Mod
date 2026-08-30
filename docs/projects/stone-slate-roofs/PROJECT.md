@@ -281,13 +281,12 @@ positions and hashes are now pinned more precisely than the earlier report.
 - M6 - COMPLETE: Models, loot, mining, localization, resource completion - PASS.
 - M7 - COMPLETE: Legacy compatibility / migration acceptance - PASS.
 - M8 - COMPLETE: Automated acceptance suite - PASS.
-- M9 - COMPLETE: Dedicated-server + Iris/Photon technical acceptance - PASS; documented art
-  approval remains open for the Slate mirrors and Sandstone duplicate.
-- M10 - COMPLETE: Cleanup, documentation, and technical release handoff - PASS; final art
-  approval remains an explicit product/art decision.
+- M9 - COMPLETE: Dedicated-server + Iris/Photon technical acceptance - PASS; the documented
+  Slate mirrors and Sandstone duplicate were explicitly accepted at M10 release handoff.
+- M10 - COMPLETE: Cleanup, documentation, technical release handoff, and final approval - PASS.
 
-M10 is complete. Technical release handoff is ready; the documented Slate and Sandstone art
-decision is the only remaining release-choice item.
+M10 is complete. Technical release handoff is ready, and the user explicitly approved the
+documented Slate and Sandstone mappings for release on 2026-08-30.
 
 ## Baseline test commands/results
 
@@ -861,9 +860,10 @@ The temporary server properties were restored after acceptance. Evidence is reta
 `docs/projects/stone-slate-roofs/evidence/` and cataloged by
 `docs/projects/stone-slate-roofs/IMPLEMENTATION-REPORT.md`.
 
-Visual-art result: **DECISION OPEN**. Slate has three unique grey designs mirrored across six
-states. Sandstone has five unique designs because source positions 2 and 4 are identical. No
-replacement was fabricated; release requires supplied artwork or explicit acceptance.
+Visual-art result: **APPROVED FOR RELEASE**. Slate has three unique grey designs mirrored
+across six states. Sandstone has five unique designs because source positions 2 and 4 are
+identical. No replacement was fabricated; the user explicitly accepted both documented
+mappings on 2026-08-30.
 
 ## Milestone 10 final validation
 
@@ -1040,32 +1040,32 @@ Milestone 10 decisions:
 - Legacy numbered flat-slate resources now include valid bottom, top, and double selectors,
   while retaining their historical block and model identities.
 - Slate still has only three unique usable flat designs. The six-state feature is technically
-  complete and fully renderable via deterministic mirrors, but final Slate Roof visual-art
-  acceptance is gated solely on supplying or explicitly accepting unique designs 4, 5, and 6.
+  complete and fully renderable via deterministic mirrors. The user explicitly accepted this
+  mapping for release; unique designs 4, 5, and 6 are optional future improvements.
 - Sandstone has six ordered production files but only five unique designs because source slots
-  2 and 4 are identical. M4 is technically complete, but final Sandstone Roof visual-art
-  acceptance remains blocked until a unique design is supplied or the duplicate is explicitly
-  accepted.
+  2 and 4 are identical. The user explicitly accepted the duplicate for release; a unique
+  design remains an optional future master-art improvement.
 - The client logged non-fatal Photon option/preprocessor warnings and Intel OpenGL debug noise.
   No corresponding roof rendering defect was visible during the shader acceptance pass.
 - A second simultaneous development client was not feasible. One true remote client plus the
   registered-world synchronization/persistence suite supplied the practical coverage.
 - The dirty worktree contains unrelated user changes. Preserve them and scope future diffs
   carefully.
-- No technical behavior, compatibility, resource, dedicated-server, or shader-rendering blocker
-  remains. Final release is gated only on the explicit art decision.
+- No technical behavior, compatibility, resource, dedicated-server, shader-rendering, or
+  art-approval blocker remains.
 
 ## Current status
 
-**MILESTONE 10: COMPLETE — TECHNICAL HANDOFF READY / ART DECISION OPEN**
+**MILESTONE 10: COMPLETE — RELEASE APPROVED**
 
 Milestone 9 passed its true dedicated-server restart and real-client Iris/Photon technical
 gate. M10 cleanup, documentation, and the final combined JUnit/GameTest command all passed.
-Final art approval remains explicitly open rather than concealed.
+The user explicitly approved the documented Slate mirror and Sandstone duplicate mappings for
+release on 2026-08-30.
 
 ## Release disposition
 
-The technical implementation is ready for review/release. Do not remove retained compatibility
-code or add unapproved recipes/migration during handoff. Before declaring final art acceptance,
-either supply unique Slate designs 4/5/6 plus a unique sixth Sandstone design, or explicitly
-accept the documented deterministic Slate mirrors and Sandstone duplicate.
+The implementation is approved for release. Do not remove retained compatibility code or add
+unapproved recipes/migration during handoff. The current deterministic Slate mirrors and
+Sandstone duplicate are accepted release mappings; future unique artwork can replace them in a
+separately reviewed asset update.

@@ -10,9 +10,10 @@ variation states. Placement selects a variation once on the logical server, the 
 Decorator Tool cycles it, and the adaptive acquired-bottom texture continues to render through
 the terrain baked-model path.
 
-Dedicated-server restart testing and real-client Iris/Photon inspection passed. Final art
-approval remains open because Slate has three unique flat designs mirrored across six states
-and the Illustrator master supplies only five unique Sandstone designs for six authored slots.
+Dedicated-server restart testing and real-client Iris/Photon inspection passed. On 2026-08-30,
+the user explicitly approved the documented release mapping: Slate's three unique flat designs
+are mirrored across six states, and the Illustrator master's five unique Sandstone designs are
+retained across six authored slots.
 
 ## Architecture
 
@@ -147,10 +148,11 @@ real remote client exercised synchronization against the dedicated server.
 ## Known limitations
 
 - Slate currently contains three unique usable grey flat designs mirrored across six legal
-  states. Unique designs 4, 5, and 6 require supplied art or explicit acceptance of the mirror
-  mapping.
+  states. The mirror mapping is explicitly accepted for this release; future unique designs
+  4, 5, and 6 remain an optional art improvement.
 - Sandstone source positions 2 and 4 are identical, leaving five unique designs across six
-  legal states. A unique sixth design requires an updated master or explicit acceptance.
+  legal states. The duplicate is explicitly accepted for this release; a unique sixth design
+  remains an optional future master-art update.
 - Recipes were deliberately deferred; none were added without an approved recipe design.
 - No registry migration was added because all historical identities remain loadable.
 - The M9 test world, Iris/Sodium jars, and Photon pack remain under ignored `run/` paths for
@@ -178,7 +180,7 @@ Pre-existing unrelated user changes listed in `PROJECT.md` were preserved.
 
 Technical implementation: **GO**. The final M10 command completed green.
 
-Final art release: **HOLD FOR ART DECISION**. Either supply unique Slate designs 4/5/6 and a
-unique sixth Sandstone design, or explicitly accept the documented deterministic Slate mirrors
-and Sandstone duplicate. No unresolved technical behavior, compatibility, resource, dedicated
-server, or shader-rendering blocker is known.
+Final art release: **GO WITH APPROVED EXISTING MAPPINGS**. On 2026-08-30, the user explicitly
+accepted the documented deterministic Slate mirrors and Sandstone duplicate. No unresolved
+technical behavior, compatibility, resource, dedicated-server, shader-rendering, or art-
+approval blocker remains.
