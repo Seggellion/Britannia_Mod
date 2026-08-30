@@ -9,10 +9,16 @@ import com.seggellion.britannia_mod.crate.CrateFoundation;
 import com.seggellion.britannia_mod.crate.CrateStackLayout;
 import com.seggellion.britannia_mod.crate.CrateStackSlice;
 import com.seggellion.britannia_mod.crate.CrateVariant;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyActor;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyPickupOutcome;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyPickupResult;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyPickupTransaction;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyWorld;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -396,6 +402,71 @@ public final class CrateStackFoundationGameTests {
         finish(helper, fixture);
     }
 
+
+    /* --- carrying a crate off a foundation ------------------- */
+
+    /**
+     * One crate can be carried off a founded column, and the large crate underneath never moves.
+     *
+     * <p>The interesting part is what is <i>not</i> disturbed. The crates on the lid live inside the
+     * cell the large crate owns, so a pickup reaches through the foundation's own geometry - and the
+     * column has to stay founded afterwards rather than dropping to the floor.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void aCrateIsCarriedOffAFoundedColumn(GameTestHelper helper) {
+        Fixture fixture = largeCrate(helper, Direction.NORTH);
+        fixture.large().setItem(0, new ItemStack(Items.GOLD_INGOT, 5));
+        click(fixture, new ItemStack(small()), lidHit(fixture));
+        CrateStackBlockEntity stack = column(helper, fixture);
+        click(fixture, new ItemStack(small()), columnTopHit(fixture, stack));
+        check(stack.crateCount() == 2, "the fixture needs two crates on the lid");
+
+        int lower = stack.crates().get(0).id();
+        int upper = stack.crates().get(1).id();
+        stack.containerFor(lower).setItem(0, new ItemStack(Items.APPLE, 4));
+        stack.containerFor(upper).setItem(0, new ItemStack(Items.DIAMOND, 3));
+        int origin = stack.originHundredths();
+
+        GrabbyPickupResult result = grab(helper, fixture, upper);
+
+        check(result.outcome() == GrabbyPickupOutcome.SUCCESS,
+                "Grabby refused a crate on a foundation: " + result.outcome());
+        check(stack.crateCount() == 1, "more than the aimed crate left the lid");
+        check(stack.crateById(lower) != null, "the wrong crate was carried away");
+        check(stack.containerFor(lower).getItem(0).is(Items.APPLE),
+                "the crate left on the lid lost its contents");
+        check(stack.hasFoundation() && stack.originHundredths() == origin,
+                "the column stopped resting on the lid, origin " + stack.originHundredths());
+        check(CrateFoundation.isFoundation(helper.getLevel().getBlockState(fixture.anchor())),
+                "the large crate was disturbed by a pickup above it");
+        check(fixture.large().getItem(0).is(Items.GOLD_INGOT),
+                "the large crate lost its own contents");
+        finish(helper, fixture);
+    }
+
+    /** Taking the last crate off the lid removes the column and leaves the large crate whole. */
+    @GameTest(template = TEMPLATE)
+    public static void carryingTheLastCrateOffTheLidLeavesTheLargeCrateIntact(GameTestHelper helper) {
+        Fixture fixture = largeCrate(helper, Direction.NORTH);
+        fixture.large().setItem(0, new ItemStack(Items.GOLD_INGOT, 5));
+        click(fixture, new ItemStack(small()), lidHit(fixture));
+        CrateStackBlockEntity stack = column(helper, fixture);
+        int only = stack.crates().get(0).id();
+        BlockPos root = CrateFoundation.columnRootFor(fixture.anchor());
+
+        GrabbyPickupResult taken = grab(helper, fixture, only);
+        check(taken.outcome() == GrabbyPickupOutcome.SUCCESS,
+                "the last crate on the lid could not be carried: " + taken.outcome());
+
+        check(!helper.getLevel().getBlockState(root).is(BlockRegistry.CRATE_STACK.get()),
+                "an empty column was left standing on the lid");
+        check(CrateFoundation.isFoundation(helper.getLevel().getBlockState(fixture.anchor())),
+                "the large crate went with the column");
+        check(fixture.large().getItem(0).is(Items.GOLD_INGOT),
+                "the large crate lost its contents when the column above it emptied");
+        finish(helper, fixture);
+    }
+
     /* ─── fixtures ───────────────────────────────────────────── */
 
     private record Fixture(
@@ -503,6 +574,13 @@ public final class CrateStackFoundationGameTests {
 
     private static Item large() {
         return ItemRegistry.LARGE_CRATE_ITEM.get();
+    }
+
+    /** Carries away one named crate on the lid, through the transaction gameplay runs. */
+    private static GrabbyPickupResult grab(GameTestHelper helper, Fixture fixture, int crateId) {
+        return GrabbyPickupTransaction.execute(
+                GrabbyWorld.of(helper.getLevel()), GrabbyActor.of(fixture.player()),
+                CrateFoundation.columnRootFor(fixture.anchor()), OptionalInt.of(crateId));
     }
 
     private static void check(boolean condition, String message) {

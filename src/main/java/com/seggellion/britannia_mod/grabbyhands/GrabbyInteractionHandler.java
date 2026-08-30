@@ -10,6 +10,9 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import com.seggellion.britannia_mod.grabbyhands.destruction.GrabbyDestructionService;
 import com.seggellion.britannia_mod.crate.CrateFoundation;
+import com.seggellion.britannia_mod.crate.CrateStackTargetResolver;
+import java.util.Optional;
+import java.util.OptionalInt;
 import net.minecraft.core.BlockPos;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
@@ -102,11 +105,20 @@ public final class GrabbyInteractionHandler {
         // Which crate the player meant is decided by height when one is standing on another, because
         // the upper crate's body is physically inside the lower crate's cells and a position alone
         // would always name the lower one.
-        BlockPos aimedAt = CrateFoundation.crateRootAt(
+        BlockPos aimedAtCrate = CrateFoundation.crateRootAt(
                 level, event.getPos(), level.getBlockState(event.getPos()),
                 event.getHitVec().getLocation());
-        GrabbyPickupResult result = GrabbyPickupTransaction.execute(
-                GrabbyWorld.of(level), GrabbyActor.of(player), aimedAt);
+        // A compact column is several crates a player points at individually, sharing one position
+        // and one block entity. Naming the crate they meant is the same question the menus and
+        // breaking already ask, so it goes to the same resolver rather than being worked out again.
+        Optional<CrateStackTargetResolver.Target> aimedCrate =
+                CrateStackTargetResolver.resolve(level, event.getHitVec());
+        GrabbyPickupResult result = aimedCrate
+                .map(target -> GrabbyPickupTransaction.execute(
+                        GrabbyWorld.of(level), GrabbyActor.of(player), target.root(),
+                        OptionalInt.of(target.crateId())))
+                .orElseGet(() -> GrabbyPickupTransaction.execute(
+                        GrabbyWorld.of(level), GrabbyActor.of(player), aimedAtCrate));
 
         if (!result.outcome().handled()) {
             // Not a Grabby object, or not a player-placed one. Leave the interaction completely alone

@@ -27,7 +27,7 @@ public final class LogicalCrate {
     private final int id;
     private final CrateVariant variant;
     private final NonNullList<ItemStack> items;
-    private Direction facing;
+    private final Direction facing;
     private int openerCount;
 
     public LogicalCrate(int id, CrateVariant variant, Direction facing) {
@@ -73,9 +73,6 @@ public final class LogicalCrate {
         return facing;
     }
 
-    public void setFacing(Direction facing) {
-        this.facing = requireHorizontal(facing);
-    }
 
     /** This crate's storage. Package-private so only its own container view can reach it. */
     NonNullList<ItemStack> items() {
@@ -127,6 +124,24 @@ public final class LogicalCrate {
      * vanilla containers recount openers on load, and a count restored from disk is a count that
      * outlives the players it described.
      */
+    /**
+     * Whether anything in here is itself a container carrying something.
+     *
+     * <p>Asked rather than answered by reading the items, because the item list is deliberately not
+     * exposed: everything that changes a crate goes through the crate. The rule itself is the one an
+     * ordinary crate applies - a full container does not go inside another one - and being stored in a
+     * column changes nothing about it.
+     */
+    public boolean holdsNestedContents() {
+        for (net.minecraft.world.item.ItemStack held : items) {
+            if (!held.getOrDefault(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA,
+                    net.minecraft.world.item.component.CustomData.EMPTY).isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public int openerCount() {
         return openerCount;
     }

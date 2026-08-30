@@ -43,6 +43,43 @@ public interface GrabbyWorld {
      */
     boolean setGrabbyState(BlockPos pos, GrabbyInstanceState state);
 
+    /**
+     * Why one sub-object of a multi-object block refuses to be carried, if it does.
+     *
+     * <p>Empty when the block holds no sub-objects at all, which is every ordinary enrolled block.
+     */
+    default Optional<GrabbyTransportRefusal> subObjectRefusal(BlockPos pos, int subObjectId) {
+        return Optional.empty();
+    }
+
+    /**
+     * Whether several objects a player can address separately live at this position.
+     *
+     * <p>This is what admits a sub-object pickup, in place of the movable-type tag an ordinary object
+     * is admitted by. The two are not the same question: the tag says a block travels whole, and the
+     * blocks carrying it are held to that - a registered item to be placed back as, a provenance
+     * capable block entity, a matching axe-destroyable entry. A host travels only in pieces and meets
+     * none of those, so enrolling one would be claiming something untrue about it.
+     */
+    default boolean hostsSubObjects(BlockPos pos) {
+        return false;
+    }
+
+    /** The item one sub-object would be carried as, without taking it. */
+    default Optional<ItemStack> peekSubObject(BlockPos pos, int subObjectId) {
+        return Optional.empty();
+    }
+
+    /**
+     * Takes one sub-object out of a multi-object block and returns the item carrying it.
+     *
+     * <p>Empty when there is no such sub-object, which includes the ordinary case of a block that has
+     * none and the racing case of one another player has just taken.
+     */
+    default Optional<ItemStack> takeSubObject(BlockPos pos, int subObjectId) {
+        return Optional.empty();
+    }
+
     /** Current level game time, used as the placement timestamp. */
     long gameTime();
 
@@ -219,6 +256,32 @@ public interface GrabbyWorld {
         public boolean detachPayloadBeforeRemoval(BlockPos pos) {
             return level.getBlockEntity(pos) instanceof GrabbyDetachable detachable
                     && detachable.detachForTransport();
+        }
+
+        @Override
+        public Optional<GrabbyTransportRefusal> subObjectRefusal(BlockPos pos, int subObjectId) {
+            return level.getBlockEntity(pos) instanceof GrabbySubObjectHost host
+                    ? host.subObjectRefusal(subObjectId)
+                    : Optional.empty();
+        }
+
+        @Override
+        public boolean hostsSubObjects(BlockPos pos) {
+            return level.getBlockEntity(pos) instanceof GrabbySubObjectHost;
+        }
+
+        @Override
+        public Optional<ItemStack> peekSubObject(BlockPos pos, int subObjectId) {
+            return level.getBlockEntity(pos) instanceof GrabbySubObjectHost host
+                    ? host.previewSubObject(subObjectId, level.registryAccess())
+                    : Optional.empty();
+        }
+
+        @Override
+        public Optional<ItemStack> takeSubObject(BlockPos pos, int subObjectId) {
+            return level.getBlockEntity(pos) instanceof GrabbySubObjectHost host
+                    ? host.takeSubObject(subObjectId, level.registryAccess())
+                    : Optional.empty();
         }
 
         @Override

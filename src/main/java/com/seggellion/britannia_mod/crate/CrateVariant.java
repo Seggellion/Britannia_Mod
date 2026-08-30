@@ -75,6 +75,14 @@ public enum CrateVariant {
         return packedBaseHundredths - authoredMinYHundredths;
     }
 
+    /** The item a crate of this variant is carried and placed as. */
+    public net.minecraft.world.item.Item item() {
+        return switch (this) {
+            case SMALL -> com.seggellion.britannia_mod.registry.ItemRegistry.SMALL_CRATE_ITEM.get();
+            case MEDIUM -> com.seggellion.britannia_mod.registry.ItemRegistry.MEDIUM_CRATE_ITEM.get();
+        };
+    }
+
     public int slotCount() {
         return slotCount;
     }

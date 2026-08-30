@@ -3,7 +3,13 @@ package com.seggellion.britannia_mod.block.entity;
 
 import com.seggellion.britannia_mod.block.CrateStackBlock;
 import com.seggellion.britannia_mod.crate.CratePlacement;
+import com.seggellion.britannia_mod.crate.CrateStackColumnSync;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyInstanceState;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyProvenanceHolder;
+import com.seggellion.britannia_mod.grabbyhands.GrabbySubObjectHost;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyTransportRefusal;
 import com.seggellion.britannia_mod.crate.CrateStackLayout;
+import com.seggellion.britannia_mod.crate.CrateStackShapes;
 import com.seggellion.britannia_mod.crate.CrateStackSlice;
 import com.seggellion.britannia_mod.crate.CrateVariant;
 import com.seggellion.britannia_mod.crate.LogicalCrate;
@@ -14,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
@@ -33,11 +40,16 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
@@ -71,7 +83,8 @@ import org.slf4j.Logger;
  *       a chance to duplicate or drop what it carries; promotion happens at most once per column.</li>
  * </ul>
  */
-public class CrateStackBlockEntity extends BlockEntity {
+public class CrateStackBlockEntity extends BlockEntity
+        implements GrabbySubObjectHost, GrabbyProvenanceHolder {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -86,6 +99,16 @@ public class CrateStackBlockEntity extends BlockEntity {
     private int nextCrateId;
 
     /**
+     * Whether a player put this column here.
+     *
+     * <p>Kept for the column rather than per crate, because that is the question Grabby asks: is this
+     * an object somebody placed, or is it scenery. A compact column only ever exists because a player
+     * stacked one crate on another, so it is stamped when it is created and every crate in it is
+     * carried on the same footing.
+     */
+    private GrabbyInstanceState grabbyState = GrabbyInstanceState.worldPlaced();
+
+    /**
      * Where the bottom crate rests, relative to this cell's floor.
      *
      * <p>Zero for every column that stands on the ground, which is every column saved before
@@ -97,6 +120,20 @@ public class CrateStackBlockEntity extends BlockEntity {
     /** Recomputed rather than saved: it is a pure function of the crate list. */
     @Nullable
     private CrateStackLayout layout;
+
+    /**
+     * Per cell, and for the same reason the layout is cached: these are asked for constantly.
+     *
+     * <p>A slice is rebuilt for every frame the column is on screen, and its shape for every raycast,
+     * collision test and block outline - none of which change anything. Both are pure functions of
+     * the crate list, so they are worked out once per shape of the column and thrown away whenever it
+     * changes.
+     */
+    @Nullable
+    private CrateStackSlice[] slices;
+
+    @Nullable
+    private VoxelShape[] shapes;
 
     public CrateStackBlockEntity(BlockPos pos, BlockState state) {
         this(BlockRegistry.CRATE_STACK_BLOCK_ENTITY_TYPE.get(), pos, state);
@@ -203,7 +240,39 @@ public class CrateStackBlockEntity extends BlockEntity {
      * <p>The single projection both views read, so the picture and the hitbox cannot drift apart.
      */
     public CrateStackSlice sliceFor(int cell) {
-        return CrateStackSlice.of(layout(), crates, cell);
+        if (cell < 0 || cell >= CrateStackLayout.MAX_CELLS) {
+            return CrateStackSlice.of(layout(), crates, cell);
+        }
+        if (slices == null) {
+            slices = new CrateStackSlice[CrateStackLayout.MAX_CELLS];
+        }
+        CrateStackSlice known = slices[cell];
+        if (known == null) {
+            known = CrateStackSlice.of(layout(), crates, cell);
+            slices[cell] = known;
+        }
+        return known;
+    }
+
+    /**
+     * The collision and selection geometry of one cell.
+     *
+     * <p>Built from {@link #sliceFor(int)}, so the shape and the picture cannot disagree, and kept for
+     * as long as the slice is - a column standing still costs nothing to walk into or look at.
+     */
+    public VoxelShape shapeFor(int cell) {
+        if (cell < 0 || cell >= CrateStackLayout.MAX_CELLS) {
+            return CrateStackShapes.cellShape(sliceFor(cell));
+        }
+        if (shapes == null) {
+            shapes = new VoxelShape[CrateStackLayout.MAX_CELLS];
+        }
+        VoxelShape known = shapes[cell];
+        if (known == null) {
+            known = CrateStackShapes.cellShape(sliceFor(cell));
+            shapes[cell] = known;
+        }
+        return known;
     }
 
     /* ─── changing the column ────────────────────────────────── */
@@ -300,7 +369,102 @@ public class CrateStackBlockEntity extends BlockEntity {
 
     public void repack() {
         layout = CrateStackLayout.of(crates, originHundredths);
+        slices = null;
+        shapes = null;
         setChanged();
+    }
+
+    /* ─── carrying one crate away ────────────────────────────── */
+
+    /**
+     * Why one crate of this column refuses to be carried, if it does.
+     *
+     * <p>Deliberately about the one crate rather than the column. Someone reading the top crate is no
+     * reason the bottom one cannot be moved - they are separate objects to the player, and a column in
+     * a warehouse would otherwise freeze whole because somebody left one lid open.
+     */
+    @Override
+    public GrabbyInstanceState grabbyState() {
+        return grabbyState;
+    }
+
+    @Override
+    public void setGrabbyState(GrabbyInstanceState state) {
+        this.grabbyState = Objects.requireNonNull(state, "state");
+        setChanged();
+    }
+
+    @Override
+    public Optional<GrabbyTransportRefusal> subObjectRefusal(int crateId) {
+        LogicalCrate crate = crateById(crateId);
+        if (crate == null) {
+            return Optional.of(GrabbyTransportRefusal.IN_USE);
+        }
+        if (crate.openerCount() > 0) {
+            return Optional.of(GrabbyTransportRefusal.IN_USE);
+        }
+        // The same rule an ordinary crate applies: a container carrying something does not go inside
+        // another one, and being stored in a column changes nothing about that.
+        if (crate.holdsNestedContents()) {
+            return Optional.of(GrabbyTransportRefusal.NESTED_CONTAINER);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Takes one crate out of the column and returns the item carrying it.
+     *
+     * <p>Transport, not destruction: nothing drops, and the contents are in exactly one place at every
+     * moment. They are written into the item from the crate that is being removed in the same step
+     * that removes it, so there is no window in which both the column and the item hold them.
+     *
+     * <p>Only that crate is serialized. A column can hold several inventories, and writing the whole
+     * block entity into an item a player is carrying would put crates they did not pick up into their
+     * pocket.
+     */
+    @Override
+    public Optional<ItemStack> previewSubObject(int crateId, HolderLookup.Provider registries) {
+        LogicalCrate crate = crateById(crateId);
+        return crate == null ? Optional.empty() : Optional.of(carriedForm(crate, registries));
+    }
+
+    /**
+     * The item one crate travels as: its own crate item, carrying its own contents and nothing else.
+     *
+     * <p>Only this crate is written. A column can hold several inventories, and putting the whole
+     * block entity into an item would hand the player crates they never picked up.
+     */
+    private static ItemStack carriedForm(LogicalCrate crate, HolderLookup.Provider registries) {
+        ItemStack carried = new ItemStack(crate.variant().item());
+        CompoundTag data = new CompoundTag();
+        crate.saveItemsTo(data, registries);
+        BlockItem.setBlockEntityData(carried, BlockRegistry.CRATE_BLOCK_ENTITY_TYPE.get(), data);
+        return carried;
+    }
+
+    @Override
+    public Optional<ItemStack> takeSubObject(int crateId, HolderLookup.Provider registries) {
+        LogicalCrate crate = crateById(crateId);
+        if (crate == null || subObjectRefusal(crateId).isPresent()) {
+            return Optional.empty();
+        }
+        ItemStack carried = carriedForm(crate, registries);
+
+        Optional<LogicalCrate> removed = removeCrate(crateId);
+        if (removed.isEmpty()) {
+            return Optional.empty();
+        }
+        setChanged();
+        if (level instanceof ServerLevel server) {
+            // The column may have shrunk out of a cell, and it may have nothing left at all.
+            CrateStackColumnSync.notifyClients(
+                    server, worldPosition,
+                    CrateStackColumnSync.reconcile(server, worldPosition, this));
+            if (isEmpty()) {
+                CrateStackBlock.removeColumn(server, worldPosition);
+            }
+        }
+        return Optional.of(carried);
     }
 
     /* ─── containers ─────────────────────────────────────────── */
@@ -461,6 +625,9 @@ public class CrateStackBlockEntity extends BlockEntity {
         }
         tag.put(TAG_CRATES, saved);
         tag.putInt(TAG_NEXT_ID, nextCrateId);
+        if (withItems) {
+            grabbyState.write(tag);
+        }
         // Written only when it is not the default, so a freestanding column's data is byte for byte
         // what it was before foundations existed.
         if (originHundredths != 0) {
@@ -497,6 +664,8 @@ public class CrateStackBlockEntity extends BlockEntity {
         super.loadAdditional(tag, registries);
         crates.clear();
         layout = null;
+        slices = null;
+        shapes = null;
         // Absent for every column saved before foundations existed, which is exactly right for them.
         originHundredths = tag.getInt(TAG_ORIGIN);
 
@@ -537,6 +706,7 @@ public class CrateStackBlockEntity extends BlockEntity {
         }
 
         nextCrateId = tag.getInt(TAG_NEXT_ID);
+        grabbyState = GrabbyInstanceState.read(tag);
         if (!crates.isEmpty() && originHundredths != 0) {
             LOGGER.debug("[crate-stack] {} loaded on a foundation at {} hundredths",
                     worldPosition, originHundredths);

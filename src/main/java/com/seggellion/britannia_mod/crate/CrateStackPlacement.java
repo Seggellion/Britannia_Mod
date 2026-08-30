@@ -5,6 +5,7 @@ import com.seggellion.britannia_mod.block.CrateStackBlock;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import net.minecraft.world.level.block.Block;
 import com.seggellion.britannia_mod.block.entity.CrateStackBlockEntity;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyInstanceState;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -70,7 +71,7 @@ public final class CrateStackPlacement {
         AT_HEIGHT_CAP,
         /** A cell the column would need is occupied or unavailable. */
         OBSTRUCTED,
-        /** The held crate carries state this milestone cannot move into a column. */
+        /** The held crate's saved data carries keys a column has no way to represent. */
         HELD_CRATE_CARRIES_STATE,
         /** The world refused a change; nothing was altered. */
         WORLD_REFUSED
@@ -132,6 +133,13 @@ public final class CrateStackPlacement {
 
         if (result.succeeded()) {
             BlockPos root = CrateStackBlock.rootOf(pos, level.getBlockState(pos));
+            // A column exists because a player stacked crates, and Grabby only carries what a player
+            // put down. Stamped on every append so a column started before this still becomes
+            // carryable the next time somebody adds to it.
+            if (level.getBlockEntity(root) instanceof CrateStackBlockEntity stamped) {
+                stamped.setGrabbyState(GrabbyInstanceState.playerPlaced(
+                        player.getUUID(), level.getGameTime()));
+            }
             announce(level, root, player);
             if (!player.hasInfiniteMaterials()) {
                 held.shrink(1);
@@ -315,6 +323,11 @@ public final class CrateStackPlacement {
             CrateStackBlock.duringMutation(() -> level.removeBlock(root, false));
             return Result.refused(Refusal.AT_HEIGHT_CAP);
         }
+        // Stamped for the same reason an ordinary append is: this column exists because a player put
+        // it here, and Grabby only carries what a player put down. Without it a column founded on a
+        // lid and left at one crate could never be picked up again by the person who placed it.
+        stack.setGrabbyState(
+                GrabbyInstanceState.playerPlaced(player.getUUID(), level.getGameTime()));
         stack.setChanged();
         CrateStackColumnSync.notifyClients(
                 level, root, CrateStackColumnSync.reconcile(level, root, stack));
