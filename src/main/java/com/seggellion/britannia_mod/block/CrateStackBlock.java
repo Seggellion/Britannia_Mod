@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.block;
 
 import com.seggellion.britannia_mod.block.entity.CrateStackBlockEntity;
+import com.seggellion.britannia_mod.crate.CrateStackAutomation;
 import com.seggellion.britannia_mod.crate.CrateStackLayout;
 import com.seggellion.britannia_mod.crate.CrateStackBreakTargets;
 import com.seggellion.britannia_mod.crate.CrateStackBreakTransaction;
@@ -25,6 +26,10 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -55,7 +60,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * {@code small_crate} and {@code medium_crate}; this is only what a position becomes once two of them
  * occupy it.
  */
-public class CrateStackBlock extends Block implements EntityBlock {
+public class CrateStackBlock extends Block implements EntityBlock, WorldlyContainerHolder {
 
     /** Which cell of its column this is, counting up from the root at zero. */
     public static final IntegerProperty PART =
@@ -130,6 +135,48 @@ public class CrateStackBlock extends Block implements EntityBlock {
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
+    }
+
+    /**
+     * What a hopper touching this cell may reach.
+     *
+     * <p>Answered by the block rather than by a block entity because most of a column's cells do not
+     * have one: {@code HopperBlockEntity} asks a {@code WorldlyContainerHolder} first, and hands it
+     * the position, so a continuation cell can look down to its root and answer for it. Which crate
+     * the hopper is talking to is then decided by the face it is on.
+     */
+    @Override
+    public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
+        BlockPos root = rootOf(pos, state);
+        return level.getBlockEntity(root) instanceof CrateStackBlockEntity stack
+                ? CrateStackAutomation.at(stack, state.getValue(PART))
+                : null;
+    }
+
+    /**
+     * A comparator reads how full the whole column is.
+     *
+     * <p>One position can carry one signal, and a column is several crates at one position, so a
+     * per-crate reading is not representable. The honest summary is the column: every crate's slots
+     * counted as one inventory, from whichever of its cells the comparator happens to touch. Nothing
+     * about how the crates actually store their contents is merged - this is a reading, not a
+     * container.
+     */
+    @Override
+    protected boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        BlockPos root = rootOf(pos, state);
+        if (!(level.getBlockEntity(root) instanceof CrateStackBlockEntity stack)) {
+            return 0;
+        }
+        CrateStackAutomation column = CrateStackAutomation.at(stack, 0);
+        return column == null
+                ? 0
+                : AbstractContainerMenu.getRedstoneSignalFromContainer(column);
     }
 
     @Override

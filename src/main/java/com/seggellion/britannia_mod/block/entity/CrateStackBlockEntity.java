@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.block.entity;
 
 
+import com.seggellion.britannia_mod.block.CrateStackBlock;
 import com.seggellion.britannia_mod.crate.CratePlacement;
 import com.seggellion.britannia_mod.crate.CrateStackLayout;
 import com.seggellion.britannia_mod.crate.CrateStackSlice;
@@ -275,6 +276,28 @@ public class CrateStackBlockEntity extends BlockEntity {
      * {@link LogicalCrate} is touched here at all, which is why repacking can never move, copy or
      * lose an item.
      */
+    /**
+     * Tells the world the column changed, including every comparator that can see any of its cells.
+     *
+     * <p>A comparator beside a continuation cell reads the same column as one beside the root, so all
+     * of them have to be told. Nothing else notices: a change to what a crate holds moves no block,
+     * so without this a comparator would keep reporting whatever was true when something last did.
+     */
+    @Override
+    public void setChanged() {
+        super.setChanged();
+        if (level == null || level.isClientSide) {
+            return;
+        }
+        for (int cell = 0; cell < Math.max(requiredCellCount(), 1); cell++) {
+            BlockPos pos = worldPosition.above(cell);
+            BlockState state = level.getBlockState(pos);
+            if (state.getBlock() instanceof CrateStackBlock) {
+                level.updateNeighbourForOutputSignal(pos, state.getBlock());
+            }
+        }
+    }
+
     public void repack() {
         layout = CrateStackLayout.of(crates, originHundredths);
         setChanged();
