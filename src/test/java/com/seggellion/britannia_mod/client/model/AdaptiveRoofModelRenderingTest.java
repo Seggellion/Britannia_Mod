@@ -124,27 +124,34 @@ class AdaptiveRoofModelRenderingTest {
     }
 
     @Test
-    void everyRegisteredAdaptiveRoofBlockModelIsWrappedButInventoryModelsAreNot() {
-        Set<String> expected = Set.of(
-                "tile_roof_flat",
-                "cedar_roof_flat",
-                "slate_roof_flat",
-                "slate_roof_1_flat",
-                "slate_roof_2_flat",
-                "thatch_roof_flat");
-        assertEquals(expected, AdaptiveRoofClientModels.ADAPTIVE_ROOF_IDS);
+    void typeBasedRuleWrapsTopOnlyTerrainModelsButNeverInventoryOrForeignModels()
+            throws Exception {
+        TopOnlySlabBlock adaptiveRoof = new TopOnlySlabBlock(BlockBehaviour.Properties.of());
+        ResourceLocation futureRoof = ResourceLocation.fromNamespaceAndPath(
+                "britannia_mod", "future_top_only_roof");
 
-        for (String id : expected) {
-            ResourceLocation location = ResourceLocation.fromNamespaceAndPath(
-                    "britannia_mod", id);
-            assertTrue(AdaptiveRoofClientModels.isAdaptiveRoofBlockModel(
-                    new ModelResourceLocation(location, "type=top,supports_lantern=true")));
-            assertFalse(AdaptiveRoofClientModels.isAdaptiveRoofBlockModel(
-                    ModelResourceLocation.inventory(location)));
-        }
+        assertTrue(AdaptiveRoofClientModels.isAdaptiveRoofBlockModel(
+                new ModelResourceLocation(
+                        futureRoof, "type=top,supports_lantern=true,waterlogged=false"),
+                ignored -> adaptiveRoof));
+        assertFalse(AdaptiveRoofClientModels.isAdaptiveRoofBlockModel(
+                ModelResourceLocation.inventory(futureRoof),
+                ignored -> {
+                    throw new AssertionError("inventory model performed a block lookup");
+                }));
         assertFalse(AdaptiveRoofClientModels.isAdaptiveRoofBlockModel(
                 new ModelResourceLocation(
-                        ResourceLocation.withDefaultNamespace("stone"), "normal")));
+                        ResourceLocation.fromNamespaceAndPath("other_mod", "roof"), "normal"),
+                ignored -> adaptiveRoof));
+        assertFalse(AdaptiveRoofClientModels.isAdaptiveRoofBlockModel(
+                new ModelResourceLocation(
+                        ResourceLocation.fromNamespaceAndPath("britannia_mod", "stone"), "normal"),
+                ignored -> null));
+
+        String source = Files.readString(PROJECT.resolve(
+                "src/main/java/com/seggellion/britannia_mod/client/model/AdaptiveRoofClientModels.java"));
+        assertTrue(source.contains("instanceof TopOnlySlabBlock"));
+        assertFalse(source.contains("ADAPTIVE_ROOF_IDS"));
     }
 
     @Test

@@ -1,0 +1,20 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "#roof"
+  },
+  "elements": [
+    {
+      "from": [0, 8, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "down": { "texture": "#roof", "cullface": "down" },
+        "up": { "texture": "#roof", "cullface": "up" },
+        "north": { "texture": "#roof", "cullface": "north" },
+        "south": { "texture": "#roof", "cullface": "south" },
+        "west": { "texture": "#roof", "cullface": "west" },
+        "east": { "texture": "#roof", "cullface": "east" }
+      }
+    }
+  ]
+}

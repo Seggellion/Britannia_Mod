@@ -1,0 +1,6 @@
+{
+  "parent": "britannia_mod:block/structure/roof/top_only_slab",
+  "textures": {
+    "roof": "britannia_mod:block/roof/slate_roof_flat"
+  }
+}

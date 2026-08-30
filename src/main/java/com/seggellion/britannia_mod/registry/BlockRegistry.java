@@ -98,6 +98,7 @@ import com.seggellion.britannia_mod.block.QuarterBlock;
 import com.seggellion.britannia_mod.block.ThreeQuarterBlock;
 import com.seggellion.britannia_mod.block.HouseLotBlock;
 import com.seggellion.britannia_mod.block.TopOnlySlabBlock;
+import com.seggellion.britannia_mod.block.VariantTopOnlySlabBlock;
 import com.seggellion.britannia_mod.block.WindowCollisionBlock;
 import com.seggellion.britannia_mod.block.MultiCellWindowBlock;
 import com.seggellion.britannia_mod.block.WindowFootprint;
@@ -1453,8 +1454,16 @@ public static final DeferredHolder<Block, TopOnlySlabBlock> TILE_ROOF_FLAT = BLO
 );
 
 
-public static final DeferredHolder<Block, TopOnlySlabBlock> SLATE_ROOF_FLAT = BLOCKS.register("slate_roof_flat", () ->
-    new TopOnlySlabBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_SLAB))
+public static final DeferredHolder<Block, VariantTopOnlySlabBlock> SLATE_ROOF_FLAT = BLOCKS.register("slate_roof_flat", () ->
+    new VariantTopOnlySlabBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_SLAB))
+);
+
+public static final DeferredHolder<Block, VariantTopOnlySlabBlock> SANDSTONE_ROOF = BLOCKS.register("sandstone_roof", () ->
+    new VariantTopOnlySlabBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_SLAB))
+);
+
+public static final DeferredHolder<Block, VariantTopOnlySlabBlock> LIMESTONE_ROOF = BLOCKS.register("limestone_roof", () ->
+    new VariantTopOnlySlabBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_SLAB))
 );
 
 public static final DeferredHolder<Block, TopOnlySlabBlock> SLATE_ROOF_1_FLAT = BLOCKS.register("slate_roof_1_flat", () ->

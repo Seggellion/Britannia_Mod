@@ -23,6 +23,17 @@ public interface VariantCyclable {
     IntegerProperty variationProperty();
 
     /**
+     * Returns the next persistent variation while leaving every unrelated state property
+     * untouched. Keeping this transition separate from the world mutation makes the preservation
+     * contract directly testable for blocks that also carry geometry or support properties.
+     */
+    default BlockState nextVariationState(BlockState state) {
+        IntegerProperty variation = variationProperty();
+        int next = (state.getValue(variation) + 1) % variation.getPossibleValues().size();
+        return state.setValue(variation, next);
+    }
+
+    /**
      * Advances to the next texture when the player is holding the interior decorator tool.
      * Call this from {@code useItemOn}; it returns
      * {@link ItemInteractionResult#PASS_TO_DEFAULT_BLOCK_INTERACTION} when the item is not the tool.
@@ -35,10 +46,7 @@ public interface VariantCyclable {
         }
 
         if (!level.isClientSide()) {
-            IntegerProperty variation = variationProperty();
-            int next = (state.getValue(variation) + 1) % variation.getPossibleValues().size();
-
-            level.setBlock(pos, state.setValue(variation, next), Block.UPDATE_ALL);
+            level.setBlock(pos, nextVariationState(state), Block.UPDATE_ALL);
             level.playSound(null, pos, state.getSoundType().getPlaceSound(),
                 SoundSource.BLOCKS, 0.5f, 1.2f);
         }

@@ -1,8 +1,22 @@
 {
-    "variants": {
-      "type=bottom": { "model": "britannia_mod:block/structure/slate_roof_flat" },
-      "type=top": { "model": "britannia_mod:block/structure/slate_roof_flat" },
-      "type=double": { "model": "britannia_mod:block/structure/slate_roof_flat_double" }
-    }
+  "variants": {
+    "type=bottom,variation=0": { "model": "britannia_mod:block/structure/roof/slate_roof_1" },
+    "type=top,variation=0": { "model": "britannia_mod:block/structure/roof/slate_roof_1" },
+    "type=double,variation=0": { "model": "britannia_mod:block/structure/roof/slate_roof_1" },
+    "type=bottom,variation=1": { "model": "britannia_mod:block/structure/roof/slate_roof_2" },
+    "type=top,variation=1": { "model": "britannia_mod:block/structure/roof/slate_roof_2" },
+    "type=double,variation=1": { "model": "britannia_mod:block/structure/roof/slate_roof_2" },
+    "type=bottom,variation=2": { "model": "britannia_mod:block/structure/roof/slate_roof_3" },
+    "type=top,variation=2": { "model": "britannia_mod:block/structure/roof/slate_roof_3" },
+    "type=double,variation=2": { "model": "britannia_mod:block/structure/roof/slate_roof_3" },
+    "type=bottom,variation=3": { "model": "britannia_mod:block/structure/roof/slate_roof_4" },
+    "type=top,variation=3": { "model": "britannia_mod:block/structure/roof/slate_roof_4" },
+    "type=double,variation=3": { "model": "britannia_mod:block/structure/roof/slate_roof_4" },
+    "type=bottom,variation=4": { "model": "britannia_mod:block/structure/roof/slate_roof_5" },
+    "type=top,variation=4": { "model": "britannia_mod:block/structure/roof/slate_roof_5" },
+    "type=double,variation=4": { "model": "britannia_mod:block/structure/roof/slate_roof_5" },
+    "type=bottom,variation=5": { "model": "britannia_mod:block/structure/roof/slate_roof_6" },
+    "type=top,variation=5": { "model": "britannia_mod:block/structure/roof/slate_roof_6" },
+    "type=double,variation=5": { "model": "britannia_mod:block/structure/roof/slate_roof_6" }
   }
-  
+}

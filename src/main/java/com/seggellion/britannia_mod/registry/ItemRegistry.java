@@ -1314,6 +1314,14 @@ public static final DeferredHolder<Item, BlockItem> SLATE_ROOF_FLAT_ITEM = ITEMS
     new BlockItem(BlockRegistry.SLATE_ROOF_FLAT.get(), new Item.Properties())
 );
 
+public static final DeferredHolder<Item, BlockItem> SANDSTONE_ROOF_ITEM = ITEMS.register("sandstone_roof", () ->
+    new BlockItem(BlockRegistry.SANDSTONE_ROOF.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, BlockItem> LIMESTONE_ROOF_ITEM = ITEMS.register("limestone_roof", () ->
+    new BlockItem(BlockRegistry.LIMESTONE_ROOF.get(), new Item.Properties())
+);
+
 public static final DeferredHolder<Item, BlockItem> SLATE_ROOF_1_FLAT_ITEM = ITEMS.register("slate_roof_1_flat", () ->
     new BlockItem(BlockRegistry.SLATE_ROOF_1_FLAT.get(), new Item.Properties())
 );

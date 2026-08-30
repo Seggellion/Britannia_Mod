@@ -22,11 +22,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.entity.player.Player;
-import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
 
 
 import javax.annotation.Nullable;
@@ -52,8 +53,14 @@ public class TopOnlySlabBlock extends SlabBlock implements EntityBlock {
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        // Always place as a TOP slab
-        return this.defaultBlockState().setValue(TYPE, SlabType.TOP).setValue(WATERLOGGED, false);
+        FluidState fluidState = context.getLevel().getFluidState(context.getClickedPos());
+        return placementStateForFluid(fluidState);
+    }
+
+    BlockState placementStateForFluid(FluidState fluidState) {
+        return this.defaultBlockState()
+                .setValue(TYPE, SlabType.TOP)
+                .setValue(WATERLOGGED, fluidState.getType() == Fluids.WATER);
     }
 
     @Override
@@ -114,17 +121,22 @@ public VoxelShape getBlockSupportShape(BlockState state,
                                                 : super.getOcclusionShape(state, level, pos);
     }
 
-    // (optional) keep the visual/collision outline consistent
+    @Override
+    public VoxelShape getShape(BlockState state,
+                               BlockGetter level,
+                               BlockPos pos,
+                               CollisionContext context) {
+        return state.getValue(SUPPORTS_LANTERN) ? Shapes.block()
+                                                : super.getShape(state, level, pos, context);
+    }
+
     @Override
     public VoxelShape getCollisionShape(BlockState state,
                                         BlockGetter level,
                                         BlockPos pos,
                                         CollisionContext ctx) {
-        if (level.getBlockEntity(pos) instanceof AdaptiveRoofBlockEntity be &&
-            be.getBottomTexture() != null) {
-            return Shapes.block();
-        }
-        return super.getCollisionShape(state, level, pos, ctx);
+        return state.getValue(SUPPORTS_LANTERN) ? Shapes.block()
+                                                : super.getCollisionShape(state, level, pos, ctx);
     }
 
 private static boolean isLantern(ItemStack stack) {
@@ -140,7 +152,7 @@ protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockSt
 
     @Nullable
     private ResourceLocation getTextureFromItem(Item item) {
-          if (item == Items.WOODEN_AXE || item == ItemRegistry.INTERIOR_DECORATOR_TOOL.get()) {
+          if (item == Items.WOODEN_AXE) {
         return ResourceLocation.fromNamespaceAndPath("minecraft", "block/air");
     }
 

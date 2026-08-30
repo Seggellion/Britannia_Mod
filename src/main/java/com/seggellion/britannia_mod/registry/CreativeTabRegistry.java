@@ -57,10 +57,9 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.CEDAR_ROOF_FLAT_ITEM.get());
                 safeAccept(output, ItemRegistry.THATCH_ROOF_ITEM.get());
                 safeAccept(output, ItemRegistry.THATCH_ROOF_FLAT_ITEM.get());
-                safeAccept(output, ItemRegistry.SLATE_ROOF_ITEM.get());
                 safeAccept(output, ItemRegistry.SLATE_ROOF_FLAT_ITEM.get());
-                safeAccept(output, ItemRegistry.SLATE_ROOF_1_FLAT_ITEM.get());
-                safeAccept(output, ItemRegistry.SLATE_ROOF_2_FLAT_ITEM.get());
+                safeAccept(output, ItemRegistry.SANDSTONE_ROOF_ITEM.get());
+                safeAccept(output, ItemRegistry.LIMESTONE_ROOF_ITEM.get());
 
                 // Foundations, Walls, Floors
                 safeAccept(output, ItemRegistry.WOODEN_BOARD_FLOOR_ITEM.get());

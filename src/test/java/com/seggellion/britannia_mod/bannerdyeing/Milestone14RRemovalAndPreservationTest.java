@@ -100,7 +100,9 @@ class Milestone14RRemovalAndPreservationTest {
         // dung world block intentionally has no BlockItem, so these are exactly six item ids.
         // 925 as of 2026-08-25: the light and dark sandstone pavers each add one ordinary
         // BlockItem; their two visual variants remain block-state/model variants, not item ids.
-        assertEquals(925, repositoryItems);
+        // 927 as of 2026-08-29: Stone/Slate Roof Milestone 5 adds the canonical Sandstone Roof
+        // and Limestone Roof BlockItems. Their six visual variations remain block states.
+        assertEquals(927, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));
