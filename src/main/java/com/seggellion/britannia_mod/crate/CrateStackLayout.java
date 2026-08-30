@@ -30,9 +30,9 @@ public final class CrateStackLayout {
     /**
      * The tallest a column may grow, in cells.
      *
-     * <p>Four keeps the block entity's saved data, the continuation cells a later milestone has to
-     * maintain, and the collision and selection work a column costs all bounded, and keeps
-     * thousand-crate towers out of the first implementation.
+     * <p>Four keeps the block entity's saved data, the continuation cells a column has to maintain,
+     * and the collision and selection work a column costs all bounded, and keeps thousand-crate
+     * towers out of the world.
      */
     public static final int MAX_CELLS = 4;
 

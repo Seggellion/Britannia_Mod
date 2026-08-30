@@ -25,7 +25,7 @@ public record CrateStackSlice(List<Entry> entries) {
     /**
      * One crate's contribution to one cell.
      *
-     * @param crateId the crate this draws, so later milestones can map a hit back to an identity
+     * @param crateId the crate this draws, which is how a hit is mapped back to one crate
      * @param variant which model to draw
      * @param facing which way to draw it
      * @param offsetHundredths how far to move the model from this cell's own floor; negative when

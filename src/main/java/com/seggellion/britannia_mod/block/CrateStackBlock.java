@@ -181,16 +181,16 @@ public class CrateStackBlock extends Block implements EntityBlock, WorldlyContai
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return CrateStackShapes.cellShape(sliceAt(level, pos, state));
+        return shapeAt(level, pos, state);
     }
 
     /**
      * The same geometry the player can see and select.
      *
-     * <p>Kept identical to the outline on purpose for now: the crates are the only thing in a column,
-     * so anything a player can walk into is something they should be able to aim at. Later milestones
-     * read the hit's height against the layout to decide which crate was aimed at, which needs the
-     * outline to follow the art rather than an envelope around it.
+     * <p>Identical to the outline on purpose: the crates are the only thing in a column, so anything a
+     * player can walk into is something they should be able to aim at. Targeting reads the hit's
+     * height against the layout to decide which crate was meant, which needs the outline to follow the
+     * art rather than an envelope around it.
      */
     @Override
     public VoxelShape getCollisionShape(
@@ -222,13 +222,14 @@ public class CrateStackBlock extends Block implements EntityBlock, WorldlyContai
                 || !(blockItem.getBlock() instanceof CrateBlock)) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
-        if (!(level.getBlockEntity(rootOf(pos, state)) instanceof CrateStackBlockEntity stackEntity)) {
+        BlockPos root = rootOf(pos, state);
+        if (!(level.getBlockEntity(root) instanceof CrateStackBlockEntity stackEntity)) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         // Only the exposed lid of the whole column is a stacking gesture. Crates pack flush, so a ray
         // arriving from outside cannot reach an interior surface, but the height is checked rather
         // than assumed so a hit from anywhere else still opens a crate.
-        return CrateStackTargetResolver.isColumnTop(stackEntity, rootOf(pos, state), hit)
+        return CrateStackTargetResolver.isColumnTop(stackEntity, root, hit)
                 ? ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION
                 : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
@@ -328,6 +329,17 @@ public class CrateStackBlock extends Block implements EntityBlock, WorldlyContai
     }
 
     /** What this cell shows, resolved from whichever cell owns the column. */
+    /** The cached geometry of this cell, or nothing when the root it belongs to has gone. */
+    private static VoxelShape shapeAt(BlockGetter level, BlockPos pos, BlockState state) {
+        if (!(state.getBlock() instanceof CrateStackBlock)) {
+            return Shapes.empty();
+        }
+        int part = state.getValue(PART);
+        return level.getBlockEntity(pos.below(part)) instanceof CrateStackBlockEntity stack
+                ? stack.shapeFor(part)
+                : Shapes.empty();
+    }
+
     private static CrateStackSlice sliceAt(BlockGetter level, BlockPos pos, BlockState state) {
         if (!(state.getBlock() instanceof CrateStackBlock)) {
             return CrateStackSlice.empty();
@@ -342,8 +354,4 @@ public class CrateStackBlock extends Block implements EntityBlock, WorldlyContai
         return stack.sliceFor(part);
     }
 
-    /** Exposed so tests can assert an empty column contributes no geometry at all. */
-    public static VoxelShape emptyShape() {
-        return Shapes.empty();
-    }
 }

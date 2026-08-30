@@ -80,11 +80,11 @@ public final class CrateItem extends DecorativeMultiblockItem {
             return super.useOn(context);
         }
         // A column only accepts a crate on its exposed lid; every other face is an interaction.
-        if (level.getBlockEntity(CrateStackBlock.rootOf(target, level.getBlockState(target)))
-                        instanceof CrateStackBlockEntity column
+        BlockPos columnRoot = CrateStackBlock.rootOf(target, level.getBlockState(target));
+        if (level.getBlockEntity(columnRoot) instanceof CrateStackBlockEntity column
                 && !CrateStackTargetResolver.isColumnTop(
                         column,
-                        CrateStackBlock.rootOf(target, level.getBlockState(target)),
+                        columnRoot,
                         context.getClickedFace(),
                         context.getClickLocation())) {
             return InteractionResult.PASS;

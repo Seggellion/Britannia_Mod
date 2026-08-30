@@ -220,6 +220,77 @@ public final class CrateStackAutomationGameTests {
         helper.succeed();
     }
 
+
+    /* --- a column that changes under the hopper --------------- */
+
+    /**
+     * Repacking a column never moves anybody's items into another crate.
+     *
+     * <p>A hopper addresses a crate by where it sits, and removing a crate low down slides everything
+     * above it into new positions. Identity has to survive that: the crate that held the diamonds
+     * still holds them afterwards, whatever cell it has moved into.
+     */
+    @GameTest(template = TEMPLATE, batch = BATCH)
+    public static void aRepackNeverMovesItemsBetweenCrates(GameTestHelper helper) {
+        BlockPos root = column(helper, CrateVariant.SMALL, CrateVariant.SMALL, CrateVariant.SMALL);
+        CrateStackBlockEntity stack = stackAt(helper, root);
+        int bottom = stack.crates().get(0).id();
+        int middle = stack.crates().get(1).id();
+        int top = stack.crates().get(2).id();
+        stack.containerFor(bottom).setItem(0, new ItemStack(Items.APPLE, 1));
+        stack.containerFor(middle).setItem(0, new ItemStack(Items.DIAMOND, 2));
+        stack.containerFor(top).setItem(0, new ItemStack(Items.EMERALD, 3));
+
+        // Taking the lowest crate slides the other two down a whole crate's height.
+        stack.removeCrate(bottom);
+        CrateStackColumnSync.notifyClients(helper.getLevel(), root,
+                CrateStackColumnSync.reconcile(helper.getLevel(), root));
+
+        check(stack.containerFor(middle).getItem(0).is(Items.DIAMOND),
+                "the repack moved the middle crate's diamonds somewhere else");
+        check(stack.containerFor(top).getItem(0).is(Items.EMERALD),
+                "the repack moved the top crate's emeralds somewhere else");
+
+        // A view taken after the repack writes into the crate that is actually there now.
+        CrateStackAutomation after = view(helper, root);
+        check(after.crateIndexFor(Direction.NORTH) == 0,
+                "the root cell offered crate " + after.crateIndexFor(Direction.NORTH)
+                        + " after the repack; the crate that slid down to the floor is first");
+        int[] slots = after.getSlotsForFace(Direction.NORTH);
+        after.setItem(slots[1], new ItemStack(Items.GOLD_INGOT, 1));
+        check(stack.containerFor(middle).getItem(1).is(Items.GOLD_INGOT),
+                "a post-repack insert landed outside the crate the hopper was offered");
+        check(stack.containerFor(top).getItem(1).isEmpty(),
+                "a post-repack insert reached a crate the hopper was never offered");
+        helper.succeed();
+    }
+
+    /**
+     * A view held across the removal of its own column does nothing rather than something wrong.
+     *
+     * <p>A hopper is handed a container and uses it moments later, which leaves a window where the
+     * column can be broken or carried away in between. Writing into what is left must not bring the
+     * column back from the dead.
+     */
+    @GameTest(template = TEMPLATE, batch = BATCH)
+    public static void aViewOutlivesTheColumnItAddressed(GameTestHelper helper) {
+        BlockPos root = column(helper, CrateVariant.SMALL, CrateVariant.SMALL);
+        CrateStackAutomation stale = view(helper, root);
+
+        helper.getLevel().removeBlock(root, false);
+        check(!helper.getLevel().getBlockState(root).is(BlockRegistry.CRATE_STACK.get()),
+                "the fixture needs the column gone");
+
+        // Anything the hopper does now must be inert, not fatal.
+        stale.getContainerSize();
+        stale.isEmpty();
+        stale.setItem(0, new ItemStack(Items.DIAMOND, 1));
+
+        check(!helper.getLevel().getBlockState(root).is(BlockRegistry.CRATE_STACK.get()),
+                "a stale hopper view put the removed column back into the world");
+        helper.succeed();
+    }
+
     private record LogicalFill(int crate, int slots) {
     }
 

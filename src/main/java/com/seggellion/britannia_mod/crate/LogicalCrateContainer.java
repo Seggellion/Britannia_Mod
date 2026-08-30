@@ -131,8 +131,8 @@ public final class LogicalCrateContainer implements Container {
      * Counts this player against this crate, and sounds only if the crate was shut.
      *
      * <p>Per crate, not per column: a column is one block entity, so a single opener count would make
-     * opening any crate report every crate in it as in use — which decides chest sounds now and, in a
-     * later milestone, whether Grabby Hands will carry a crate somebody is looking inside.
+     * opening any crate report every crate in it as in use — which decides both the chest sounds and
+     * whether Grabby Hands will carry away a crate somebody else is looking inside.
      */
     @Override
     public void startOpen(Player player) {

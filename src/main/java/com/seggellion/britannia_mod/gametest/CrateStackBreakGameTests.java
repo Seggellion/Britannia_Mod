@@ -324,13 +324,23 @@ public final class CrateStackBreakGameTests {
     @GameTest(template = TEMPLATE)
     public static void aBreakWithNoCapturedTargetChangesNothing(GameTestHelper helper) {
         Fixture fixture = threeSmall(helper);
+        BlockPos continuation = fixture.root().above();
+        check(helper.getLevel().getBlockState(continuation).is(BlockRegistry.CRATE_STACK.get()),
+                "this fixture needs a continuation cell");
         CrateStackBreakTargets.clear(fixture.player());
 
+        // Both cells, because a continuation carries no block entity and could plausibly answer
+        // differently from the root.
         destroy(helper, fixture.player(), fixture.root());
+        destroy(helper, fixture.player(), continuation);
 
         check(fixture.stack().crateCount() == 3, "an uncaptured break removed a crate");
         check(helper.getLevel().getBlockState(fixture.root()).is(BlockRegistry.CRATE_STACK.get()),
                 "an uncaptured break destroyed the column");
+        check(helper.getLevel().getBlockState(continuation).is(BlockRegistry.CRATE_STACK.get()),
+                "an uncaptured break destroyed a continuation cell");
+        check(fixture.stack().containerFor(fixture.ids().get(1)).getItem(0).getCount() == 2,
+                "an uncaptured break disturbed a crate's contents");
         check(dropsAround(helper, fixture.root()).isEmpty(), "an uncaptured break dropped something");
         finish(helper, fixture);
     }

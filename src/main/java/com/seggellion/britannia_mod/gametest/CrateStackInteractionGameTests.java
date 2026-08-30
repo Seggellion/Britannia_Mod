@@ -364,47 +364,6 @@ public final class CrateStackInteractionGameTests {
         helper.succeed();
     }
 
-    /* ─── the temporary break guard ──────────────────────────── */
-
-    /**
-     * A column cannot be broken until the destruction milestone lands.
-     *
-     * <p>Players can now build these in ordinary play, and taking one apart correctly is genuinely
-     * hard — several inventories in one block entity, cells that must shrink in step, and a client
-     * that predicts removal. Refusing is visibly wrong and completely safe, which is the right way
-     * round for something holding other people's belongings.
-     */
-    @GameTest(template = TEMPLATE)
-    public static void aCompactColumnCannotBeBrokenYet(GameTestHelper helper) {
-        ServerPlayer player = builder(helper);
-        BlockPos floor = new BlockPos(2, 1, 2);
-        helper.setBlock(floor, Blocks.STONE);
-        placeOnTop(helper, player, ItemRegistry.SMALL_CRATE_ITEM.get(), floor);
-        for (int index = 0; index < 2; index++) {
-            placeOnTop(helper, player, ItemRegistry.SMALL_CRATE_ITEM.get(), floor.above());
-        }
-        BlockPos root = helper.absolutePos(floor.above());
-        CrateStackBlockEntity stack = column(helper, root);
-        stack.containerFor(stack.bottomCrate().id()).setItem(0, new ItemStack(Items.DIAMOND, 9));
-        BlockPos continuation = root.above();
-        check(helper.getLevel().getBlockState(continuation).is(BlockRegistry.CRATE_STACK.get()),
-                "this fixture needs a continuation cell");
-
-        player.gameMode.destroyBlock(root);
-        player.gameMode.destroyBlock(continuation);
-
-        check(helper.getLevel().getBlockState(root).is(BlockRegistry.CRATE_STACK.get()),
-                "the column's root was destroyed before the break milestone");
-        check(helper.getLevel().getBlockState(continuation).is(BlockRegistry.CRATE_STACK.get()),
-                "a continuation cell was destroyed before the break milestone");
-        check(column(helper, root).crateCount() == 3, "breaking changed the column");
-        check(column(helper, root).containerFor(stack.bottomCrate().id()).getItem(0).getCount() == 9,
-                "breaking disturbed a crate's contents");
-        check(dropsAround(helper, root) == 0, "a refused break dropped something");
-        disconnect(helper, player);
-        helper.succeed();
-    }
-
     /* ─── helpers ────────────────────────────────────────────── */
 
     /**
