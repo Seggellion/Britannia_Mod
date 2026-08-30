@@ -9,6 +9,8 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import com.seggellion.britannia_mod.grabbyhands.destruction.GrabbyDestructionService;
+import com.seggellion.britannia_mod.crate.CrateFoundation;
+import net.minecraft.core.BlockPos;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 /**
@@ -97,8 +99,14 @@ public final class GrabbyInteractionHandler {
     }
 
     private void handlePickup(PlayerInteractEvent.RightClickBlock event, ServerLevel level, ServerPlayer player) {
+        // Which crate the player meant is decided by height when one is standing on another, because
+        // the upper crate's body is physically inside the lower crate's cells and a position alone
+        // would always name the lower one.
+        BlockPos aimedAt = CrateFoundation.crateRootAt(
+                level, event.getPos(), level.getBlockState(event.getPos()),
+                event.getHitVec().getLocation());
         GrabbyPickupResult result = GrabbyPickupTransaction.execute(
-                GrabbyWorld.of(level), GrabbyActor.of(player), event.getPos());
+                GrabbyWorld.of(level), GrabbyActor.of(player), aimedAt);
 
         if (!result.outcome().handled()) {
             // Not a Grabby object, or not a player-placed one. Leave the interaction completely alone

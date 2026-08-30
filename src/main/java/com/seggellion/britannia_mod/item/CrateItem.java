@@ -5,6 +5,7 @@ import com.seggellion.britannia_mod.block.CrateStackBlock;
 import com.seggellion.britannia_mod.block.entity.CrateBlockEntity;
 import com.seggellion.britannia_mod.block.entity.CrateStackBlockEntity;
 import com.seggellion.britannia_mod.crate.CrateFoundation;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyInstanceState;
 import com.seggellion.britannia_mod.crate.CrateStackLayout;
 import com.seggellion.britannia_mod.crate.CrateStackPlacement;
 import com.seggellion.britannia_mod.crate.CrateStackTargetResolver;
@@ -72,7 +73,7 @@ public final class CrateItem extends DecorativeMultiblockItem {
         if (CrateFoundation.isFoundation(targetState)) {
             return isCompactVariant()
                     ? ontoFoundation(context, level, target, targetState, player)
-                    : largeOntoFoundation(context, level, target, targetState);
+                    : largeOntoFoundation(context, level, target, targetState, player);
         }
         if (!CrateStackPlacement.isCompactTarget(level, target)
                 || !isCompactVariant()) {
@@ -143,7 +144,8 @@ public final class CrateItem extends DecorativeMultiblockItem {
      * them simply knows it is standing on the other.
      */
     private InteractionResult largeOntoFoundation(
-            UseOnContext context, ServerLevel level, BlockPos target, BlockState targetState) {
+            UseOnContext context, ServerLevel level, BlockPos target, BlockState targetState,
+            Player player) {
 
         Optional<BlockPos> foundation = CrateFoundation.anchorAt(level, target, targetState);
         if (foundation.isEmpty() || !onLid(level, foundation.get(), targetState, context)) {
@@ -161,6 +163,12 @@ public final class CrateItem extends DecorativeMultiblockItem {
                 && level.getBlockState(anchor).getBlock() instanceof CrateBlock foundationCrate) {
             resting.setOriginHundredths(
                     CrateFoundation.originForRestingLarge(foundationCrate));
+            // Grabby stamps provenance when it places something, and it does not place this one:
+            // stacking is the crate item's own gesture, so Grabby steps aside for it. Without the
+            // stamp the crate reads as scenery nobody put there and Grabby refuses to pick it up
+            // again, which is not a distinction the player made or can see.
+            resting.setGrabbyState(
+                    GrabbyInstanceState.playerPlaced(player.getUUID(), level.getGameTime()));
             // The crate is drawn by cells other than its own, so those have to be told as well.
             for (int cell = -1; cell <= 1; cell++) {
                 BlockPos pos = anchor.above(cell);

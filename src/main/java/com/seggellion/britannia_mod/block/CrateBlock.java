@@ -156,7 +156,8 @@ public final class CrateBlock extends DecorativeMultiblockBlock implements Entit
         // down through this cell. Height decides which of the two a click meant, exactly as it does
         // for a column.
         Optional<InteractionResult> restingLarge = CrateFoundation.largeOn(level, pos, state)
-                .filter(resting -> aboveLid(level, resting.foundationAnchor(), hit))
+                .filter(resting ->
+                        CrateFoundation.aboveLid(level, resting.foundationAnchor(), hit.getLocation()))
                 .flatMap(resting -> level.getBlockEntity(resting.anchor())
                         instanceof CrateBlockEntity upper
                         ? Optional.of(open(player, upper))
@@ -194,16 +195,6 @@ public final class CrateBlock extends DecorativeMultiblockBlock implements Entit
     private static InteractionResult open(Player player, CrateBlockEntity crate) {
         player.openMenu(crate);
         return InteractionResult.CONSUME;
-    }
-
-    /** Whether a hit landed at or above a foundation crate's lid, which is where the crate above starts. */
-    private static boolean aboveLid(Level level, BlockPos foundationAnchor, BlockHitResult hit) {
-        if (!(level.getBlockState(foundationAnchor).getBlock() instanceof CrateBlock foundation)) {
-            return false;
-        }
-        int height = (int) Math.round((hit.getLocation().y - foundationAnchor.getY())
-                * 16 * CrateStackLayout.HUNDREDTHS_PER_VOXEL);
-        return height >= CrateFoundation.topHundredths(foundation);
     }
 
     /**

@@ -11,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.phys.Vec3;
 import com.mojang.logging.LogUtils;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -314,6 +315,39 @@ public final class CrateFoundation {
             }
         }
         return reaching;
+    }
+
+    /**
+     * Which crate a hit actually belongs to, when one crate is standing on another.
+     *
+     * <h2>Why a position is not enough</h2>
+     *
+     * <p>A crate resting on a lid is physically inside the cells of the crate underneath it, so a ray
+     * that meets its body lands on the lower crate's block. Answering "which crate is this" from the
+     * position alone therefore always names the lower one, however plainly the player was pointing at
+     * the upper. Height is what separates them, and this is the only place that decides it - menus,
+     * and anything else that has to name a crate, ask here rather than working it out again.
+     */
+    public static BlockPos crateRootAt(
+            BlockGetter level, BlockPos pos, BlockState state, Vec3 hit) {
+
+        Optional<FoundedLarge> resting = largeOn(level, pos, state);
+        if (resting.isPresent() && aboveLid(level, resting.get().foundationAnchor(), hit)) {
+            return resting.get().anchor();
+        }
+        return state.getBlock() instanceof CrateBlock crate && crate.hasValidPart(state)
+                ? crate.anchorPosition(pos, state)
+                : pos;
+    }
+
+    /** Whether a hit landed at or above a foundation's lid, which is where the crate above starts. */
+    public static boolean aboveLid(BlockGetter level, BlockPos foundationAnchor, Vec3 hit) {
+        if (!(level.getBlockState(foundationAnchor).getBlock() instanceof CrateBlock foundation)) {
+            return false;
+        }
+        int height = (int) Math.round((hit.y - foundationAnchor.getY())
+                * 16 * CrateStackLayout.HUNDREDTHS_PER_VOXEL);
+        return height >= topHundredths(foundation);
     }
 
     /** A large crate standing on another large crate's lid. */
