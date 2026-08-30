@@ -310,6 +310,19 @@ public class DecorativeMultiblockBlock extends Block {
         return true;
     }
 
+    /**
+     * Takes apart the structure anchored here, with the ordinary drops.
+     *
+     * <p>Exposed because a crate standing on another is physically inside the lower crate's cells, so
+     * the block a swing lands on is not always the structure the player was aiming at. The crate
+     * decides which one that is; this is how it takes that one apart, on exactly the same terms as if
+     * its own cell had been hit.
+     */
+    protected void destroyStructure(
+            ServerLevel level, BlockPos anchor, Direction facing, boolean dropItem) {
+        dismantle(level, anchor, facing, dropItem);
+    }
+
     private void dismantle(ServerLevel level, BlockPos anchor, Direction facing, boolean dropItem) {
         duringMutation(() -> {
             beforeDismantle(level, anchor, facing);

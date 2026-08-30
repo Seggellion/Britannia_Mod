@@ -213,32 +213,6 @@ public final class CrateLargeStackGameTests {
         finish(helper, lower);
     }
 
-    /* ─── breaking is not implemented yet ────────────────────── */
-
-    /** Neither crate of a stacked pair can be broken, so neither inventory can be lost. */
-    @GameTest(template = TEMPLATE)
-    public static void neitherStackedLargeCrateCanBeBroken(GameTestHelper helper) {
-        Fixture lower = largeCrate(helper, Direction.NORTH);
-        click(lower, new ItemStack(large(), 8), lidHit(lower.anchor()));
-        BlockPos upperAnchor = CrateFoundation.columnRootFor(lower.anchor());
-        CrateBlockEntity upper = upperCrate(helper, upperAnchor);
-
-        lower.crate().setItem(0, new ItemStack(Items.EMERALD, 5));
-        upper.setItem(0, new ItemStack(Items.DIAMOND, 3));
-
-        lower.player().gameMode.destroyBlock(lower.anchor());
-        lower.player().gameMode.destroyBlock(upperAnchor);
-
-        check(helper.getLevel().getBlockState(lower.anchor()).getBlock() instanceof CrateBlock,
-                "the lower crate was destroyed while something was standing on it");
-        check(helper.getLevel().getBlockState(upperAnchor).getBlock() instanceof CrateBlock,
-                "the upper crate was destroyed before its removal was written");
-        check(lower.crate().getItem(0).is(Items.EMERALD), "the lower crate lost its contents");
-        check(upperCrate(helper, upperAnchor).getItem(0).is(Items.DIAMOND),
-                "the upper crate lost its contents");
-        finish(helper, lower);
-    }
-
     /* ─── persistence ────────────────────────────────────────── */
 
     /** The offset is saved, and is never carried away by the item when a crate is picked up. */

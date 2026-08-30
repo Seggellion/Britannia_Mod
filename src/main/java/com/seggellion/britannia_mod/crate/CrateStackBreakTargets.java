@@ -45,6 +45,16 @@ public final class CrateStackBreakTargets {
     private static final long CASCADE_GUARD_TICKS = 4L;
 
     private static final Map<UUID, CrateStackBreakTarget> TARGETS = new ConcurrentHashMap<>();
+
+    /**
+     * Which whole crate each player is breaking, when that is not the block their swing landed on.
+     *
+     * <p>A large crate standing on another is inside the lower crate's cells, so the position a swing
+     * arrives at names the wrong crate. Which one the player meant is decided by height when the swing
+     * starts, and held until it finishes - for the same reason a logical crate's identity is: the
+     * world can change under a swing, and the crate that was aimed at should be the crate that breaks.
+     */
+    private static final Map<UUID, BlockPos> CRATE_TARGETS = new ConcurrentHashMap<>();
     private static final Map<UUID, Completion> COMPLETIONS = new ConcurrentHashMap<>();
 
     private CrateStackBreakTargets() {
@@ -55,6 +65,16 @@ public final class CrateStackBreakTargets {
     }
 
     private record Completion(BlockPos root, long tick) {
+    }
+
+    /** Remembers which whole crate this player started breaking. */
+    public static void captureCrate(ServerPlayer player, BlockPos anchor) {
+        CRATE_TARGETS.put(player.getUUID(), anchor.immutable());
+    }
+
+    /** The whole crate this player is breaking, if they are breaking one. */
+    public static Optional<BlockPos> crateTarget(ServerPlayer player) {
+        return Optional.ofNullable(CRATE_TARGETS.get(player.getUUID()));
     }
 
     /** Remembers what this player started breaking, replacing anything they were breaking before. */
@@ -84,10 +104,12 @@ public final class CrateStackBreakTargets {
 
     public static void clear(ServerPlayer player) {
         TARGETS.remove(player.getUUID());
+        CRATE_TARGETS.remove(player.getUUID());
     }
 
     public static void clear(UUID playerId) {
         TARGETS.remove(playerId);
+        CRATE_TARGETS.remove(playerId);
         COMPLETIONS.remove(playerId);
     }
 

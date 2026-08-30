@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.event;
 
+import com.seggellion.britannia_mod.block.CrateBlock;
 import com.seggellion.britannia_mod.block.CrateStackBlock;
 import com.seggellion.britannia_mod.crate.CrateFoundation;
 import com.seggellion.britannia_mod.crate.CrateStackBreakTargets;
@@ -56,9 +57,9 @@ public final class CrateStackBreakHandler {
     }
 
     private static void capture(ServerPlayer player, BlockPos clicked) {
+        captureWholeCrate(player, clicked);
         BlockPos root = columnRootAt(player, clicked);
         if (root == null) {
-            CrateStackBreakTargets.clear(player);
             return;
         }
 
@@ -91,6 +92,31 @@ public final class CrateStackBreakHandler {
                 target -> CrateStackBreakTargets.capture(
                         player, target.root(), target.crateId(), clicked),
                 () -> CrateStackBreakTargets.clear(player));
+    }
+
+    /**
+     * Remembers which whole crate a swing is aimed at.
+     *
+     * <p>A large crate standing on another is physically inside the lower crate's cells, so a swing at
+     * its body arrives as a swing at the lower crate's block. Height is what tells the two apart, and
+     * it is only available now - by the time destruction runs there is no ray left to ask. Answered by
+     * the same helper the menus and Grabby use, so all three name the same crate.
+     */
+    private static void captureWholeCrate(ServerPlayer player, BlockPos clicked) {
+        BlockState state = player.level().getBlockState(clicked);
+        if (!(state.getBlock() instanceof CrateBlock)) {
+            return;
+        }
+        HitResult aimed = player.pick(player.blockInteractionRange(), 1.0F, false);
+        if (!(aimed instanceof BlockHitResult hit) || hit.getType() != HitResult.Type.BLOCK) {
+            return;
+        }
+        BlockState hitState = player.level().getBlockState(hit.getBlockPos());
+        if (!(hitState.getBlock() instanceof CrateBlock)) {
+            return;
+        }
+        CrateStackBreakTargets.captureCrate(player, CrateFoundation.crateRootAt(
+                player.level(), hit.getBlockPos(), hitState, hit.getLocation()));
     }
 
     /**

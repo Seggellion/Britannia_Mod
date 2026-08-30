@@ -211,14 +211,22 @@ public final class CrateBlock extends DecorativeMultiblockBlock implements Entit
     @Override
     public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player,
             boolean willHarvest, FluidState fluid) {
-        // Stacked large crates cannot be taken apart yet. Breaking one would have to decide what
-        // becomes of the other's fifty-four slots, and that transaction has not been written - so
-        // until it is, the answer is that nothing happens at all, which cannot lose anything.
-        if (CrateFoundation.isFoundedLarge(level, pos, state)
-                || CrateFoundation.largeOn(level, pos, state).isPresent()) {
-            return false;
-        }
         if (level instanceof ServerLevel server && player instanceof ServerPlayer serverPlayer) {
+            // A crate standing on this one is inside this crate's cells, so a swing aimed at it lands
+            // here. Which crate the player meant was decided by height when the swing started; taking
+            // apart the one they were pointing at is the whole of the difference.
+            Optional<BlockPos> aimedCrate = CrateStackBreakTargets.crateTarget(serverPlayer);
+            if (hasValidPart(state) && aimedCrate.isPresent()
+                    && !aimedCrate.get().equals(anchorPosition(pos, state))) {
+                BlockState aimedState = server.getBlockState(aimedCrate.get());
+                if (aimedState.is(this) && isRoot(aimedState)) {
+                    destroyStructure(server, aimedCrate.get(), aimedState.getValue(FACING),
+                            !player.hasInfiniteMaterials());
+                    CrateStackBreakTargets.clear(serverPlayer);
+                    // This crate is still standing; only the one resting on it went.
+                    return false;
+                }
+            }
             Optional<CrateFoundation.Founded> founded =
                     CrateFoundation.columnOn(level, pos, state);
             if (founded.isPresent()) {
