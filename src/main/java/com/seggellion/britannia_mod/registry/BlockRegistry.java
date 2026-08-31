@@ -2567,6 +2567,8 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
             BLOCKS.register("merchant_cart_purple", BlockRegistry::merchantCart);
     public static final DeferredHolder<Block, DecorativeMultiblockBlock> MERCHANT_CART_BLUE =
             BLOCKS.register("merchant_cart_blue", BlockRegistry::merchantCart);
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> MERCHANT_CART_BLACK =
+            BLOCKS.register("merchant_cart_black", BlockRegistry::merchantCart);
     public static final DeferredHolder<Block, DecorativeMultiblockBlock> MERCHANT_CART_GREEN =
             BLOCKS.register("merchant_cart_green", BlockRegistry::merchantCart);
     public static final DeferredHolder<Block, DecorativeMultiblockBlock> MERCHANT_CART_YELLOW =

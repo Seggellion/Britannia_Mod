@@ -5,8 +5,8 @@
                          128
                      ],
     "textures":  {
-                     "1":  "minecraft:block/white_wool",
-                     "particle":  "minecraft:block/white_wool"
+                     "1":  "britannia_mod:block/new_assets/merchant_cart_white",
+                     "particle":  "britannia_mod:block/new_assets/merchant_cart_white"
                  },
     "elements":  [
                      {

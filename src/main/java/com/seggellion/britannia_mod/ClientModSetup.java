@@ -697,6 +697,7 @@ public class ClientModSetup {
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MERCHANT_CART_RED.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MERCHANT_CART_PURPLE.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MERCHANT_CART_BLUE.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MERCHANT_CART_BLACK.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MERCHANT_CART_GREEN.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MERCHANT_CART_YELLOW.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MERCHANT_CART_WHITE.get(), RenderType.cutout());

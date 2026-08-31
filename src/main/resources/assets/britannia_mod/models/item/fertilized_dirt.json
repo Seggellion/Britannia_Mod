@@ -1,1 +1,7 @@
-{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:block/dirt"}}
+{
+    "parent": "item/generated",
+    "textures": {
+      "layer0": "britannia_mod:item/fertile_dirt"
+    }
+  }
+  
