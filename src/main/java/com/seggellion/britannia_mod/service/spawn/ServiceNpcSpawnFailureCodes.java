@@ -3,6 +3,12 @@ package com.seggellion.britannia_mod.service.spawn;
 /** Closed mapping from typed results to safe persisted identifiers. */
 public final class ServiceNpcSpawnFailureCodes {
     public static final String AUTHENTICATION_BLOCKED = "authentication_blocked";
+    /**
+     * No server credentials are configured, so the shard this operation belongs to is unknown.
+     * Recording it against a guessed shard would durably mis-attribute it, and the operation could
+     * never be delivered anyway — a server without credentials cannot reach Rails at all.
+     */
+    public static final String CREDENTIALS_UNAVAILABLE = "credentials_unavailable";
     public static final String SHARD_MISMATCH = "shard_mismatch";
     public static final String UUID_COLLISION_PENDING_REPAIR = "uuid_collision_pending_repair";
     public static final String INVALID_LOCAL_OPERATION = "invalid_local_operation";

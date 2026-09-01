@@ -148,6 +148,14 @@ public final class FarmerMerchantSpawnGameTests {
     @GameTest(template = TEMPLATE, batch = BATCH)
     public static void aFarmerBlockMigratesOntoAnEconomicFarmerPost(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
+        // Migration writes a durable spawn operation, and a post now refuses to record one when
+        // the shard is unknown. In production a server always has credentials by this point; the
+        // shard is deliberately not the compiled default so a regression to it would show here.
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                level.getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_migration_shard"));
         String city = "FarmGateMigrates";
         READINGS.put(city, 20.0D);
         UUID cityId = UUID.randomUUID();

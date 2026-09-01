@@ -209,7 +209,25 @@ public final class EconomicNpcSpawnPostGameTests {
         );
     }
 
+
+    /**
+     * Installs credentials naming a shard that is deliberately <b>not</b> the compiled default.
+     *
+     * <p>Two reasons. A post now refuses to record durable work when the shard is unknown, so a
+     * test that configures one must supply credentials. And more importantly, running against a
+     * non-default shard is what makes NF-003 visible at all: while every test used the compiled
+     * default, a value read from the wrong place was indistinguishable from one read from the
+     * right place, because the two agreed.
+     */
+    private static void installNonDefaultShardCredentials(GameTestHelper helper) {
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                helper.getLevel().getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_economic_shard"));
+    }
     private static ServiceNpcSpawnBlockEntity placePost(GameTestHelper helper, BlockPos relative) {
+        installNonDefaultShardCredentials(helper);
         helper.setBlock(relative, BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get());
         ServerLevel level = helper.getLevel();
         BlockPos absolute = helper.absolutePos(relative);

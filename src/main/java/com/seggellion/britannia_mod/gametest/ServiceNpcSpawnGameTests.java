@@ -3,7 +3,6 @@ package com.seggellion.britannia_mod.gametest;
 import com.mojang.authlib.GameProfile;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.block.entity.ServiceNpcSpawnBlockEntity;
-import com.seggellion.britannia_mod.config.ModConfig;
 import com.seggellion.britannia_mod.city.BootstrapCityDefinition;
 import com.seggellion.britannia_mod.city.BootstrapCityRegistryCache;
 import com.seggellion.britannia_mod.city.BootstrapCityRegistrySnapshot;
@@ -74,10 +73,80 @@ import java.util.UUID;
 @PrefixGameTestTemplate(false)
 public final class ServiceNpcSpawnGameTests {
     private static final String TEMPLATE = "service_npc_spawn_test_empty";
+    /**
+     * The shard fixtures are stamped with. Deliberately NOT the compiled default: these
+     * fixtures used to read the same constant production code read, so the two sides could
+     * never disagree and NF-003 was invisible here.
+     */
+    private static final String FIXTURE_SHARD = "gametest_fixture_shard";
+
     private static final String CONTROLLED_SHARD_ONE = "gametest_delivery_one";
     private static final String CONTROLLED_SHARD_TWO = "gametest_delivery_two";
 
     private ServiceNpcSpawnGameTests() {
+    }
+
+    /**
+     * NF-003: the durable spawn record carries the <b>configured</b> shard, and keeps it across a
+     * reload.
+     *
+     * <p>The shard used here is deliberately not the compiled default. That is the whole point:
+     * while every test ran as "Britannia", a record stamped from {@code ModConfig.SHARD_NAME} was
+     * indistinguishable from one stamped from the credentials, and the defect was invisible.
+     *
+     * <p>Persistence is asserted, not just the in-memory value, because this record outlives the
+     * process. It is replayed after a restart and retried by a delivery processor that rejects any
+     * record whose shard does not match the credentials — so a wrong value here is not one bad
+     * field on one request, it is a row on disk that can never be delivered and is retried forever.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void durableSpawnWorkCarriesTheConfiguredShardAcrossAReload(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        ServiceNpcSpawnBlockEntity post = placePost(helper, new BlockPos(1, 1, 1));
+        UUID id = requireId(post);
+
+        String configuredShard = com.seggellion.britannia_mod.server.auth.ServerAuthRegistry
+                .shardName(level.getServer()).orElse(null);
+        check(FIXTURE_SHARD.equals(configuredShard),
+                "fixture precondition: credentials should name " + FIXTURE_SHARD
+                        + ", got " + configuredShard);
+
+        UUID cityId = UUID.randomUUID();
+        BootstrapCityRegistrySnapshot cities = BootstrapCityRegistrySnapshot.available(List.of(
+                new BootstrapCityDefinition(cityId, "Britain")
+        ));
+        ServiceNpcTypeDefinition type = new ServiceNpcTypeDefinition(
+                "bank_teller", "Bank Teller", "banker", "minecraft:villager", "bank_default",
+                List.of("open_bank"), true, true, 1L
+        );
+        BootstrapCityRegistryCache.replace(cities);
+        ServiceNpcRegistryCache.replace(new ServiceNpcRegistrySnapshot(
+                1, 1L, Map.of(), Map.of(type.key(), type), Map.of()));
+        try {
+            check(post.applyConfiguration(level, cityId, type.key(), false, 0L)
+                            == ServiceNpcSpawnValidationError.NONE,
+                    "configuration was refused while credentials were installed");
+
+            ServiceNpcSpawnPendingData pendingData = ServiceNpcSpawnPendingData.get(level);
+            ServiceNpcSpawnPendingRecord pending = pendingData.snapshot().get(id);
+            check(pending != null, "configuration created no durable work");
+            check(FIXTURE_SHARD.equals(pending.shardName()),
+                    "durable record was stamped " + pending.shardName()
+                            + " instead of the configured " + FIXTURE_SHARD);
+            check(!"Britannia".equals(pending.shardName()),
+                    "the compiled default leaked into a durable record");
+
+            CompoundTag saved = pendingData.save(new CompoundTag(), level.registryAccess());
+            ServiceNpcSpawnPendingRecord reloaded = ServiceNpcSpawnPendingData
+                    .load(saved, level.registryAccess()).snapshot().get(id);
+            check(reloaded != null, "durable record did not survive the reload");
+            check(FIXTURE_SHARD.equals(reloaded.shardName()),
+                    "the configured shard did not survive persistence, got " + reloaded.shardName());
+        } finally {
+            BootstrapCityRegistryCache.clear();
+            ServiceNpcRegistryCache.clear();
+        }
+        helper.succeed();
     }
 
     @GameTest(template = TEMPLATE)
@@ -580,7 +649,7 @@ public final class ServiceNpcSpawnGameTests {
         ServiceNpcSpawnPendingRecord pending = new ServiceNpcSpawnPendingRecord(
             ServiceNpcSpawnPendingOperation.UPSERT,
             UUID.randomUUID(),
-            ModConfig.SHARD_NAME,
+            FIXTURE_SHARD,
             new ServiceNpcSpawnLocation(
                 level.getServer().getWorldData().getLevelName(),
                 level.dimension().location(),
@@ -888,7 +957,7 @@ public final class ServiceNpcSpawnGameTests {
         ServiceNpcSpawnPendingRecord pending = new ServiceNpcSpawnPendingRecord(
             ServiceNpcSpawnPendingOperation.UPSERT,
             UUID.randomUUID(),
-            ModConfig.SHARD_NAME,
+            FIXTURE_SHARD,
             new ServiceNpcSpawnLocation(
                 level.getServer().getWorldData().getLevelName(),
                 level.dimension().location(),
@@ -1242,7 +1311,7 @@ public final class ServiceNpcSpawnGameTests {
     private static PendingFixture pendingPost(
             GameTestHelper helper, BlockPos relative, long recordedAt
     ) {
-        return pendingPost(helper, relative, recordedAt, ModConfig.SHARD_NAME);
+        return pendingPost(helper, relative, recordedAt, FIXTURE_SHARD);
     }
 
     private static PendingFixture pendingPost(
@@ -1330,7 +1399,25 @@ public final class ServiceNpcSpawnGameTests {
         @Override public boolean cancel() { return future.cancel(true); }
     }
 
+
+    /**
+     * Installs credentials naming a shard that is deliberately <b>not</b> the compiled default.
+     *
+     * <p>Two reasons. A post now refuses to record durable work when the shard is unknown, so a
+     * test that configures one must supply credentials. And more importantly, running against a
+     * non-default shard is what makes NF-003 visible at all: while every test used the compiled
+     * default, a value read from the wrong place was indistinguishable from one read from the
+     * right place, because the two agreed.
+     */
+    private static void installNonDefaultShardCredentials(GameTestHelper helper) {
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                helper.getLevel().getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        FIXTURE_SHARD));
+    }
     private static ServiceNpcSpawnBlockEntity placePost(GameTestHelper helper, BlockPos relative) {
+        installNonDefaultShardCredentials(helper);
         helper.setBlock(relative, BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get());
         ServerLevel level = helper.getLevel();
         BlockPos absolute = helper.absolutePos(relative);

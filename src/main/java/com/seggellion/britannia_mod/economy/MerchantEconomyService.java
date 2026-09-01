@@ -167,8 +167,8 @@ public final class MerchantEconomyService {
                                                    AbstractEconomyMerchantEntity merchant, String city, String role,
                                                    PreparedPurchase prepared, String idempotencyKey) {
         try {
-            var requestUri = ServerAuthRegistry.credentials(level.getServer()).orElseThrow().apiUrls()
-                    .resolve(Endpoint.MERCHANT_PURCHASE);
+            var credentials = ServerAuthRegistry.credentials(level.getServer()).orElseThrow();
+            var requestUri = credentials.apiUrls().resolve(Endpoint.MERCHANT_PURCHASE);
             HttpURLConnection conn = (HttpURLConnection) requestUri.toURL().openConnection();
             BoundedHttp.configure(conn);
             conn.setRequestMethod("POST");
@@ -186,7 +186,9 @@ public final class MerchantEconomyService {
             payload.addProperty("role", role);
             payload.addProperty("npc_id", merchant.getUUID().toString());
             payload.addProperty("entity_id", merchant.getId());
-            payload.addProperty("shard", ModConfig.SHARD_NAME);
+            // The same credentials that sign the request name the shard in its body, so the
+            // Shard-Name header and this field cannot disagree.
+            payload.addProperty("shard", credentials.shardName());
             payload.addProperty("total_price", prepared.totalCopper());
             payload.addProperty("total_copper", prepared.totalCopper());
 

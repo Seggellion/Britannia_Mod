@@ -59,8 +59,22 @@ public final class ServerCredentials {
      * constructor and functional interfaces were widened.
      */
     public static ServerCredentials forGameTesting(URI serviceOrigin, @javax.annotation.Nullable UUID minecraftServerKey) {
+        return forGameTesting(serviceOrigin, minecraftServerKey, "Test Shard");
+    }
+
+    /**
+     * Test credentials with a caller-chosen shard name.
+     *
+     * <p>The shard is a parameter so a test can deliberately pick something other than the
+     * compiled default. NF-003 survived precisely because tests used the default: a value read
+     * from the wrong place is indistinguishable from one read from the right place when the two
+     * agree.
+     */
+    public static ServerCredentials forGameTesting(URI serviceOrigin,
+                                                   @javax.annotation.Nullable UUID minecraftServerKey,
+                                                   String shardName) {
         return new ServerCredentials(
-                "Test Shard", "test-only-secret-sentinel", serviceOrigin, Source.SERVER_FILE, false, false,
+                shardName, "test-only-secret-sentinel", serviceOrigin, Source.SERVER_FILE, false, false,
                 minecraftServerKey == null ? null : minecraftServerKey.toString()
         );
     }

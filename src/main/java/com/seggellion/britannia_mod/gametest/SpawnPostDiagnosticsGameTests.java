@@ -31,12 +31,26 @@ public final class SpawnPostDiagnosticsGameTests {
     private SpawnPostDiagnosticsGameTests() {
     }
 
+    /**
+     * Credentials naming a shard that is deliberately not the compiled default. A post refuses to
+     * record durable work when the shard is unknown, and running against a non-default shard is
+     * what makes a compiled-constant regression visible instead of silently agreeing.
+     */
+    private static void installNonDefaultShardCredentials(GameTestHelper helper) {
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                helper.getLevel().getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_diagnostics_shard"));
+    }
+
     @GameTest(template = TEMPLATE)
     public static void snapshotReportsConfigurationAssignmentAndDuplicates(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
         BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get());
+        installNonDefaultShardCredentials(helper);
         ServiceNpcSpawnBlockEntity post = requirePost(level, absolute);
 
         UUID cityId = UUID.randomUUID();
@@ -81,6 +95,7 @@ public final class SpawnPostDiagnosticsGameTests {
         BlockPos relative = new BlockPos(3, 1, 1);
         BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get());
+        installNonDefaultShardCredentials(helper);
         ServiceNpcSpawnBlockEntity post = requirePost(level, absolute);
 
         UUID cityId = UUID.randomUUID();

@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -63,25 +62,6 @@ class ServerIdentityComesFromCredentialsTest {
     /** The class that declares the constants may of course mention them. */
     private static final String DECLARING_CLASS =
             "config" + java.io.File.separator + "ModConfig.java";
-
-    /**
-     * Files that still read {@code ModConfig.SHARD_NAME}, frozen as of the NF-002 repair.
-     *
-     * <p>This set may <b>shrink</b>, never grow. Each entry is a place that uses a compiled shard
-     * name where the configured one was meant — recorded as NF-003, and deliberately not repaired
-     * here because it is a different defect from the one this branch fixes. The authenticated
-     * {@code Shard-Name} header is unaffected: it comes from {@link ServerCredentials} on every
-     * request. What is stale is a redundant {@code "shard"} body field and some admin/spawn
-     * records, which matter only if the shard is ever renamed away from the constant.
-     *
-     * <p>The point of freezing the list is that a <em>new</em> feature cannot quietly join it.
-     */
-    private static final Set<String> SHARD_NAME_READERS_FROZEN = Set.of(
-            "ServiceNpcSpawnBlockEntity.java",
-            "PopulateOresCommand.java",
-            "MerchantEconomyService.java",
-            "ServerEconomyService.java",
-            "ServiceNpcSpawnGameTests.java");
 
     private record SourceFile(Path path, String text) {
         String name() {
@@ -203,21 +183,25 @@ class ServerIdentityComesFromCredentialsTest {
     }
 
     /**
-     * The compiled shard name has a frozen reader list (NF-003). It may shrink; it may not grow.
+     * NF-003's permanent guard. <b>Nothing</b> may read the compiled shard name — there is no
+     * allowlist any more, because the repair took the count to zero.
+     *
+     * <p>The reason this is absolute rather than "avoid it where it matters": the shard identity
+     * reaches durable state. A spawn operation is persisted, replayed after a restart and retried
+     * by a delivery processor that rejects any record whose shard does not match the credentials.
+     * A single compiled value written into that record is not one wrong field — it is a row on
+     * disk that can never be delivered and will be retried forever.
      */
     @Test
-    void noNewCodeReadsTheCompiledShardName() {
-        List<String> newReaders = new ArrayList<>();
+    void nothingReadsTheCompiledShardName() {
+        List<String> readers = new ArrayList<>();
         for (SourceFile file : mainSources()) {
             if (isDeclaringClass(file)) continue;
-            if (!file.text().contains("ModConfig.SHARD_NAME")) continue;
-            if (SHARD_NAME_READERS_FROZEN.contains(file.name())) continue;
-            newReaders.add(file.name());
+            if (file.text().contains("ModConfig.SHARD_NAME")) readers.add(file.name());
         }
-        assertTrue(newReaders.isEmpty(),
+        assertTrue(readers.isEmpty(),
                 "ModConfig.SHARD_NAME is a compile-time constant, not the configured shard; read "
-                        + "ServerAuthRegistry.credentials(server).shardName() instead. New "
-                        + "readers: " + newReaders);
+                        + "ServerAuthRegistry.shardName(server) instead: " + readers);
     }
 
     /**
