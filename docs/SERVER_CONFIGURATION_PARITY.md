@@ -6,8 +6,9 @@ This is the NeoForge half of the contract. The Fabric repository carries the ful
 matrix at `docs/porting/SERVER_CONFIGURATION_PARITY.md`; the two documents describe the same
 contract and must be changed together.
 
-**Status:** parity achieved by the NF-002 repair on this branch. Before it, NeoForge did not read
-`ULTIMACRAFT_API_BASE_URL` at all.
+**Status: `FULL_OPERATIONAL_CONFIG_PARITY`**, achieved by two repairs on this branch — NF-002
+(`58c98c04`, NeoForge now reads `ULTIMACRAFT_API_BASE_URL`) and NF-003 (`6ed719f0`, runtime shard
+identity now comes from `ServerCredentials` everywhere, including durable spawn records).
 
 ---
 
@@ -129,25 +130,39 @@ neither of which carries a credential.
 
 ---
 
-## 6. Known deviation — NF-003
+## 6. NF-003 — fixed
 
-`ModConfig.SHARD_NAME` is also a compile-time constant (`"Britannia"`) that nothing assigns from
-configuration, and five files still read it: `ServiceNpcSpawnBlockEntity`, `PopulateOresCommand`,
-`MerchantEconomyService`, `ServerEconomyService` and `ServiceNpcSpawnGameTests`.
+`ModConfig.SHARD_NAME` is a compile-time constant (`"Britannia"`) that nothing assigns from
+configuration. Nine call sites across four classes used to read it where the **configured** shard
+was meant: the three durable spawn records in `ServiceNpcSpawnBlockEntity`, the sale and purchase
+payloads in `ServerEconomyService` and `MerchantEconomyService`, an NPC sync key, and three sites
+in `PopulateOresCommand`.
 
-**The authenticated identity is not affected.** The `Shard-Name` header comes from
-`ServerCredentials` on every request, so a server always authenticates as its configured shard.
-What is stale is a redundant `"shard"` field in two economy payload bodies, the shard recorded on
-spawn-post operations, and an admin command — all of which are correct today only because the
-constant happens to equal the real shard name.
+They agreed with the authenticated identity only because the constant happened to equal the real
+shard name. All now read `ServerAuthRegistry.shardName(server)`.
 
-**Consequence:** renaming the Britannia shard, or standing up a second NeoForge shard under a
-different name, needs this fixed first. It does not affect using the same template across the two
-mods for the shards as they exist.
+**Why the durable half mattered most.** Spawn records are persisted, replayed after a restart and
+retried by a delivery processor that rejects any record whose shard does not match the credentials.
+A compiled value written there is not one bad request — it is a row on disk that can never be
+delivered and is retried forever. The repair is therefore at the point the record is created, not
+at the final serializer.
 
-Not repaired here: it is a different defect from NF-002, and repairing it means threading
-credentials through five subsystems. `ServerIdentityComesFromCredentialsTest` freezes the reader
-list so it can shrink but never grow.
+**Fail closed.** A post whose shard is unknown refuses to record durable work
+(`CREDENTIALS_UNAVAILABLE`), and the admin command names the variables the operator must set. A
+server without credentials could not deliver the work anyway, and a guessed shard is
+indistinguishable from a real one once on disk.
+
+**Zero readers, enforced.** `ServerIdentityComesFromCredentialsTest.nothingReadsTheCompiledShardName`
+has no allowlist: the permitted count is zero.
+
+**Proved against a non-default shard.** The defect was invisible because every test used the
+compiled default. `ServiceNpcSpawnGameTests.durableSpawnWorkCarriesTheConfiguredShardAcrossAReload`
+installs credentials naming a different shard and asserts the durable record carries it, does not
+contain `"Britannia"`, and still carries it after a save/load round trip.
+
+**One behavioural difference from Fabric, not a configuration deviation:** with no credentials at
+all, NeoForge refuses to record durable spawn work while Fabric falls back to its compiled default
+with a warning. That distinguishes them only on a server that cannot reach Rails regardless.
 
 ---
 
