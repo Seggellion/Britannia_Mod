@@ -151,6 +151,10 @@ public final class FarmerMerchantSpawnGameTests {
         // Migration writes a durable spawn operation, and a post now refuses to record one when
         // the shard is unknown. In production a server always has credentials by this point; the
         // shard is deliberately not the compiled default so a regression to it would show here.
+        //
+        // Cleared in the finally below: credentials are what switch on the world-state poller and
+        // the spawn delivery processor, and leaving them installed makes every later test in this
+        // shared world attempt real HTTP.
         com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
                 level.getServer(),
                 com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
@@ -190,6 +194,8 @@ public final class FarmerMerchantSpawnGameTests {
             check(farmersOf(helper, city).isEmpty(),
                     "the legacy-managed farmer must despawn so the authoritative pipeline can staff the post");
         } finally {
+            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(
+                    helper.getLevel().getServer());
             BootstrapCityRegistryCache.clear();
             com.seggellion.britannia_mod.service.EconomicNpcRegistryCache.clear();
         }

@@ -88,9 +88,9 @@ public final class EconomicNpcSpawnPostGameTests {
         UUID spawnPointId = requireId(post);
         UUID cityId = UUID.randomUUID();
 
-        ServiceNpcSpawnValidationError error = post.applyConfiguration(
-                level, cityId, EconomicNpcTypeKeys.prefixed(TYPE_KEY), true, 0L
-        );
+        ServiceNpcSpawnValidationError error = withShardCredentials(helper, () ->
+                post.applyConfiguration(
+                        level, cityId, EconomicNpcTypeKeys.prefixed(TYPE_KEY), true, 0L));
         check(error == ServiceNpcSpawnValidationError.NONE,
                 "economic configuration was rejected: " + error);
 
@@ -211,23 +211,32 @@ public final class EconomicNpcSpawnPostGameTests {
 
 
     /**
-     * Installs credentials naming a shard that is deliberately <b>not</b> the compiled default.
+     * Runs {@code body} with credentials naming a deliberately non-default shard, then restores the
+     * previous state.
      *
-     * <p>Two reasons. A post now refuses to record durable work when the shard is unknown, so a
-     * test that configures one must supply credentials. And more importantly, running against a
-     * non-default shard is what makes NF-003 visible at all: while every test used the compiled
-     * default, a value read from the wrong place was indistinguishable from one read from the
-     * right place, because the two agreed.
+     * <p>Scoped, not installed for the whole run. Credentials are what switch on the world-state
+     * poller, the spawn delivery processor and world bootstrap; leaving them installed made every
+     * later test in the shared world attempt real HTTP, which produced thousands of connection
+     * failures and perturbed an unrelated resource-restoration test into failing. The install lasts
+     * exactly as long as the call that needs it.
+     *
+     * <p>The shard is non-default so a regression back to the compiled constant fails here rather
+     * than silently agreeing with it.
      */
-    private static void installNonDefaultShardCredentials(GameTestHelper helper) {
+    private static <T> T withShardCredentials(GameTestHelper helper, java.util.function.Supplier<T> body) {
+        var server = helper.getLevel().getServer();
         com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
-                helper.getLevel().getServer(),
+                server,
                 com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
                         java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
                         "gametest_economic_shard"));
+        try {
+            return body.get();
+        } finally {
+            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(server);
+        }
     }
     private static ServiceNpcSpawnBlockEntity placePost(GameTestHelper helper, BlockPos relative) {
-        installNonDefaultShardCredentials(helper);
         helper.setBlock(relative, BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get());
         ServerLevel level = helper.getLevel();
         BlockPos absolute = helper.absolutePos(relative);

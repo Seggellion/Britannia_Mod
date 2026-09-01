@@ -50,6 +50,12 @@ public final class LegacySpawnBlockMigrationGameTests {
 
     @GameTest(template = TEMPLATE)
     public static void merchantBlockMigratesPreservingConfigurationAndTownPersons(GameTestHelper helper) {
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                helper.getLevel().getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_shard_identity"));
+        try {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
         BlockPos absolute = helper.absolutePos(relative);
@@ -121,10 +127,22 @@ public final class LegacySpawnBlockMigrationGameTests {
             EconomicNpcRegistryCache.clear();
         }
         helper.succeed();
+        } finally {
+            // Cleared so the rest of the run does not inherit credentials: their presence is
+            // what makes every mock-player join attempt a real Rails fetch.
+            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(
+                    helper.getLevel().getServer());
+        }
     }
 
     @GameTest(template = TEMPLATE)
     public static void traderBlockMigratesWithItsOwnTypeKey(GameTestHelper helper) {
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                helper.getLevel().getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_shard_identity"));
+        try {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(3, 1, 1);
         BlockPos absolute = helper.absolutePos(relative);
@@ -151,6 +169,12 @@ public final class LegacySpawnBlockMigrationGameTests {
             EconomicNpcRegistryCache.clear();
         }
         helper.succeed();
+        } finally {
+            // Cleared so the rest of the run does not inherit credentials: their presence is
+            // what makes every mock-player join attempt a real Rails fetch.
+            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(
+                    helper.getLevel().getServer());
+        }
     }
 
     @GameTest(template = TEMPLATE)
@@ -220,6 +244,12 @@ public final class LegacySpawnBlockMigrationGameTests {
      */
     @GameTest(template = TEMPLATE)
     public static void aKeyRailsCannotRematerializeKeepsItsMerchantBlock(GameTestHelper helper) {
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                helper.getLevel().getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_shard_identity"));
+        try {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(5, 1, 5);
         BlockPos absolute = helper.absolutePos(relative);
@@ -257,6 +287,12 @@ public final class LegacySpawnBlockMigrationGameTests {
             EconomicNpcRegistryCache.clear();
         }
         helper.succeed();
+        } finally {
+            // Cleared so the rest of the run does not inherit credentials: their presence is
+            // what makes every mock-player join attempt a real Rails fetch.
+            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(
+                    helper.getLevel().getServer());
+        }
     }
 
     /**

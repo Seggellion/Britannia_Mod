@@ -160,9 +160,10 @@ compiled default. `ServiceNpcSpawnGameTests.durableSpawnWorkCarriesTheConfigured
 installs credentials naming a different shard and asserts the durable record carries it, does not
 contain `"Britannia"`, and still carries it after a save/load round trip.
 
-**One behavioural difference from Fabric, not a configuration deviation:** with no credentials at
-all, NeoForge refuses to record durable spawn work while Fabric falls back to its compiled default
-with a warning. That distinguishes them only on a server that cannot reach Rails regardless.
+**Fabric now matches this exactly.** When this section was written Fabric still fell back to its
+compiled default with a warning; its release-hardening pass removed that fallback, so both mods
+refuse to record durable spawn work when the shard is unknown, and **both report zero executable
+readers of a compiled shard name in main source**.
 
 ---
 

@@ -32,16 +32,30 @@ public final class SpawnPostDiagnosticsGameTests {
     }
 
     /**
-     * Credentials naming a shard that is deliberately not the compiled default. A post refuses to
-     * record durable work when the shard is unknown, and running against a non-default shard is
-     * what makes a compiled-constant regression visible instead of silently agreeing.
+     * Runs {@code body} with credentials naming a deliberately non-default shard, then restores the
+     * previous state.
+     *
+     * <p>Scoped, not installed for the whole run. Credentials are what switch on the world-state
+     * poller, the spawn delivery processor and world bootstrap; leaving them installed made every
+     * later test in the shared world attempt real HTTP, which produced thousands of connection
+     * failures and perturbed an unrelated resource-restoration test into failing. The install lasts
+     * exactly as long as the call that needs it.
+     *
+     * <p>The shard is non-default so a regression back to the compiled constant fails here rather
+     * than silently agreeing with it.
      */
-    private static void installNonDefaultShardCredentials(GameTestHelper helper) {
+    private static <T> T withShardCredentials(GameTestHelper helper, java.util.function.Supplier<T> body) {
+        var server = helper.getLevel().getServer();
         com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
-                helper.getLevel().getServer(),
+                server,
                 com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
                         java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
                         "gametest_diagnostics_shard"));
+        try {
+            return body.get();
+        } finally {
+            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(server);
+        }
     }
 
     @GameTest(template = TEMPLATE)
@@ -50,12 +64,12 @@ public final class SpawnPostDiagnosticsGameTests {
         BlockPos relative = new BlockPos(1, 1, 1);
         BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get());
-        installNonDefaultShardCredentials(helper);
         ServiceNpcSpawnBlockEntity post = requirePost(level, absolute);
 
         UUID cityId = UUID.randomUUID();
-        check(post.applyConfiguration(level, cityId, EconomicNpcTypeKeys.prefixed("baker"),
-                        true, post.getConfigurationRevision()) == ServiceNpcSpawnValidationError.NONE,
+        check(withShardCredentials(helper, () -> post.applyConfiguration(level, cityId,
+                        EconomicNpcTypeKeys.prefixed("baker"), true, post.getConfigurationRevision()))
+                        == ServiceNpcSpawnValidationError.NONE,
                 "configuration failed");
 
         UUID worldNpcId = UUID.randomUUID();
@@ -95,12 +109,12 @@ public final class SpawnPostDiagnosticsGameTests {
         BlockPos relative = new BlockPos(3, 1, 1);
         BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get());
-        installNonDefaultShardCredentials(helper);
         ServiceNpcSpawnBlockEntity post = requirePost(level, absolute);
 
         UUID cityId = UUID.randomUUID();
-        check(post.applyConfiguration(level, cityId, EconomicNpcTypeKeys.prefixed("wood_trader"),
-                        true, post.getConfigurationRevision()) == ServiceNpcSpawnValidationError.NONE,
+        check(withShardCredentials(helper, () -> post.applyConfiguration(level, cityId,
+                        EconomicNpcTypeKeys.prefixed("wood_trader"), true, post.getConfigurationRevision()))
+                        == ServiceNpcSpawnValidationError.NONE,
                 "configuration failed");
         UUID worldNpcId = UUID.randomUUID();
         post.applyAssignmentReconciliation(worldNpcId, "Rollo", 1L);
