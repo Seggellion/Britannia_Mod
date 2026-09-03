@@ -313,6 +313,113 @@ public final class BlessedItemInventorySyncGameTests {
 
     // --- helpers --------------------------------------------------------------
 
+    // --- M10: a Rails shard reset leaves local receipts behind -----------------
+
+    /**
+     * Starfarer M10. The integration question no component milestone could answer alone.
+     *
+     * <p>A Rails shard reset DELETES materialization rows. The shard's own SavedData still holds
+     * receipts naming those now-invalid instance UUIDs, and nothing tells it they were revoked.
+     * The danger is a delivery path that consults local receipts to decide what is owed: it would
+     * resurrect an identity Rails has destroyed, and hand the player a second medallion.
+     *
+     * <p>It cannot, and this is why: delivery is driven exclusively by the rows Rails supplies to
+     * {@link BlessedItemInventorySync#apply}. There is no code path anywhere that iterates the
+     * receipt store to decide anything -- {@code BlessedDeliveryReceipts.scan} has no production
+     * caller at all. A receipt Rails never asks about is therefore inert by construction, not by
+     * a check that could be forgotten.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void aDeliveredReceiptForAResetInstanceIsInertWhenRailsOffersANewOne(
+            GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.getInventory().clearContent();
+        UUID revoked = UUID.randomUUID();
+        UUID reissued = UUID.randomUUID();
+        String deedId = "deed-m10-reset";
+
+        // Life before the reset: one delivered medallion, one delivered receipt.
+        BlessedItemInventorySync.apply(player, List.of(pending(VALID_ITEM, deedId, revoked)));
+        check(stacksStampedWith(player, revoked) == 1, "the pre-reset medallion was delivered");
+
+        // Rails resets the shard and later offers a fresh materialization of the SAME
+        // entitlement. The revoked row is simply absent from the payload -- that is all the
+        // shard is ever told, and all it needs to be told.
+        BlessedItemInventorySync.apply(player, List.of(pending(VALID_ITEM, deedId, reissued)));
+
+        check(stacksStampedWith(player, reissued) == 1,
+                "the reissued instance materializes exactly once, found "
+                        + stacksStampedWith(player, reissued));
+        check(stacksStampedWith(player, revoked) == 1,
+                "the revoked instance was never re-delivered, found "
+                        + stacksStampedWith(player, revoked));
+
+        // And the stale receipt is still sitting there, untouched and harmless.
+        Optional<BlessedDeliveryReceipt> stale =
+                BlessedDeliveryReceipts.find(player.serverLevel(), revoked);
+        check(stale.isPresent(), "the stale receipt still exists -- nothing purged it");
+        check(stale.get().status() == BlessedDeliveryReceiptStatus.DELIVERED,
+                "and nothing mutated it either");
+        helper.succeed();
+    }
+
+    /**
+     * The sharper half of the same question. A receipt still in {@code PENDING_PHYSICAL_DELIVERY}
+     * is precisely the kind a future reconciliation sweep would be tempted to act on -- it looks
+     * exactly like an interrupted delivery owed to the player. After a shard reset it is not owed
+     * at all, and Rails is the only thing that knows the difference.
+     *
+     * <p>This pins that a pending receipt Rails no longer offers produces no item on its own. If
+     * {@code scan()} is ever wired, this test fails unless the sweep asks Rails first.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void aPendingReceiptRailsNoLongerOffersIsNeverActedOn(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.getInventory().clearContent();
+        UUID revoked = UUID.randomUUID();
+        UUID reissued = UUID.randomUUID();
+        String deedId = "deed-m10-stranded";
+
+        // A crash between the receipt and the item left this pending, then the shard was reset.
+        BlessedDeliveryReceipts.recordPendingDelivery(player.serverLevel(), revoked, deedId,
+                VALID_ITEM, player.getUUID(), System.currentTimeMillis());
+
+        BlessedItemInventorySync.apply(player, List.of(pending(VALID_ITEM, deedId, reissued)));
+
+        check(stacksStampedWith(player, revoked) == 0,
+                "a stranded pending receipt must never deliver on its own, found "
+                        + stacksStampedWith(player, revoked));
+        check(stacksStampedWith(player, reissued) == 1,
+                "and the instance Rails DID offer still materializes exactly once");
+        check(totalItems(player) == 1, "exactly one medallion in total");
+
+        Optional<BlessedDeliveryReceipt> stranded =
+                BlessedDeliveryReceipts.find(player.serverLevel(), revoked);
+        check(stranded.isPresent()
+                        && stranded.get().status()
+                        == BlessedDeliveryReceiptStatus.PENDING_PHYSICAL_DELIVERY,
+                "the stranded receipt stays pending and inert rather than being silently resolved");
+        helper.succeed();
+    }
+
+    private static int stacksStampedWith(ServerPlayer player, UUID instance) {
+        String wanted = instance.toString();
+        int found = 0;
+        for (ItemStack stack : player.getInventory().items) {
+            if (carriesInstance(stack, wanted)) found++;
+        }
+        for (ItemStack stack : player.getInventory().offhand) {
+            if (carriesInstance(stack, wanted)) found++;
+        }
+        return found;
+    }
+
+    private static boolean carriesInstance(ItemStack stack, String wanted) {
+        if (stack.isEmpty()) return false;
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        return data != null && wanted.equals(data.copyTag().getString("instance_uuid"));
+    }
+
     private static BlessedItemSyncAPI.BlessedRow pending(String item, String deedId, UUID instance) {
         return new BlessedItemSyncAPI.BlessedRow(item, deedId, false, instance.toString(), "pending");
     }

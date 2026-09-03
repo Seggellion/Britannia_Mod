@@ -154,6 +154,27 @@ public final class BlessedDeliveryReceipts {
      * destroyed} are re-report candidates at most, and {@code destroyed} is terminal: a
      * restoration is Rails' call and arrives as a fresh materialization with a new {@code
      * instanceUuid}, never as a re-delivery of this one.
+     *
+     * <h2>Starfarer M10 -- read this before wiring it</h2>
+     * This method is READ-ONLY and currently has no production caller, which is the only reason
+     * the following is not already a bug.
+     *
+     * <p>A {@code pendingDelivery} receipt does NOT mean the player is owed an item. It means
+     * this shard once began a delivery. Those are different claims, and Rails is the only thing
+     * that can tell them apart, because Rails can revoke a materialization without this store
+     * ever hearing about it: an operator shard reset (Rails {@code Redeems::ResetShard}) DELETES
+     * materialization rows outright, leaving receipts here that name instance UUIDs Rails will
+     * never offer, never accept a report against, and no longer recognises at all.
+     *
+     * <p>So a reconciliation sweep built on this result must treat every entry as a QUESTION FOR
+     * RAILS, never as an authorisation. Delivering from a {@code pendingDelivery} entry without
+     * Rails re-offering that exact {@code instanceUuid} as {@code pending} would resurrect an
+     * identity Rails destroyed and hand the player a duplicate -- the precise failure the whole
+     * receipt design exists to prevent. Two GameTests in {@code BlessedItemInventorySyncGameTests}
+     * pin today's inert behaviour and will fail if a sweep ever starts acting unilaterally.
+     *
+     * <p>What this result cannot tell you, and must not be assumed to: whether Rails still
+     * recognises any of these identities. It buckets by LOCAL status only.
      */
     public static BlessedDeliveryReceiptStore.ScanResult scan(ServerLevel level) {
         return BlessedDeliveryReceiptStore.get(level).scan();
