@@ -18,14 +18,37 @@ package com.seggellion.britannia_mod.blessed.delivery;
  * asymmetry is deliberate: losing the acknowledgement costs a retry, whereas losing the record
  * that the item was physically created costs a duplicate item.
  *
- * <p>There is deliberately no destroyed/cancelled/revoked value here. Destruction lifecycle is a
- * later milestone with its own real requirements (and, most likely, its own schema change); this
- * milestone implements exactly the two states its own delivery path needs, following the same
- * "leave the third status out until something needs it" discipline the banking precedent
- * ({@code BankTransferReceiptStatus}) established and then, one milestone later, actually
- * exercised.
+ * <p>{@link #DESTROYED} is the terminal state, added in Starfarer M7 under the same discipline
+ * M6 stated for it: leave the third status out until something needs it, then add it when
+ * something does. It means this side positively established that the physical item is gone --
+ * not that it could not be found, which is a different and much weaker claim that this enum
+ * deliberately has no value for. See {@link #DESTROYED}'s own note for why the difference is the
+ * whole point.
+ *
+ * <h2>Persisted as the enum NAME</h2>
+ * {@code BlessedDeliveryReceipt#toNbt} writes {@code status.name()}, never {@code ordinal()},
+ * which is what makes adding a value here a non-breaking change to the on-disk format: every
+ * pre-existing row still spells the same name it always did, and its meaning does not shift
+ * because a constant was appended. Declaration order therefore carries no persisted meaning, and
+ * nothing may ever be re-ordered into a scheme where it does.
  */
 public enum BlessedDeliveryReceiptStatus {
     PENDING_PHYSICAL_DELIVERY,
-    DELIVERED
+    DELIVERED,
+
+    /**
+     * The materialization is positively, terminally gone, and must never be physically
+     * re-delivered under this {@code instanceUuid}. Restoration, if it is ever warranted, is
+     * Rails' decision and arrives as a brand-new materialization with a fresh {@code
+     * instanceUuid} -- exactly the path {@code BlessedItemInventorySync} already follows for a
+     * Rails-side {@code destroyed} row.
+     *
+     * <p>The bar for writing this is deliberately high: an item that merely cannot be found is
+     * NOT destroyed. A blessed medallion is equally at home in a chest, a bank, a display case or
+     * an ender chest, none of which any scan inspects, so "absent from the player's inventory"
+     * has never been evidence of anything. Only a positively-observed destruction (or an
+     * operator's confirmed ruling) may write this value, because the cost of writing it wrongly
+     * is a permanent, one-off entitlement that the protocol will now refuse to hand back.
+     */
+    DESTROYED
 }

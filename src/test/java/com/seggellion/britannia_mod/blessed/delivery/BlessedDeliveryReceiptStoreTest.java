@@ -450,6 +450,276 @@ class BlessedDeliveryReceiptStoreTest {
         assertTrue(new BlessedDeliveryReceiptStore().scan().isEmpty());
     }
 
+    // ---------- markDestroyed (M7) ----------
+
+    @Test
+    void markDestroyedTransitionsADeliveredReceiptAndRestampsTheTimestamp() {
+        BlessedDeliveryReceiptStore store = new BlessedDeliveryReceiptStore();
+        UUID instance = UUID.randomUUID();
+        BlessedDeliveryReceipt original = receipt(instance, "deed-1", MEDALLION, 100L);
+        store.record(original);
+        store.markDelivered(instance, 200L);
+
+        assertEquals(BlessedDeliveryReceiptStore.MarkDestroyedOutcome.MARKED, store.markDestroyed(instance, 300L));
+
+        BlessedDeliveryReceipt destroyed = store.find(instance).orElseThrow();
+        assertEquals(BlessedDeliveryReceiptStatus.DESTROYED, destroyed.status());
+        assertEquals(300L, destroyed.updatedEpochMillis());
+        // Identity survives the terminal transition untouched.
+        assertEquals(original.instanceUuid(), destroyed.instanceUuid());
+        assertEquals(original.deedId(), destroyed.deedId());
+        assertEquals(original.itemId(), destroyed.itemId());
+        assertEquals(original.ownerUuid(), destroyed.ownerUuid());
+    }
+
+    /**
+     * The deliberate decision, pinned as a test rather than left to a javadoc nobody re-reads: a
+     * still-pending receipt CAN go straight to destroyed. Refusing would strand it in the
+     * pendingDelivery bucket -- the delivery-candidate list -- where a reconciliation pass would
+     * eventually "finish" a delivery for an item that is already gone, manufacturing a second
+     * physical medallion out of a bookkeeping refusal.
+     */
+    @Test
+    void markDestroyedIsAlsoAllowedStraightFromPendingAndEmptiesTheDeliveryCandidateBucket() {
+        BlessedDeliveryReceiptStore store = new BlessedDeliveryReceiptStore();
+        UUID instance = UUID.randomUUID();
+        store.record(receipt(instance, "deed-1", MEDALLION, 100L));
+        assertEquals(1, store.scan().pendingDelivery().size());
+
+        assertEquals(BlessedDeliveryReceiptStore.MarkDestroyedOutcome.MARKED, store.markDestroyed(instance, 250L));
+
+        assertEquals(BlessedDeliveryReceiptStatus.DESTROYED, store.find(instance).orElseThrow().status());
+        assertTrue(store.scan().pendingDelivery().isEmpty(),
+            "a destroyed receipt must never remain a delivery candidate");
+        assertEquals(1, store.scan().destroyed().size());
+    }
+
+    @Test
+    void markDestroyedIsIdempotentAndDoesNotRestampAnAlreadyDestroyedReceipt() {
+        BlessedDeliveryReceiptStore store = new BlessedDeliveryReceiptStore();
+        UUID instance = UUID.randomUUID();
+        store.record(receipt(instance, "deed-1", MEDALLION, 100L));
+        store.markDelivered(instance, 200L);
+        store.markDestroyed(instance, 300L);
+
+        assertEquals(BlessedDeliveryReceiptStore.MarkDestroyedOutcome.ALREADY_DESTROYED,
+            store.markDestroyed(instance, 900L));
+        assertEquals(300L, store.find(instance).orElseThrow().updatedEpochMillis(),
+            "a retried destruction report must preserve the first, true observation time");
+        assertEquals(1, store.scan().destroyed().size());
+    }
+
+    @Test
+    void markDestroyedOnAnUnknownInstanceIsNotFoundAndNeverFabricatesAReceipt() {
+        BlessedDeliveryReceiptStore store = new BlessedDeliveryReceiptStore();
+        UUID unknown = UUID.randomUUID();
+
+        assertEquals(BlessedDeliveryReceiptStore.MarkDestroyedOutcome.NOT_FOUND, store.markDestroyed(unknown, 1L));
+        assertTrue(store.find(unknown).isEmpty(), "destroying a missing instance must never create a receipt");
+        assertTrue(store.scan().isEmpty());
+    }
+
+    @Test
+    void markDestroyedOnAReadOnlyFutureSchemaStoreWritesNothing() {
+        CompoundTag root = new CompoundTag();
+        root.putInt("SchemaVersion", 99);
+
+        BlessedDeliveryReceiptStore loaded = BlessedDeliveryReceiptStore.load(root, null);
+
+        assertEquals(BlessedDeliveryReceiptStore.MarkDestroyedOutcome.READ_ONLY_SCHEMA,
+            loaded.markDestroyed(UUID.randomUUID(), 1L));
+        assertTrue(loaded.scan().destroyed().isEmpty());
+    }
+
+    // ---------- destruction is terminal ----------
+
+    /**
+     * The whole point of the status: a positively-destroyed materialization can never be
+     * physically re-delivered. Before DESTROYED existed, markDelivered's "is it already
+     * DELIVERED?" test would have quietly walked a destroyed receipt back to DELIVERED.
+     */
+    @Test
+    void markDeliveredRefusesToResurrectADestroyedReceipt() {
+        BlessedDeliveryReceiptStore store = new BlessedDeliveryReceiptStore();
+        UUID instance = UUID.randomUUID();
+        store.record(receipt(instance, "deed-1", MEDALLION, 100L));
+        store.markDelivered(instance, 200L);
+        store.markDestroyed(instance, 300L);
+
+        assertEquals(BlessedDeliveryReceiptStore.MarkDeliveredOutcome.ALREADY_DESTROYED,
+            store.markDelivered(instance, 900L));
+        assertEquals(BlessedDeliveryReceiptStatus.DESTROYED, store.find(instance).orElseThrow().status(),
+            "destruction is terminal; nothing may transition out of it");
+        assertEquals(300L, store.find(instance).orElseThrow().updatedEpochMillis());
+    }
+
+    // A Rails replay of the original materialization must not resurrect it either. record()
+    // answers IDEMPOTENT_REPLAY (the fingerprint still matches -- status is not part of it), and
+    // the caller's own "deliver only if the stored status is still pending" rule is what refuses;
+    // this pins that the stored status it will read is still DESTROYED.
+    @Test
+    void aReplayOfTheOriginalMaterializationDoesNotRegressADestroyedReceipt() {
+        BlessedDeliveryReceiptStore store = new BlessedDeliveryReceiptStore();
+        UUID instance = UUID.randomUUID();
+        UUID owner = UUID.randomUUID();
+        store.record(new BlessedDeliveryReceipt(
+            instance, "deed-1", MEDALLION, owner, BlessedDeliveryReceiptStatus.PENDING_PHYSICAL_DELIVERY, 100L));
+        store.markDelivered(instance, 200L);
+        store.markDestroyed(instance, 300L);
+
+        assertEquals(BlessedDeliveryReceiptStore.RecordOutcome.IDEMPOTENT_REPLAY, store.record(new BlessedDeliveryReceipt(
+            instance, "deed-1", MEDALLION, owner, BlessedDeliveryReceiptStatus.PENDING_PHYSICAL_DELIVERY, 400L)));
+
+        assertEquals(BlessedDeliveryReceiptStatus.DESTROYED, store.find(instance).orElseThrow().status());
+        assertEquals(300L, store.find(instance).orElseThrow().updatedEpochMillis());
+        assertTrue(store.scan().pendingDelivery().isEmpty(),
+            "a replay must never return a destroyed materialization to the delivery-candidate bucket");
+    }
+
+    // ---------- DESTROYED persistence and M6 backward compatibility ----------
+
+    @Test
+    void aDestroyedReceiptSurvivesTheNbtRoundTripAndStaysTerminal() {
+        BlessedDeliveryReceiptStore store = new BlessedDeliveryReceiptStore();
+        UUID instance = UUID.randomUUID();
+        store.record(receipt(instance, "deed-1", MEDALLION, 100L));
+        store.markDelivered(instance, 200L);
+        store.markDestroyed(instance, 300L);
+
+        CompoundTag saved = store.save(new CompoundTag(), null);
+        assertEquals("DESTROYED",
+            saved.getList("Receipts", CompoundTag.TAG_COMPOUND).getCompound(0).getString("Status"),
+            "the new status persists as its NAME, exactly like the two before it");
+        assertEquals(1, saved.getInt("SchemaVersion"),
+            "adding an enum constant is not an on-disk schema change and must not bump the version");
+
+        BlessedDeliveryReceiptStore reloaded = BlessedDeliveryReceiptStore.load(saved, null);
+        assertFalse(reloaded.isReadOnlyFutureSchema());
+        BlessedDeliveryReceipt destroyed = reloaded.find(instance).orElseThrow();
+        assertEquals(BlessedDeliveryReceiptStatus.DESTROYED, destroyed.status());
+        assertEquals(300L, destroyed.updatedEpochMillis());
+        assertEquals(BlessedDeliveryReceiptStore.MarkDestroyedOutcome.ALREADY_DESTROYED,
+            reloaded.markDestroyed(instance, 900L));
+        assertEquals(BlessedDeliveryReceiptStore.MarkDeliveredOutcome.ALREADY_DESTROYED,
+            reloaded.markDelivered(instance, 900L));
+    }
+
+    /**
+     * The mandatory backward-compatibility proof: a file written by an M6 build -- SchemaVersion
+     * 1, and rows whose Status spells only the two names M6 knew -- must load cleanly on this
+     * build, with no quarantine, no read-only fallback and no shifted meanings. The tag shape is
+     * built here by hand rather than by calling today's toNbt, so the test still fails if a future
+     * change to the writer silently redefines the format both sides of the comparison.
+     */
+    @Test
+    void anM6ShapedFileWithNoDestroyedRowsStillLoadsCleanly() {
+        UUID pendingInstance = UUID.randomUUID();
+        UUID deliveredInstance = UUID.randomUUID();
+        UUID pendingOwner = UUID.randomUUID();
+        UUID deliveredOwner = UUID.randomUUID();
+
+        CompoundTag root = new CompoundTag();
+        root.putInt("SchemaVersion", 1);
+        ListTag list = new ListTag();
+        list.add(m6ReceiptTag(pendingInstance, "deed-1", MEDALLION, pendingOwner,
+            "PENDING_PHYSICAL_DELIVERY", 111L));
+        list.add(m6ReceiptTag(deliveredInstance, "deed-2", MEDALLION, deliveredOwner, "DELIVERED", 222L));
+        root.put("Receipts", list);
+
+        BlessedDeliveryReceiptStore loaded = BlessedDeliveryReceiptStore.load(root, null);
+
+        assertFalse(loaded.isReadOnlyFutureSchema(), "an M6 file must not be treated as an unsupported schema");
+        BlessedDeliveryReceiptStore.ScanResult scan = loaded.scan();
+        assertTrue(scan.unreadable().isEmpty(), "no M6 row may be quarantined by this build");
+        assertTrue(scan.destroyed().isEmpty());
+
+        BlessedDeliveryReceipt pending = loaded.find(pendingInstance).orElseThrow();
+        assertEquals(BlessedDeliveryReceiptStatus.PENDING_PHYSICAL_DELIVERY, pending.status());
+        assertEquals("deed-1", pending.deedId());
+        assertEquals(pendingOwner, pending.ownerUuid());
+        assertEquals(111L, pending.updatedEpochMillis());
+
+        BlessedDeliveryReceipt delivered = loaded.find(deliveredInstance).orElseThrow();
+        assertEquals(BlessedDeliveryReceiptStatus.DELIVERED, delivered.status());
+        assertEquals(222L, delivered.updatedEpochMillis());
+
+        assertEquals(1, scan.pendingDelivery().size());
+        assertEquals(1, scan.delivered().size());
+
+        // And the M6 file remains fully mutable on this build -- the point of not bumping the
+        // schema version is that an upgraded world keeps its crash protection.
+        assertEquals(BlessedDeliveryReceiptStore.MarkDeliveredOutcome.MARKED,
+            loaded.markDelivered(pendingInstance, 333L));
+        assertEquals(BlessedDeliveryReceiptStore.MarkDestroyedOutcome.MARKED,
+            loaded.markDestroyed(deliveredInstance, 444L));
+    }
+
+    /**
+     * The other direction, which is why SCHEMA_VERSION deliberately did NOT move: an M6 jar
+     * reading an M7 file hits a Status name it cannot resolve. This build's per-record quarantine
+     * is the same code that would run there, so the behaviour is pinned here -- the unknown row is
+     * isolated, preserved verbatim and re-saved, and every row beside it still loads. A schema
+     * bump would instead have taken that whole store read-only, refusing every future delivery.
+     */
+    @Test
+    void anUnrecognisedStatusNameIsQuarantinedRatherThanCrashingOrTakingTheStoreReadOnly() {
+        UUID goodInstance = UUID.randomUUID();
+        UUID futureInstance = UUID.randomUUID();
+
+        CompoundTag root = new CompoundTag();
+        root.putInt("SchemaVersion", BlessedDeliveryReceiptStore.SCHEMA_VERSION);
+        ListTag list = new ListTag();
+        list.add(m6ReceiptTag(goodInstance, "deed-1", MEDALLION, UUID.randomUUID(), "DELIVERED", 10L));
+        list.add(m6ReceiptTag(futureInstance, "deed-2", MEDALLION, UUID.randomUUID(), "SOME_FUTURE_STATUS", 20L));
+        root.put("Receipts", list);
+
+        BlessedDeliveryReceiptStore loaded = BlessedDeliveryReceiptStore.load(root, null);
+
+        assertFalse(loaded.isReadOnlyFutureSchema());
+        assertEquals(1, loaded.scan().delivered().size(), "the readable row beside it must still load");
+        assertTrue(loaded.find(futureInstance).isEmpty());
+        assertEquals(1, loaded.scan().unreadable().size());
+        assertEquals("deed-2", loaded.scan().unreadable().get(0).rawTag().getString("DeedId"),
+            "the unreadable row must be preserved verbatim, never dropped");
+        assertEquals(2, loaded.save(new CompoundTag(), null)
+            .getList("Receipts", CompoundTag.TAG_COMPOUND).size());
+    }
+
+    // ---------- scan with three real buckets ----------
+
+    @Test
+    void scanBucketsDestroyedSeparatelyFromPendingAndDelivered() {
+        UUID pendingInstance = UUID.randomUUID();
+        UUID deliveredInstance = UUID.randomUUID();
+        UUID destroyedInstance = UUID.randomUUID();
+
+        BlessedDeliveryReceiptStore store = new BlessedDeliveryReceiptStore();
+        store.record(receipt(pendingInstance, "deed-pending", MEDALLION, 10L));
+        store.record(receipt(deliveredInstance, "deed-delivered", MEDALLION, 20L));
+        store.record(receipt(destroyedInstance, "deed-destroyed", MEDALLION, 30L));
+        store.markDelivered(deliveredInstance, 40L);
+        store.markDelivered(destroyedInstance, 50L);
+        store.markDestroyed(destroyedInstance, 60L);
+        store.addUnreadableEntryForTesting(
+            new BlessedDeliveryReceiptStore.UnreadableEntry("corrupt: synthetic", new CompoundTag()));
+
+        BlessedDeliveryReceiptStore.ScanResult scan = store.scan();
+
+        assertEquals(1, scan.pendingDelivery().size());
+        assertEquals(pendingInstance, scan.pendingDelivery().get(0).instanceUuid());
+        assertEquals(1, scan.delivered().size());
+        assertEquals(deliveredInstance, scan.delivered().get(0).instanceUuid());
+        assertEquals(1, scan.destroyed().size());
+        assertEquals(destroyedInstance, scan.destroyed().get(0).instanceUuid());
+        assertEquals(BlessedDeliveryReceiptStatus.DESTROYED, scan.destroyed().get(0).status());
+        assertEquals(1, scan.unreadable().size());
+        assertFalse(scan.isEmpty());
+
+        // Cross-checks: the destroyed receipt leaked into neither live bucket.
+        assertTrue(scan.pendingDelivery().stream().noneMatch(r -> r.instanceUuid().equals(destroyedInstance)));
+        assertTrue(scan.delivered().stream().noneMatch(r -> r.instanceUuid().equals(destroyedInstance)));
+    }
+
     // ---------- helpers ----------
 
     private static void assertFingerprintMismatchLeavesTheStoredReceiptIntact(
@@ -478,5 +748,21 @@ class BlessedDeliveryReceiptStoreTest {
         return new BlessedDeliveryReceipt(
             instanceUuid, deedId, itemId, UUID.randomUUID(),
             BlessedDeliveryReceiptStatus.PENDING_PHYSICAL_DELIVERY, updatedAt);
+    }
+
+    /**
+     * An M6-era receipt tag built by hand, with the Status written as a raw name string. Used to
+     * synthesise a pre-M7 file without routing through today's writer.
+     */
+    private static CompoundTag m6ReceiptTag(UUID instanceUuid, String deedId, String itemId,
+                                            UUID ownerUuid, String statusName, long updatedAt) {
+        CompoundTag tag = new CompoundTag();
+        tag.putUUID("InstanceUuid", instanceUuid);
+        tag.putString("DeedId", deedId);
+        tag.putString("ItemId", itemId);
+        tag.putUUID("OwnerUuid", ownerUuid);
+        tag.putString("Status", statusName);
+        tag.putLong("UpdatedEpochMillis", updatedAt);
+        return tag;
     }
 }

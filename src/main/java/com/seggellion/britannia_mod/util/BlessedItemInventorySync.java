@@ -154,6 +154,17 @@ public final class BlessedItemInventorySync {
                 return;
             }
 
+            if (receipt.status() == BlessedDeliveryReceiptStatus.DESTROYED) {
+                // Terminal, and terminal locally is enough. This instance is positively known to
+                // be gone, so it is never physically re-delivered no matter what Rails still
+                // says -- Rails may simply not have heard yet. A restoration arrives as a NEW
+                // pending materialization with a NEW instance_uuid, which is a different row and
+                // takes the ordinary path above.
+                LOGGER.warn("Blessed instance={} is destroyed locally; refusing to re-deliver it. "
+                        + "A restoration must arrive as a new instance_uuid.", instanceUuid);
+                return;
+            }
+
             if (receipt.status() == BlessedDeliveryReceiptStatus.DELIVERED) {
                 // The item already exists in this world; only Rails has not been told, or its
                 // answer was lost. Replay the acknowledgement -- never the delivery.

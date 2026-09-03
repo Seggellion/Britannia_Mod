@@ -72,9 +72,43 @@ public final class BlessedDeliveryReportClient {
     }
 
     /**
-     * Blocking. Call from {@code ServerHttpExecutor}, never from the server thread.
+     * The two outcomes Rails accepts. Nothing else may be reported: a shard cannot declare an
+     * item restored, expired or consumed -- those are Rails' decisions.
      */
+    public enum Status {
+        DELIVERED("delivered"),
+        DESTROYED("destroyed");
+
+        private final String wireValue;
+
+        Status(String wireValue) {
+            this.wireValue = wireValue;
+        }
+
+        public String wireValue() {
+            return wireValue;
+        }
+    }
+
+    /** Blocking. Call from {@code ServerHttpExecutor}, never from the server thread. */
     public static Outcome reportDelivered(MinecraftServer server, UUID instanceUuid, UUID ownerUuid) {
+        return report(server, instanceUuid, ownerUuid, Status.DELIVERED);
+    }
+
+    /**
+     * Reports that this specific materialization is positively known no longer to exist.
+     *
+     * <p>Never sent because an item could not be found. Absence is not destruction (playbook
+     * invariant C); only a positive, observed end-of-life or an audited operator action reaches
+     * here.
+     */
+    public static Outcome reportDestroyed(MinecraftServer server, UUID instanceUuid, UUID ownerUuid) {
+        return report(server, instanceUuid, ownerUuid, Status.DESTROYED);
+    }
+
+    /** Blocking. Call from {@code ServerHttpExecutor}, never from the server thread. */
+    public static Outcome report(MinecraftServer server, UUID instanceUuid, UUID ownerUuid,
+                                 Status status) {
         Optional<ServerCredentials> maybeCredentials = ServerAuthRegistry.credentials(server);
         if (maybeCredentials.isEmpty()) {
             return new Outcome.Retryable("credentials_unavailable");
@@ -90,7 +124,7 @@ public final class BlessedDeliveryReportClient {
         payload.addProperty("protocol_version", PROTOCOL_VERSION);
         payload.addProperty("instance_uuid", instanceUuid.toString());
         payload.addProperty("minecraft_uuid", ownerUuid.toString());
-        payload.addProperty("status", "delivered");
+        payload.addProperty("status", status.wireValue());
         byte[] body = payload.toString().getBytes(StandardCharsets.UTF_8);
 
         HttpURLConnection connection = null;
@@ -114,34 +148,35 @@ public final class BlessedDeliveryReportClient {
             connection.getOutputStream().write(body);
             connection.getOutputStream().flush();
 
-            int status = connection.getResponseCode();
-            return switch (status) {
+            int responseCode = connection.getResponseCode();
+            return switch (responseCode) {
                 case HttpURLConnection.HTTP_OK -> accepted(connection, instanceUuid);
                 case HttpURLConnection.HTTP_NOT_FOUND -> {
-                    LOGGER.warn("Blessed delivery report rejected as unknown instance={} -- Rails "
-                            + "does not recognise it, or it belongs to another shard", instanceUuid);
+                    LOGGER.warn("Blessed {} report rejected as unknown instance={} -- Rails does "
+                            + "not recognise it, or it belongs to another shard",
+                            status.wireValue(), instanceUuid);
                     yield new Outcome.NotFound();
                 }
                 case HttpURLConnection.HTTP_CONFLICT -> {
                     String error = errorCode(connection);
-                    LOGGER.warn("Blessed delivery report conflicted instance={} error={} -- Rails "
-                            + "state disagrees with ours; not retrying and not re-delivering",
-                            instanceUuid, error);
+                    LOGGER.warn("Blessed {} report conflicted instance={} error={} -- Rails state "
+                            + "disagrees with ours; not retrying, and never re-materializing",
+                            status.wireValue(), instanceUuid, error);
                     yield new Outcome.Conflict(error);
                 }
                 case HttpURLConnection.HTTP_BAD_REQUEST -> new Outcome.Retryable("invalid_request");
                 case HttpURLConnection.HTTP_UNAUTHORIZED, HttpURLConnection.HTTP_FORBIDDEN ->
                         new Outcome.Retryable("authentication_rejected");
                 case 429 -> new Outcome.Retryable("rate_limited");
-                default -> new Outcome.Retryable("http_" + status);
+                default -> new Outcome.Retryable("http_" + responseCode);
             };
         } catch (JsonParseException | IllegalStateException malformed) {
             return new Outcome.Retryable("malformed_response");
         } catch (Exception failure) {
             // Deliberately broad and deliberately retryable: the item already exists in the
             // world, so an unreachable Rails is a reporting delay, never a delivery failure.
-            LOGGER.warn("Blessed delivery report could not reach Rails instance={} -- will replay "
-                    + "from the durable receipt", instanceUuid, failure);
+            LOGGER.warn("Blessed {} report could not reach Rails instance={} -- will replay from "
+                    + "the durable receipt", status.wireValue(), instanceUuid, failure);
             return new Outcome.Retryable("transport_error");
         } finally {
             if (connection != null) connection.disconnect();

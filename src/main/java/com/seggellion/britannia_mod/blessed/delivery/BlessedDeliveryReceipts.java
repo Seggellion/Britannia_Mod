@@ -109,6 +109,38 @@ public final class BlessedDeliveryReceipts {
         return markDelivered(level, instanceUuid, System.currentTimeMillis());
     }
 
+    /**
+     * Durably records that the physical item is positively, terminally gone. Flushes
+     * synchronously only on an actual transition ({@link
+     * BlessedDeliveryReceiptStore.MarkDestroyedOutcome#MARKED}) -- an already-destroyed replay, an
+     * unknown instance, and a read-only store all changed nothing, so there is nothing to force
+     * to disk.
+     *
+     * <p>Ordering here mirrors the delivery path's and matters for the same reason, in the
+     * opposite direction. {@code recordPendingDelivery} must precede the physical act because the
+     * risk is creating an item nothing recorded; this call must FOLLOW the observed destruction,
+     * because the risk is recording a destruction that did not happen and thereby refusing a
+     * player an entitlement that still exists. Write it once the item is demonstrably gone, then
+     * report to Rails -- and let the report be retried against the durable receipt rather than
+     * the other way round.
+     */
+    public static BlessedDeliveryReceiptStore.MarkDestroyedOutcome markDestroyed(
+            ServerLevel level, UUID instanceUuid, long nowEpochMillis
+    ) {
+        BlessedDeliveryReceiptStore store = BlessedDeliveryReceiptStore.get(level);
+        BlessedDeliveryReceiptStore.MarkDestroyedOutcome outcome =
+            store.markDestroyed(instanceUuid, nowEpochMillis);
+        if (outcome == BlessedDeliveryReceiptStore.MarkDestroyedOutcome.MARKED) {
+            forceSynchronousFlush(level);
+        }
+        return outcome;
+    }
+
+    /** Convenience overload stamping {@link System#currentTimeMillis()}. */
+    public static BlessedDeliveryReceiptStore.MarkDestroyedOutcome markDestroyed(ServerLevel level, UUID instanceUuid) {
+        return markDestroyed(level, instanceUuid, System.currentTimeMillis());
+    }
+
     public static Optional<BlessedDeliveryReceipt> find(ServerLevel level, UUID instanceUuid) {
         return BlessedDeliveryReceiptStore.get(level).find(instanceUuid);
     }
@@ -117,6 +149,11 @@ public final class BlessedDeliveryReceipts {
      * The startup/reconciliation candidate list. This milestone only returns it; deciding what to
      * do about a {@code pendingDelivery} entry (establishing whether the physical item actually
      * exists, and re-sending any acknowledgement Rails never received) is a later milestone's job.
+     *
+     * <p>Only {@code pendingDelivery} is ever a delivery candidate. {@code delivered} and {@code
+     * destroyed} are re-report candidates at most, and {@code destroyed} is terminal: a
+     * restoration is Rails' call and arrives as a fresh materialization with a new {@code
+     * instanceUuid}, never as a re-delivery of this one.
      */
     public static BlessedDeliveryReceiptStore.ScanResult scan(ServerLevel level) {
         return BlessedDeliveryReceiptStore.get(level).scan();

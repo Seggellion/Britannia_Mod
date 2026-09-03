@@ -85,10 +85,56 @@ public final class BlessedDeliveryReceiptStore extends SavedData {
         READ_ONLY_SCHEMA
     }
 
-    /** The outcome of {@link #markDelivered(UUID, long)}. */
+    /**
+     * The outcome of {@link #markDelivered(UUID, long)}.
+     *
+     * <ul>
+     *   <li>{@code MARKED} -- the receipt transitioned to {@link
+     *       BlessedDeliveryReceiptStatus#DELIVERED}.</li>
+     *   <li>{@code ALREADY_DELIVERED} -- an idempotent no-op; the original delivery timestamp is
+     *       preserved rather than re-stamped.</li>
+     *   <li>{@code ALREADY_DESTROYED} -- refused. The receipt has reached the terminal {@link
+     *       BlessedDeliveryReceiptStatus#DESTROYED} state, and nothing is written. Added in M7
+     *       alongside {@code DESTROYED} itself, because without it this method's
+     *       "is it already DELIVERED?" test would silently resurrect a destroyed receipt back
+     *       into {@code DELIVERED} -- which is precisely the "a destroyed materialization can
+     *       never be re-delivered" invariant, defeated by an unhandled enum value. A caller
+     *       seeing this has a real anomaly on its hands: something physically delivered an item
+     *       whose materialization this world had already written off.</li>
+     *   <li>{@code NOT_FOUND} -- no receipt for this instance; nothing is fabricated.</li>
+     *   <li>{@code READ_ONLY_SCHEMA} -- the on-disk store is from a future schema; nothing is
+     *       written.</li>
+     * </ul>
+     */
     public enum MarkDeliveredOutcome {
         MARKED,
         ALREADY_DELIVERED,
+        ALREADY_DESTROYED,
+        NOT_FOUND,
+        READ_ONLY_SCHEMA
+    }
+
+    /**
+     * The outcome of {@link #markDestroyed(UUID, long)}.
+     *
+     * <ul>
+     *   <li>{@code MARKED} -- the receipt transitioned to {@link
+     *       BlessedDeliveryReceiptStatus#DESTROYED}.</li>
+     *   <li>{@code ALREADY_DESTROYED} -- an idempotent no-op leaving the ORIGINAL destruction
+     *       timestamp intact, exactly as {@link MarkDeliveredOutcome#ALREADY_DELIVERED} does. A
+     *       destruction report is retried until Rails acknowledges it, so a repeat call is the
+     *       normal case, not an error -- and the first observation is the true one.</li>
+     *   <li>{@code NOT_FOUND} -- no receipt exists for this instance. Nothing is fabricated: an
+     *       item destroyed under an instance this world never recorded delivering is an anomaly
+     *       the caller must see, and inventing a {@code DESTROYED} receipt for it would forge
+     *       local evidence about somebody's permanent entitlement.</li>
+     *   <li>{@code READ_ONLY_SCHEMA} -- the on-disk store is from a future schema this build
+     *       cannot safely mutate; nothing is written.</li>
+     * </ul>
+     */
+    public enum MarkDestroyedOutcome {
+        MARKED,
+        ALREADY_DESTROYED,
         NOT_FOUND,
         READ_ONLY_SCHEMA
     }
@@ -117,9 +163,16 @@ public final class BlessedDeliveryReceiptStore extends SavedData {
      *       reconciliation is for, and a caller must not assume either way.</li>
      *   <li>{@code delivered} -- the physical item exists. Not a delivery candidate; at most a
      *       candidate for re-sending an acknowledgement Rails may never have received.</li>
+     *   <li>{@code destroyed} -- terminal. Not a delivery candidate and never will be; at most a
+     *       candidate for re-sending a destruction report Rails may never have received. This
+     *       bucket exists as its own category rather than being folded into {@code delivered}
+     *       for a blunt reason: before M7 added it, {@code scan} sorted anything that was not
+     *       {@code DELIVERED} into {@code pendingDelivery}, so a destroyed receipt would have
+     *       been handed to reconciliation as a live delivery candidate -- the exact
+     *       duplicate-item outcome this store exists to prevent.</li>
      *   <li>{@code unreadable} -- an entry that exists but could not be parsed. Kept as its own
      *       distinct category rather than silently absent, because an unreadable entry might
-     *       just as easily be a real receipt of either of the other two kinds.</li>
+     *       just as easily be a real receipt of any of the other three kinds.</li>
      * </ul>
      * A caller that inspects only {@code pendingDelivery} and ignores a non-empty {@code
      * unreadable} is making exactly the silent assumption this store exists to prevent.
@@ -127,10 +180,12 @@ public final class BlessedDeliveryReceiptStore extends SavedData {
     public record ScanResult(
             List<BlessedDeliveryReceipt> pendingDelivery,
             List<BlessedDeliveryReceipt> delivered,
+            List<BlessedDeliveryReceipt> destroyed,
             List<UnreadableEntry> unreadable
     ) {
         public boolean isEmpty() {
-            return pendingDelivery.isEmpty() && delivered.isEmpty() && unreadable.isEmpty();
+            return pendingDelivery.isEmpty() && delivered.isEmpty()
+                && destroyed.isEmpty() && unreadable.isEmpty();
         }
     }
 
@@ -141,7 +196,24 @@ public final class BlessedDeliveryReceiptStore extends SavedData {
      */
     public static final String DATA_NAME = "britannia_blessed_delivery_receipts";
 
-    /** 1 -- the initial shape (Starfarer M6). */
+    /**
+     * 1 -- the initial shape (Starfarer M6), and deliberately still 1 after M7 added {@link
+     * BlessedDeliveryReceiptStatus#DESTROYED}.
+     *
+     * <p>Adding an enum constant is not an on-disk schema change here, because {@code Status} is
+     * persisted as the enum NAME and never its ordinal: every M6 row still spells {@code
+     * PENDING_PHYSICAL_DELIVERY} or {@code DELIVERED}, still parses to the same constant, and
+     * still means what it meant. The tag names, tag types and record arity are all untouched.
+     *
+     * <p>Bumping it would not merely be unnecessary, it would be actively harmful in the one
+     * direction that matters. This build treats an unrecognised {@code SchemaVersion} as
+     * read-only, refusing every mutation -- so a bump would mean that a world rolled back to an
+     * M6 jar could no longer record ANY delivery receipt, turning a downgrade into a total loss
+     * of crash protection for every blessed item. Left at 1, an M6 jar reading an M7 file loads
+     * normally and quarantines only the individual {@code DESTROYED} rows it cannot name (
+     * {@code valueOf} throws, the per-record catch preserves the raw tag verbatim and re-saves
+     * it), which is the correct failure: narrow, visible, and lossless.
+     */
     public static final int SCHEMA_VERSION = 1;
 
     static final int MAX_COLLECTION_ENTRIES = 16_384;
@@ -240,6 +312,11 @@ public final class BlessedDeliveryReceiptStore extends SavedData {
      * {@link MarkDeliveredOutcome#NOT_FOUND}, because "the item exists but nothing ever recorded
      * the intent to create it" is precisely the anomaly a caller needs to see, not something to
      * paper over by inventing the missing record.
+     *
+     * <p>A {@link BlessedDeliveryReceiptStatus#DESTROYED} receipt is terminal and is refused with
+     * {@link MarkDeliveredOutcome#ALREADY_DESTROYED} rather than transitioned: destruction is the
+     * one state this store will not walk back, because walking it back is how a written-off
+     * materialization becomes a second physical item.
      */
     public MarkDeliveredOutcome markDelivered(UUID instanceUuid, long nowEpochMillis) {
         Objects.requireNonNull(instanceUuid, "instanceUuid");
@@ -247,11 +324,16 @@ public final class BlessedDeliveryReceiptStore extends SavedData {
 
         BlessedDeliveryReceipt existing = receipts.get(instanceUuid);
         if (existing == null) return MarkDeliveredOutcome.NOT_FOUND;
-        if (existing.status() == BlessedDeliveryReceiptStatus.DELIVERED) return MarkDeliveredOutcome.ALREADY_DELIVERED;
-
-        receipts.put(instanceUuid, existing.withStatus(BlessedDeliveryReceiptStatus.DELIVERED, nowEpochMillis));
-        setDirty();
-        return MarkDeliveredOutcome.MARKED;
+        return switch (existing.status()) {
+            case DELIVERED -> MarkDeliveredOutcome.ALREADY_DELIVERED;
+            case DESTROYED -> MarkDeliveredOutcome.ALREADY_DESTROYED;
+            case PENDING_PHYSICAL_DELIVERY -> {
+                receipts.put(instanceUuid,
+                    existing.withStatus(BlessedDeliveryReceiptStatus.DELIVERED, nowEpochMillis));
+                setDirty();
+                yield MarkDeliveredOutcome.MARKED;
+            }
+        };
     }
 
     /**
@@ -264,26 +346,87 @@ public final class BlessedDeliveryReceiptStore extends SavedData {
         return markDelivered(instanceUuid, System.currentTimeMillis());
     }
 
+    /**
+     * The physical item is positively, terminally gone: transitions an existing receipt to
+     * {@link BlessedDeliveryReceiptStatus#DESTROYED}, re-stamping {@code updatedEpochMillis}.
+     * Idempotent -- a repeat call is {@link MarkDestroyedOutcome#ALREADY_DESTROYED} and preserves
+     * the original destruction timestamp. Never fabricates a receipt; see {@link
+     * MarkDestroyedOutcome} for what each answer obliges the caller to do.
+     *
+     * <h2>Both non-terminal states are valid predecessors, deliberately</h2>
+     * {@link BlessedDeliveryReceiptStatus#DELIVERED} to {@code DESTROYED} is the ordinary path:
+     * the item existed, and now it demonstrably does not.
+     *
+     * <p>{@link BlessedDeliveryReceiptStatus#PENDING_PHYSICAL_DELIVERY} to {@code DESTROYED} is
+     * ALSO allowed, and that is a considered choice rather than an oversight. A pending receipt
+     * means "the item may or may not have landed" -- a crash mid-materialization leaves exactly
+     * that ambiguity -- and a positively-observed destruction resolves the ambiguity in the only
+     * direction it can be resolved: the item did land, and it is now gone. Refusing the
+     * transition would leave that receipt sitting in {@code pendingDelivery} forever, where it is
+     * a standing invitation to a reconciliation pass to "finish" a delivery for an item that has
+     * already been destroyed -- manufacturing a second physical medallion out of a bookkeeping
+     * refusal. The pending bucket is the dangerous bucket precisely because it is a delivery
+     * candidate list; letting a confirmed terminal outcome empty it is safer than preserving a
+     * tidy state machine.
+     *
+     * <p>What protects against a wrongly-written {@code DESTROYED} is therefore not this method
+     * but the caller's evidence bar, which {@link BlessedDeliveryReceiptStatus#DESTROYED}'s own
+     * docs state: a positively-observed destruction, never a failed search. This store cannot
+     * check that bar and does not pretend to.
+     */
+    public MarkDestroyedOutcome markDestroyed(UUID instanceUuid, long nowEpochMillis) {
+        Objects.requireNonNull(instanceUuid, "instanceUuid");
+        if (readOnlyFutureSchema) return MarkDestroyedOutcome.READ_ONLY_SCHEMA;
+
+        BlessedDeliveryReceipt existing = receipts.get(instanceUuid);
+        if (existing == null) return MarkDestroyedOutcome.NOT_FOUND;
+        if (existing.status() == BlessedDeliveryReceiptStatus.DESTROYED) {
+            return MarkDestroyedOutcome.ALREADY_DESTROYED;
+        }
+
+        receipts.put(instanceUuid, existing.withStatus(BlessedDeliveryReceiptStatus.DESTROYED, nowEpochMillis));
+        setDirty();
+        return MarkDestroyedOutcome.MARKED;
+    }
+
+    /** Convenience overload stamping {@link System#currentTimeMillis()}. */
+    public MarkDestroyedOutcome markDestroyed(UUID instanceUuid) {
+        return markDestroyed(instanceUuid, System.currentTimeMillis());
+    }
+
     public Optional<BlessedDeliveryReceipt> find(UUID instanceUuid) {
         return Optional.ofNullable(receipts.get(instanceUuid));
     }
 
     /**
-     * The startup/reconciliation scan, split into pending-delivery and delivered buckets (see
-     * {@link ScanResult} for why those need different handling), plus every entry that exists but
-     * could not be parsed at all as its own distinct {@link UnreadableEntry} category.
+     * The startup/reconciliation scan, split into pending-delivery, delivered and destroyed
+     * buckets (see {@link ScanResult} for why each needs different handling), plus every entry
+     * that exists but could not be parsed at all as its own distinct {@link UnreadableEntry}
+     * category.
+     *
+     * <p>The sort below is an exhaustive switch over the status, not an
+     * {@code if DELIVERED else pending} test, and that is load-bearing: the {@code else} form
+     * silently classifies every future status as a live delivery candidate, which is how adding
+     * {@link BlessedDeliveryReceiptStatus#DESTROYED} would otherwise have handed reconciliation a
+     * destroyed materialization to re-deliver. An exhaustive switch over an enum with no default
+     * makes the next such addition a compile error instead.
      */
     public ScanResult scan() {
         List<BlessedDeliveryReceipt> pendingDelivery = new ArrayList<>();
         List<BlessedDeliveryReceipt> delivered = new ArrayList<>();
+        List<BlessedDeliveryReceipt> destroyed = new ArrayList<>();
         for (BlessedDeliveryReceipt receipt : receipts.values()) {
-            if (receipt.status() == BlessedDeliveryReceiptStatus.DELIVERED) {
-                delivered.add(receipt);
-            } else {
-                pendingDelivery.add(receipt);
+            switch (receipt.status()) {
+                case PENDING_PHYSICAL_DELIVERY -> pendingDelivery.add(receipt);
+                case DELIVERED -> delivered.add(receipt);
+                case DESTROYED -> destroyed.add(receipt);
             }
         }
-        return new ScanResult(List.copyOf(pendingDelivery), List.copyOf(delivered), List.copyOf(unreadable));
+        return new ScanResult(
+            List.copyOf(pendingDelivery),
+            List.copyOf(delivered),
+            List.copyOf(destroyed),
+            List.copyOf(unreadable));
     }
 
     public boolean isReadOnlyFutureSchema() {
