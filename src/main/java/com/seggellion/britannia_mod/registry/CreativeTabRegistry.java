@@ -391,6 +391,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.NIGHTSHADE.get());
                 safeAccept(output, ItemRegistry.BLOOD_MOSS.get());
                 safeAccept(output, ItemRegistry.BLACK_PEARL.get());
+                safeAccept(output, ItemRegistry.STARFARERS_MEDALLION.get());
                 safeAccept(output, ItemRegistry.GINSENG.get());
                 safeAccept(output, ItemRegistry.SPIDERS_SILK.get());
                 safeAccept(output, ItemRegistry.SULPHUROUS_ASH.get());
