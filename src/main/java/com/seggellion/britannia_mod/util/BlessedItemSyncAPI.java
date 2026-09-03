@@ -17,8 +17,31 @@ public final class BlessedItemSyncAPI {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Gson GSON = new Gson();
 
-    /** Plain-old Java record for the JSON row */
-    public record BlessedRow(String itemName, String deedId, boolean used) {}
+    /**
+     * One row of the Rails blessed-item catalogue.
+     *
+     * <p>Starfarer M4 added {@code instance_uuid} and {@code state} beside the three legacy
+     * fields. Both are nullable here on purpose: a Rails build older than M4 simply does not
+     * send them, and a row for an entitlement Rails declined to materialize on this shard
+     * (already consumed, or scoped to a different shard) carries them as JSON null.
+     *
+     * <p>A null {@code instanceUuid} is never a reason to invent one. Delivery without a
+     * materialization identity is precisely the duplication bug this milestone removes, so the
+     * sync fails closed on it -- see {@code BlessedItemInventorySync}.
+     */
+    public record BlessedRow(String itemName, String deedId, boolean used,
+                             String instanceUuid, String state) {
+
+        /** Pre-M4 shape, kept so existing callers and tests read unchanged. */
+        public BlessedRow(String itemName, String deedId, boolean used) {
+            this(itemName, deedId, used, null, null);
+        }
+
+        public boolean hasLifecycle() {
+            return instanceUuid != null && !instanceUuid.isBlank()
+                && state != null && !state.isBlank();
+        }
+    }
 
     public static List<BlessedRow> fetch(ServerPlayer player) {
         HttpURLConnection conn = null;
@@ -46,7 +69,9 @@ public final class BlessedItemSyncAPI {
                 rows.add(new BlessedRow(
                         o.get("item").getAsString(),
                         o.get("deed_id").getAsString(),
-                        o.get("used").getAsBoolean()));
+                        o.get("used").getAsBoolean(),
+                        optionalString(o, "instance_uuid"),
+                        optionalString(o, "state")));
             }
             return rows;
         } catch (Exception e) {
@@ -55,5 +80,17 @@ public final class BlessedItemSyncAPI {
         } finally {
             if (conn != null) conn.disconnect();
         }
+    }
+
+    /**
+     * Reads a field that may be absent (a pre-M4 Rails build) or explicitly null (an
+     * entitlement Rails declined to materialize here). Both arrive as null rather than as an
+     * exception or an empty string pretending to be an identity.
+     */
+    private static String optionalString(JsonObject object, String field) {
+        JsonElement value = object.get(field);
+        if (value == null || value.isJsonNull()) return null;
+        String text = value.getAsString();
+        return text.isBlank() ? null : text;
     }
 }

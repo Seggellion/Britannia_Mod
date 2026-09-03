@@ -240,6 +240,12 @@ public final class RailsApiUrlResolver {
          */
         GUILD_TRAINING("guild_training"),
         BLESSED_ITEMS("blessed_items", "minecraft_uuid"),
+        /**
+         * Starfarer M4: where this shard reports what physically happened to a blessed
+         * item it was asked to deliver. Signed, per-server authenticated, and keyed by the
+         * per-shard materialization identity rather than the entitlement.
+         */
+        BLESSED_ITEM_MATERIALIZATION_RESULT("v2/blessed_item_materializations/:instance_uuid/result"),
         ORE_VEINS("ore_veins", "shard"),
         SHARD_USER_ADJUST_STATS("shard_users/:user_id/adjust_stats"),
         SERVICE_NPC_SPAWN_OPERATIONS("service_npc_spawn_operations"),
