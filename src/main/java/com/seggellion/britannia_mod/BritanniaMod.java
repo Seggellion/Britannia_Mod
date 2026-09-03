@@ -25,6 +25,7 @@ import com.seggellion.britannia_mod.event.ParrotProtectionHandler;
 import com.seggellion.britannia_mod.event.FishingEventHandler;
 import com.seggellion.britannia_mod.event.TreeKarmaHandler;
 import com.seggellion.britannia_mod.event.KarmaReductionHandler;
+import com.seggellion.britannia_mod.blessed.rescue.BlessedItemRescueHandlers;
 import com.seggellion.britannia_mod.quest.events.QuestEventHandlers;
 import com.seggellion.britannia_mod.villager.BlacksmithPOIHandler;
 import com.seggellion.britannia_mod.event.BlockRestoreHandler;
@@ -219,6 +220,9 @@ CraftableRegistry.init();
         NeoForge.EVENT_BUS.register(ShadeEntitySizeHandler.class);
         NeoForge.EVENT_BUS.register(GlobalEventHandler.class);
         NeoForge.EVENT_BUS.register(QuestEventHandlers.class);
+        // Starfarer M7: keeps loose blessed items alive through despawn, lava, fire and
+        // the void. Rescue only -- it never reports a destruction.
+        NeoForge.EVENT_BUS.register(BlessedItemRescueHandlers.class);
         NeoForge.EVENT_BUS.register(WoodChopEventHandler.class);
         NeoForge.EVENT_BUS.register(new ToolInteractionHandler());
         // CityGameModeHandler is retired. Its city clause (force adventure inside city bounds)
