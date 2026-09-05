@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.grabbyhands.diagnostics.GrabbyEnvironmentReport;
 import com.seggellion.britannia_mod.grabbyhands.diagnostics.GrabbyInteractionDiagnosis;
 import net.minecraft.ChatFormatting;
@@ -14,6 +15,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.slf4j.Logger;
 
 /**
  * Read-only operator diagnostics for Grabby Hands.
@@ -23,16 +25,18 @@ import net.minecraft.world.phys.HitResult;
  * exact click do nothing", by walking every gate in the order the server applies them and naming the
  * first that refuses.
  *
- * <p>The optional player argument is the point of the command rather than a convenience. The failure
- * being diagnosed only happens to players who are <em>not</em> operators, and several of the gates -
- * spawn protection, permission level, policy - answer differently for an operator. An operator
- * running this on themselves would be told everything is fine. So an operator runs it against the
- * affected player, using that player's own position, posture, hands and permissions.
+ * <p>The optional player argument is the point of the command rather than a convenience. Two gates
+ * answer differently for staff - vanilla spawn protection exempts operators outright, and
+ * {@code GrabbyPolicy} lets them act inside a structure they do not own - so an operator diagnosing
+ * themselves can be told everything is fine about a click that fails for the player who reported it.
+ * Run it against the affected player, using that player's own position, posture, hands and
+ * permissions.
  *
  * <p>Mutates nothing: no claim is taken, no block is touched, no item moves. Shaped after
  * {@code MiningDebugCommand} and {@code OreVeinDiagnosticsCommand}.
  */
 public final class GrabbyDiagnosticsCommand {
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     private GrabbyDiagnosticsCommand() {
     }
@@ -75,15 +79,19 @@ public final class GrabbyDiagnosticsCommand {
         BlockPos pos = blockHit.getBlockPos();
 
         GrabbyInteractionDiagnosis diagnosis = GrabbyInteractionDiagnosis.pickup(level, subject, pos);
+        String heading = "Grabby Hands pickup diagnosis for " + subject.getGameProfile().getName()
+                + " at " + pos.toShortString() + " in " + level.dimension().location();
 
-        source.sendSuccess(() -> Component.literal("Grabby Hands pickup diagnosis for "
-                        + subject.getGameProfile().getName() + " at " + pos.toShortString()
-                        + " in " + level.dimension().location())
-                .withStyle(ChatFormatting.GOLD), false);
+        // The verdict goes FIRST as well as last. It is the only line that answers the question, and
+        // a thirty-line report scrolls it out of a chat window before anyone reads it - which is
+        // exactly what happened on the first production run.
+        boolean refused = diagnosis.firstRefusal().isPresent();
+        source.sendSuccess(() -> Component.literal(heading).withStyle(ChatFormatting.GOLD), false);
+        source.sendSuccess(() -> Component.literal(diagnosis.verdict())
+                .withStyle(refused ? ChatFormatting.RED : ChatFormatting.GREEN), false);
         for (GrabbyInteractionDiagnosis.Gate gate : diagnosis.gates()) {
             source.sendSuccess(() -> Component.literal("  " + gate).withStyle(styleOf(gate)), false);
         }
-        boolean refused = diagnosis.firstRefusal().isPresent();
         source.sendSuccess(() -> Component.literal(diagnosis.verdict())
                 .withStyle(refused ? ChatFormatting.RED : ChatFormatting.GREEN), false);
         if (!refused) {
@@ -91,7 +99,30 @@ public final class GrabbyDiagnosticsCommand {
                     "  (a sneak + right-click here would pick the object up)")
                     .withStyle(ChatFormatting.GREEN), false);
         }
+
+        logForCopying(heading, diagnosis);
         return 1;
+    }
+
+    /**
+     * Writes the whole diagnosis to the server log, as one statement.
+     *
+     * <p>Chat is where an operator reads the answer; the log is where they copy it from. The first
+     * production run of this command came back as four of its thirty lines, because a chat window is
+     * a bad place to select text out of, and the line that mattered was not among them.
+     *
+     * <p>One multi-line statement rather than a line each on purpose. Britannia has been bitten
+     * before by bursts of console output: the Apex console rate-limits at around 160 lines a second
+     * and blocks the server thread while it does, which shows up as players timing out with no crash.
+     * A diagnostic that can stall the server it is diagnosing would be worse than useless.
+     */
+    private static void logForCopying(String heading, GrabbyInteractionDiagnosis diagnosis) {
+        StringBuilder report = new StringBuilder(heading).append(System.lineSeparator());
+        for (GrabbyInteractionDiagnosis.Gate gate : diagnosis.gates()) {
+            report.append("  ").append(gate).append(System.lineSeparator());
+        }
+        report.append(diagnosis.verdict());
+        LOGGER.info("[grabby-hands][debug]{}{}", System.lineSeparator(), report);
     }
 
     /**

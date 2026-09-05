@@ -2,6 +2,10 @@
 
 One server test. Ten minutes. It ends with a copied block of text that names the failing layer.
 
+> **Resolved 2026-08-26.** The production cause was an occupied off hand: the pickup gesture needs
+> *both* hands empty, and a non-empty off hand produced no message at all. It now says so. This
+> runbook is kept for the next time something in this area goes quiet.
+
 **Do not run this test with an operator account.** Operators are exempt from vanilla spawn
 protection and pass policy gates an ordinary player does not. Testing as staff is how this defect
 stayed invisible in the first place. You need one operator (to run the commands) and one **normal,
@@ -54,7 +58,8 @@ Send back: the `/grabby env` output, both `/grabby debug` outputs, and what the 
 | --- | --- | --- |
 | `FIRST REFUSING GATE: packet / vanilla spawn protection allows this position` | The use packet dies before any mod code runs. | Set `spawn-protection=0` in `server.properties`, restart, repeat the test. |
 | `FIRST REFUSING GATE: provenance / this exact block was placed by a player` | That chair is authored scenery, not a player possession. | Confirm the player placed *that* chair themselves. If they did, it is a placement-provenance defect — send the output. |
-| `FIRST REFUSING GATE: gesture / …` | Posture or hands are not what we think. | Check the named line — usually the server-side sneak flag or a non-empty off hand. |
+| `FIRST REFUSING GATE: gesture / both hands empty` | **The original production cause.** The off hand held something. | Empty the off hand. The player now gets "Empty your off hand as well to pick that up." instead of silence. |
+| `FIRST REFUSING GATE: gesture / …` (other) | Posture is not what we think — usually the server-side sneak flag. | Check the named line. |
 | `FIRST REFUSING GATE: packet / not waiting on a teleport acknowledgement` | The connection is mid-teleport. | Have the player stand still a moment and retry. |
 | `ALL PRECONDITIONS PASS` but nothing happens | The refusal is somewhere none of the gates model. | Send both debug outputs; we add targeted per-player instrumentation next. |
 | `build:` / `sha256` mismatch | Stale or wrong JAR. | Fix the deployment first. Change nothing in source. |
