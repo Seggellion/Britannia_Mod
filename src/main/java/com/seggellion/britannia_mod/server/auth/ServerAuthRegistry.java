@@ -39,10 +39,39 @@ public final class ServerAuthRegistry {
         }
     }
 
+    /**
+     * Installs credentials directly, bypassing the loader. GameTests only.
+     *
+     * <p>Needed to prove NF-003: without it no in-world test can run against a shard other than
+     * the compiled default, and a defect that substitutes that default is invisible to every test
+     * that happens to use it.
+     */
+    public static void installForGameTesting(MinecraftServer server, ServerCredentials credentials) {
+        STATES.put(server, State.available(credentials));
+    }
+
     public static Optional<ServerCredentials> credentials(MinecraftServer server) {
         State state = STATES.get(server);
         return state == null ? Optional.empty() : Optional.ofNullable(state.credentials);
     }
+    /**
+     * The shard this server actually authenticates as, or empty when no credentials are
+     * configured.
+     *
+     * <p>This is the <b>only</b> supported source of runtime shard identity. It exists so that
+     * every subsystem asks the same question of the same object that supplies the secret and the
+     * origin, and so that the answer cannot drift between the {@code Shard-Name} header, a request
+     * body and a durable record.
+     *
+     * <p>{@code ModConfig.SHARD_NAME} is not an alternative: it is a compile-time constant that
+     * nothing assigns from configuration, so reading it yields a value that is right only by
+     * coincidence and wrong the instant an operator sets {@code ULTIMACRAFT_SHARD_NAME} to
+     * anything else. That was NF-003.
+     */
+    public static Optional<String> shardName(MinecraftServer server) {
+        return credentials(server).map(ServerCredentials::shardName);
+    }
+
     public static String unavailableReason(MinecraftServer server) {
         State state = STATES.get(server);
         return state == null ? "not_initialized" : state.unavailableReason;

@@ -63,6 +63,12 @@ public final class ArchitectSpawnGatingGameTests {
 
     @GameTest(template = TEMPLATE)
     public static void thearchitectblockregistersapostasarchitectvendor(GameTestHelper helper) {
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                helper.getLevel().getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_shard_identity"));
+        try {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
         BlockPos absolute = helper.absolutePos(relative);
@@ -90,6 +96,12 @@ public final class ArchitectSpawnGatingGameTests {
                     "the registration lost the economic key");
         });
         helper.succeed();
+        } finally {
+            // Cleared so the rest of the run does not inherit credentials: their presence is
+            // what makes every mock-player join attempt a real Rails fetch.
+            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(
+                    helper.getLevel().getServer());
+        }
     }
 
     /** Migrating twice does not produce two posts: the block is gone after the first. */
@@ -127,6 +139,12 @@ public final class ArchitectSpawnGatingGameTests {
      */
     @GameTest(template = TEMPLATE)
     public static void zerofoodandwoodnolongerpreventsanarchitectpost(GameTestHelper helper) {
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                helper.getLevel().getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_shard_identity"));
+        try {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
         BlockPos absolute = helper.absolutePos(relative);
@@ -144,6 +162,12 @@ public final class ArchitectSpawnGatingGameTests {
                     "the post was created without the economic key");
         });
         helper.succeed();
+        } finally {
+            // Cleared so the rest of the run does not inherit credentials: their presence is
+            // what makes every mock-player join attempt a real Rails fetch.
+            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(
+                    helper.getLevel().getServer());
+        }
     }
 
     /**
@@ -223,6 +247,12 @@ public final class ArchitectSpawnGatingGameTests {
     /** The rollback receipt names the Architect block, so the migration is reversible. */
     @GameTest(template = TEMPLATE)
     public static void migrationrecordsarollbackreceipt(GameTestHelper helper) {
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                helper.getLevel().getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_shard_identity"));
+        try {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
         BlockPos absolute = helper.absolutePos(relative);
@@ -241,6 +271,12 @@ public final class ArchitectSpawnGatingGameTests {
                     "unexpected migration outcome " + receipt.outcome());
         });
         helper.succeed();
+        } finally {
+            // Cleared so the rest of the run does not inherit credentials: their presence is
+            // what makes every mock-player join attempt a real Rails fetch.
+            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(
+                    helper.getLevel().getServer());
+        }
     }
 
     /** An unknown city keeps the legacy block in place rather than stranding a broken post. */

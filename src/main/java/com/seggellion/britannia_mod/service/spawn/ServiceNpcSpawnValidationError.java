@@ -25,5 +25,11 @@ public enum ServiceNpcSpawnValidationError {
     REVISION_OVERFLOW,
     PENDING_STORE_ERROR,
     CLAIM_STORE_ERROR,
+    /**
+     * No server credentials are configured, so the shard this post belongs to is unknown.
+     * Refusing is deliberate: the record is durable, and a guessed shard would be replayed
+     * after every restart and rejected by the delivery processor as a mismatch.
+     */
+    CREDENTIALS_UNAVAILABLE,
     INTERNAL_ERROR
 }
