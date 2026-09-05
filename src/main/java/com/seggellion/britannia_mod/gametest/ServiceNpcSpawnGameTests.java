@@ -1283,7 +1283,13 @@ public final class ServiceNpcSpawnGameTests {
             );
         replacementProcessor.processNowForGameTest();
         check(replacementRequests.size() == 1, "replacement fixture did not enter flight");
-        helper.setBlock(replacementRelative, Blocks.STONE);
+        // Replacing the post with another block is a destruction, and since NF-003 the REMOVE it
+        // writes is stamped with the shard from the credentials. Authenticate as the same shard
+        // the fixture and its processor use, or recordTrueDestruction refuses to enqueue at all.
+        withShardCredentials(helper, replacementShard, () -> {
+            helper.setBlock(replacementRelative, Blocks.STONE);
+            return null;
+        });
         replacementHandle.future.complete(success(
             replacementRequests.getFirst(), ServiceNpcSpawnOutcome.APPLIED, 9_000L
         ));
@@ -1322,7 +1328,15 @@ public final class ServiceNpcSpawnGameTests {
         check(submitted.size() == 1 && processor.inFlightCount() == 1,
             "fixture UPSERT did not enter in-flight tracking");
 
-        helper.setBlock(new BlockPos(3, 1, 1), Blocks.AIR);
+        // Destroying the post writes a durable REMOVE stamped with the server's configured
+        // shard. Since NF-003 that shard comes from the credentials rather than a compiled
+        // constant, and recordTrueDestruction deliberately refuses to enqueue at all when no
+        // credentials are configured, so this call has to be authenticated. It installs
+        // CONTROLLED_SHARD_TWO because that is the shard the fixture and the processor use.
+        withShardCredentials(helper, CONTROLLED_SHARD_TWO, () -> {
+            helper.setBlock(new BlockPos(3, 1, 1), Blocks.AIR);
+            return null;
+        });
         ServiceNpcSpawnPendingRecord remove =
             ServiceNpcSpawnPendingData.get(level).snapshot().get(fixture.pending.spawnPointId());
         check(remove != null && remove.operation() == ServiceNpcSpawnPendingOperation.REMOVE,
@@ -1449,12 +1463,25 @@ public final class ServiceNpcSpawnGameTests {
      * than silently agreeing with it.
      */
     private static <T> T withShardCredentials(GameTestHelper helper, java.util.function.Supplier<T> body) {
+        return withShardCredentials(helper, FIXTURE_SHARD, body);
+    }
+
+    /**
+     * Same scoping, for a caller that must be authenticated as a specific shard.
+     *
+     * <p>A durable record is stamped with {@code credentials.shardName()}, and the delivery
+     * processor refuses any record whose shard does not match its own. A caller that already
+     * owns a fixture on a controlled shard must therefore install that same shard, or the
+     * record it produces would be rejected as a mismatch.
+     */
+    private static <T> T withShardCredentials(
+            GameTestHelper helper, String shardName, java.util.function.Supplier<T> body) {
         var server = helper.getLevel().getServer();
         com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
                 server,
                 com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
                         java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
-                        FIXTURE_SHARD));
+                        shardName));
         try {
             return body.get();
         } finally {
