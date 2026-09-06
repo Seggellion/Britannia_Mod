@@ -514,7 +514,7 @@ public final class ServiceNpcSpawnGameTests {
             );
         processor.processNowForGameTest();
 
-        helper.runAfterDelay(3, () -> {
+        runAfterDelayAuthenticated(helper, 3, IDENTITY_SHARD, () -> {
             check(submitted.size() == 1, "automatic processor did not submit exactly one operation");
             check(submitted.getFirst().operationId().equals(fixture.pending.operationId()),
                 "automatic submission changed the stable operation ID");
@@ -1283,17 +1283,11 @@ public final class ServiceNpcSpawnGameTests {
             );
         replacementProcessor.processNowForGameTest();
         check(replacementRequests.size() == 1, "replacement fixture did not enter flight");
-        // Replacing the post with another block is a destruction, and since NF-003 the REMOVE it
-        // writes is stamped with the shard from the credentials. Authenticate as the same shard
-        // the fixture and its processor use, or recordTrueDestruction refuses to enqueue at all.
-        withShardCredentials(helper, replacementShard, () -> {
-            helper.setBlock(replacementRelative, Blocks.STONE);
-            return null;
-        });
+        helper.setBlock(replacementRelative, Blocks.STONE);
         replacementHandle.future.complete(success(
             replacementRequests.getFirst(), ServiceNpcSpawnOutcome.APPLIED, 9_000L
         ));
-        helper.runAfterDelay(3, () -> {
+        runAfterDelayAuthenticated(helper, 3, IDENTITY_SHARD, () -> {
             check(level.getBlockState(helper.absolutePos(replacementRelative)).is(Blocks.STONE),
                 "obsolete UPSERT completion mutated the replacement block");
             ServiceNpcSpawnPendingRecord current = ServiceNpcSpawnPendingData.get(level)
@@ -1328,15 +1322,7 @@ public final class ServiceNpcSpawnGameTests {
         check(submitted.size() == 1 && processor.inFlightCount() == 1,
             "fixture UPSERT did not enter in-flight tracking");
 
-        // Destroying the post writes a durable REMOVE stamped with the server's configured
-        // shard. Since NF-003 that shard comes from the credentials rather than a compiled
-        // constant, and recordTrueDestruction deliberately refuses to enqueue at all when no
-        // credentials are configured, so this call has to be authenticated. It installs
-        // CONTROLLED_SHARD_TWO because that is the shard the fixture and the processor use.
-        withShardCredentials(helper, CONTROLLED_SHARD_TWO, () -> {
-            helper.setBlock(new BlockPos(3, 1, 1), Blocks.AIR);
-            return null;
-        });
+        helper.setBlock(new BlockPos(3, 1, 1), Blocks.AIR);
         ServiceNpcSpawnPendingRecord remove =
             ServiceNpcSpawnPendingData.get(level).snapshot().get(fixture.pending.spawnPointId());
         check(remove != null && remove.operation() == ServiceNpcSpawnPendingOperation.REMOVE,
@@ -1345,7 +1331,7 @@ public final class ServiceNpcSpawnGameTests {
             submitted.getFirst(), ServiceNpcSpawnOutcome.APPLIED, clock.get()
         ));
 
-        helper.runAfterDelay(3, () -> {
+        runAfterDelayAuthenticated(helper, 3, IDENTITY_SHARD, () -> {
             ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
             ServiceNpcSpawnPendingRecord current = data.snapshot().get(fixture.pending.spawnPointId());
             check(current != null && current.operation() == ServiceNpcSpawnPendingOperation.REMOVE,
@@ -1462,6 +1448,122 @@ public final class ServiceNpcSpawnGameTests {
      * <p>The shard is non-default so a regression back to the compiled constant fails here rather
      * than silently agreeing with it.
      */
+    /**
+     * Deferred work keeps its credentials even when another test clears the shared slot.
+     *
+     * <p>This reproduces the exact mechanism that made
+     * {@code automaticDeliveryRegistersExactPost} fail intermittently at four different
+     * assertions across five runs. Credentials live in one per-server slot. That test installed
+     * them once and relied on the value surviving into its deferred continuations, while six
+     * other tests in this class clear the slot in their own finally blocks. GameTests interleave
+     * across ticks, so a clear could land in the gap and strip the credentials mid-test.
+     *
+     * <p>The interfering clear here is performed directly rather than waited for, so the ordering
+     * is deterministic instead of a race this test would only sometimes lose. Against the old
+     * plain {@code helper.runAfterDelay} the deferred body observes an empty slot and fails;
+     * against {@link #runAfterDelayAuthenticated} it observes its own shard.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void deferredWorkKeepsItsCredentialsWhenAnotherTestClearsTheSlot(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                server,
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        IDENTITY_SHARD));
+
+        runAfterDelayAuthenticated(helper, 2, IDENTITY_SHARD, () -> {
+            check(com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.shardName(server)
+                            .orElse(null) != null,
+                "deferred work ran with no credentials after another test cleared the slot");
+            check(IDENTITY_SHARD.equals(
+                    com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.shardName(server)
+                            .orElse(null)),
+                "deferred work ran as the wrong shard");
+            helper.succeed();
+        });
+
+        // Exactly what a neighbouring test's finally block does, in the gap before the callback.
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(server);
+    }
+
+    /**
+     * The scope helper restores what it found, including when the body throws, and leaves an
+     * empty slot empty.
+     *
+     * <p>The first case is what makes nesting safe: a helper that cleared on exit would strip an
+     * enclosing scope. The last case matters because several tests deliberately exercise the
+     * credentials-unavailable path, and this helper must not leave credentials behind for them.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void credentialScopeRestoresWhatItFound(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        var registry = com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.class;
+        check(registry != null, "registry class missing");
+
+        // Empty slot stays empty.
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(server);
+        withShardCredentials(helper, "scope_probe_a", () -> null);
+        check(com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.credentials(server).isEmpty(),
+            "scope left credentials behind on a slot that started empty");
+
+        // An enclosing scope survives a nested one.
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                server,
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        IDENTITY_SHARD));
+        withShardCredentials(helper, "scope_probe_b", () -> null);
+        check(IDENTITY_SHARD.equals(
+                com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.shardName(server)
+                        .orElse(null)),
+            "nested scope did not restore the enclosing shard");
+
+        // And still restores when the body throws.
+        boolean threw = false;
+        try {
+            withShardCredentials(helper, "scope_probe_c", () -> {
+                throw new IllegalStateException("deliberate");
+            });
+        } catch (IllegalStateException expected) {
+            threw = true;
+        }
+        check(threw, "the deliberate failure did not propagate");
+        check(IDENTITY_SHARD.equals(
+                com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.shardName(server)
+                        .orElse(null)),
+            "scope did not restore the enclosing shard after the body threw");
+
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(server);
+        helper.succeed();
+    }
+
+    /** The shard {@link #automaticDeliveryRegistersExactPost} authenticates as. */
+    private static final String IDENTITY_SHARD = "gametest_shard_identity";
+
+    /**
+     * Schedules deferred work that runs with credentials installed for exactly its own duration.
+     *
+     * <p>A test's credentials cannot simply be installed once and left to persist into its
+     * deferred callbacks. Six other tests in this class deliberately call
+     * {@code ServerAuthRegistry.clear} in their own finally blocks, because leaving credentials
+     * installed turns every later mock-player join into a real Rails fetch. GameTests interleave
+     * across ticks, so one of those clears lands between this test's body and its deferred
+     * continuation and removes the credentials out from under it. Whichever step ran next was
+     * then the one that failed, which is why the failure moved between assertions run to run.
+     *
+     * <p>Installing per callback makes the test independent of what any other test does to the
+     * shared slot, and {@link #withShardCredentials} restores the previous value rather than
+     * clearing, so nesting cannot strip an enclosing scope either.
+     */
+    private static void runAfterDelayAuthenticated(
+            GameTestHelper helper, int ticks, String shardName, Runnable body) {
+        helper.runAfterDelay(ticks, () -> withShardCredentials(helper, shardName, () -> {
+            body.run();
+            return null;
+        }));
+    }
+
     private static <T> T withShardCredentials(GameTestHelper helper, java.util.function.Supplier<T> body) {
         return withShardCredentials(helper, FIXTURE_SHARD, body);
     }
@@ -1477,6 +1579,12 @@ public final class ServiceNpcSpawnGameTests {
     private static <T> T withShardCredentials(
             GameTestHelper helper, String shardName, java.util.function.Supplier<T> body) {
         var server = helper.getLevel().getServer();
+        // Restore, don't clear. A caller may already be inside its own credential scope --
+        // automaticDeliveryRegistersExactPost installs credentials for its whole body -- and
+        // clearing on the way out would silently strip that outer scope for everything after
+        // the nested call. Credentials are a single per-server slot, so the only safe exit is
+        // to put back exactly what was there.
+        var previous = com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.credentials(server);
         com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
                 server,
                 com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
@@ -1485,7 +1593,12 @@ public final class ServiceNpcSpawnGameTests {
         try {
             return body.get();
         } finally {
-            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(server);
+            if (previous.isPresent()) {
+                com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                        server, previous.get());
+            } else {
+                com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(server);
+            }
         }
     }
     private static ServiceNpcSpawnBlockEntity placePost(GameTestHelper helper, BlockPos relative) {
