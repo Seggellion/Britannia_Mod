@@ -94,7 +94,9 @@ public final class MiningGateGameTests {
         helper.setBlock(highRelative, BlockRegistry.SILVER_ORE.get());
 
         ServerPlayer lowMiner = survivalMiner(helper, 54.9f);
-        ServerPlayer highMiner = survivalMiner(helper, 55.0f);
+        // Silver's MaxSkill, so the qualified miner's harvest is certain rather than a
+        // coin toss; the point of the test is the contrast with the unqualified one.
+        ServerPlayer highMiner = survivalMiner(helper, 95.0f);
 
         lowMiner.gameMode.destroyBlock(lowAbsolute);
         highMiner.gameMode.destroyBlock(highAbsolute);
@@ -112,7 +114,7 @@ public final class MiningGateGameTests {
         // Exact-threshold inclusivity. Since milestone 4 an authorized break also rolls one
         // activation, so the successful miner sits at the threshold or exactly one 0.1 above it.
         float highSkill = SkillManager.getSkill(highMiner, MiningBreakGate.SKILL_ID);
-        check(highSkill == 55.0f || Math.abs(highSkill - 55.1f) < 1.0e-4f,
+        check(highSkill == 95.0f || Math.abs(highSkill - 95.1f) < 1.0e-4f,
                 "an authorized break must award at most one 0.1 activation, got " + highSkill);
         check(SkillManager.getSkill(lowMiner, MiningBreakGate.SKILL_ID) == 54.9f,
                 "denial must not move the low miner's skill");
@@ -139,7 +141,7 @@ public final class MiningGateGameTests {
         helper.assertBlockPresent(BlockRegistry.SILVER_ORE.get(), firstRelative);
 
         // The skill rises mid-session, exactly as a gain or a Guildmaster purchase would deliver it.
-        SkillManager.applyConfirmedValue(miner, MiningBreakGate.SKILL_ID, 55.0f);
+        SkillManager.applyConfirmedValue(miner, MiningBreakGate.SKILL_ID, 150.0f);
         miner.gameMode.destroyBlock(second);
 
         // Success is judged by the world, not by destroyBlock's return value: the managed flow
@@ -159,7 +161,10 @@ public final class MiningGateGameTests {
         BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, Blocks.STONE);
 
-        ServerPlayer miner = survivalMiner(helper, 0.0f);
+        // Stone is 0/0/100: at skill 0 a miner qualifies but cannot yet succeed, so this proves
+        // the managed flow from a skill where the extraction check is a certainty. The training
+        // half at zero is proved in MiningApprovedInvariantsGameTests.
+        ServerPlayer miner = survivalMiner(helper, 100.0f);
         miner.gameMode.destroyBlock(absolute);
 
         helper.assertBlockNotPresent(Blocks.STONE, relative);
@@ -194,14 +199,15 @@ public final class MiningGateGameTests {
      * Creative is not stopped by the Mining threshold — and, since the milestone 6 amendment, is
      * not a way to delete a deposit either.
      *
-     * <p>This used to assert that the ore was gone, which was the behaviour at the time: the gate
-     * approved the bypass and vanilla removed the block. That turned an ordinary click into a
-     * permanent, unrecorded deletion of a sited deposit, so the amended policy refuses the break.
-     * What the bypass still means is unchanged and is what this test was really about: an operator
-     * is not answered "your Mining is too low", and no skill is granted for the attempt.
+     * <p>The history of this test is the history of the rule. It first asserted the ore was gone,
+     * because the gate approved a creative bypass and vanilla removed the block -- an ordinary
+     * click permanently deleting a sited deposit. It was then amended to keep the bypass while
+     * refusing the deletion. It now asserts the owner-approved end state: <b>creative does not
+     * bypass the ladder at all</b>. Creative may SITE a resource node, which is how an
+     * administrator places one by hand, but siting and harvesting are different authorities.
      */
     @GameTest(template = TEMPLATE)
-    public static void creativeBypassesTheThresholdWithoutGainOrDeletion(GameTestHelper helper) {
+    public static void creativeDoesNotBypassTheThreshold(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
         BlockPos absolute = helper.absolutePos(relative);
@@ -210,14 +216,16 @@ public final class MiningGateGameTests {
         ServerPlayer admin = helper.makeMockServerPlayerInLevel();
         admin.setGameMode(GameType.CREATIVE);
         admin.getInventory().clearContent();
+        admin.setItemInHand(InteractionHand.MAIN_HAND,
+                new ItemStack(com.seggellion.britannia_mod.registry.ToolRegistry.PICKAXE.get()));
         SkillManager.applyConfirmedValue(admin, MiningBreakGate.SKILL_ID, 0.0f);
 
-        // Empty hand: the bypass is the gate's, not the Britannia-pickaxe flow's.
         MiningBreakGate.Evaluation evaluation =
                 MiningBreakGate.evaluate(admin, level.getBlockState(absolute), level, absolute);
-        check(evaluation.type() == MiningBreakGate.ResultType.APPROVED_BYPASS,
-                "an operator at zero Mining was answered " + evaluation.type()
-                        + " rather than being waved past the threshold");
+        check(evaluation.type() == MiningBreakGate.ResultType.INSUFFICIENT_SKILL,
+                "creative at zero Mining was answered " + evaluation.type()
+                        + " rather than being held to the threshold like everyone else");
+        check(!evaluation.permitsBreak(), "creative must not be permitted past the threshold");
 
         admin.gameMode.destroyBlock(absolute);
 
@@ -225,7 +233,7 @@ public final class MiningGateGameTests {
         check(!hasRestoreRecord(level, absolute),
                 "a refused creative break must not schedule restoration");
         check(SkillManager.getSkill(admin, MiningBreakGate.SKILL_ID) == 0.0f,
-                "bypass must not grant Mining skill");
+                "a refused creative break must not grant Mining skill");
         helper.succeed();
     }
 

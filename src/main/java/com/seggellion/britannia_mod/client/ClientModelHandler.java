@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 public class ClientModelHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Set<String> SCALED_CARTS = Set.of(
-            "merchant_cart_red", "merchant_cart_purple", "merchant_cart_blue",
+            "merchant_cart_red", "merchant_cart_purple", "merchant_cart_blue", "merchant_cart_black",
             "merchant_cart_green", "merchant_cart_yellow", "merchant_cart_white");
     private static final Set<String> MARKET_STALLS = Set.of(
             "market_stall_red", "market_stall_blue", "market_stall_green", "market_stall_purple");

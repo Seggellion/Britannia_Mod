@@ -100,7 +100,17 @@ class Milestone14RRemovalAndPreservationTest {
         // dung world block intentionally has no BlockItem, so these are exactly six item ids.
         // 925 as of 2026-08-25: the light and dark sandstone pavers each add one ordinary
         // BlockItem; their two visual variants remain block-state/model variants, not item ids.
-        assertEquals(925, repositoryItems);
+        // 927 as of 2026-08-29: Stone/Slate Roof Milestone 5 adds the canonical Sandstone Roof
+        // and Limestone Roof BlockItems. Their six visual variations remain block states.
+        // 928 as of 2026-09-01: merchant_cart_black, added by 1fe8ae53 ("new merchant colors"),
+        // which registered the item without bumping this count -- so this assertion had been
+        // failing at 927-vs-928 ever since. Recorded here rather than quietly absorbed. That
+        // same commit also never authored data/britannia_mod/loot_table/blocks/merchant_cart_black
+        // .json, which is the separate, still-outstanding NewAssetsCrossSystemAuditTest failure.
+        // 929 as of 2026-09-03: the Starfarer's Medallion. A plain commemorative item with no
+        // block form, no recipe and no gameplay effect, so it adds exactly one id and no
+        // registration code beyond its own entry.
+        assertEquals(929, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));

@@ -88,9 +88,9 @@ public final class EconomicNpcSpawnPostGameTests {
         UUID spawnPointId = requireId(post);
         UUID cityId = UUID.randomUUID();
 
-        ServiceNpcSpawnValidationError error = post.applyConfiguration(
-                level, cityId, EconomicNpcTypeKeys.prefixed(TYPE_KEY), true, 0L
-        );
+        ServiceNpcSpawnValidationError error = withShardCredentials(helper, () ->
+                post.applyConfiguration(
+                        level, cityId, EconomicNpcTypeKeys.prefixed(TYPE_KEY), true, 0L));
         check(error == ServiceNpcSpawnValidationError.NONE,
                 "economic configuration was rejected: " + error);
 
@@ -209,6 +209,33 @@ public final class EconomicNpcSpawnPostGameTests {
         );
     }
 
+
+    /**
+     * Runs {@code body} with credentials naming a deliberately non-default shard, then restores the
+     * previous state.
+     *
+     * <p>Scoped, not installed for the whole run. Credentials are what switch on the world-state
+     * poller, the spawn delivery processor and world bootstrap; leaving them installed made every
+     * later test in the shared world attempt real HTTP, which produced thousands of connection
+     * failures and perturbed an unrelated resource-restoration test into failing. The install lasts
+     * exactly as long as the call that needs it.
+     *
+     * <p>The shard is non-default so a regression back to the compiled constant fails here rather
+     * than silently agreeing with it.
+     */
+    private static <T> T withShardCredentials(GameTestHelper helper, java.util.function.Supplier<T> body) {
+        var server = helper.getLevel().getServer();
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                server,
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_economic_shard"));
+        try {
+            return body.get();
+        } finally {
+            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(server);
+        }
+    }
     private static ServiceNpcSpawnBlockEntity placePost(GameTestHelper helper, BlockPos relative) {
         helper.setBlock(relative, BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get());
         ServerLevel level = helper.getLevel();

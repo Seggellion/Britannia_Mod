@@ -265,7 +265,14 @@ public final class ServerEconomyService {
             return true;
         }
 
-        String syncKey = ModConfig.SHARD_NAME + ":" + trader.getUUID();
+        // Namespaced by the shard this server actually authenticates as, so two shards sharing
+        // a process image never share a sync memo.
+        String shard = ServerAuthRegistry.shardName(level.getServer()).orElse(null);
+        if (shard == null) {
+            LOGGER.warn("Trader NPC sync skipped: no server credentials, so the shard is unknown");
+            return false;
+        }
+        String syncKey = shard + ":" + trader.getUUID();
         if (SYNCED_NPCS.contains(syncKey)) {
             return true;
         }
@@ -504,7 +511,10 @@ public final class ServerEconomyService {
         }
         payload.addProperty("trader_uuid", trader.getUUID().toString());
         payload.addProperty("entity_id", trader.getId());
-        payload.addProperty("shard", ModConfig.SHARD_NAME);
+        // The shard in the body is the shard the request authenticates as. Taking both from one
+        // ServerCredentials is what makes the header and this field incapable of disagreeing.
+        payload.addProperty("shard",
+                ServerAuthRegistry.credentials(level.getServer()).orElseThrow().shardName());
         payload.addProperty("server_game_time", level.getGameTime());
 
         JsonArray items = new JsonArray();

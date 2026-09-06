@@ -7,6 +7,8 @@ import com.seggellion.britannia_mod.block.HedgeBushBlock;
 import com.seggellion.britannia_mod.block.PoolOfBloodBlock;
 import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
 import com.seggellion.britannia_mod.block.CrateBlock;
+import com.seggellion.britannia_mod.block.CrateShapes;
+import com.seggellion.britannia_mod.block.CrateStackBlock;
 import com.seggellion.britannia_mod.block.WaterWellBlock;
 import com.seggellion.britannia_mod.block.LadderMultiblockBlock;
 import com.seggellion.britannia_mod.block.LoomBlock;
@@ -98,6 +100,7 @@ import com.seggellion.britannia_mod.block.QuarterBlock;
 import com.seggellion.britannia_mod.block.ThreeQuarterBlock;
 import com.seggellion.britannia_mod.block.HouseLotBlock;
 import com.seggellion.britannia_mod.block.TopOnlySlabBlock;
+import com.seggellion.britannia_mod.block.VariantTopOnlySlabBlock;
 import com.seggellion.britannia_mod.block.WindowCollisionBlock;
 import com.seggellion.britannia_mod.block.MultiCellWindowBlock;
 import com.seggellion.britannia_mod.block.WindowFootprint;
@@ -113,6 +116,7 @@ import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BlacksmithSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BritanniaChestBlockEntity;
 import com.seggellion.britannia_mod.block.entity.CrateBlockEntity;
+import com.seggellion.britannia_mod.block.entity.CrateStackBlockEntity;
 import com.seggellion.britannia_mod.block.entity.ArmoireBlockEntity;
 import com.seggellion.britannia_mod.block.BritanniaSpawnBlock;
 import com.seggellion.britannia_mod.block.ChessBoardBlock;
@@ -1453,8 +1457,16 @@ public static final DeferredHolder<Block, TopOnlySlabBlock> TILE_ROOF_FLAT = BLO
 );
 
 
-public static final DeferredHolder<Block, TopOnlySlabBlock> SLATE_ROOF_FLAT = BLOCKS.register("slate_roof_flat", () ->
-    new TopOnlySlabBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_SLAB))
+public static final DeferredHolder<Block, VariantTopOnlySlabBlock> SLATE_ROOF_FLAT = BLOCKS.register("slate_roof_flat", () ->
+    new VariantTopOnlySlabBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_SLAB))
+);
+
+public static final DeferredHolder<Block, VariantTopOnlySlabBlock> SANDSTONE_ROOF = BLOCKS.register("sandstone_roof", () ->
+    new VariantTopOnlySlabBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_SLAB))
+);
+
+public static final DeferredHolder<Block, VariantTopOnlySlabBlock> LIMESTONE_ROOF = BLOCKS.register("limestone_roof", () ->
+    new VariantTopOnlySlabBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_SLAB))
 );
 
 public static final DeferredHolder<Block, TopOnlySlabBlock> SLATE_ROOF_1_FLAT = BLOCKS.register("slate_roof_1_flat", () ->
@@ -2558,6 +2570,8 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
             BLOCKS.register("merchant_cart_purple", BlockRegistry::merchantCart);
     public static final DeferredHolder<Block, DecorativeMultiblockBlock> MERCHANT_CART_BLUE =
             BLOCKS.register("merchant_cart_blue", BlockRegistry::merchantCart);
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> MERCHANT_CART_BLACK =
+            BLOCKS.register("merchant_cart_black", BlockRegistry::merchantCart);
     public static final DeferredHolder<Block, DecorativeMultiblockBlock> MERCHANT_CART_GREEN =
             BLOCKS.register("merchant_cart_green", BlockRegistry::merchantCart);
     public static final DeferredHolder<Block, DecorativeMultiblockBlock> MERCHANT_CART_YELLOW =
@@ -2678,7 +2692,7 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
                             .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
                     9, "container.britannia_mod.small_crate",
                     0, 0, 0, 0, 0, 0,
-                    (x, y, z) -> Block.box(2, 0, 2, 14, 11, 14)));
+                    (x, y, z) -> CrateShapes.SMALL));
 
     public static final DeferredHolder<Block, CrateBlock> MEDIUM_CRATE = BLOCKS.register("medium_crate", () ->
             new CrateBlock(
@@ -2686,7 +2700,7 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
                             .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
                     27, "container.britannia_mod.medium_crate",
                     0, 0, 0, 0, 0, 0,
-                    (x, y, z) -> Block.box(1, 0, 1, 15, 14, 15)));
+                    (x, y, z) -> CrateShapes.MEDIUM));
 
     public static final DeferredHolder<Block, CrateBlock> LARGE_CRATE = BLOCKS.register("large_crate", () ->
             new CrateBlock(
@@ -2694,16 +2708,29 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
                             .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
                     54, "container.britannia_mod.large_crate",
                     0, 1, 0, 1, 0, 1,
-                    (x, y, z) -> {
-                        double maxX = x == 0 ? 16.0D : 12.0D;
-                        double maxZ = z == 0 ? 16.0D : 6.0D;
-                        return Block.box(0, 0, 0, maxX, y == 0 ? 16.0D : 3.0D, maxZ);
-                    }));
+                    CrateShapes::largeCell));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CrateBlockEntity>> CRATE_BLOCK_ENTITY_TYPE =
             BLOCK_ENTITY_TYPES.register("crate", () -> BlockEntityType.Builder.of(
                     CrateBlockEntity::new,
                     SMALL_CRATE.get(), MEDIUM_CRATE.get(), LARGE_CRATE.get()).build(null));
+
+    /**
+     * The compact crate column: several crates a player sees separately, sharing one position.
+     *
+     * <p>Deliberately has no item, no recipe and no creative-tab entry. Players go on holding
+     * {@code small_crate} and {@code medium_crate}; this is only what a position becomes once two of
+     * them occupy it, and nothing but promotion produces one.
+     */
+    public static final DeferredHolder<Block, CrateStackBlock> CRATE_STACK = BLOCKS.register(
+            "crate_stack", () -> new CrateStackBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F)
+                            .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK)));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CrateStackBlockEntity>>
+            CRATE_STACK_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register("crate_stack",
+                    () -> BlockEntityType.Builder.of(
+                            CrateStackBlockEntity::new, CRATE_STACK.get()).build(null));
 
     public static final DeferredHolder<Block, WaterWellBlock> WATER_WELL = BLOCKS.register("water_well", () ->
             new WaterWellBlock(

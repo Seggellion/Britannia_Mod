@@ -80,6 +80,8 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AdaptiveR
             BlockRegistry.TILE_ROOF_FLAT.get(),
             BlockRegistry.CEDAR_ROOF_FLAT.get(),
             BlockRegistry.SLATE_ROOF_FLAT.get(),
+            BlockRegistry.SANDSTONE_ROOF.get(),
+            BlockRegistry.LIMESTONE_ROOF.get(),
             BlockRegistry.SLATE_ROOF_1_FLAT.get(),
             BlockRegistry.SLATE_ROOF_2_FLAT.get(),
             BlockRegistry.THATCH_ROOF_FLAT.get()

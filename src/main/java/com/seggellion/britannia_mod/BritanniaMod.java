@@ -25,6 +25,7 @@ import com.seggellion.britannia_mod.event.ParrotProtectionHandler;
 import com.seggellion.britannia_mod.event.FishingEventHandler;
 import com.seggellion.britannia_mod.event.TreeKarmaHandler;
 import com.seggellion.britannia_mod.event.KarmaReductionHandler;
+import com.seggellion.britannia_mod.blessed.rescue.BlessedItemRescueHandlers;
 import com.seggellion.britannia_mod.quest.events.QuestEventHandlers;
 import com.seggellion.britannia_mod.villager.BlacksmithPOIHandler;
 import com.seggellion.britannia_mod.event.BlockRestoreHandler;
@@ -192,6 +193,10 @@ CraftableRegistry.init();
         MoongateTickHandler.registerTickEvent(NeoForge.EVENT_BUS);
         NeoForge.EVENT_BUS.register(new ForgeEventHandler());
         NeoForge.EVENT_BUS.register(new PlayerEventHandler());
+        // Crate Column milestone 6: remembers which logical crate a swing began on, so a column
+        // that repacks mid-break cannot redirect the destruction onto a neighbour's crate.
+        NeoForge.EVENT_BUS.register(
+                new com.seggellion.britannia_mod.event.CrateStackBreakHandler());
         NeoForge.EVENT_BUS.register(new FlowerInteractionHandler());
         NeoForge.EVENT_BUS.register(new HouseFarmPlotInteractionHandler());
         NeoForge.EVENT_BUS.register(new ManagedVegetationInteractionHandler());
@@ -215,6 +220,9 @@ CraftableRegistry.init();
         NeoForge.EVENT_BUS.register(ShadeEntitySizeHandler.class);
         NeoForge.EVENT_BUS.register(GlobalEventHandler.class);
         NeoForge.EVENT_BUS.register(QuestEventHandlers.class);
+        // Starfarer M7: keeps loose blessed items alive through despawn, lava, fire and
+        // the void. Rescue only -- it never reports a destruction.
+        NeoForge.EVENT_BUS.register(BlessedItemRescueHandlers.class);
         NeoForge.EVENT_BUS.register(WoodChopEventHandler.class);
         NeoForge.EVENT_BUS.register(new ToolInteractionHandler());
         // CityGameModeHandler is retired. Its city clause (force adventure inside city bounds)
@@ -384,6 +392,13 @@ public void onServerStarted(ServerStartedEvent event) {
     com.seggellion.britannia_mod.economy.TraderSaleReservationRecovery.reportStrandedReservations(event.getServer());
     // Vendor/Trader Milestone 20: regional TownPerson population convergence.
     com.seggellion.britannia_mod.population.TownPersonPopulationManager.start(event.getServer());
+    // Grabby Hands server-parity milestone: records which artifact is actually running and warns
+    // if vanilla spawn protection is armed. That radius drops every non-operator block-use packet
+    // before PlayerInteractEvent.RightClickBlock is posted, which is the one thing on the whole
+    // interaction path that behaves differently on a dedicated server than in single player -- and
+    // it does so with no message to the player and, until now, no line in the log.
+    com.seggellion.britannia_mod.grabbyhands.diagnostics.GrabbyEnvironmentReport
+            .logAtStartup(event.getServer());
 }
 
 public void onServerTick(ServerTickEvent.Post event) {

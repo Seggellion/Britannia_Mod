@@ -692,6 +692,40 @@ public final class BankItemCodecGameTests {
      * "owner", "deed_id" on {@link DataComponents#CUSTOM_DATA}) without invoking that class,
      * since it performs inventory-scan side effects this test does not want.
      */
+    /**
+     * Starfarer M10. The bank is a place a player will genuinely keep a medallion, and the
+     * round-trip test above predates M4: it carries {@code blessed}, {@code owner} and
+     * {@code deed_id} but no {@code instance_uuid}, so nothing proved the PER-SHARD DELIVERY
+     * identity survives a deposit and withdrawal.
+     *
+     * <p>That field is what makes a withdrawn medallion the same materialization it was when it
+     * went in. Lose it and the stack silently degrades to a legacy blessed item with no
+     * lifecycle identity: the destruction reporter can no longer name it, and the sync stops
+     * recognising it as the instance Rails believes is active.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void blessedRoundTripAlsoPreservesThePerShardInstanceIdentity(GameTestHelper helper) {
+        String ownerUuid = UUID.randomUUID().toString();
+        String instanceUuid = UUID.randomUUID().toString();
+        ItemStack original = blessedMarkerStack(ownerUuid, "entitlement-uuid-m10");
+        CompoundTag stamped = original.get(DataComponents.CUSTOM_DATA).copyTag();
+        stamped.putString("instance_uuid", instanceUuid);
+        original.set(DataComponents.CUSTOM_DATA, CustomData.of(stamped));
+
+        ItemStack decoded = roundTrip(helper, original);
+
+        CompoundTag decodedTag = decoded.get(DataComponents.CUSTOM_DATA).copyTag();
+        check(instanceUuid.equals(decodedTag.getString("instance_uuid")),
+                "the per-shard instance identity did not survive the bank round trip");
+        check("entitlement-uuid-m10".equals(decodedTag.getString("deed_id")),
+                "the entitlement identity did not survive either");
+        check(ownerUuid.equals(decodedTag.getString("owner")), "the stamped owner did not survive");
+        check(decodedTag.getBoolean("blessed"), "the blessed flag did not survive");
+
+        assertSemanticallyEqualAndSameFingerprint(helper, original, decoded);
+        helper.succeed();
+    }
+
     private static ItemStack blessedMarkerStack(String ownerUuid, String deedId) {
         ItemStack stack = new ItemStack(Items.GOLDEN_APPLE);
         CompoundTag tag = new CompoundTag();

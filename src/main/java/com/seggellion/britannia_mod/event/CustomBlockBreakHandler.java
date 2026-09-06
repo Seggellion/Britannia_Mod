@@ -47,10 +47,11 @@ public class CustomBlockBreakHandler {
         // yield, no restoration debt, no skill and no tool wear -- there is no partial transaction
         // to unwind because none is started.
         //
-        // Creative is the case this closes. The Mining gate deliberately permits an operator's
+        // Creative is the case this closes. The Mining gate deliberately permits a creative
         // break so a misplaced block can be removed, and that permission was arriving here as a
         // fully accounted extraction: an administrator clearing a vein was minting purity ore and
-        // enrolling restoration debt in their own name. The break still happens; it is now an
+        // enrolling restoration debt in their own name. (Operator permission no longer bypasses
+        // the gate at all -- see MiningBreakGate; op is administration, not progression.) The break still happens; it is now an
         // ordinary creative removal that drops nothing, which is exactly what a creative break of
         // a clay bed has always done.
         //
@@ -79,6 +80,23 @@ public class CustomBlockBreakHandler {
         if (com.seggellion.britannia_mod.mining.MiningExtractionTool.isAuthorized(state, heldItem)) {
             event.setCanceled(true);
 
+            // The one Mining check for this activation, before anything is mutated. It answers two
+            // independent questions -- did the resource come out, and did the skill move -- and the
+            // world may only change on the first. A qualified miner who fails the roll has still
+            // used the skill and may well have learned from it; what they must not do is deplete a
+            // cell, mint an item or enrol restoration debt for an attempt that produced nothing.
+            MiningSkill.AttemptResult attempt = MiningSkill.checkMiningAttempt(player, state, pos);
+            if (!attempt.extracted()) {
+                // The event is already cancelled, so the block stands. Resynchronise: the client
+                // has been animating a dig it was fully entitled to attempt, and unlike a gate
+                // refusal there was no denial message on the way in to explain the outcome.
+                com.seggellion.britannia_mod.mining.MiningBreakGate
+                        .synchronizeDeniedBreak(player, serverLevel, pos);
+                player.displayClientMessage(
+                        Component.translatable("message.britannia_mod.mining.extraction_failed"), true);
+                return;
+            }
+
             if (isStone) {
                 handleStoneBreaking(serverLevel, pos, state, player);
             } else if (isOre) {
@@ -94,20 +112,16 @@ public class CustomBlockBreakHandler {
 
          BrokenBlockTracker.recordBrokenBlock(serverLevel, pos, state, player.getUUID());
 
-            // Mining milestone 4: the success boundary of the managed Mining flow -- the resource
-            // was extracted and its restoration scheduled -- so this is exactly one qualifying
-            // activation. Invalid-tool breaks never reach here (design 9.1 excludes them), and the
-            // award itself re-checks the break gate, so bypasses and automation award nothing.
-            MiningSkill.awardForBreak(player, state, pos);
-
             // Milestone 6: the single durability charge, at the end of the one path that commits.
             // One ordinary hurtAndBreak, so Unbreaking behaves here as it does everywhere else.
             ManagedExtractionPolicy.chargeExtractionTool((net.minecraft.server.level.ServerPlayer) player);
         } else if (Resources.resolve(state).isPresent()) {
             // A live managed cell that this handler was not able to take over, because the tool
-            // cannot work it. An ordinary player never arrives here -- the gate answers WRONG_TOOL
-            // and cancels at HIGH, and a cancelled event reaches no further listener -- so in
-            // practice this is an operator, whose bypass deliberately outranks the tool check.
+            // cannot work it. Defence in depth: the gate already answers WRONG_TOOL and cancels at
+            // HIGH, and a cancelled event reaches no later listener, so nothing should arrive here
+            // now that operator permission no longer bypasses the gate. It stays because the cost
+            // of being wrong is unrecoverable -- a priority change, a new bypass, or any future
+            // caller that reaches this handler directly would otherwise destroy a sited deposit.
             //
             // Letting the event continue would hand a sited deposit to the vanilla break
             // lifecycle, and these blocks ship no loot table: the cell would disappear, drop
@@ -158,6 +172,15 @@ public class CustomBlockBreakHandler {
             return;
         }
         Block.popResource(level, pos, returned);
+        // Say which path this was. A placed block handing itself back looks, in the drop pile,
+        // exactly like a managed deposit paying out its BlockItem -- and reading it that way is
+        // what sent a live investigation after a "mining now drops ore blocks" defect that did not
+        // exist. A managed extraction announces "You mined ... Purity=N"; this announces that
+        // nothing was extracted, so the two are never confused again.
+        serverPlayer.displayClientMessage(Component.literal(
+                "You recovered the " + returned.getHoverName().getString()
+                        + " you placed. This is construction, not a deposit: no ore, no Mining."),
+                true);
     }
 
     /** The declared depleted state, falling back to the historical behaviour for unmanaged blocks. */

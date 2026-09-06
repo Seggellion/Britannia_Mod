@@ -93,7 +93,7 @@ public final class HeldToolPrivilegeGameTests {
     private static ServerPlayer holder(ServerLevel level, String name, ItemStack tool) {
         ServerPlayer player = ManagedResourceTestPlayers.survival(level, name);
         player.setGameMode(GameType.ADVENTURE);
-        SkillManager.applyConfirmedValue(player, MiningSkill.SKILL_ID, 100.0f);
+        SkillManager.applyConfirmedValue(player, MiningSkill.SKILL_ID, 150.0f);
         return equip(player, tool);
     }
 

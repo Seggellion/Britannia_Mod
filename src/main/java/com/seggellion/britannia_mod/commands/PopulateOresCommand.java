@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
 import net.minecraft.network.chat.Component;
 
 import com.seggellion.britannia_mod.util.OreVeinFetcher;
@@ -136,6 +137,25 @@ public class PopulateOresCommand {
         return 0;
     }
 
+    /**
+     * The shard this command operates against, or null after telling the operator why not.
+     *
+     * <p>This command registers resource deposits against a shard in Rails. It used to take the
+     * shard from {@code ModConfig.SHARD_NAME}, a compile-time constant, so on any server whose
+     * configured shard differed it would silently populate the wrong one. Failing loudly is the
+     * only safe alternative: there is no sensible default for "which shard's world am I editing".
+     */
+    private static String configuredShard(CommandSourceStack source, MinecraftServer server) {
+        String shard = ServerAuthRegistry.shardName(server).orElse(null);
+        if (shard == null) {
+            source.sendFailure(Component.literal(
+                    "Server credentials are not configured, so the shard is unknown. "
+                            + "Set ULTIMACRAFT_SHARD_NAME and ULTIMACRAFT_SHARD_SECRET "
+                            + "(or config/britannia_mod-server.properties) and restart."));
+        }
+        return shard;
+    }
+
     private static int executePopulateOres(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
         ServerLevel level = source.getLevel();
@@ -149,7 +169,8 @@ public class PopulateOresCommand {
         }
 
         MinecraftServer server = level.getServer();
-        String shardName = ModConfig.SHARD_NAME;
+        String shardName = configuredShard(source, server);
+        if (shardName == null) return 0;
         LOGGER.info("Populating ore: {}", oreType);
 
         fetchThenApply(source, server, shardName, veins -> {
@@ -182,7 +203,8 @@ public class PopulateOresCommand {
         ServerLevel level = source.getLevel();
 
         MinecraftServer server = level.getServer();
-        String shardName = ModConfig.SHARD_NAME;
+        String shardName = configuredShard(source, server);
+        if (shardName == null) return 0;
         LOGGER.info("Populating ores for region: {}", region);
         if (oreType != null) LOGGER.info("Filtered by ore type: {}", oreType);
 
@@ -313,7 +335,12 @@ public class PopulateOresCommand {
         }
         ShapeRotation rotation = VeinPlacementValidation.normaliseRotation(vein.rotation).orElseThrow();
 
-        String shard = ModConfig.SHARD_NAME;
+        String shard = ServerAuthRegistry.shardName(level.getServer()).orElse(null);
+        if (shard == null) {
+            tally.skipped++;
+            reportSkip(source, vein, "no server credentials, so the shard is unknown");
+            return;
+        }
         String dimension = level.dimension().location().toString();
         BlockPos origin = vein.getPosition();
 

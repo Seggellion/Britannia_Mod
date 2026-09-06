@@ -49,6 +49,13 @@ public final class GrabbyPlacementTransaction {
             return GrabbyPlacementResult.refused(GrabbyPlacementOutcome.TYPE_NOT_ENROLLED);
         }
 
+        // Asked before anything is resolved or claimed, because a click that was never a placement
+        // request must leave the world and the block's own behaviour exactly as it found them.
+        if (held.getItem() instanceof GrabbyStructurePlacementItem structure
+                && !structure.isPlacementGesture(world.blockState(hit.getBlockPos()), hit)) {
+            return GrabbyPlacementResult.refused(GrabbyPlacementOutcome.NOT_A_PLACEMENT_GESTURE);
+        }
+
         Optional<BlockPos> target = actor.resolvePlacementTarget(hit);
         if (target.isEmpty()) {
             return GrabbyPlacementResult.refused(GrabbyPlacementOutcome.NO_VALID_TARGET);

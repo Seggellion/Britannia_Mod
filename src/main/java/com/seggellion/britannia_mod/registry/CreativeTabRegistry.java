@@ -57,10 +57,9 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.CEDAR_ROOF_FLAT_ITEM.get());
                 safeAccept(output, ItemRegistry.THATCH_ROOF_ITEM.get());
                 safeAccept(output, ItemRegistry.THATCH_ROOF_FLAT_ITEM.get());
-                safeAccept(output, ItemRegistry.SLATE_ROOF_ITEM.get());
                 safeAccept(output, ItemRegistry.SLATE_ROOF_FLAT_ITEM.get());
-                safeAccept(output, ItemRegistry.SLATE_ROOF_1_FLAT_ITEM.get());
-                safeAccept(output, ItemRegistry.SLATE_ROOF_2_FLAT_ITEM.get());
+                safeAccept(output, ItemRegistry.SANDSTONE_ROOF_ITEM.get());
+                safeAccept(output, ItemRegistry.LIMESTONE_ROOF_ITEM.get());
 
                 // Foundations, Walls, Floors
                 safeAccept(output, ItemRegistry.WOODEN_BOARD_FLOOR_ITEM.get());
@@ -281,6 +280,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.MERCHANT_CART_RED_ITEM.get());
                 safeAccept(output, ItemRegistry.MERCHANT_CART_PURPLE_ITEM.get());
                 safeAccept(output, ItemRegistry.MERCHANT_CART_BLUE_ITEM.get());
+                safeAccept(output, ItemRegistry.MERCHANT_CART_BLACK_ITEM.get());
                 safeAccept(output, ItemRegistry.MERCHANT_CART_GREEN_ITEM.get());
                 safeAccept(output, ItemRegistry.MERCHANT_CART_YELLOW_ITEM.get());
                 safeAccept(output, ItemRegistry.MERCHANT_CART_WHITE_ITEM.get());
@@ -391,6 +391,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.NIGHTSHADE.get());
                 safeAccept(output, ItemRegistry.BLOOD_MOSS.get());
                 safeAccept(output, ItemRegistry.BLACK_PEARL.get());
+                safeAccept(output, ItemRegistry.STARFARERS_MEDALLION.get());
                 safeAccept(output, ItemRegistry.GINSENG.get());
                 safeAccept(output, ItemRegistry.SPIDERS_SILK.get());
                 safeAccept(output, ItemRegistry.SULPHUROUS_ASH.get());

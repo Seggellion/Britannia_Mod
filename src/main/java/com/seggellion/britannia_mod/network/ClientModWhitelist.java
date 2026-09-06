@@ -36,6 +36,7 @@ public final class ClientModWhitelist {
         "sodium",
         "worldedit",
         "freecam",
+        "worldeditcui",
         "cloth_config"
     );
 

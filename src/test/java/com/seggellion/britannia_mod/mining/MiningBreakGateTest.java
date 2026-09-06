@@ -123,22 +123,47 @@ class MiningBreakGateTest {
                 MiningBreakGate.evaluateResolved(definition("stone"), nonPlayer).type());
     }
 
+    /**
+     * The owner-approved absolute invariant: below the hard requirement, nothing breaks. Not in
+     * survival, not in adventure, not in creative, not at op level 2 or 4, not for the owner.
+     *
+     * <p>Both bypasses this replaces were real defects. Operator permission was invisible to the
+     * whole GameTest suite because every fixture builds a permission-0 player, and it reproduced
+     * instantly on a live client. Creative was the subtler one: creative siting and creative
+     * harvesting are different authorities, and conflating them meant an administrator placing a
+     * resource node could also empty it at zero skill.
+     */
     @Test
-    void creativeAndOperatorBypassTheThresholdOnly() {
+    void noGameModeOrPermissionLevelBypassesTheHardRequirement() {
         MiningBreakGate.Subject creative = new MiningBreakGate.Subject(
                 MiningBreakGate.ActorType.PLAYER, true, 0,
                 SkillManager.SkillDataState.AVAILABLE, 0.0f, true);
         MiningBreakGate.Evaluation viaCreative =
                 MiningBreakGate.evaluateResolved(definition("valorite"), creative);
-        assertEquals(MiningBreakGate.ResultType.APPROVED_BYPASS, viaCreative.type());
-        assertTrue(viaCreative.permitsBreak());
+        assertEquals(MiningBreakGate.ResultType.INSUFFICIENT_SKILL, viaCreative.type(),
+                "creative must not bypass the Mining ladder");
+        assertFalse(viaCreative.permitsBreak());
 
-        MiningBreakGate.Subject operator = new MiningBreakGate.Subject(
+        MiningBreakGate.Subject survivalOperator = new MiningBreakGate.Subject(
                 MiningBreakGate.ActorType.PLAYER, false, 2,
-                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, true);
-        assertEquals(MiningBreakGate.ResultType.APPROVED_BYPASS,
-                MiningBreakGate.evaluateResolved(definition("valorite"), operator).type(),
-                "permission-level 2 bypasses even before skill data loads, matching Farming");
+                SkillManager.SkillDataState.AVAILABLE, 0.0f, true);
+        assertEquals(MiningBreakGate.ResultType.INSUFFICIENT_SKILL,
+                MiningBreakGate.evaluateResolved(definition("valorite"), survivalOperator).type(),
+                "op must not bypass the Mining ladder while in survival");
+
+        MiningBreakGate.Subject creativeOperator = new MiningBreakGate.Subject(
+                MiningBreakGate.ActorType.PLAYER, true, 4,
+                SkillManager.SkillDataState.AVAILABLE, 0.0f, true);
+        assertEquals(MiningBreakGate.ResultType.INSUFFICIENT_SKILL,
+                MiningBreakGate.evaluateResolved(definition("valorite"), creativeOperator).type(),
+                "creative + op level 4 is still not a licence to mine Valorite at zero skill");
+
+        // And the gate stays permissive where it should: the same actors at the requirement pass.
+        MiningBreakGate.Subject qualifiedCreative = new MiningBreakGate.Subject(
+                MiningBreakGate.ActorType.PLAYER, true, 4,
+                SkillManager.SkillDataState.AVAILABLE, 99.0f, true);
+        assertEquals(MiningBreakGate.ResultType.ELIGIBLE,
+                MiningBreakGate.evaluateResolved(definition("valorite"), qualifiedCreative).type());
     }
 
     @Test
@@ -216,23 +241,19 @@ class MiningBreakGateTest {
                 "a wrong tool on ordinary world must not become a Mining denial");
     }
 
-    /**
-     * An operator clearing a badly placed block is not extracting it, so the administrative
-     * bypass deliberately outranks the tool check — the same way it already outranks the skill
-     * requirement.
-     */
+    /** The tool question is still asked of everyone, in every game mode. */
     @Test
-    void theAdminBypassOutranksTheToolCheck() {
+    void everyActorStillNeedsTheRightToolWhateverTheirGameMode() {
         MiningBreakGate.Subject creativeWrongTool = new MiningBreakGate.Subject(
-                MiningBreakGate.ActorType.PLAYER, true, 0,
-                SkillManager.SkillDataState.AVAILABLE, 0.0f, false);
-        assertEquals(MiningBreakGate.ResultType.APPROVED_BYPASS,
+                MiningBreakGate.ActorType.PLAYER, true, 4,
+                SkillManager.SkillDataState.AVAILABLE, 100.0f, false);
+        assertEquals(MiningBreakGate.ResultType.WRONG_TOOL,
                 MiningBreakGate.evaluateResolved(definition("valorite"), creativeWrongTool).type());
 
         MiningBreakGate.Subject operatorWrongTool = new MiningBreakGate.Subject(
                 MiningBreakGate.ActorType.PLAYER, false, 2,
-                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, false);
-        assertEquals(MiningBreakGate.ResultType.APPROVED_BYPASS,
+                SkillManager.SkillDataState.AVAILABLE, 100.0f, false);
+        assertEquals(MiningBreakGate.ResultType.WRONG_TOOL,
                 MiningBreakGate.evaluateResolved(definition("valorite"), operatorWrongTool).type());
     }
 

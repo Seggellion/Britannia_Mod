@@ -17,10 +17,14 @@ import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.blessed.BlessedItemLifecycleMetadata;
 import net.minecraft.world.level.block.state.BlockState;
+import org.slf4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 public class TrashBarrelBlockEntity extends BlockEntity implements Container, MenuProvider {
+    private static final Logger LOGGER = LogUtils.getLogger();
     private NonNullList<ItemStack> items = NonNullList.withSize(27, ItemStack.EMPTY);
     private int timer = 0;
     private static final int DELETE_INTERVAL = 3600; // 3 minutes in ticks
@@ -38,9 +42,15 @@ public class TrashBarrelBlockEntity extends BlockEntity implements Container, Me
         be.timer++;
 
         if (be.timer >= DELETE_INTERVAL) {
-            be.clearContent();
+            int deleted = be.clearOrdinaryContents();
             be.timer = 0;
             be.setChanged();
+
+            // Nothing was ordinary, so nothing was emptied. Saying "Emptying the trash barrel!"
+            // over a barrel holding only a protected item would be a lie about what just happened.
+            if (deleted == 0) {
+                return;
+            }
 
             // Display the UO-style message above the block
             Component message = Component.literal("Emptying the trash barrel!").withStyle(ChatFormatting.GOLD);
@@ -127,6 +137,48 @@ public class TrashBarrelBlockEntity extends BlockEntity implements Container, Me
     @Override
     public boolean stillValid(Player player) {
         return Container.stillValidBlockEntity(this, player);
+    }
+
+    /**
+     * Empties the barrel of everything the timer is allowed to destroy, leaving blessed items
+     * where they are.
+     *
+     * <p>The timed clear used to be an unconditional {@code items.clear()}, which silently
+     * annihilated whatever was inside -- including a permanent account entitlement, with no
+     * signal to Rails and no way to tell it had happened. A medallion dropped in here was simply
+     * gone. Playbook 16.2 requires that this cannot happen.
+     *
+     * <p>Protection, not destruction reporting: the item survives, its materialization stays
+     * active, and nothing is reported. Preserving the item is strictly better than manufacturing
+     * a destroyed state and asking an operator to restore it.
+     *
+     * <p>Blessed-ness is judged by {@link BlessedItemLifecycleMetadata#isBlessed}, so a pre-M6
+     * legacy blessed deed is protected too even though it has no materialization identity --
+     * losing one of those is just as bad, and the barrel is not the place to draw that
+     * distinction.
+     *
+     * <p>Deliberately implemented here rather than in {@link #clearContent()}: this is the only
+     * caller in the mod, and the timed sweep is the behaviour that needed narrowing. A caller
+     * that explicitly asks to clear the container still gets exactly that.
+     *
+     * @return how many ordinary stacks were removed
+     */
+    public int clearOrdinaryContents() {
+        int removed = 0;
+        for (int slot = 0; slot < this.items.size(); slot++) {
+            ItemStack stack = this.items.get(slot);
+            if (stack.isEmpty()) continue;
+
+            if (BlessedItemLifecycleMetadata.isBlessed(stack)) {
+                LOGGER.info("Trash barrel spared a blessed item at {} slot {} item={}",
+                        this.worldPosition, slot, stack.getItem());
+                continue;
+            }
+
+            this.items.set(slot, ItemStack.EMPTY);
+            removed++;
+        }
+        return removed;
     }
 
     @Override

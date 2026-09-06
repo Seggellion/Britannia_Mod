@@ -92,7 +92,9 @@ public final class SilverMiningGameTests {
         BlockPos relative = new BlockPos(1, 1, 1);
         BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, BlockRegistry.SILVER_ORE.get());
-        ServerPlayer player = miner(helper, 55.0f);
+        // Silver is 55/15/95: qualifying at 55 only buys a coin toss, so a deterministic
+        // harvest assertion stands at MaxSkill where the check is a certainty.
+        ServerPlayer player = miner(helper, 95.0f);
 
         player.gameMode.destroyBlock(absolute);
 
@@ -122,7 +124,7 @@ public final class SilverMiningGameTests {
         BlockPos relative = new BlockPos(1, 1, 1);
         BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, BlockRegistry.SILVER_ORE.get());
-        ServerPlayer player = miner(helper, 60.0f);
+        ServerPlayer player = miner(helper, 95.0f);
         player.gameMode.destroyBlock(absolute);
 
         BrokenBlockDataStorage storage = BrokenBlockDataStorage.get(level);

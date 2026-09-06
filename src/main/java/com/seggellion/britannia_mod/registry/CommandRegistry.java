@@ -50,6 +50,15 @@ public class CommandRegistry {
         // OreVein milestone 8: read-only ledger diagnostics. /manageddeposit answers questions
         // about a place; this answers questions about the ledger.
         com.seggellion.britannia_mod.commands.OreVeinDiagnosticsCommand.register(event.getDispatcher());
+        // Grabby Hands server-parity milestone: read-only. /grabby env identifies the running
+        // artifact and the environment gates; /grabby debug <player> names the first gate that
+        // refuses one player's pickup. Needed because the gates above the event bus - spawn
+        // protection in particular - drop the interaction where no handler can report it.
+        com.seggellion.britannia_mod.commands.GrabbyDiagnosticsCommand.register(event.getDispatcher());
+
+        // Crate Column milestone 4: operator scaffolding for building compact columns before
+        // top-click stacking exists. Disposable once players can build them by hand.
+        com.seggellion.britannia_mod.commands.CrateStackDebugCommand.register(event.getDispatcher());
 
         // Register additional command classes here
     }

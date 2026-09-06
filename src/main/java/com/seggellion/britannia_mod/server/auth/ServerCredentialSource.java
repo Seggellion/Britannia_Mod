@@ -1,6 +1,5 @@
 package com.seggellion.britannia_mod.server.auth;
 
-import com.seggellion.britannia_mod.config.ModConfig;
 import com.seggellion.britannia_mod.server.http.RailsApiUrlResolver;
 import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
@@ -17,11 +16,26 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Loads server credentials from the environment or {@code config/britannia_mod-server.properties}.
+ *
+ * <p>All four canonical host variables are read here, and this is the only place any of them is
+ * read. The origin travels with the credentials that authenticate against it, so the two can never
+ * disagree — a request cannot be addressed to one host while carrying another host's secret.
+ *
+ * <p>{@link #API_BASE_URL_ENV} used to be absent (NF-002): environment mode substituted
+ * {@code ModConfig.API_BASE_URL}, which is a {@code static final} constant pointing at
+ * {@code http://127.0.0.1:3000/api/} that nothing ever assigns from configuration. A host
+ * configured entirely by environment variables therefore talked to its own loopback and no
+ * operator could change it. It is now required in environment mode and overrides the file value
+ * in file mode, exactly as {@link #MINECRAFT_SERVER_KEY_ENV} already did for its own value.
+ */
 public final class ServerCredentialSource {
     private static final Logger LOGGER = LogUtils.getLogger();
     public static final String SHARD_NAME_ENV = "ULTIMACRAFT_SHARD_NAME";
     public static final String SHARD_SECRET_ENV = "ULTIMACRAFT_SHARD_SECRET";
     public static final String MINECRAFT_SERVER_KEY_ENV = "ULTIMACRAFT_MINECRAFT_SERVER_KEY";
+    public static final String API_BASE_URL_ENV = "ULTIMACRAFT_API_BASE_URL";
     public static final Path RELATIVE_SERVER_FILE = Path.of("config", "britannia_mod-server.properties");
     private static final long MAX_FILE_BYTES = 65_536L;
     private static final Set<String> ALLOWED_KEYS = Set.of(
@@ -39,6 +53,7 @@ public final class ServerCredentialSource {
         throws CredentialConfigurationException {
         String environmentName = normalized(environment.get(SHARD_NAME_ENV));
         String environmentSecret = normalized(environment.get(SHARD_SECRET_ENV));
+        String environmentBaseUrl = normalized(environment.get(API_BASE_URL_ENV));
         boolean namePresent = !environmentName.isEmpty();
         boolean secretPresent = !environmentSecret.isEmpty();
         if (namePresent != secretPresent) {
@@ -47,8 +62,14 @@ public final class ServerCredentialSource {
             );
         }
         if (namePresent) {
+            if (environmentBaseUrl.isEmpty()) {
+                throw new CredentialConfigurationException(
+                    "Environment credentials require " + API_BASE_URL_ENV + " to be set"
+                );
+            }
             return Optional.of(new ServerCredentials(
-                validateName(environmentName), validateSecret(environmentSecret), validateApiBaseUrl(ModConfig.API_BASE_URL),
+                validateName(environmentName), validateSecret(environmentSecret),
+                validateApiBaseUrl(environmentBaseUrl),
                 ServerCredentials.Source.ENVIRONMENT, false, false,
                 environment.get(MINECRAFT_SERVER_KEY_ENV)
             ));
@@ -67,10 +88,12 @@ public final class ServerCredentialSource {
         String environmentServerKey = normalized(environment.get(MINECRAFT_SERVER_KEY_ENV));
         String configuredServerKey = environmentServerKey.isEmpty()
             ? values.get("minecraft_server_key") : environmentServerKey;
+        String configuredBaseUrl = environmentBaseUrl.isEmpty()
+            ? required(values, "api_base_url") : environmentBaseUrl;
         return Optional.of(new ServerCredentials(
             validateName(required(values, "shard_name")),
             validateSecret(required(values, "shard_secret")),
-            validateApiBaseUrl(required(values, "api_base_url")),
+            validateApiBaseUrl(configuredBaseUrl),
             ServerCredentials.Source.SERVER_FILE,
             parseBoolean(values, "allow_integrated_server", false),
             parseBoolean(values, "rails_update_listener_enabled", false), configuredServerKey

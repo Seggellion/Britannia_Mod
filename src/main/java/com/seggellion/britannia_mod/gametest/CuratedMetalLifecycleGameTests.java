@@ -103,7 +103,7 @@ public final class CuratedMetalLifecycleGameTests {
     private static ServerPlayer miner(ServerLevel level, ItemStack tool) {
         ServerPlayer player = ManagedResourceTestPlayers.survival(level, "metal-miner");
         player.setItemInHand(InteractionHand.MAIN_HAND, tool);
-        SkillManager.applyConfirmedValue(player, MiningSkill.SKILL_ID, 100.0f);
+        SkillManager.applyConfirmedValue(player, MiningSkill.SKILL_ID, 150.0f);
         return player;
     }
 

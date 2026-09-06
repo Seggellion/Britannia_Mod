@@ -2,6 +2,8 @@ package com.seggellion.britannia_mod.grabbyhands;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * An item whose placement does not land a single block at the clicked position.
@@ -33,4 +35,39 @@ public interface GrabbyStructurePlacementItem {
      * @return the position that will own the placed object's block entity and provenance
      */
     BlockPos grabbyPlacementRoot(BlockPlaceContext context);
+
+    /**
+     * Whether this hit is the gesture this item places on at all.
+     *
+     * <p>An item that owns its placement may also own a narrower idea of when placement is being asked
+     * for. A structure built upward from an anchor places on an upward face and refuses every other,
+     * so a click on a side was never a placement attempt — and Grabby needs to know the difference,
+     * because consuming a click nobody meant as placement swallows the interaction the player did
+     * mean. Answering {@code false} here leaves the click to the block, exactly as an unenrolled item
+     * would.
+     *
+     * <p>This is a statement about intent, not about legality. Whether a placement the player really
+     * did ask for is allowed stays where it was: with the item's own {@code useOn}, and with Grabby's
+     * reach, policy and provenance checks.
+     *
+     * @return whether {@code hit} should be treated as a request to place this item
+     */
+    default boolean isPlacementGesture(BlockHitResult hit) {
+        return true;
+    }
+
+    /**
+     * The same question, told what was clicked on.
+     *
+     * <p>Some items own placements Grabby's grid arithmetic cannot express. A crate put on another
+     * crate is packed into a compact column rather than set on the sixteen-voxel grid above it, so the
+     * destination Grabby would work out is not where the crate goes — and once a column is standing
+     * there that destination is occupied, which Grabby reads as a failed placement and consumes. The
+     * click was a real request, just not one Grabby can answer, so the item has to be able to say so.
+     *
+     * @param clicked the state of the block the ray landed on
+     */
+    default boolean isPlacementGesture(BlockState clicked, BlockHitResult hit) {
+        return isPlacementGesture(hit);
+    }
 }

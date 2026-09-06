@@ -74,7 +74,7 @@ public final class RestorationTraceGameTests {
                 ? ToolRegistry.createShovel(UOMetalToolMaterial.IRON, 3)
                 : ToolRegistry.createPickaxe(UOMetalToolMaterial.IRON, 3);
         player.setItemInHand(InteractionHand.MAIN_HAND, tool);
-        SkillManager.applyConfirmedValue(player, MiningSkill.SKILL_ID, 100.0f);
+        SkillManager.applyConfirmedValue(player, MiningSkill.SKILL_ID, 150.0f);
         return player;
     }
 

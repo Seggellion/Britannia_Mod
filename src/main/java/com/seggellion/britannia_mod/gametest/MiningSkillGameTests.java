@@ -58,12 +58,14 @@ public final class MiningSkillGameTests {
     public static void oneManagedBreakAwardsAtMostOneActivation(GameTestHelper helper) {
         BlockPos relative = new BlockPos(1, 1, 1);
         helper.setBlock(relative, Blocks.STONE);
-        ServerPlayer player = miner(helper, GameType.SURVIVAL, 0.0f);
+        // At or above stone's MaxSkill so the extraction itself is certain; this test is about
+        // the award being counted once, not about the success roll.
+        ServerPlayer player = miner(helper, GameType.SURVIVAL, 100.0f);
 
         player.gameMode.destroyBlock(helper.absolutePos(relative));
 
         helper.assertBlockNotPresent(Blocks.STONE, relative);
-        float gained = skillOf(player);
+        float gained = skillOf(player) - 100.0f;
         check(gained == 0.0f || Math.abs(gained - MiningSkill.GAIN_UNIT) < 1.0e-4f,
                 "one break must award either nothing or exactly one 0.1 activation, got " + gained);
         helper.succeed();
@@ -81,7 +83,7 @@ public final class MiningSkillGameTests {
         BlockState stone = Blocks.STONE.defaultBlockState();
 
         for (int i = 0; i < 200; i++) {
-            MiningSkill.awardForBreak(player, stone, new BlockPos(i, 64, 0));
+            MiningSkill.checkMiningAttempt(player, stone, new BlockPos(i, 64, 0));
         }
 
         float gained = skillOf(player);
@@ -98,10 +100,10 @@ public final class MiningSkillGameTests {
         BlockState stone = Blocks.STONE.defaultBlockState();
         BlockPos node = new BlockPos(7, 64, 7);
 
-        MiningSkill.awardForBreak(player, stone, node);
+        MiningSkill.checkMiningAttempt(player, stone, node);
         float afterFirst = skillOf(player);
         for (int i = 0; i < 5; i++) {
-            check(MiningSkill.awardForBreak(player, stone, node) == 0.0f,
+            check(MiningSkill.checkMiningAttempt(player, stone, node).skillGained() == 0.0f,
                     "a repeated callback for the same break must award nothing");
         }
         check(skillOf(player) == afterFirst, "duplicate callbacks moved the skill");
@@ -141,8 +143,8 @@ public final class MiningSkillGameTests {
                 new GameProfile(UUID.randomUUID(), "mining_award_automation"));
         automation.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ToolRegistry.PICKAXE.get()));
 
-        float gained = MiningSkill.awardForBreak(
-                automation, Blocks.STONE.defaultBlockState(), new BlockPos(3, 64, 3));
+        float gained = MiningSkill.checkMiningAttempt(
+                automation, Blocks.STONE.defaultBlockState(), new BlockPos(3, 64, 3)).skillGained();
 
         check(gained == 0.0f, "automation has no skill identity and must award nothing");
         helper.succeed();
@@ -153,8 +155,8 @@ public final class MiningSkillGameTests {
     public static void unmanagedBlocksAwardNothing(GameTestHelper helper) {
         ServerPlayer player = miner(helper, GameType.SURVIVAL, 0.0f);
 
-        float gained = MiningSkill.awardForBreak(
-                player, Blocks.DIRT.defaultBlockState(), new BlockPos(5, 64, 5));
+        float gained = MiningSkill.checkMiningAttempt(
+                player, Blocks.DIRT.defaultBlockState(), new BlockPos(5, 64, 5)).skillGained();
 
         check(gained == 0.0f, "dirt is not a Mining resource and must award nothing");
         check(skillOf(player) == 0.0f, "an unmanaged block moved the skill");

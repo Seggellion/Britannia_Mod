@@ -178,7 +178,7 @@ Copy-Item -LiteralPath (Join-Path $fountainSource 'textures/fountain_water.png')
 Copy-Item -LiteralPath (Join-Path $fountainSource 'textures/fountain_water.png.mcmeta') -Destination (Join-Path $textureRoot 'fountain_water.png.mcmeta') -Force
 
 foreach ($id in @(
-    'merchant_cart_red', 'merchant_cart_purple', 'merchant_cart_blue',
+    'merchant_cart_red', 'merchant_cart_purple', 'merchant_cart_blue', 'merchant_cart_black',
     'merchant_cart_green', 'merchant_cart_yellow', 'merchant_cart_white')) {
     Write-BlockResources $id 13
 }

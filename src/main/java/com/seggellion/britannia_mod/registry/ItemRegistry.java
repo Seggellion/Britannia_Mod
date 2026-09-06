@@ -2,6 +2,7 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.item.RaisedBlockItem;
+import com.seggellion.britannia_mod.item.CrateItem;
 import com.seggellion.britannia_mod.item.DecorativeMultiblockItem;
 import com.seggellion.britannia_mod.item.AdventureLadderItem;
 import com.seggellion.britannia_mod.item.AdventureScarecrowItem;
@@ -27,6 +28,7 @@ import com.seggellion.britannia_mod.item.WeightedCookedFoodItem;
 import com.seggellion.britannia_mod.item.BlueTentDeedItem;
 import com.seggellion.britannia_mod.item.PurpleTentDeedItem;
 import com.seggellion.britannia_mod.item.DeedItem;
+import com.seggellion.britannia_mod.item.StarfarersMedallionItem;
 import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
 import com.seggellion.britannia_mod.item.InteriorDecoratorToolItem;
 import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
@@ -1314,6 +1316,14 @@ public static final DeferredHolder<Item, BlockItem> SLATE_ROOF_FLAT_ITEM = ITEMS
     new BlockItem(BlockRegistry.SLATE_ROOF_FLAT.get(), new Item.Properties())
 );
 
+public static final DeferredHolder<Item, BlockItem> SANDSTONE_ROOF_ITEM = ITEMS.register("sandstone_roof", () ->
+    new BlockItem(BlockRegistry.SANDSTONE_ROOF.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, BlockItem> LIMESTONE_ROOF_ITEM = ITEMS.register("limestone_roof", () ->
+    new BlockItem(BlockRegistry.LIMESTONE_ROOF.get(), new Item.Properties())
+);
+
 public static final DeferredHolder<Item, BlockItem> SLATE_ROOF_1_FLAT_ITEM = ITEMS.register("slate_roof_1_flat", () ->
     new BlockItem(BlockRegistry.SLATE_ROOF_1_FLAT.get(), new Item.Properties())
 );
@@ -2429,6 +2439,7 @@ public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
     public static final DeferredHolder<Item, Item> MERCHANT_CART_RED_ITEM = ITEMS.register("merchant_cart_red", () -> new DecorativeMultiblockItem(BlockRegistry.MERCHANT_CART_RED.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> MERCHANT_CART_PURPLE_ITEM = ITEMS.register("merchant_cart_purple", () -> new DecorativeMultiblockItem(BlockRegistry.MERCHANT_CART_PURPLE.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> MERCHANT_CART_BLUE_ITEM = ITEMS.register("merchant_cart_blue", () -> new DecorativeMultiblockItem(BlockRegistry.MERCHANT_CART_BLUE.get(), new Item.Properties()));
+        public static final DeferredHolder<Item, Item> MERCHANT_CART_BLACK_ITEM = ITEMS.register("merchant_cart_black", () -> new DecorativeMultiblockItem(BlockRegistry.MERCHANT_CART_BLACK.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> MERCHANT_CART_GREEN_ITEM = ITEMS.register("merchant_cart_green", () -> new DecorativeMultiblockItem(BlockRegistry.MERCHANT_CART_GREEN.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> MERCHANT_CART_YELLOW_ITEM = ITEMS.register("merchant_cart_yellow", () -> new DecorativeMultiblockItem(BlockRegistry.MERCHANT_CART_YELLOW.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> MERCHANT_CART_WHITE_ITEM = ITEMS.register("merchant_cart_white", () -> new DecorativeMultiblockItem(BlockRegistry.MERCHANT_CART_WHITE.get(), new Item.Properties()));
@@ -2442,12 +2453,20 @@ public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
     public static final DeferredHolder<Item, Item> LOOM_ITEM = ITEMS.register("loom", () -> new DecorativeMultiblockItem(BlockRegistry.LOOM.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> SPINNING_WHEEL_ITEM = ITEMS.register("spinning_wheel", () -> new BlockItem(BlockRegistry.SPINNING_WHEEL.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> DISPLAY_CASE_ITEM = ITEMS.register("display_case", () -> new DecorativeMultiblockItem(BlockRegistry.DISPLAY_CASE.get(), new Item.Properties()));
-    public static final DeferredHolder<Item, Item> SMALL_CRATE_ITEM = ITEMS.register("small_crate", () -> new DecorativeMultiblockItem(BlockRegistry.SMALL_CRATE.get(), new Item.Properties()));
-    public static final DeferredHolder<Item, Item> MEDIUM_CRATE_ITEM = ITEMS.register("medium_crate", () -> new DecorativeMultiblockItem(BlockRegistry.MEDIUM_CRATE.get(), new Item.Properties()));
-    public static final DeferredHolder<Item, Item> LARGE_CRATE_ITEM = ITEMS.register("large_crate", () -> new DecorativeMultiblockItem(BlockRegistry.LARGE_CRATE.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> SMALL_CRATE_ITEM = ITEMS.register("small_crate", () -> new CrateItem(BlockRegistry.SMALL_CRATE.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> MEDIUM_CRATE_ITEM = ITEMS.register("medium_crate", () -> new CrateItem(BlockRegistry.MEDIUM_CRATE.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> LARGE_CRATE_ITEM = ITEMS.register("large_crate", () -> new CrateItem(BlockRegistry.LARGE_CRATE.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> WATER_WELL_ITEM = ITEMS.register("water_well", () -> new DecorativeMultiblockItem(BlockRegistry.WATER_WELL.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> LADDER_ITEM = ITEMS.register("ladder", () -> new AdventureLadderItem(BlockRegistry.LADDER.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> TRAINING_DUMMY_ITEM = ITEMS.register("training_dummy", () -> new DecorativeMultiblockItem(BlockRegistry.TRAINING_DUMMY.get(), new Item.Properties()));
+
+    /**
+     * The Starfarer's Medallion -- a commemorative collectible with no gameplay effect,
+     * delivered to accounts that claimed it at ultimacraft.com/starfarer. Rails owns the
+     * entitlement; this is only the physical form it takes in the world.
+     */
+    public static final DeferredHolder<Item, Item> STARFARERS_MEDALLION = ITEMS.register("starfarers_medallion",
+            () -> new StarfarersMedallionItem(new Item.Properties()));
 
 
     public static void register(IEventBus modEventBus) {

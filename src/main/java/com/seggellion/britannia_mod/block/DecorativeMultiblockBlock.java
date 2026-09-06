@@ -157,6 +157,11 @@ public class DecorativeMultiblockBlock extends Block {
                 .below(cell.y());
     }
 
+    /** Whether a structure is being reshuffled right now, so its half-finished state is not read. */
+    public static boolean isMutating() {
+        return MUTATING.get();
+    }
+
     public <T> T duringMutation(Supplier<T> mutation) {
         boolean previous = MUTATING.get();
         MUTATING.set(true);
@@ -174,6 +179,17 @@ public class DecorativeMultiblockBlock extends Block {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return authoredShape(state);
+    }
+
+    /**
+     * The shape this cell was authored with, before any subclass adds anything to it.
+     *
+     * <p>Separated from {@link #getShape} so a subclass that answers for a neighbouring structure -
+     * a large crate carrying a compact column on its lid - can still ask what its own art measures
+     * without calling back into its own override.
+     */
+    public VoxelShape authoredShape(BlockState state) {
         int part = state.getValue(PART);
         if (part >= shapes.size()) {
             return Shapes.empty();
@@ -292,6 +308,19 @@ public class DecorativeMultiblockBlock extends Block {
             }
         }
         return true;
+    }
+
+    /**
+     * Takes apart the structure anchored here, with the ordinary drops.
+     *
+     * <p>Exposed because a crate standing on another is physically inside the lower crate's cells, so
+     * the block a swing lands on is not always the structure the player was aiming at. The crate
+     * decides which one that is; this is how it takes that one apart, on exactly the same terms as if
+     * its own cell had been hit.
+     */
+    protected void destroyStructure(
+            ServerLevel level, BlockPos anchor, Direction facing, boolean dropItem) {
+        dismantle(level, anchor, facing, dropItem);
     }
 
     private void dismantle(ServerLevel level, BlockPos anchor, Direction facing, boolean dropItem) {

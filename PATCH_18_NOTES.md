@@ -122,6 +122,7 @@ Parrots are now fully protected from damage and cannot be killed.
 Thirty-five furniture and container block types can now be treated as movable possessions. The supported set includes chairs, stools, benches, thrones, tables, counters, wine bottles, lights, chests, armoires, drawers and all three crate sizes.
 
 - Sneak-right-click with both hands empty to lift an eligible player-placed object.
+- Both hands must be empty. If only your off hand is holding something, Grabby Hands now says so instead of doing nothing.
 - Place it again from the item in your hand, including stacking compatible furniture.
 - Container state and contents travel with supported chests, armoires, drawers and crates.
 - Locked, protected, open or unsafe containers are refused instead of losing their state.
@@ -130,6 +131,16 @@ Thirty-five furniture and container block types can now be treated as movable po
 - Thirty loose goods—including foods, harvests, reagents, leather and musical instruments—can also be placed physically in the world.
 
 House ownership and city protection still apply. Grabby Hands does not grant general building or breaking permission.
+
+### Crate stacking
+
+Storage crates can now be stacked into compact columns rather than sitting side by side.
+
+- Small and medium crates stack into a compact column that keeps each crate separately openable.
+- A single crate can be broken out of, or carried out of, a column without disturbing the ones above it.
+- Large crates stack on other large crates and seat themselves on the lid below.
+- Compact columns can stand on a large crate, and a stack whose foundation is removed settles instead of floating.
+- Grabby Hands names and carries a stacked crate correctly, and a swing is judged by the crate you were actually aiming at.
 
 ### Textile processing
 
@@ -158,7 +169,7 @@ Patch 18 adds or completes a wide collection of registered decorative and utilit
 - small, medium and large storage crates;
 - connected display cases and a fully connecting wooden fence family;
 - water wells that can fill supported pitchers and large adventure ladders that are genuinely climbable;
-- merchant carts in six colors and multiblock market stalls in four colors;
+- merchant carts in seven colors and multiblock market stalls in four colors;
 - refreshed one-block city moongate presentation;
 - eight Virtue shrine variants plus Chaos for world builders, with protected multi-block placement and decorator-tool cycling.
 
@@ -171,12 +182,23 @@ Large decorative structures place as complete footprints: if the required space 
 - Ordinary stone now draws from 32 deterministic texture variants, reducing obvious repetition without changing the identity of the block.
 - Vanilla sand receives similar terrain variation.
 - A standalone flagstone block selects from multiple textures and can be cycled with the interior decorator tool.
+- A unified stone roof family adds slate, sandstone and limestone roofs that share one adaptive shape system and can be cycled with the interior decorator tool.
+- Light and dark sandstone pavers add randomized paving variants for streets, courtyards and plazas.
 - Foundation bricks gain more varied side faces.
 - Ceiling stalactites expand cave-building options and complement the existing floor formations.
 - Managed grass, ferns and flowers can gradually grow above grass blocks, mature and regrow after being cut with an appropriate blade.
 - Swamps receive a subtle green fog tint and can grow Blood Moss as part of their managed vegetation palette.
 - Sulphurous Ash patches can appear near lava, while black-lipped oysters can appear on limestone near water and yield black pearls when harvested with a dagger.
 - The title screen now carries UltimaCraft branding, a Version 18 subtitle, a direct website button, curated splash text, dark loading/menu backgrounds and an UltimaCraft menu theme.
+
+## Keepsakes & Blessed Items
+
+Some items are meant to survive the things that normally destroy an item.
+
+- Blessed items are rescued from despawning, lava, fire and the void instead of being lost.
+- The trash barrel no longer silently deletes a blessed item.
+- Whether a blessed item has been delivered is decided by the server's record rather than by whether it happens to be in your inventory, and deliveries carry a durable receipt so a failure can be reconciled.
+- The Starfarer's Medallion is a commemorative keepsake with no recipe and no gameplay effect, bestowed on travelers who answered a call from beyond the skies of Britannia.
 
 ## Quality of Life & Fixes
 
@@ -200,6 +222,14 @@ Many of Patch 18's largest improvements are about making the Minecraft world and
 Bank balances, vendor stock, Guildmaster rosters, city staffing, house records and managed deposit locations are server-owned facts. The mod now treats them that way while performing visible world changes safely on the Minecraft server. Requests are authenticated, network work is kept away from the game tick, and important item or currency movements are recorded so they can be reconciled after a failure.
 
 This foundation is what allows the new systems to feel persistent: a bank transfer, a house region, an NPC assignment or a resource deposit is no longer just a temporary local event.
+
+Patch 18 also completes host configuration parity. A server operator now sets the API base URL and the shard identity through the documented environment variables or the server properties file, and the mod uses exactly what was configured. Previously an environment-configured host could fall back to a compiled-in default, which meant it talked to the wrong place and no operator setting could correct it. Shard identity now travels with the credentials that authenticate the request, so a record cannot be written under one shard name while being authenticated as another.
+
+WorldEditCUI joins the client mods the server recognizes, alongside the existing WorldEdit, Sodium, Iris and Freecam entries.
+
+### Verification status at time of writing
+
+Patch 18's automated coverage is green: the full unit suite and the dedicated-server GameTest suite both pass on the release candidate. Some systems are proven by automated coverage but still awaiting confirmation on a live server with real clients - crate stacking and destruction, the fertile-dirt survival loop, blessed-item handling and the Starfarer's Medallion, and market-stall visuals. The unified stone roof family has already been confirmed on a live dedicated server with shaders enabled.
 
 # Marketing Content Index
 

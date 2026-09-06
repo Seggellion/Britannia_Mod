@@ -11,6 +11,7 @@ import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnAcknowledgement
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClaim;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClaimData;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnCollisionRepairCoordinator;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnFailureCodes;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnIdentityResolver;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnLocation;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnPendingData;
@@ -42,6 +43,25 @@ import java.util.UUID;
 public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
     public static final String SPAWN_POINT_ID_KEY = "SpawnPointId";
     private static final Logger LOGGER = LogUtils.getLogger();
+
+    /**
+     * The shard a durable spawn operation belongs to, taken from the server's own credentials.
+     *
+     * <p>These records outlive the process: they are persisted, replayed after a restart and
+     * retried by the delivery processor, which rejects any record whose shard name does not equal
+     * {@code credentials.shardName()}. Stamping a compiled constant here therefore did not merely
+     * send one wrong field — it wrote the wrong shard into durable state, where a later restart
+     * would replay it and the processor would refuse it as {@code shard_mismatch} forever.
+     *
+     * <p>Returns null when no credentials are configured. Callers must then refuse to enqueue
+     * rather than guess: a server without credentials cannot deliver the operation in any case,
+     * and a guessed shard would be indistinguishable from a real one once written to disk.
+     */
+    private static String configuredShard(ServerLevel level) {
+        if (level == null || level.getServer() == null) return null;
+        return com.seggellion.britannia_mod.server.auth.ServerAuthRegistry
+                .shardName(level.getServer()).orElse(null);
+    }
 
     @Nullable private UUID spawnPointId;
     @Nullable private UUID cityPublicId;
@@ -206,8 +226,13 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
             markIdentityError("revision_overflow");
             return;
         }
+        String shard = configuredShard(level);
+        if (shard == null) {
+            markIdentityError(ServiceNpcSpawnFailureCodes.CREDENTIALS_UNAVAILABLE);
+            return;
+        }
         ServiceNpcSpawnPendingRecord pending = new ServiceNpcSpawnPendingRecord(
-                ServiceNpcSpawnPendingOperation.UPSERT, spawnPointId, ModConfig.SHARD_NAME, current,
+                ServiceNpcSpawnPendingOperation.UPSERT, spawnPointId, shard, current,
                 cityPublicId, serviceNpcTypeKey, enabled, newRevision, System.currentTimeMillis()
         );
         ServiceNpcSpawnPendingData.MutationResult result = data.put(pending);
@@ -298,12 +323,17 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
             return ServiceNpcSpawnValidationError.REVISION_OVERFLOW;
         }
 
+        String shard = configuredShard(level);
+        if (shard == null) {
+            return ServiceNpcSpawnValidationError.CREDENTIALS_UNAVAILABLE;
+        }
+
         ServiceNpcSpawnRegistrationState nextState =
                 ServiceNpcSpawnStateMachine.afterAcceptedChange(registrationState);
         ServiceNpcSpawnPendingRecord pending = new ServiceNpcSpawnPendingRecord(
                 ServiceNpcSpawnPendingOperation.UPSERT,
                 spawnPointId,
-                ModConfig.SHARD_NAME,
+                shard,
                 current,
                 newCityPublicId,
                 newServiceNpcTypeKey,
@@ -339,10 +369,15 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
         ensureIdentity(level);
         if (spawnPointId == null) return false;
         ServiceNpcSpawnLocation current = currentLocation(level);
+        String removalShard = configuredShard(level);
+        if (removalShard == null) {
+            markIdentityError(ServiceNpcSpawnFailureCodes.CREDENTIALS_UNAVAILABLE);
+            return false;
+        }
         ServiceNpcSpawnPendingRecord remove = new ServiceNpcSpawnPendingRecord(
                 ServiceNpcSpawnPendingOperation.REMOVE,
                 spawnPointId,
-                ModConfig.SHARD_NAME,
+                removalShard,
                 current,
                 cityPublicId,
                 serviceNpcTypeKey,

@@ -22,12 +22,14 @@ import java.util.Optional;
  *
  * <p>Mining milestone 3. Deliberately shaped after {@code FarmingCultivationGate}, the
  * repository-standard skill gate: a pure, unit-testable decision core ({@link #evaluateResolved})
- * fed by a {@link Subject} snapshot of authoritative server state, with actor typing, the
- * repo-standard admin bypass, and the skill-data-unavailable denial policy. The client never
+ * fed by a {@link Subject} snapshot of authoritative server state, with actor typing, a
+ * creative-only administrative bypass, and the skill-data-unavailable denial policy. The client never
  * supplies a skill value anywhere on this path.
  *
- * <p>Decision order mirrors Farming: resolution → actor policy → admin bypass → <b>extraction
- * tool</b> → data availability → inclusive threshold ({@code current >= required}, design §10.2).
+ * <p>Decision order mirrors Farming: resolution → actor policy → <b>creative</b> bypass →
+ * <b>extraction tool</b> → data availability → inclusive threshold ({@code current >= required},
+ * design §10.2). The bypass is creative-mode only: operator permission is an administrative
+ * capability and must never stand in for gameplay progression.
  *
  * <p>The tool step is milestone 1 of the OreVein remediation. Without it the gate answered "yes"
  * to any sufficiently skilled player whatever they held, and the block then fell through to
@@ -170,13 +172,27 @@ public final class MiningBreakGate {
         if (subject.actorType() != ActorType.PLAYER) {
             return new Evaluation(ResultType.NON_PLAYER_POLICY, resolved, subject.miningSkill(), required);
         }
-        if (FlowerProtectionService.isAdministrator(subject.creativeMode(), subject.permissionLevel())) {
-            return new Evaluation(ResultType.APPROVED_BYPASS, resolved, subject.miningSkill(), required);
-        }
+        // NO game-mode or permission bypass of the hard requirement. Owner-approved invariant:
+        // "If the player's Mining skill is below the hard requirement for a resource, the resource
+        // block must not break" -- in Survival, Adventure, Creative, at op level 2 or 4, for the
+        // server owner, for anyone.
+        //
+        // This removed two bypasses in turn. Operator permission went first: op is an
+        // administrative capability and the ladder is gameplay progression, and because every
+        // GameTest builds a permission-0 player the bypass was invisible to the whole suite while
+        // reproducing instantly on a live client. Creative followed, because creative siting and
+        // creative extraction are different authorities -- creative may PLACE a resource node, and
+        // that is now how an administrator manually sites one, but placing is not harvesting.
+        //
+        // Consequence worth knowing: an administrator can no longer left-click away a catalogued
+        // resource they are not skilled enough to mine. Removal is /setblock, /fill, or creative
+        // pick-and-replace -- an explicit administrative act rather than a silent progression hole.
+        // ManagedResourceCreativeGuard still refuses creative breaks of deposit cells outright, so
+        // creative never mints ore at any skill.
         // Milestone 1. Before skill, because the tool is a fact the player can see and fix, while
         // skill data is transient -- "you cannot mine this with that" is the more useful answer
-        // when both are wrong. After the admin bypass, because an operator removing a misplaced
-        // block is not an extraction and was never meant to need the right tool in hand.
+        // when both are wrong. After the creative bypass, because an operator removing a misplaced
+        // block in creative is not an extraction and was never meant to need the right tool.
         if (!subject.authorizedTool()) {
             return new Evaluation(ResultType.WRONG_TOOL, resolved, subject.miningSkill(), required);
         }

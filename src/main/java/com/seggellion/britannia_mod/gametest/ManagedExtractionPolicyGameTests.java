@@ -361,7 +361,8 @@ public final class ManagedExtractionPolicyGameTests {
                     "a denied fake player filed restoration debt for " + subject.label());
             check(machine.getMainHandItem().getDamageValue() == 0,
                     "a denied fake player wore its tool on " + subject.label());
-            check(MiningSkill.awardForBreak(machine, level.getBlockState(absolute), absolute) == 0.0f,
+            check(MiningSkill.checkMiningAttempt(machine, level.getBlockState(absolute), absolute)
+                            .skillGained() == 0.0f,
                     "a fake player was awarded Mining for " + subject.label());
         }
         helper.succeed();
@@ -429,7 +430,8 @@ public final class ManagedExtractionPolicyGameTests {
                             + ", which is a player extraction transaction they did not perform");
             check(operator.getMainHandItem().getDamageValue() == 0,
                     "a creative operator wore their tool on " + subject.label());
-            check(MiningSkill.awardForBreak(operator, level.getBlockState(absolute), absolute) == 0.0f,
+            check(MiningSkill.checkMiningAttempt(operator, level.getBlockState(absolute), absolute)
+                            .skillGained() == 0.0f,
                     "a creative operator gained Mining from " + subject.label());
 
             if (subject.depositCell()) {
@@ -495,9 +497,16 @@ public final class ManagedExtractionPolicyGameTests {
         helper.succeed();
     }
 
-    /** The bypass itself is intact: an operator's break is still permitted, just not paid. */
+    /**
+     * A creative administrator is a non-earning actor, and is now also held to the ladder.
+     *
+     * <p>This used to assert the creative bypass permitted the break. That bypass is gone by owner
+     * decision: game mode and permission level are administrative authority, not gameplay
+     * progression. What remains -- and is the part this test was always really about -- is that
+     * creative can never mint economy, whatever the gate says.
+     */
     @GameTest(template = TEMPLATE)
-    public static void theOperatorBypassStillPermitsTheBreakItSimplyEarnsNothing(GameTestHelper helper) {
+    public static void aCreativeAdministratorEarnsNothingAndIsHeldToTheLadder(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         helper.setBlock(NODE, BlockRegistry.SILVER_ORE.get());
         BlockPos absolute = helper.absolutePos(NODE);
@@ -505,11 +514,13 @@ public final class ManagedExtractionPolicyGameTests {
         ServerPlayer operator = miner(helper, pickaxe());
         operator.setGameMode(GameType.CREATIVE);
 
+        // miner() pins Mining at the ceiling, so this actor clears silver's threshold on skill and
+        // the only thing left to decide the break is whether creative is special. It is not.
         MiningBreakGate.Evaluation evaluation =
                 MiningBreakGate.evaluate(operator, level.getBlockState(absolute), level, absolute);
-        check(evaluation.type() == MiningBreakGate.ResultType.APPROVED_BYPASS,
-                "the operator bypass is gone; an administrator can no longer clear a misplaced vein");
-        check(evaluation.permitsBreak(), "the operator bypass no longer permits the break");
+        check(evaluation.type() == MiningBreakGate.ResultType.ELIGIBLE,
+                "a skilled actor should clear the threshold on skill alone, got " + evaluation.type());
+
         check(ManagedExtractionPolicy.evaluate(operator)
                         == ManagedExtractionPolicy.Verdict.DENIED_CREATIVE,
                 "a creative operator is not recognised as a non-earning actor");

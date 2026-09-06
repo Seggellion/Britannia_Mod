@@ -1,7 +1,9 @@
 package com.seggellion.britannia_mod.grabbyhands;
 
 import com.mojang.logging.LogUtils;
+import java.util.OptionalInt;
 import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import org.slf4j.Logger;
@@ -42,14 +44,94 @@ public final class GrabbyPickupTransaction {
     }
 
     public static GrabbyPickupResult execute(GrabbyWorld world, GrabbyActor actor, BlockPos clickedPos) {
+        return execute(world, actor, clickedPos, OptionalInt.empty());
+    }
+
+    /**
+     * Picks up one object, which may be one of several living at the same position.
+     *
+     * <p>Almost every enrolled block is the only thing at its position, and passes no sub-object: the
+     * transaction below is the one it has always run. A compact crate column is several crates a
+     * player points at individually, sharing one block entity, so the crate they meant is named here
+     * rather than inferred from the position - taking the position would take all of them.
+     */
+    public static GrabbyPickupResult execute(
+            GrabbyWorld world, GrabbyActor actor, BlockPos clickedPos, OptionalInt subObject) {
         BlockPos root = GrabbyRootResolver.resolveRoot(world, clickedPos);
 
         try (GrabbyMutationGuard.Claim claim = GrabbyMutationGuard.claim(world.levelIdentity(), root)) {
             if (!claim.held()) {
                 return GrabbyPickupResult.refused(GrabbyPickupOutcome.ALREADY_IN_PROGRESS, root);
             }
-            return executeClaimed(world, actor, root);
+            return subObject.isPresent()
+                    ? executeSubObject(world, actor, root, subObject.getAsInt())
+                    : executeClaimed(world, actor, root);
         }
+    }
+
+    /**
+     * Carries away one object out of several sharing a position.
+     *
+     * <p>The same gates as an ordinary pickup, asked in the same order - what it is, who put it there,
+     * whether the player can reach it, what policy says, and finally the object's own reasons - and
+     * then one step instead of two. An ordinary object gives up its contents and is removed
+     * separately; a sub-object is handed over whole, so there is no moment when its contents exist in
+     * both the world and the carried item.
+     */
+    private static GrabbyPickupResult executeSubObject(
+            GrabbyWorld world, GrabbyActor actor, BlockPos root, int subObjectId) {
+
+        BlockState state = world.blockState(root);
+        if (state == null || state.isAir()) {
+            return GrabbyPickupResult.refused(GrabbyPickupOutcome.NOTHING_THERE, root);
+        }
+        // Admitted for holding objects a player can address one at a time, not for being movable
+        // itself: a column is never carried or placed as a column, only the crates inside it are.
+        if (!world.hostsSubObjects(root)) {
+            return GrabbyPickupResult.refused(GrabbyPickupOutcome.TYPE_NOT_ENROLLED, root);
+        }
+        GrabbyInstanceState provenance = world.grabbyState(root);
+        if (!provenance.grabbyManaged()) {
+            return GrabbyPickupResult.refused(GrabbyPickupOutcome.NOT_GRABBY_MANAGED, root);
+        }
+        if (!actor.canReach(root)) {
+            return GrabbyPickupResult.refused(GrabbyPickupOutcome.OUT_OF_REACH, root);
+        }
+        if (!GrabbyPolicy.mayMutate(
+                provenance.grabbyManaged(),
+                actor.isCreative(),
+                actor.permissionLevel(),
+                actor.insideForeignStructure(root),
+                GrabbyMutationReason.PICKUP)) {
+            return GrabbyPickupResult.refused(GrabbyPickupOutcome.DENIED_BY_POLICY, root);
+        }
+        Optional<GrabbyTransportRefusal> refusal = world.subObjectRefusal(root, subObjectId);
+        if (refusal.isPresent()) {
+            return GrabbyPickupResult.refused(switch (refusal.get()) {
+                case IN_USE -> GrabbyPickupOutcome.IN_USE;
+                case NESTED_CONTAINER -> GrabbyPickupOutcome.NESTED_CONTAINER;
+            }, root);
+        }
+
+        // Asked for before it is taken, so a full inventory does not cost the player the crate.
+        Optional<ItemStack> peek = world.peekSubObject(root, subObjectId);
+        if (peek.isEmpty()) {
+            return GrabbyPickupResult.refused(GrabbyPickupOutcome.NOTHING_THERE, root);
+        }
+        if (!actor.hasRoomFor(peek.get())) {
+            return GrabbyPickupResult.refused(GrabbyPickupOutcome.INVENTORY_FULL, root);
+        }
+
+        Optional<ItemStack> carried = world.takeSubObject(root, subObjectId);
+        if (carried.isEmpty()) {
+            // Somebody else reached it first. Nothing was taken and nothing is owed.
+            return GrabbyPickupResult.refused(GrabbyPickupOutcome.NOTHING_THERE, root);
+        }
+        // Handing it over empties the stack, so what was carried is recorded before it is given.
+        ItemStack taken = carried.get().copy();
+        actor.give(carried.get());
+        world.playWorldSound(root, SoundEvents.ITEM_PICKUP);
+        return new GrabbyPickupResult(GrabbyPickupOutcome.SUCCESS, root, taken, 0, 0, false, false);
     }
 
     private static GrabbyPickupResult executeClaimed(GrabbyWorld world, GrabbyActor actor, BlockPos root) {

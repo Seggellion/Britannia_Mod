@@ -73,41 +73,82 @@ public final class MiningSkill {
     private MiningSkill() {
     }
 
+    /** Outcome of one Mining attempt: did it extract, and did the skill move. */
+    public record AttemptResult(boolean extracted, float skillGained) {
+        /** Nothing legitimate happened; no check was made and no world mutation is permitted. */
+        public static final AttemptResult NO_ATTEMPT = new AttemptResult(false, 0.0f);
+    }
+
     /**
-     * Awards Mining for one completed, server-authorized Mining action.
+     * Resolves one Mining attempt: the single skill check, and the gain evaluation that rides with
+     * it. The caller mutates the world only when {@link AttemptResult#extracted()} is true.
      *
-     * <p>Re-evaluates the break gate and proceeds only on {@link
-     * MiningBreakGate.ResultType#ELIGIBLE}, which is what keeps every excluded case out by
-     * construction rather than by hopeful call-site placement: Creative/operator bypasses resolve
-     * APPROVED_BYPASS, fake players NON_PLAYER_POLICY, unloaded skill data SKILL_DATA_UNAVAILABLE
-     * and unmanaged blocks NOT_APPLICABLE — none of which award. Denied breaks never reach this
-     * method at all, because the gate cancels them before any mutation.
+     * <h2>Why this replaced awardForBreak</h2>
+     * The old entry point took a completed break and decided whether to pay for it, which welded
+     * progression to successful extraction and made "a failed attempt still trains you" impossible
+     * to express. RunUO's shape is the other way round: the check <em>is</em> the attempt, its
+     * result decides whether the resource comes out, and gain is evaluated either way.
      *
-     * @return the skill actually gained, 0 when the roll failed or the activation did not qualify
+     * <h2>The two independent outcomes</h2>
+     * Success and gain are separate rolls, exactly as in {@code SkillCheck.cs}. A successful
+     * extraction may teach nothing; a failed one may teach. What never happens is a gain below the
+     * hard requirement: RunUO's {@code skillBase >= resource.ReqSkill && from.CheckSkill(...)}
+     * short-circuits, so an unqualified miner never reaches the check at all and the resource
+     * teaches them nothing. That is deliberate — you train on what you can actually work.
+     *
+     * <h2>The beginner ramp</h2>
+     * {@code SkillCheck.CheckSkill} ends with {@code || skill.Base < 10.0}, forcing a gain below 10
+     * whatever the roll said. Reproduced here, and it still matters for the ore families, where a
+     * new miner rolling against a window they sit at the bottom of would otherwise inch forward on
+     * ordinary gain rolls alone. Stone no longer depends on it to be playable -- the terrain is
+     * excavated deterministically once qualified -- but the ramp remains the shared rule.
+     *
+     * <h2>Two extraction modes</h2>
+     * Whether the block comes out is {@link MiningProgression#successChance}'s answer, and it
+     * differs by family: ores roll against their window, the stone family does not roll at all.
+     * That is deliberate and is documented on {@link MiningProgression.ExtractionMode}. Nothing in
+     * this method needs to know which is which.
      */
-    public static float awardForBreak(@Nullable Player actor, BlockState state, BlockPos pos) {
+    public static AttemptResult checkMiningAttempt(
+            @Nullable Player actor, BlockState state, BlockPos pos) {
         if (!(actor instanceof ServerPlayer player)) {
-            return 0.0f;
+            return AttemptResult.NO_ATTEMPT;
         }
         MiningBreakGate.Evaluation evaluation =
                 MiningBreakGate.evaluate(player, state, player.serverLevel(), pos);
         if (evaluation.type() != MiningBreakGate.ResultType.ELIGIBLE) {
-            return 0.0f;
+            return AttemptResult.NO_ATTEMPT;
         }
         MineableDefinition definition = evaluation.definition().orElse(null);
         if (definition == null) {
-            return 0.0f;
-        }
-        if (!acceptActivation(player.getUUID(), pos.asLong(), player.serverLevel().getGameTime())) {
-            return 0.0f;
+            return AttemptResult.NO_ATTEMPT;
         }
         float current = SkillManager.getSkill(player, SKILL_ID);
-        float chance = gainChance(current, definition.challenge());
-        if (chance <= 0.0f || player.getRandom().nextFloat() >= chance) {
-            return 0.0f;
+        boolean extracted =
+                player.getRandom().nextFloat() < MiningProgression.successChance(current, definition);
+
+        // The duplicate guard belongs to the GAIN, not to the extraction. Whether the resource
+        // comes out is a property of this break, and the break pipeline can legitimately resolve
+        // more than one of them in a single tick; whether the skill moves is a property of the
+        // activation, and a second callback for the same (player, position, tick) must not pay
+        // twice. Gating extraction on it as well silently refused honest work.
+        float gained = 0.0f;
+        if (acceptActivation(player.getUUID(), pos.asLong(), player.serverLevel().getGameTime())) {
+            float gainChance = gainChance(current, definition.challenge());
+            if (current < BEGINNER_GAIN_FLOOR
+                    || (gainChance > 0.0f && player.getRandom().nextFloat() < gainChance)) {
+                gained = SkillManager.awardSkillGain(player, SKILL_ID, GAIN_UNIT);
+            }
         }
-        return SkillManager.awardSkillGain(player, SKILL_ID, GAIN_UNIT);
+        return new AttemptResult(extracted, gained);
     }
+
+    /**
+     * Below this the skill always advances on a qualified attempt, from RunUO's
+     * {@code || skill.Base < 10.0}. It is what carries a brand-new miner across the part of the
+     * curve where their extraction chance is still effectively zero.
+     */
+    public static final float BEGINNER_GAIN_FLOOR = 10.0f;
 
     /** Probability that one activation against {@code challenge} advances Mining by 0.1. */
     public static float gainChance(float current, float challenge) {

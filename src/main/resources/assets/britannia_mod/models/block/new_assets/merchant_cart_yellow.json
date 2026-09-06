@@ -5,8 +5,8 @@
                          128
                      ],
     "textures":  {
-                     "1":  "minecraft:block/yellow_wool",
-                     "particle":  "minecraft:block/yellow_wool"
+                     "1":  "britannia_mod:block/new_assets/merchant_cart_yellow",
+                     "particle":  "britannia_mod:block/new_assets/merchant_cart_yellow"
                  },
     "elements":  [
                      {

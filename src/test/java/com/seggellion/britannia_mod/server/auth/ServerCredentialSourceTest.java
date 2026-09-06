@@ -15,21 +15,73 @@ class ServerCredentialSourceTest {
     @TempDir
     Path gameDirectory;
 
+    /**
+     * Environment mode, asserting <b>every</b> resolved value including the origin.
+     *
+     * <p>The origin assertion is the point. This test previously checked the source enum, the
+     * shard name and the fingerprint but never where the origin ended up — which is exactly how
+     * NF-002 survived review: environment mode substituted a compiled-in loopback constant, and
+     * nothing looked. A test that omits the one value a defect corrupts will pass forever.
+     */
     @Test
     void completeEnvironmentHasPrecedenceWithoutReadingTheFile() throws Exception {
         writeServerFile("shard_name=FileShard\nshard_secret=file-secret\napi_base_url=http://localhost:3000/api\n");
         Map<String, String> environment = Map.of(
             ServerCredentialSource.SHARD_NAME_ENV, "EnvShard",
-            ServerCredentialSource.SHARD_SECRET_ENV, "environment-secret"
+            ServerCredentialSource.SHARD_SECRET_ENV, "environment-secret",
+            ServerCredentialSource.API_BASE_URL_ENV, "http://127.0.0.1:4000"
         );
 
         ServerCredentials credentials = ServerCredentialSource.load(gameDirectory, environment).orElseThrow();
 
         assertEquals(ServerCredentials.Source.ENVIRONMENT, credentials.source());
         assertEquals("EnvShard", credentials.shardName());
+        assertEquals("http://127.0.0.1:4000", credentials.serviceOrigin().toString(),
+            "the origin must come from the environment, not from the file and not from a constant");
         assertEquals(8, credentials.fingerprint().length());
         assertFalse(credentials.toString().contains("environment-secret"));
         assertFalse(credentials.toString().contains(credentials.shardSecret()));
+    }
+
+    /**
+     * NF-002, asserted as behaviour. Environment credentials without an origin must fail and name
+     * the variable the operator has to set. They must never fall back to a compiled default: the
+     * old fallback was {@code http://127.0.0.1:3000/api/}, a loopback address no production Rails
+     * answers on and no operator could change.
+     */
+    @Test
+    void environmentCredentialsWithoutBaseUrlFailInsteadOfUsingACompiledDefault() throws Exception {
+        writeServerFile("shard_name=FileShard\nshard_secret=file-secret\napi_base_url=https://file.example.test\n");
+        Map<String, String> environment = Map.of(
+            ServerCredentialSource.SHARD_NAME_ENV, "EnvShard",
+            ServerCredentialSource.SHARD_SECRET_ENV, "environment-secret"
+        );
+
+        CredentialConfigurationException failure = assertThrows(CredentialConfigurationException.class,
+            () -> ServerCredentialSource.load(gameDirectory, environment));
+        assertTrue(failure.getMessage().contains(ServerCredentialSource.API_BASE_URL_ENV),
+            "the failure must name the missing variable, got: " + failure.getMessage());
+    }
+
+    /**
+     * In file mode the origin variable overrides only itself, mirroring how the server key already
+     * behaves. Everything else still comes from the file.
+     */
+    @Test
+    void environmentBaseUrlOverridesOnlyThatValueInFileMode() throws Exception {
+        writeServerFile("shard_name=FileShard\nshard_secret=file-secret\n"
+            + "api_base_url=http://localhost:3000/api\nminecraft_server_key="
+            + "00000000-0000-0000-0000-0000000000ff\n");
+        Map<String, String> environment = Map.of(
+            ServerCredentialSource.API_BASE_URL_ENV, "https://rails.example.test");
+
+        ServerCredentials credentials = ServerCredentialSource.load(gameDirectory, environment).orElseThrow();
+
+        assertEquals(ServerCredentials.Source.SERVER_FILE, credentials.source());
+        assertEquals("FileShard", credentials.shardName());
+        assertEquals("https://rails.example.test", credentials.serviceOrigin().toString());
+        assertEquals(UUID.fromString("00000000-0000-0000-0000-0000000000ff"),
+            credentials.minecraftServerKey().orElseThrow());
     }
 
     @Test

@@ -3,7 +3,6 @@ package com.seggellion.britannia_mod.gametest;
 import com.mojang.authlib.GameProfile;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.block.entity.ServiceNpcSpawnBlockEntity;
-import com.seggellion.britannia_mod.config.ModConfig;
 import com.seggellion.britannia_mod.city.BootstrapCityDefinition;
 import com.seggellion.britannia_mod.city.BootstrapCityRegistryCache;
 import com.seggellion.britannia_mod.city.BootstrapCityRegistrySnapshot;
@@ -74,6 +73,13 @@ import java.util.UUID;
 @PrefixGameTestTemplate(false)
 public final class ServiceNpcSpawnGameTests {
     private static final String TEMPLATE = "service_npc_spawn_test_empty";
+    /**
+     * The shard fixtures are stamped with. Deliberately NOT the compiled default: these
+     * fixtures used to read the same constant production code read, so the two sides could
+     * never disagree and NF-003 was invisible here.
+     */
+    private static final String FIXTURE_SHARD = "gametest_fixture_shard";
+
     private static final String CONTROLLED_SHARD_ONE = "gametest_delivery_one";
     private static final String CONTROLLED_SHARD_TWO = "gametest_delivery_two";
 
@@ -184,7 +190,7 @@ public final class ServiceNpcSpawnGameTests {
                             type.key()
                     ) == ServiceNpcSpawnValidationError.NONE,
                     "valid cached registry selection was rejected");
-            check(post.applyConfiguration(level, cityId, type.key(), false, 0L)
+            check(withShardCredentials(helper, () -> post.applyConfiguration(level, cityId, type.key(), false, 0L))
                             == ServiceNpcSpawnValidationError.NONE,
                     "valid cached configuration was not applied");
             check(cityId.equals(post.getCityPublicId()) && type.key().equals(post.getServiceNpcTypeKey()),
@@ -198,6 +204,16 @@ public final class ServiceNpcSpawnGameTests {
             ServiceNpcSpawnPendingRecord pending = pendingData.snapshot().get(id);
             check(pending != null && pending.operation() == ServiceNpcSpawnPendingOperation.UPSERT,
                     "accepted configuration did not create pending UPSERT work");
+
+            // NF-003: the durable record carries the CONFIGURED shard, not the compiled constant.
+            // FIXTURE_SHARD is deliberately not "Britannia" -- while every test used the compiled
+            // default, a value read from the wrong place was indistinguishable from one read from
+            // the right place, which is exactly how this defect stayed invisible.
+            check(FIXTURE_SHARD.equals(pending.shardName()),
+                    "durable record was stamped " + pending.shardName()
+                            + " instead of the configured " + FIXTURE_SHARD);
+            check(!"Britannia".equals(pending.shardName()),
+                    "the compiled default shard leaked into a durable record");
             check(cityId.equals(pending.cityPublicId()) && type.key().equals(pending.serviceNpcTypeKey())
                             && !pending.enabled() && pending.configurationRevision() == 1L,
                     "pending UPSERT did not preserve the accepted snapshot");
@@ -207,6 +223,9 @@ public final class ServiceNpcSpawnGameTests {
                     .load(savedPending, level.registryAccess())
                     .snapshot()
                     .get(id);
+            check(reloaded != null && FIXTURE_SHARD.equals(reloaded.shardName()),
+                    "the configured shard did not survive persistence, got "
+                            + (reloaded == null ? "no record" : reloaded.shardName()));
             check(pending.equals(reloaded), "pending UPSERT did not survive a save/load boundary");
 
             ServerPlayer player = FakePlayerFactory.get(
@@ -265,6 +284,12 @@ public final class ServiceNpcSpawnGameTests {
 
     @GameTest(template = TEMPLATE)
     public static void survivalCreativeBreakAndReplacementCreateTerminalRemoveWork(GameTestHelper helper) {
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                helper.getLevel().getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_shard_identity"));
+        try {
         ServerLevel level = helper.getLevel();
         BlockPos survivalPos = new BlockPos(1, 1, 1);
         BlockPos creativePos = new BlockPos(3, 1, 1);
@@ -309,10 +334,22 @@ public final class ServiceNpcSpawnGameTests {
         assertRemove(level, creativeId);
         assertRemove(level, replacedId);
         helper.succeed();
+        } finally {
+            // Cleared so the rest of the run does not inherit credentials: their presence is
+            // what makes every mock-player join attempt a real Rails fetch.
+            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(
+                    helper.getLevel().getServer());
+        }
     }
 
     @GameTest(template = TEMPLATE, timeoutTicks = 40)
     public static void explosionCreatesTerminalRemoveWork(GameTestHelper helper) {
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                helper.getLevel().getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_shard_identity"));
+        try {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(3, 1, 3);
         BlockPos absolute = helper.absolutePos(relative);
@@ -326,6 +363,12 @@ public final class ServiceNpcSpawnGameTests {
             assertRemove(level, id);
             helper.succeed();
         });
+        } finally {
+            // Cleared so the rest of the run does not inherit credentials: their presence is
+            // what makes every mock-player join attempt a real Rails fetch.
+            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(
+                    helper.getLevel().getServer());
+        }
     }
 
     @GameTest(template = TEMPLATE)
@@ -448,6 +491,12 @@ public final class ServiceNpcSpawnGameTests {
 
     @GameTest(template = TEMPLATE, timeoutTicks = 180)
     public static void automaticDeliveryRegistersExactPost(GameTestHelper helper) {
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                helper.getLevel().getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_shard_identity"));
+        try {
         ServerLevel level = helper.getLevel();
         AtomicLong clock = new AtomicLong(1_000_000L);
         PendingFixture fixture = pendingPost(
@@ -465,7 +514,7 @@ public final class ServiceNpcSpawnGameTests {
             );
         processor.processNowForGameTest();
 
-        helper.runAfterDelay(3, () -> {
+        runAfterDelayAuthenticated(helper, 3, IDENTITY_SHARD, () -> {
             check(submitted.size() == 1, "automatic processor did not submit exactly one operation");
             check(submitted.getFirst().operationId().equals(fixture.pending.operationId()),
                 "automatic submission changed the stable operation ID");
@@ -477,6 +526,13 @@ public final class ServiceNpcSpawnGameTests {
                 "successful UPSERT remained pending");
             verifyProcessorBoundsShutdownAndReplacementThenDestroy(helper);
         });
+        } finally {
+            // Deliberately NOT cleared here. This test continues inside deferred callbacks that
+            // chain into further deferred work, all of which records durable spawn operations and
+            // therefore needs the shard. A finally runs when the method body returns -- before any
+            // of that -- and pulls the credentials out from under it. Every later test that needs
+            // a known credential state installs its own, so the residue is bounded.
+        }
     }
 
     @GameTest(template = TEMPLATE)
@@ -580,7 +636,7 @@ public final class ServiceNpcSpawnGameTests {
         ServiceNpcSpawnPendingRecord pending = new ServiceNpcSpawnPendingRecord(
             ServiceNpcSpawnPendingOperation.UPSERT,
             UUID.randomUUID(),
-            ModConfig.SHARD_NAME,
+            FIXTURE_SHARD,
             new ServiceNpcSpawnLocation(
                 level.getServer().getWorldData().getLevelName(),
                 level.dimension().location(),
@@ -641,6 +697,12 @@ public final class ServiceNpcSpawnGameTests {
 
     @GameTest(template = TEMPLATE, timeoutTicks = 80)
     public static void permanentFailureAndRedactedCollisionRepairConvergeSafely(GameTestHelper helper) {
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                helper.getLevel().getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_shard_identity"));
+        try {
         ServerLevel level = helper.getLevel();
         PendingFixture permanent = pendingPost(helper, new BlockPos(1, 1, 1), 5L);
         ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
@@ -740,6 +802,12 @@ public final class ServiceNpcSpawnGameTests {
         check(data.findPending(oldId) == null,
             "destruction after repair created work for canonical A");
         helper.succeed();
+        } finally {
+            // Cleared so the rest of the run does not inherit credentials: their presence is
+            // what makes every mock-player join attempt a real Rails fetch.
+            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(
+                    helper.getLevel().getServer());
+        }
     }
 
     @GameTest(template = TEMPLATE)
@@ -888,7 +956,7 @@ public final class ServiceNpcSpawnGameTests {
         ServiceNpcSpawnPendingRecord pending = new ServiceNpcSpawnPendingRecord(
             ServiceNpcSpawnPendingOperation.UPSERT,
             UUID.randomUUID(),
-            ModConfig.SHARD_NAME,
+            FIXTURE_SHARD,
             new ServiceNpcSpawnLocation(
                 level.getServer().getWorldData().getLevelName(),
                 level.dimension().location(),
@@ -973,6 +1041,12 @@ public final class ServiceNpcSpawnGameTests {
 
     @GameTest(template = TEMPLATE)
     public static void destructionBeforeCollisionStagingLeavesRemoveAuthoritative(GameTestHelper helper) {
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                helper.getLevel().getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_shard_identity"));
+        try {
         BlockPos relative = new BlockPos(1, 1, 1);
         PendingFixture fixture = pendingPost(helper, relative, 60_000L);
         ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(helper.getLevel());
@@ -990,10 +1064,22 @@ public final class ServiceNpcSpawnGameTests {
                 .noneMatch(record -> fixture.pending.spawnPointId().equals(record.supersedesSpawnPointId())),
             "destruction before staging generated a replacement UUID");
         helper.succeed();
+        } finally {
+            // Cleared so the rest of the run does not inherit credentials: their presence is
+            // what makes every mock-player join attempt a real Rails fetch.
+            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(
+                    helper.getLevel().getServer());
+        }
     }
 
     @GameTest(template = TEMPLATE)
     public static void restoredTombstonedPostResubmitsAndClearsOnRailsConfirmedHigherRevision(GameTestHelper helper) {
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                helper.getLevel().getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_shard_identity"));
+        try {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
         PendingFixture fixture = pendingPost(helper, relative, 10L);
@@ -1053,10 +1139,22 @@ public final class ServiceNpcSpawnGameTests {
         check(data.findAcknowledgedRegistration(id).revision() == 2L,
             "cleared snapshot did not carry the new revision");
         helper.succeed();
+        } finally {
+            // Cleared so the rest of the run does not inherit credentials: their presence is
+            // what makes every mock-player join attempt a real Rails fetch.
+            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(
+                    helper.getLevel().getServer());
+        }
     }
 
     @GameTest(template = TEMPLATE)
     public static void duplicateRestoredTombstonedUuidRekeysThroughExistingClaimConflict(GameTestHelper helper) {
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                helper.getLevel().getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_shard_identity"));
+        try {
         ServerLevel level = helper.getLevel();
         BlockPos canonicalRelative = new BlockPos(1, 1, 1);
         BlockPos duplicateRelative = new BlockPos(4, 1, 1);
@@ -1110,6 +1208,12 @@ public final class ServiceNpcSpawnGameTests {
         check(resubmitted != null && resubmitted.operation() == ServiceNpcSpawnPendingOperation.UPSERT,
             "canonical restored post did not resubmit through the normal pending-UPSERT flow");
         helper.succeed();
+        } finally {
+            // Cleared so the rest of the run does not inherit credentials: their presence is
+            // what makes every mock-player join attempt a real Rails fetch.
+            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(
+                    helper.getLevel().getServer());
+        }
     }
 
     private static void verifyProcessorBoundsShutdownAndReplacementThenDestroy(GameTestHelper helper) {
@@ -1183,7 +1287,7 @@ public final class ServiceNpcSpawnGameTests {
         replacementHandle.future.complete(success(
             replacementRequests.getFirst(), ServiceNpcSpawnOutcome.APPLIED, 9_000L
         ));
-        helper.runAfterDelay(3, () -> {
+        runAfterDelayAuthenticated(helper, 3, IDENTITY_SHARD, () -> {
             check(level.getBlockState(helper.absolutePos(replacementRelative)).is(Blocks.STONE),
                 "obsolete UPSERT completion mutated the replacement block");
             ServiceNpcSpawnPendingRecord current = ServiceNpcSpawnPendingData.get(level)
@@ -1227,7 +1331,7 @@ public final class ServiceNpcSpawnGameTests {
             submitted.getFirst(), ServiceNpcSpawnOutcome.APPLIED, clock.get()
         ));
 
-        helper.runAfterDelay(3, () -> {
+        runAfterDelayAuthenticated(helper, 3, IDENTITY_SHARD, () -> {
             ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
             ServiceNpcSpawnPendingRecord current = data.snapshot().get(fixture.pending.spawnPointId());
             check(current != null && current.operation() == ServiceNpcSpawnPendingOperation.REMOVE,
@@ -1242,7 +1346,7 @@ public final class ServiceNpcSpawnGameTests {
     private static PendingFixture pendingPost(
             GameTestHelper helper, BlockPos relative, long recordedAt
     ) {
-        return pendingPost(helper, relative, recordedAt, ModConfig.SHARD_NAME);
+        return pendingPost(helper, relative, recordedAt, FIXTURE_SHARD);
     }
 
     private static PendingFixture pendingPost(
@@ -1330,6 +1434,173 @@ public final class ServiceNpcSpawnGameTests {
         @Override public boolean cancel() { return future.cancel(true); }
     }
 
+
+    /**
+     * Runs {@code body} with credentials naming a deliberately non-default shard, then restores the
+     * previous state.
+     *
+     * <p>Scoped, not installed for the whole run. Credentials are what switch on the world-state
+     * poller, the spawn delivery processor and world bootstrap; leaving them installed made every
+     * later test in the shared world attempt real HTTP, which produced thousands of connection
+     * failures and perturbed an unrelated resource-restoration test into failing. The install lasts
+     * exactly as long as the call that needs it.
+     *
+     * <p>The shard is non-default so a regression back to the compiled constant fails here rather
+     * than silently agreeing with it.
+     */
+    /**
+     * Deferred work keeps its credentials even when another test clears the shared slot.
+     *
+     * <p>This reproduces the exact mechanism that made
+     * {@code automaticDeliveryRegistersExactPost} fail intermittently at four different
+     * assertions across five runs. Credentials live in one per-server slot. That test installed
+     * them once and relied on the value surviving into its deferred continuations, while six
+     * other tests in this class clear the slot in their own finally blocks. GameTests interleave
+     * across ticks, so a clear could land in the gap and strip the credentials mid-test.
+     *
+     * <p>The interfering clear here is performed directly rather than waited for, so the ordering
+     * is deterministic instead of a race this test would only sometimes lose. Against the old
+     * plain {@code helper.runAfterDelay} the deferred body observes an empty slot and fails;
+     * against {@link #runAfterDelayAuthenticated} it observes its own shard.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void deferredWorkKeepsItsCredentialsWhenAnotherTestClearsTheSlot(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                server,
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        IDENTITY_SHARD));
+
+        runAfterDelayAuthenticated(helper, 2, IDENTITY_SHARD, () -> {
+            check(com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.shardName(server)
+                            .orElse(null) != null,
+                "deferred work ran with no credentials after another test cleared the slot");
+            check(IDENTITY_SHARD.equals(
+                    com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.shardName(server)
+                            .orElse(null)),
+                "deferred work ran as the wrong shard");
+            helper.succeed();
+        });
+
+        // Exactly what a neighbouring test's finally block does, in the gap before the callback.
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(server);
+    }
+
+    /**
+     * The scope helper restores what it found, including when the body throws, and leaves an
+     * empty slot empty.
+     *
+     * <p>The first case is what makes nesting safe: a helper that cleared on exit would strip an
+     * enclosing scope. The last case matters because several tests deliberately exercise the
+     * credentials-unavailable path, and this helper must not leave credentials behind for them.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void credentialScopeRestoresWhatItFound(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        var registry = com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.class;
+        check(registry != null, "registry class missing");
+
+        // Empty slot stays empty.
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(server);
+        withShardCredentials(helper, "scope_probe_a", () -> null);
+        check(com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.credentials(server).isEmpty(),
+            "scope left credentials behind on a slot that started empty");
+
+        // An enclosing scope survives a nested one.
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                server,
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        IDENTITY_SHARD));
+        withShardCredentials(helper, "scope_probe_b", () -> null);
+        check(IDENTITY_SHARD.equals(
+                com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.shardName(server)
+                        .orElse(null)),
+            "nested scope did not restore the enclosing shard");
+
+        // And still restores when the body throws.
+        boolean threw = false;
+        try {
+            withShardCredentials(helper, "scope_probe_c", () -> {
+                throw new IllegalStateException("deliberate");
+            });
+        } catch (IllegalStateException expected) {
+            threw = true;
+        }
+        check(threw, "the deliberate failure did not propagate");
+        check(IDENTITY_SHARD.equals(
+                com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.shardName(server)
+                        .orElse(null)),
+            "scope did not restore the enclosing shard after the body threw");
+
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(server);
+        helper.succeed();
+    }
+
+    /** The shard {@link #automaticDeliveryRegistersExactPost} authenticates as. */
+    private static final String IDENTITY_SHARD = "gametest_shard_identity";
+
+    /**
+     * Schedules deferred work that runs with credentials installed for exactly its own duration.
+     *
+     * <p>A test's credentials cannot simply be installed once and left to persist into its
+     * deferred callbacks. Six other tests in this class deliberately call
+     * {@code ServerAuthRegistry.clear} in their own finally blocks, because leaving credentials
+     * installed turns every later mock-player join into a real Rails fetch. GameTests interleave
+     * across ticks, so one of those clears lands between this test's body and its deferred
+     * continuation and removes the credentials out from under it. Whichever step ran next was
+     * then the one that failed, which is why the failure moved between assertions run to run.
+     *
+     * <p>Installing per callback makes the test independent of what any other test does to the
+     * shared slot, and {@link #withShardCredentials} restores the previous value rather than
+     * clearing, so nesting cannot strip an enclosing scope either.
+     */
+    private static void runAfterDelayAuthenticated(
+            GameTestHelper helper, int ticks, String shardName, Runnable body) {
+        helper.runAfterDelay(ticks, () -> withShardCredentials(helper, shardName, () -> {
+            body.run();
+            return null;
+        }));
+    }
+
+    private static <T> T withShardCredentials(GameTestHelper helper, java.util.function.Supplier<T> body) {
+        return withShardCredentials(helper, FIXTURE_SHARD, body);
+    }
+
+    /**
+     * Same scoping, for a caller that must be authenticated as a specific shard.
+     *
+     * <p>A durable record is stamped with {@code credentials.shardName()}, and the delivery
+     * processor refuses any record whose shard does not match its own. A caller that already
+     * owns a fixture on a controlled shard must therefore install that same shard, or the
+     * record it produces would be rejected as a mismatch.
+     */
+    private static <T> T withShardCredentials(
+            GameTestHelper helper, String shardName, java.util.function.Supplier<T> body) {
+        var server = helper.getLevel().getServer();
+        // Restore, don't clear. A caller may already be inside its own credential scope --
+        // automaticDeliveryRegistersExactPost installs credentials for its whole body -- and
+        // clearing on the way out would silently strip that outer scope for everything after
+        // the nested call. Credentials are a single per-server slot, so the only safe exit is
+        // to put back exactly what was there.
+        var previous = com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.credentials(server);
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                server,
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        shardName));
+        try {
+            return body.get();
+        } finally {
+            if (previous.isPresent()) {
+                com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                        server, previous.get());
+            } else {
+                com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(server);
+            }
+        }
+    }
     private static ServiceNpcSpawnBlockEntity placePost(GameTestHelper helper, BlockPos relative) {
         helper.setBlock(relative, BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get());
         ServerLevel level = helper.getLevel();

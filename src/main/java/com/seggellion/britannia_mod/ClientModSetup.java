@@ -697,6 +697,7 @@ public class ClientModSetup {
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MERCHANT_CART_RED.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MERCHANT_CART_PURPLE.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MERCHANT_CART_BLUE.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MERCHANT_CART_BLACK.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MERCHANT_CART_GREEN.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MERCHANT_CART_YELLOW.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MERCHANT_CART_WHITE.get(), RenderType.cutout());
@@ -718,6 +719,9 @@ public class ClientModSetup {
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.SMALL_CRATE.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MEDIUM_CRATE.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.LARGE_CRATE.get(), RenderType.cutout());
+            // A crate column draws nothing but crates, so it belongs on the same terrain layer they
+            // do. Chunk-baked through the ordinary block pipeline, which is what keeps it shader-safe.
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.CRATE_STACK.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WATER_WELL.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.LADDER.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.DISPLAY_CASE.get(), RenderType.cutout());

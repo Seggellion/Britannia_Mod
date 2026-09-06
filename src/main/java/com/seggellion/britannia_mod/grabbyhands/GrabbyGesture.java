@@ -31,6 +31,25 @@ public final class GrabbyGesture {
     }
 
     /**
+     * The pickup gesture, failed on the off hand alone.
+     *
+     * <p>This is the single most reported way Grabby Hands "does nothing", and it took a production
+     * investigation to find because it is invisible from both ends. The player has emptied the hand
+     * they can see, sneaked, and clicked their own chair; the off hand holds a torch or a shield they
+     * stopped noticing hours ago. The handler then finds no pickup gesture, no axe gesture and
+     * nothing to place, and returns without a word.
+     *
+     * <p>The rule itself is not being relaxed — see {@link #isPickupGesture} for why an occupied off
+     * hand genuinely means something different. What changes is that the near miss is now
+     * distinguishable from a dead feature.
+     */
+    public static boolean offHandBlocksPickup(boolean sneaking, ItemStack mainHand, ItemStack offHand) {
+        return sneaking
+                && mainHand.isEmpty()
+                && !offHand.isEmpty();
+    }
+
+    /**
      * Holding a recognised axe means "destroy this", not "use this".
      *
      * <p>R-2.11.1. Deliberately narrow, because a general interaction ban would be a much bigger

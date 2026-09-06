@@ -98,6 +98,36 @@ class GrabbyPlacementTransactionTest {
         assertEquals(world.gameTime(), stamped.placedAtGameTime());
     }
 
+    /**
+     * The arbitration line: only a click that was never a placement falls through.
+     *
+     * <p>Grabby consumes the interaction for every outcome it considers handled, which is right for a
+     * placement the player asked for and was denied — the spot is protected, unsupported, obstructed,
+     * out of reach — because something was attempted and answered. It is wrong for a click that was
+     * never a placement request at all, which is why {@code NOT_A_PLACEMENT_GESTURE} joins
+     * {@code TYPE_NOT_ENROLLED} on the other side of the line. Widening that set any further would
+     * start silently handing real refusals back to the block, so this pins both halves.
+     */
+    @Test
+    void onlyClicksThatWereNeverPlacementsFallThroughWhileEveryRealRefusalStaysHandled() {
+        assertFalse(GrabbyPlacementOutcome.TYPE_NOT_ENROLLED.handled(),
+                "an unenrolled item must leave the interaction alone");
+        assertFalse(GrabbyPlacementOutcome.NOT_A_PLACEMENT_GESTURE.handled(),
+                "a click that was never a placement must leave the interaction alone");
+
+        for (GrabbyPlacementOutcome outcome : List.of(
+                GrabbyPlacementOutcome.SUCCESS,
+                GrabbyPlacementOutcome.PLACED_WITHOUT_PROVENANCE,
+                GrabbyPlacementOutcome.NO_VALID_TARGET,
+                GrabbyPlacementOutcome.OUT_OF_REACH,
+                GrabbyPlacementOutcome.DENIED_BY_POLICY,
+                GrabbyPlacementOutcome.REFUSED_BY_BLOCK,
+                GrabbyPlacementOutcome.ALREADY_IN_PROGRESS)) {
+            assertTrue(outcome.handled(),
+                    outcome + " answers a placement the player asked for and must stay consumed");
+        }
+    }
+
     @Test
     void aNonEnrolledItemIsLeftEntirelyAloneSoAdventureModeStillRefusesIt() {
         // The whole Adventure-mode narrowness rests on this: anything not enrolled never reaches the
