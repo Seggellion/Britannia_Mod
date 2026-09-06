@@ -389,90 +389,102 @@ public final class ManagedExtractionPolicyGameTests {
     /* ------------------------------------------------------------------ */
 
     /**
-     * A creative operator cannot delete a sited deposit by clicking it, and mints nothing either.
+     * A creative operator who is not attacking with the Britannia pickaxe is administering, and
+     * every managed path stands aside: the block goes as any block goes in creative — sited
+     * deposit and ambient rock alike — and nothing is paid, filed, worn, learned or said.
      *
-     * <p>Milestone 6 as first written stopped the earning but left the destruction: an operator
-     * clearing ground removed the vein permanently, and because no extraction had happened no
-     * restoration debt was filed to bring it back. The amended rule refuses the break outright, so
-     * removing a deposit is something an administrator asks for rather than something that happens
-     * while they are building.
-     *
-     * <p>Ambient rock is deliberately exempt and is asserted here as the other half of the rule:
-     * {@code minecraft:stone} still breaks in creative, because a builder who cannot cut a cellar
-     * has not been given a safety feature. What both halves share is that neither pays.
+     * <p>Driven bare-handed for every family and, for the beds, with their own shovel as well,
+     * because the exception is one item wide: only the registered Britannia pickaxe makes a
+     * creative player a tester, and the shovel is not it. The one creative guard that used to
+     * refuse these breaks at HIGHEST is gone; this is the assertion that nothing quietly took its
+     * place.
      */
     @GameTest(template = TEMPLATE)
-    public static void aCreativeOperatorNeitherEarnsNorDeletesADeposit(GameTestHelper helper) {
+    public static void aCreativeOperatorWithoutThePickaxeRemovesWithoutExtracting(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos absolute = helper.absolutePos(NODE);
+        ServerPlayer operator = miner(helper, ItemStack.EMPTY);
+        operator.setGameMode(GameType.CREATIVE);
 
         for (Subject subject : everyFamily()) {
-            ItemStack tool = subject.tool();
-            ServerPlayer operator = miner(helper, tool);
-            operator.setGameMode(GameType.CREATIVE);
+            List<ItemStack> hands = ManagedExtractionPolicy.isBritanniaPickaxe(subject.tool())
+                    ? List.of(ItemStack.EMPTY)
+                    : List.of(ItemStack.EMPTY, subject.tool());
+            for (ItemStack hand : hands) {
+                String label = subject.label() + (hand.isEmpty() ? " bare-handed" : " with its own tool");
+                operator.setItemInHand(InteractionHand.MAIN_HAND, hand.copy());
 
-            helper.setBlock(NODE, subject.block());
-            takeDrops(level, absolute);
-            int debtBefore = debtCount(level);
+                helper.setBlock(NODE, subject.block());
+                takeDrops(level, absolute);
+                int debtBefore = debtCount(level);
+                float skillBefore = SkillManager.getSkill(operator, MiningSkill.SKILL_ID);
 
-            breakThroughTheEventBus(level, absolute, operator);
+                breakThroughTheEventBus(level, absolute, operator);
 
-            List<ItemStack> drops = takeDrops(level, absolute);
-            for (ItemStack dropped : drops) {
-                check(!(dropped.getItem() instanceof PurityOreItem)
-                                && !(dropped.getItem() instanceof GradeStoneItem)
-                                && !dropped.is(Items.CLAY_BALL),
-                        "a creative operator was paid managed yield for " + subject.label()
-                                + ": " + describe(drops));
-            }
-            check(debtCount(level) == debtBefore,
-                    "a creative operator filed restoration debt for " + subject.label()
-                            + ", which is a player extraction transaction they did not perform");
-            check(operator.getMainHandItem().getDamageValue() == 0,
-                    "a creative operator wore their tool on " + subject.label());
-            check(MiningSkill.checkMiningAttempt(operator, level.getBlockState(absolute), absolute)
-                            .skillGained() == 0.0f,
-                    "a creative operator gained Mining from " + subject.label());
-
-            if (subject.depositCell()) {
-                check(level.getBlockState(absolute).is(subject.block()),
-                        "a creative operator deleted the " + subject.label()
-                                + " by clicking it; removing a deposit must be an explicit command");
-            } else {
                 check(!level.getBlockState(absolute).is(subject.block()),
-                        "ambient " + subject.label() + " no longer breaks in creative, which stops"
-                                + " builders terraforming for no protective benefit");
+                        label + " did not break in creative; a managed path is still intercepting an"
+                                + " ordinary creative break");
+                List<ItemStack> drops = takeDrops(level, absolute);
+                check(drops.isEmpty(),
+                        label + " dropped something in creative: " + describe(drops));
+                check(debtCount(level) == debtBefore,
+                        label + " filed restoration debt for a creative removal, which is a player"
+                                + " extraction transaction that never happened");
+                check(operator.getMainHandItem().getDamageValue() == 0,
+                        label + " wore the tool on a creative removal");
+                check(SkillManager.getSkill(operator, MiningSkill.SKILL_ID) == skillBefore,
+                        label + " moved Mining on a creative removal");
+                check(MiningBreakGate.lastDenialKey(operator).isEmpty(),
+                        label + " was refused or spoken to on the way through: "
+                                + MiningBreakGate.lastDenialKey(operator));
             }
         }
         helper.succeed();
     }
 
     /**
-     * The refusal is the whole transaction: nothing partial happens on the way to saying no.
-     *
-     * <p>Asserted through a second break as well, because the failure worth catching is a guard
-     * that refuses the first click and then lets a repeat through.
+     * A creative operator attacking with the Britannia pickaxe is a tester, and the managed flow
+     * runs for them in full and unchanged: ore and stone are extracted exactly as for a survival
+     * miner — yield, depletion, restoration debt — and a bed refuses the pickaxe as the wrong
+     * tool and stands, because a tester is held to every rule rather than handed any bonus.
      */
     @GameTest(template = TEMPLATE)
-    public static void aRefusedCreativeBreakStaysRefusedAndLeavesNoTrace(GameTestHelper helper) {
+    public static void aCreativeTesterWithThePickaxeRunsTheManagedFlow(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos absolute = helper.absolutePos(NODE);
-        helper.setBlock(NODE, BlockRegistry.SILICA_SAND_DEPOSIT.get());
+        ServerPlayer tester = miner(helper, pickaxe());
+        tester.setGameMode(GameType.CREATIVE);
 
-        ServerPlayer operator = miner(helper, shovel());
-        operator.setGameMode(GameType.CREATIVE);
-        int debtBefore = debtCount(level);
+        for (Subject subject : List.of(silverOre(), gradedStone())) {
+            helper.setBlock(NODE, subject.block());
+            takeDrops(level, absolute);
+            int debtBefore = debtCount(level);
 
-        for (int attempt = 1; attempt <= 3; attempt++) {
-            breakThroughTheEventBus(level, absolute, operator);
-            check(level.getBlockState(absolute).is(BlockRegistry.SILICA_SAND_DEPOSIT.get()),
-                    "creative break attempt " + attempt + " removed the silica bed");
+            breakThroughTheEventBus(level, absolute, tester);
+
+            subject.yieldCheck().accept(takeDrops(level, absolute));
+            check(level.getBlockState(absolute).isAir(),
+                    "a creative tester's " + subject.label() + " extraction did not deplete the cell");
+            check(debtCount(level) == debtBefore + 1 && hasDebtAt(level, absolute),
+                    "a creative tester's " + subject.label()
+                            + " extraction did not file exactly one restoration debt at the cell");
+            BrokenBlockDataStorage.get(level).remove(absolute);
+        }
+
+        for (Subject subject : List.of(clay(), silica())) {
+            helper.setBlock(NODE, subject.block());
+            takeDrops(level, absolute);
+            int debtBefore = debtCount(level);
+
+            breakThroughTheEventBus(level, absolute, tester);
+
+            check(level.getBlockState(absolute).is(subject.block()),
+                    "the pickaxe worked a " + subject.label()
+                            + " bed in creative; a tester is held to the tool rule like anyone");
             check(takeDrops(level, absolute).isEmpty(),
-                    "creative break attempt " + attempt + " produced a yield");
+                    "a creative tester's pickaxe was paid for a " + subject.label() + " bed");
             check(debtCount(level) == debtBefore,
-                    "creative break attempt " + attempt + " filed restoration debt");
-            check(operator.getMainHandItem().getDamageValue() == 0,
-                    "creative break attempt " + attempt + " wore the tool");
+                    "a refused creative tester filed restoration debt for a " + subject.label() + " bed");
         }
         helper.succeed();
     }
@@ -498,32 +510,58 @@ public final class ManagedExtractionPolicyGameTests {
     }
 
     /**
-     * A creative administrator is a non-earning actor, and is now also held to the ladder.
+     * The creative rule turns on the attacking hand alone, at both seams the handlers consult.
      *
-     * <p>This used to assert the creative bypass permitted the break. That bypass is gone by owner
-     * decision: game mode and permission level are administrative authority, not gameplay
-     * progression. What remains -- and is the part this test was always really about -- is that
-     * creative can never mint economy, whatever the gate says.
+     * <p>Without the Britannia pickaxe a creative player is a bypassing, non-earning actor: the
+     * gate answers APPROVED_BYPASS and the policy DENIED_CREATIVE, whatever their skill and
+     * whatever else they hold — a vanilla pickaxe, or the Britannia pickaxe itself in the
+     * offhand. Attacking with the Britannia pickaxe they are a tester: the policy answers
+     * ALLOWED, and the gate holds them to the ladder exactly as it holds a survival miner.
      */
     @GameTest(template = TEMPLATE)
-    public static void aCreativeAdministratorEarnsNothingAndIsHeldToTheLadder(GameTestHelper helper) {
+    public static void theCreativeRuleTurnsOnTheAttackingHandAlone(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         helper.setBlock(NODE, BlockRegistry.SILVER_ORE.get());
         BlockPos absolute = helper.absolutePos(NODE);
+        BlockState silver = level.getBlockState(absolute);
 
-        ServerPlayer operator = miner(helper, pickaxe());
+        ServerPlayer operator = miner(helper, ItemStack.EMPTY);
         operator.setGameMode(GameType.CREATIVE);
 
-        // miner() pins Mining at the ceiling, so this actor clears silver's threshold on skill and
-        // the only thing left to decide the break is whether creative is special. It is not.
-        MiningBreakGate.Evaluation evaluation =
-                MiningBreakGate.evaluate(operator, level.getBlockState(absolute), level, absolute);
-        check(evaluation.type() == MiningBreakGate.ResultType.ELIGIBLE,
-                "a skilled actor should clear the threshold on skill alone, got " + evaluation.type());
-
+        check(MiningBreakGate.evaluate(operator, silver, level, absolute).type()
+                        == MiningBreakGate.ResultType.APPROVED_BYPASS,
+                "a bare-handed creative player is not bypassing the gate");
         check(ManagedExtractionPolicy.evaluate(operator)
                         == ManagedExtractionPolicy.Verdict.DENIED_CREATIVE,
-                "a creative operator is not recognised as a non-earning actor");
+                "a bare-handed creative player is recognised as an earning actor");
+
+        operator.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.DIAMOND_PICKAXE));
+        check(MiningBreakGate.evaluate(operator, silver, level, absolute).type()
+                        == MiningBreakGate.ResultType.APPROVED_BYPASS,
+                "a vanilla pickaxe made a creative player a tester");
+
+        operator.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        operator.setItemInHand(InteractionHand.OFF_HAND, pickaxe());
+        check(MiningBreakGate.evaluate(operator, silver, level, absolute).type()
+                        == MiningBreakGate.ResultType.APPROVED_BYPASS,
+                "a Britannia pickaxe in the offhand made a creative player a tester");
+        check(!ManagedExtractionPolicy.mayExtract(operator),
+                "a Britannia pickaxe in the offhand made a creative player an earning actor");
+        operator.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+
+        operator.setItemInHand(InteractionHand.MAIN_HAND, pickaxe());
+        // miner() pins Mining at the ceiling, so the tester clears silver on skill.
+        check(MiningBreakGate.evaluate(operator, silver, level, absolute).type()
+                        == MiningBreakGate.ResultType.ELIGIBLE,
+                "a creative tester at the ceiling did not clear silver on skill");
+        check(ManagedExtractionPolicy.evaluate(operator) == ManagedExtractionPolicy.Verdict.ALLOWED,
+                "a creative tester attacking with the Britannia pickaxe is not recognised as an"
+                        + " earning actor, so the managed flow could never run for them");
+
+        SkillManager.applyConfirmedValue(operator, MiningSkill.SKILL_ID, 54.9f);
+        check(MiningBreakGate.evaluate(operator, silver, level, absolute).type()
+                        == MiningBreakGate.ResultType.INSUFFICIENT_SKILL,
+                "creative did not hold the tester to the ladder");
         helper.succeed();
     }
 

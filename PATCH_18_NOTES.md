@@ -40,6 +40,7 @@ Patch 18 replaces random vanilla-style mineral supply with an UltimaCraft-manage
 - Ore carries purity and quarried stone carries grade information, giving later crafting and trading systems meaningful material data.
 - Player-placed building blocks remain removable as building material; the managed-resource rules distinguish them from economic deposits.
 - Automation, Silk Touch and Fortune do not bypass the managed extraction rules.
+- Creative mode is for building and testing, not earning. A creative player breaks catalogued stone and sited deposits like any other block, with no tool, skill or depletion rules applied, unless they attack with the Britannia pickaxe, which runs the full managed mining flow so mining can be tested without leaving creative.
 
 The UltimaCraft server decides where managed deposits exist. Patch 18 supplies their shapes, progression, safe extraction and restoration; it does not scatter a second hidden set of natural deposits behind the world's economy.
 

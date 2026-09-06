@@ -37,6 +37,18 @@ import java.util.Optional;
  * break re-evaluates everything regardless: state can change during the dig, and the preflight is
  * a courtesy, never the authority.
  *
+ * <h2>Creative</h2>
+ * In creative the first swing <em>is</em> the break: vanilla answers a cancelled
+ * {@code LeftClickBlock} by doing nothing, and an uncancelled one by destroying the block at once
+ * through the same {@code BreakEvent} chain a survival dig ends in. Both listeners therefore ask
+ * {@link ManagedExtractionPolicy#bypassesManagedExtraction} before anything else and stand aside
+ * for a creative player who is not attacking with the Britannia pickaxe — no house or city
+ * question, no evaluation, no denial, no resync — so catalogued stone and sited deposits break for
+ * them exactly as every other block does in creative. A creative player attacking with the
+ * Britannia pickaxe is a tester and gets the full gate, ladder included, so the managed flow can
+ * be exercised without leaving creative. The decision is read from live server state at both
+ * moments, never remembered from the first.
+ *
  * <h2>City bounds</h2>
  * Forcing adventure inside city bounds used to make in-city mining impossible as a side effect —
  * no survival, no dig. With adventure mining now real, that accidental protection needs stating
@@ -62,6 +74,11 @@ public class MiningGateHandler {
         if (!(event.getLevel() instanceof ServerLevel level)
                 || !(event.getEntity() instanceof ServerPlayer player)
                 || event.getAction() != PlayerInteractEvent.LeftClickBlock.Action.START) {
+            return;
+        }
+        // Asked before the block is even resolved: a bypassing creative player is not mining,
+        // whatever they are pointing at, and nothing below may form an opinion about them.
+        if (ManagedExtractionPolicy.bypassesManagedExtraction(player)) {
             return;
         }
         BlockState state = level.getBlockState(event.getPos());
@@ -103,6 +120,14 @@ public class MiningGateHandler {
             return;
         }
         Player player = event.getPlayer();
+        // Judged again from live state at completion, not remembered from the first swing: a
+        // survival dig whose digger switched to creative and put the pickaxe away before it
+        // finished is an ordinary creative removal now, and one who picked the pickaxe up is a
+        // tester now.
+        if (player instanceof ServerPlayer serverPlayer
+                && ManagedExtractionPolicy.bypassesManagedExtraction(serverPlayer)) {
+            return;
+        }
         boolean managedLadderResource = Mineables.resolve(event.getState())
                 .filter(definition -> definition.category() != MineableDefinition.Category.SEDIMENT)
                 .isPresent()

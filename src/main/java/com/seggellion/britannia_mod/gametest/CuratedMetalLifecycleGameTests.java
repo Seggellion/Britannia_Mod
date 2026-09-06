@@ -277,7 +277,9 @@ public final class CuratedMetalLifecycleGameTests {
      * A curated metal obeys every extraction policy the platform already had.
      *
      * <p>Integration regression, not a re-specification: wrong tools, automation and Creative are
-     * milestone 6's rules, and this proves the new supply channel did not route around them.
+     * the extraction policy's rules, and this proves the new supply channel did not route around
+     * them — including the creative rule's two halves, plain removal without the Britannia
+     * pickaxe and the full managed flow with it.
      */
     @GameTest(template = TEMPLATE)
     public static void aCuratedMetalObeysEveryExtractionPolicy(GameTestHelper helper) {
@@ -317,14 +319,28 @@ public final class CuratedMetalLifecycleGameTests {
             check(level.getBlockState(cell).is(block), path + " was mined by a fake player");
             check(takeDrops(level, cell).isEmpty(), path + " paid a fake player");
 
-            // Creative, on a sited deposit.
+            // Creative without the Britannia pickaxe: an ordinary creative removal, nothing paid.
             level.setBlock(cell, block.defaultBlockState(), 2);
-            ServerPlayer operator = miner(level, pickaxe());
+            ServerPlayer operator = miner(level, ItemStack.EMPTY);
             operator.setGameMode(GameType.CREATIVE);
             breakThroughTheEventBus(level, cell, operator);
-            check(level.getBlockState(cell).is(block),
-                    path + " was deleted by an ordinary Creative break");
-            check(takeDrops(level, cell).isEmpty(), path + " paid a Creative operator");
+            check(!level.getBlockState(cell).is(block),
+                    path + " survived a bare-handed Creative break; a managed path is still"
+                            + " intercepting an ordinary creative break");
+            check(takeDrops(level, cell).isEmpty(), path + " paid a bare-handed Creative operator");
+
+            // Creative attacking with the Britannia pickaxe: a tester, and the managed flow runs.
+            level.setBlock(cell, block.defaultBlockState(), 2);
+            operator.setItemInHand(InteractionHand.MAIN_HAND, pickaxe());
+            breakThroughTheEventBus(level, cell, operator);
+            check(!level.getBlockState(cell).is(block),
+                    path + " was not extracted by a Creative tester's Britannia pickaxe");
+            List<ItemStack> testerDrops = takeDrops(level, cell);
+            check(testerDrops.size() == 1 && testerDrops.get(0).getItem() instanceof PurityOreItem,
+                    path + " did not pay a Creative tester the purity ore, got " + testerDrops);
+            check(BrokenBlockDataStorage.get(level).getBrokenBlocks().get(cell) != null,
+                    path + " extracted by a Creative tester filed no restoration debt");
+            BrokenBlockDataStorage.get(level).remove(cell);
         }
         helper.succeed();
     }

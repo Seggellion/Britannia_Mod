@@ -42,18 +42,19 @@ public class CustomBlockBreakHandler {
             return;
         }
 
-        // OreVein milestone 6. Only a real player in a survival-like mode performs an economic
-        // extraction. Everything else leaves this handler untouched, which means no depletion, no
-        // yield, no restoration debt, no skill and no tool wear -- there is no partial transaction
-        // to unwind because none is started.
+        // OreVein milestone 6. Only an actor the extraction policy says may earn performs an
+        // economic extraction. Everything else leaves this handler untouched, which means no
+        // depletion, no yield, no restoration debt, no skill and no tool wear -- there is no
+        // partial transaction to unwind because none is started.
         //
-        // Creative is the case this closes. The Mining gate deliberately permits a creative
-        // break so a misplaced block can be removed, and that permission was arriving here as a
-        // fully accounted extraction: an administrator clearing a vein was minting purity ore and
-        // enrolling restoration debt in their own name. (Operator permission no longer bypasses
-        // the gate at all -- see MiningBreakGate; op is administration, not progression.) The break still happens; it is now an
-        // ordinary creative removal that drops nothing, which is exactly what a creative break of
-        // a clay bed has always done.
+        // Creative is decided by the attacking hand (ManagedExtractionPolicy). Without the
+        // Britannia pickaxe a creative player is administering: the gate has already stood aside
+        // at HIGH, this handler stands aside here, and the break is an ordinary creative removal
+        // that drops nothing -- which is exactly what a creative break of a clay bed has always
+        // done. Attacking WITH the Britannia pickaxe a creative player is a tester, the policy
+        // answers ALLOWED, and the whole flow below runs for them exactly as for a survival miner:
+        // that is how mining is exercised without leaving creative. (Operator permission bypasses
+        // nothing anywhere -- see MiningBreakGate; op is administration, not progression.)
         //
         // Fake players are refused here too, though the gate already cancels them upstream. Two
         // independent refusals of automation is the correct amount for the path that mints money.
@@ -155,8 +156,8 @@ public class CustomBlockBreakHandler {
      * still no skill, still no restoration debt.
      */
     private static void returnPlacedConstruction(ServerLevel level, BlockPos pos, BlockState state, Player player) {
-        // Creative keeps vanilla's own no-drop convention, the same one the creative guard and the
-        // extraction policy already apply everywhere else on this path.
+        // Creative keeps vanilla's own no-drop convention, the same one the extraction policy
+        // already applies everywhere else on this path.
         if (!(player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)
                 || ManagedExtractionPolicy.isCreativeGameMode(serverPlayer)) {
             return;

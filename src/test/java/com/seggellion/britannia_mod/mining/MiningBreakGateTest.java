@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Milestone 3 policy contracts for the Mining break gate, driven against the real shipped
  * catalogue: inclusive thresholds at every tier boundary (requirement −0.1 / exact / +0.1),
- * actor policy, admin bypass, and the skill-data-unavailable denial — all without Minecraft
+ * actor policy, the creative bypass, and the skill-data-unavailable denial — all without Minecraft
  * bootstrap, mirroring {@code FarmingCultivationGateTest}.
  */
 class MiningBreakGateTest {
@@ -32,6 +32,19 @@ class MiningBreakGateTest {
     private static Optional<MineableDefinition> definition(String id) {
         return Optional.of(catalog.byId(id).orElseThrow(
                 () -> new AssertionError("Missing definition " + id)));
+    }
+
+    /** A creative player holding the Britannia pickaxe: a tester. */
+    private static MiningBreakGate.Subject creativeTester(float miningSkill, int permissionLevel) {
+        return new MiningBreakGate.Subject(MiningBreakGate.ActorType.PLAYER, true, permissionLevel,
+                SkillManager.SkillDataState.AVAILABLE, miningSkill, true, true);
+    }
+
+    /** A creative player holding anything else, or nothing: bypassing. */
+    private static MiningBreakGate.Subject creativeBuilder(float miningSkill, int permissionLevel,
+            SkillManager.SkillDataState skillDataState) {
+        return new MiningBreakGate.Subject(MiningBreakGate.ActorType.PLAYER, true, permissionLevel,
+                skillDataState, miningSkill, false, false);
     }
 
     @Test
@@ -105,7 +118,7 @@ class MiningBreakGateTest {
     void automationIsDeniedEvenWithCreativeOrSkill() {
         MiningBreakGate.Subject automation = new MiningBreakGate.Subject(
                 MiningBreakGate.ActorType.AUTOMATION, true, 2,
-                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, true);
+                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, true, true);
         MiningBreakGate.Evaluation evaluation =
                 MiningBreakGate.evaluateResolved(definition("silver"), automation);
         assertEquals(MiningBreakGate.ResultType.NON_PLAYER_POLICY, evaluation.type());
@@ -118,52 +131,43 @@ class MiningBreakGateTest {
     void nonPlayerActorsAreDenied() {
         MiningBreakGate.Subject nonPlayer = new MiningBreakGate.Subject(
                 MiningBreakGate.ActorType.NON_PLAYER, false, 0,
-                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, true);
+                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, true, true);
         assertEquals(MiningBreakGate.ResultType.NON_PLAYER_POLICY,
                 MiningBreakGate.evaluateResolved(definition("stone"), nonPlayer).type());
     }
 
     /**
-     * The owner-approved absolute invariant: below the hard requirement, nothing breaks. Not in
-     * survival, not in adventure, not in creative, not at op level 2 or 4, not for the owner.
+     * Whoever is actually mining is held to the ladder: below the hard requirement, nothing
+     * breaks. Not in survival, not in adventure, not for a creative tester holding the Britannia
+     * pickaxe, not at op level 2 or 4, not for the owner.
      *
-     * <p>Both bypasses this replaces were real defects. Operator permission was invisible to the
-     * whole GameTest suite because every fixture builds a permission-0 player, and it reproduced
-     * instantly on a live client. Creative was the subtler one: creative siting and creative
-     * harvesting are different authorities, and conflating them meant an administrator placing a
-     * resource node could also empty it at zero skill.
+     * <p>Operator permission was a real defect: invisible to the whole GameTest suite because
+     * every fixture builds a permission-0 player, and reproducing instantly on a live client.
+     * Creative-with-the-pickaxe is the deliberate testing exception, and the point of an
+     * exception that exists to test mining is that it tests the real rules.
      */
     @Test
-    void noGameModeOrPermissionLevelBypassesTheHardRequirement() {
-        MiningBreakGate.Subject creative = new MiningBreakGate.Subject(
-                MiningBreakGate.ActorType.PLAYER, true, 0,
-                SkillManager.SkillDataState.AVAILABLE, 0.0f, true);
+    void nobodyWhoIsMiningBypassesTheHardRequirement() {
         MiningBreakGate.Evaluation viaCreative =
-                MiningBreakGate.evaluateResolved(definition("valorite"), creative);
+                MiningBreakGate.evaluateResolved(definition("valorite"), creativeTester(0.0f, 0));
         assertEquals(MiningBreakGate.ResultType.INSUFFICIENT_SKILL, viaCreative.type(),
-                "creative must not bypass the Mining ladder");
+                "a creative tester must not bypass the Mining ladder");
         assertFalse(viaCreative.permitsBreak());
 
         MiningBreakGate.Subject survivalOperator = new MiningBreakGate.Subject(
                 MiningBreakGate.ActorType.PLAYER, false, 2,
-                SkillManager.SkillDataState.AVAILABLE, 0.0f, true);
+                SkillManager.SkillDataState.AVAILABLE, 0.0f, true, true);
         assertEquals(MiningBreakGate.ResultType.INSUFFICIENT_SKILL,
                 MiningBreakGate.evaluateResolved(definition("valorite"), survivalOperator).type(),
                 "op must not bypass the Mining ladder while in survival");
 
-        MiningBreakGate.Subject creativeOperator = new MiningBreakGate.Subject(
-                MiningBreakGate.ActorType.PLAYER, true, 4,
-                SkillManager.SkillDataState.AVAILABLE, 0.0f, true);
         assertEquals(MiningBreakGate.ResultType.INSUFFICIENT_SKILL,
-                MiningBreakGate.evaluateResolved(definition("valorite"), creativeOperator).type(),
+                MiningBreakGate.evaluateResolved(definition("valorite"), creativeTester(0.0f, 4)).type(),
                 "creative + op level 4 is still not a licence to mine Valorite at zero skill");
 
         // And the gate stays permissive where it should: the same actors at the requirement pass.
-        MiningBreakGate.Subject qualifiedCreative = new MiningBreakGate.Subject(
-                MiningBreakGate.ActorType.PLAYER, true, 4,
-                SkillManager.SkillDataState.AVAILABLE, 99.0f, true);
         assertEquals(MiningBreakGate.ResultType.ELIGIBLE,
-                MiningBreakGate.evaluateResolved(definition("valorite"), qualifiedCreative).type());
+                MiningBreakGate.evaluateResolved(definition("valorite"), creativeTester(99.0f, 4)).type());
     }
 
     @Test
@@ -173,7 +177,7 @@ class MiningBreakGateTest {
                 SkillManager.SkillDataState.LOADING,
                 SkillManager.SkillDataState.UNAVAILABLE)) {
             MiningBreakGate.Subject subject = new MiningBreakGate.Subject(
-                    MiningBreakGate.ActorType.PLAYER, false, 0, state, 100.0f, true);
+                    MiningBreakGate.ActorType.PLAYER, false, 0, state, 100.0f, true, true);
             MiningBreakGate.Evaluation evaluation =
                     MiningBreakGate.evaluateResolved(definition("stone"), subject);
             assertEquals(MiningBreakGate.ResultType.SKILL_DATA_UNAVAILABLE, evaluation.type(), state.name());
@@ -241,18 +245,22 @@ class MiningBreakGateTest {
                 "a wrong tool on ordinary world must not become a Mining denial");
     }
 
-    /** The tool question is still asked of everyone, in every game mode. */
+    /**
+     * The tool question is asked of everyone who is mining, in every game mode. A creative tester
+     * on a bed the pickaxe is not authorised for is the live case: the sediment beds want the
+     * shovel, and the pickaxe that makes them a tester is still the wrong tool for a bed.
+     */
     @Test
-    void everyActorStillNeedsTheRightToolWhateverTheirGameMode() {
-        MiningBreakGate.Subject creativeWrongTool = new MiningBreakGate.Subject(
+    void everyoneWhoIsMiningStillNeedsTheRightToolWhateverTheirGameMode() {
+        MiningBreakGate.Subject creativeTesterOnABed = new MiningBreakGate.Subject(
                 MiningBreakGate.ActorType.PLAYER, true, 4,
-                SkillManager.SkillDataState.AVAILABLE, 100.0f, false);
+                SkillManager.SkillDataState.AVAILABLE, 100.0f, false, true);
         assertEquals(MiningBreakGate.ResultType.WRONG_TOOL,
-                MiningBreakGate.evaluateResolved(definition("valorite"), creativeWrongTool).type());
+                MiningBreakGate.evaluateResolved(definition("clay"), creativeTesterOnABed).type());
 
         MiningBreakGate.Subject operatorWrongTool = new MiningBreakGate.Subject(
                 MiningBreakGate.ActorType.PLAYER, false, 2,
-                SkillManager.SkillDataState.AVAILABLE, 100.0f, false);
+                SkillManager.SkillDataState.AVAILABLE, 100.0f, false, false);
         assertEquals(MiningBreakGate.ResultType.WRONG_TOOL,
                 MiningBreakGate.evaluateResolved(definition("valorite"), operatorWrongTool).type());
     }
@@ -262,7 +270,7 @@ class MiningBreakGateTest {
     void actorPolicyIsDecidedBeforeTheTool() {
         MiningBreakGate.Subject automationWrongTool = new MiningBreakGate.Subject(
                 MiningBreakGate.ActorType.AUTOMATION, false, 0,
-                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, false);
+                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, false, false);
         assertEquals(MiningBreakGate.ResultType.NON_PLAYER_POLICY,
                 MiningBreakGate.evaluateResolved(definition("stone"), automationWrongTool).type());
     }
@@ -272,8 +280,65 @@ class MiningBreakGateTest {
     void theToolIsReportedBeforeUnavailableSkillData() {
         MiningBreakGate.Subject unloadedWrongTool = new MiningBreakGate.Subject(
                 MiningBreakGate.ActorType.PLAYER, false, 0,
-                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, false);
+                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, false, false);
         assertEquals(MiningBreakGate.ResultType.WRONG_TOOL,
                 MiningBreakGate.evaluateResolved(definition("stone"), unloadedWrongTool).type());
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // The creative bypass: in creative and not attacking with the Britannia pickaxe, the gate
+    // answers APPROVED_BYPASS before it asks about the tool, the skill data or the ladder.
+    // ---------------------------------------------------------------------------------------
+
+    /** Nothing the ladder or the tool rule could say blocks a bypassing creative player. */
+    @Test
+    void aCreativePlayerWithoutThePickaxeIsApprovedBeforeToolAndSkillAreAsked() {
+        for (String id : List.of("stone", "clay", "silica_sand", "coal", "silver", "valorite")) {
+            for (SkillManager.SkillDataState state : SkillManager.SkillDataState.values()) {
+                MiningBreakGate.Evaluation evaluation = MiningBreakGate.evaluateResolved(
+                        definition(id), creativeBuilder(0.0f, 0, state));
+                assertEquals(MiningBreakGate.ResultType.APPROVED_BYPASS, evaluation.type(),
+                        id + " with skill data " + state + " must bypass for a creative builder");
+                assertTrue(evaluation.permitsBreak(), id);
+                assertEquals("", evaluation.feedbackTranslationKey(),
+                        id + ": a bypass has nothing to say to the player");
+            }
+        }
+    }
+
+    /** The bypass is not a game-mode bypass: the same facts outside creative are ordinary mining. */
+    @Test
+    void theBypassNeverAppliesOutsideCreative() {
+        MiningBreakGate.Subject survivalBareHanded = new MiningBreakGate.Subject(
+                MiningBreakGate.ActorType.PLAYER, false, 4,
+                SkillManager.SkillDataState.AVAILABLE, 100.0f, false, false);
+        assertEquals(MiningBreakGate.ResultType.WRONG_TOOL,
+                MiningBreakGate.evaluateResolved(definition("silver"), survivalBareHanded).type(),
+                "survival or adventure without the pickaxe is the ordinary tool refusal");
+    }
+
+    /** And it is not an automation bypass: a creative fake player is still refused as automation. */
+    @Test
+    void theBypassNeverAppliesToAutomation() {
+        MiningBreakGate.Subject creativeMachine = new MiningBreakGate.Subject(
+                MiningBreakGate.ActorType.AUTOMATION, true, 0,
+                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, false, false);
+        assertEquals(MiningBreakGate.ResultType.NON_PLAYER_POLICY,
+                MiningBreakGate.evaluateResolved(definition("silver"), creativeMachine).type());
+    }
+
+    /** The tester is the mirror image: the same creative player, pickaxe in hand, gets every rule. */
+    @Test
+    void aCreativeTesterGetsTheWholeGate() {
+        assertEquals(MiningBreakGate.ResultType.INSUFFICIENT_SKILL,
+                MiningBreakGate.evaluateResolved(definition("silver"), creativeTester(54.9f, 0)).type());
+        assertEquals(MiningBreakGate.ResultType.ELIGIBLE,
+                MiningBreakGate.evaluateResolved(definition("silver"), creativeTester(55.0f, 0)).type());
+        MiningBreakGate.Subject testerWithoutSkillData = new MiningBreakGate.Subject(
+                MiningBreakGate.ActorType.PLAYER, true, 0,
+                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, true, true);
+        assertEquals(MiningBreakGate.ResultType.SKILL_DATA_UNAVAILABLE,
+                MiningBreakGate.evaluateResolved(definition("silver"), testerWithoutSkillData).type(),
+                "a tester with unloaded skill data fails closed like any miner");
     }
 }

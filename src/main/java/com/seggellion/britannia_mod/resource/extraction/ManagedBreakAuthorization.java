@@ -42,10 +42,12 @@ import org.jetbrains.annotations.Nullable;
  *
  * <p>Everything that varies by domain stays with its domain: the Mining requirement, the
  * extraction tag, the resource's own state, wood and leaf rules, deposit restoration, commodity
- * mapping, creative policy. Creative in particular is deliberately absent — the Mining ladder
- * grants operators an explicit bypass so a misplaced block can be removed, the deposit rule lets
- * {@code instabuild} through to its own creative guard, and collapsing those into one answer here
- * would change behaviour rather than protect it.
+ * mapping, creative policy. Creative in particular is deliberately absent, because it is not a
+ * refusal: a creative player who is not attacking with the Britannia pickaxe makes every managed
+ * path <em>stand aside</em> — return without cancelling, so the ordinary creative break proceeds —
+ * which is the opposite verb from the one {@link #refuses} answers. That rule lives in
+ * {@link ManagedExtractionPolicy#bypassesManagedExtraction} and is asked at the top of each
+ * handler, before anything here is consulted.
  *
  * <p>Nothing in this class mutates: it reads a decision and, at most, tells the player why. It is
  * safe to call from a preflight and again at completion, and both is exactly right — a house

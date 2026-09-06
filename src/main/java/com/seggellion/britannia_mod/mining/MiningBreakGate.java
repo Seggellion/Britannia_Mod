@@ -22,14 +22,16 @@ import java.util.Optional;
  *
  * <p>Mining milestone 3. Deliberately shaped after {@code FarmingCultivationGate}, the
  * repository-standard skill gate: a pure, unit-testable decision core ({@link #evaluateResolved})
- * fed by a {@link Subject} snapshot of authoritative server state, with actor typing, a
- * creative-only administrative bypass, and the skill-data-unavailable denial policy. The client never
- * supplies a skill value anywhere on this path.
+ * fed by a {@link Subject} snapshot of authoritative server state, with actor typing, the
+ * creative bypass, and the skill-data-unavailable denial policy. The client never supplies a skill
+ * value anywhere on this path.
  *
  * <p>Decision order mirrors Farming: resolution → actor policy → <b>creative</b> bypass →
  * <b>extraction tool</b> → data availability → inclusive threshold ({@code current >= required},
- * design §10.2). The bypass is creative-mode only: operator permission is an administrative
- * capability and must never stand in for gameplay progression.
+ * design §10.2). The bypass is creative-mode only, and only for a creative player who is
+ * <em>not</em> attacking with the Britannia pickaxe — see {@link ManagedExtractionPolicy}, whose
+ * rule this is. Operator permission is an administrative capability and never stands in for
+ * gameplay progression.
  *
  * <p>The tool step is milestone 1 of the OreVein remediation. Without it the gate answered "yes"
  * to any sufficiently skilled player whatever they held, and the block then fell through to
@@ -52,6 +54,12 @@ public final class MiningBreakGate {
         ELIGIBLE,
         INSUFFICIENT_SKILL,
         NOT_APPLICABLE,
+        /**
+         * A creative player not attacking with the Britannia pickaxe. The break is permitted and
+         * is not an extraction: the handlers stand aside for it before they ever ask this gate,
+         * and this answer is what the gate says if anything asks it anyway — the diagnostic
+         * command, the skill award (which treats it as no attempt), the deposit service.
+         */
         APPROVED_BYPASS,
         NON_PLAYER_POLICY,
         SKILL_DATA_UNAVAILABLE,
@@ -69,29 +77,42 @@ public final class MiningBreakGate {
         NON_PLAYER
     }
 
+    /**
+     * Snapshot of the facts the decision is made over. {@code attacksWithBritanniaPickaxe} is the
+     * registered-identity fact behind the creative bypass; {@code authorizedTool} is the separate,
+     * per-resource tag fact behind WRONG_TOOL. They agree for the ore ladder today (the tag holds
+     * exactly that one item) and differ for the sediment beds, which the pickaxe is not authorised
+     * for — so a creative tester with the pickaxe on a clay bed is held to WRONG_TOOL like anyone.
+     */
     record Subject(
             ActorType actorType,
             boolean creativeMode,
             int permissionLevel,
             SkillManager.SkillDataState skillDataState,
             float miningSkill,
-            boolean authorizedTool
+            boolean authorizedTool,
+            boolean attacksWithBritanniaPickaxe
     ) {
         Subject {
             Objects.requireNonNull(actorType, "Mining actor type is required");
             Objects.requireNonNull(skillDataState, "Mining skill-data state is required");
         }
 
-        /** A loaded player holding a real mining tool: the subject skill questions are about. */
+        /** A loaded survival player holding the Britannia pickaxe: the subject skill questions are about. */
         static Subject loadedPlayer(float miningSkill) {
             return new Subject(ActorType.PLAYER, false, 0,
-                    SkillManager.SkillDataState.AVAILABLE, miningSkill, true);
+                    SkillManager.SkillDataState.AVAILABLE, miningSkill, true, true);
         }
 
         /** The same player with something that cannot work the resource. */
         static Subject loadedPlayerWithWrongTool(float miningSkill) {
             return new Subject(ActorType.PLAYER, false, 0,
-                    SkillManager.SkillDataState.AVAILABLE, miningSkill, false);
+                    SkillManager.SkillDataState.AVAILABLE, miningSkill, false, false);
+        }
+
+        /** Whether the creative bypass is in effect for this subject — one rule, owned elsewhere. */
+        boolean creativeBypass() {
+            return ManagedExtractionPolicy.creativeBypasses(creativeMode, attacksWithBritanniaPickaxe);
         }
     }
 
@@ -172,27 +193,25 @@ public final class MiningBreakGate {
         if (subject.actorType() != ActorType.PLAYER) {
             return new Evaluation(ResultType.NON_PLAYER_POLICY, resolved, subject.miningSkill(), required);
         }
-        // NO game-mode or permission bypass of the hard requirement. Owner-approved invariant:
-        // "If the player's Mining skill is below the hard requirement for a resource, the resource
-        // block must not break" -- in Survival, Adventure, Creative, at op level 2 or 4, for the
-        // server owner, for anyone.
+        // The creative bypass, before the tool and before the skill. A creative player who is not
+        // attacking with the Britannia pickaxe is administering, not mining: the block breaks as
+        // any block does in creative, and none of the questions below is asked of them. A creative
+        // player attacking with the Britannia pickaxe is a tester and gets every question, ladder
+        // included -- that is the whole point of the exception, which exists so the managed flow
+        // can be exercised without leaving creative.
         //
-        // This removed two bypasses in turn. Operator permission went first: op is an
-        // administrative capability and the ladder is gameplay progression, and because every
-        // GameTest builds a permission-0 player the bypass was invisible to the whole suite while
-        // reproducing instantly on a live client. Creative followed, because creative siting and
-        // creative extraction are different authorities -- creative may PLACE a resource node, and
-        // that is now how an administrator manually sites one, but placing is not harvesting.
-        //
-        // Consequence worth knowing: an administrator can no longer left-click away a catalogued
-        // resource they are not skilled enough to mine. Removal is /setblock, /fill, or creative
-        // pick-and-replace -- an explicit administrative act rather than a silent progression hole.
-        // ManagedResourceCreativeGuard still refuses creative breaks of deposit cells outright, so
-        // creative never mints ore at any skill.
+        // What is deliberately NOT a bypass: operator permission. Op is an administrative
+        // capability and the ladder is gameplay progression; because every GameTest builds a
+        // permission-0 player that bypass was invisible to the whole suite while reproducing
+        // instantly on a live client, and it stays gone. Nor is creative alone a bypass for the
+        // pickaxe holder: "if the player's Mining skill is below the hard requirement for a
+        // resource, the resource block must not break" still holds for anyone actually mining.
+        if (subject.creativeBypass()) {
+            return new Evaluation(ResultType.APPROVED_BYPASS, resolved, subject.miningSkill(), required);
+        }
         // Milestone 1. Before skill, because the tool is a fact the player can see and fix, while
         // skill data is transient -- "you cannot mine this with that" is the more useful answer
-        // when both are wrong. After the creative bypass, because an operator removing a misplaced
-        // block in creative is not an extraction and was never meant to need the right tool.
+        // when both are wrong.
         if (!subject.authorizedTool()) {
             return new Evaluation(ResultType.WRONG_TOOL, resolved, subject.miningSkill(), required);
         }
@@ -228,20 +247,23 @@ public final class MiningBreakGate {
             @Nullable net.minecraft.world.item.ItemStack tool) {
         if (!(actor instanceof ServerPlayer serverPlayer)) {
             return new Subject(ActorType.NON_PLAYER, false, 0,
-                    SkillManager.SkillDataState.NOT_LOADED, Float.NaN, false);
+                    SkillManager.SkillDataState.NOT_LOADED, Float.NaN, false, false);
         }
-        boolean authorizedTool = MiningExtractionTool.isAuthorized(
-                state, tool != null ? tool : serverPlayer.getMainHandItem());
+        // Both tool facts are read off the same stack, so the gate cannot say "bypassing" about
+        // one slot and "wrong tool" about another.
+        net.minecraft.world.item.ItemStack judged = tool != null ? tool : serverPlayer.getMainHandItem();
+        boolean authorizedTool = MiningExtractionTool.isAuthorized(state, judged);
+        boolean britanniaPickaxe = ManagedExtractionPolicy.isBritanniaPickaxe(judged);
         if (ManagedExtractionPolicy.actorOf(serverPlayer) == ManagedExtractionPolicy.Actor.FAKE_PLAYER) {
             return new Subject(ActorType.AUTOMATION, isCreativeGameMode(serverPlayer),
                     FlowerProtectionService.effectivePermissionLevel(serverPlayer),
-                    SkillManager.SkillDataState.NOT_LOADED, Float.NaN, authorizedTool);
+                    SkillManager.SkillDataState.NOT_LOADED, Float.NaN, authorizedTool, britanniaPickaxe);
         }
         SkillManager.SkillSnapshot snapshot = SkillManager.getSkillSnapshot(
                 serverPlayer.getUUID(), SKILL_ID);
         return new Subject(ActorType.PLAYER, isCreativeGameMode(serverPlayer),
                 FlowerProtectionService.effectivePermissionLevel(serverPlayer),
-                snapshot.state(), snapshot.value(), authorizedTool);
+                snapshot.state(), snapshot.value(), authorizedTool, britanniaPickaxe);
     }
 
     /**
@@ -316,6 +338,15 @@ public final class MiningBreakGate {
         data.putString(DENIAL_KEY_TAG, key);
         data.putLong(DENIAL_TICK_TAG, now);
         player.displayClientMessage(message.copy().withStyle(ChatFormatting.YELLOW), true);
+    }
+
+    /**
+     * The key of the last denial voiced to this player, or the empty string. Test seam: a bypassing
+     * creative break must leave this untouched, and that is the cheapest honest proof that no
+     * Mining refusal was spoken or throttled on its way through.
+     */
+    public static String lastDenialKey(ServerPlayer player) {
+        return player.getPersistentData().getString(DENIAL_KEY_TAG);
     }
 
     /** Farming's denied-interaction resync: keep the denying client's world view honest. */

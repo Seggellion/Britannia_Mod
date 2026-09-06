@@ -107,10 +107,12 @@ public final class ManagedDepositExtraction {
     /**
      * Attempt to work the deposit at {@code pos} with {@code tool}.
      *
-     * <p>Deliberately indifferent to game mode. Adventure is how a player normally meets a
+     * <p>Indifferent to survival versus adventure. Adventure is how a player normally meets a
      * deposit and the vanilla break is how they work it, but the rule the owner asked for is
      * about the tool and the skill, not the mode, so an operator in survival with the wrong tool
-     * is refused for the same reason and with the same message as anybody else.
+     * is refused for the same reason and with the same message as anybody else. Creative is the
+     * one mode with a rule of its own, and it is the extraction policy's: a creative digger not
+     * attacking with the Britannia pickaxe is not extracting at all (see {@link #evaluate}).
      */
     public static Result extract(ServerLevel level, BlockPos pos, ServerPlayer player, ItemStack tool) {
         BlockState state = level.getBlockState(pos);
@@ -186,6 +188,17 @@ public final class ManagedDepositExtraction {
                 }
                 return Result.PROTECTED;
             }
+            return Result.DENIED_ACTOR;
+        }
+
+        // A creative digger who is not attacking with the Britannia pickaxe is administering, not
+        // extracting. The break listener has already stood aside for them, so the bed is removed
+        // as an ordinary creative break before this is ever reached; this is the authority's own
+        // copy of that answer, kept because a cancel-and-mutate service that could be reached for
+        // a bypassing actor -- by a future caller, a priority change, a command -- would mint a
+        // yield for an actor the policy says earns nothing. Judged on the stack this method was
+        // asked about, for the same reason the tool and the gate below are.
+        if (ManagedExtractionPolicy.bypassesManagedExtraction(player, tool)) {
             return Result.DENIED_ACTOR;
         }
 

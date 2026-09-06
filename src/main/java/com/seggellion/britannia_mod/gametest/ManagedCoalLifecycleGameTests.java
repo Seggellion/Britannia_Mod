@@ -358,24 +358,51 @@ public final class ManagedCoalLifecycleGameTests {
         helper.succeed();
     }
 
-    /** An ordinary Creative break is refused, and the deposit survives (milestone 6 amendment). */
+    /**
+     * A bare-handed Creative break removes the coal like any block and is not an extraction:
+     * nothing minted, nothing filed. Creative without the Britannia pickaxe is administration.
+     */
     @GameTest(template = TEMPLATE)
-    public static void creativeBreakingIsRefusedAndTheCoalSurvives(GameTestHelper helper) {
+    public static void creativeBareHandedRemovesTheCoalWithoutExtracting(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos cell = plantCoal(helper);
 
         ServerPlayer operator = ManagedResourceTestPlayers.survival(level, "coal-operator");
         operator.setGameMode(GameType.CREATIVE);
-        operator.setItemInHand(InteractionHand.MAIN_HAND, pickaxe());
+        operator.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         breakThroughTheEventBus(level, cell, operator);
 
-        check(level.getBlockState(cell).is(coalBlock()),
-                "a Creative break destroyed a managed coal deposit; ordinary breaking is not"
-                        + " administrator deposit removal");
-        check(takeDrops(level, cell).stream().noneMatch(drop -> drop.is(Items.COAL)),
-                "a Creative break minted coal");
+        check(!level.getBlockState(cell).is(coalBlock()),
+                "a bare-handed Creative break left the coal standing; a managed path is still"
+                        + " intercepting an ordinary creative break");
+        check(takeDrops(level, cell).isEmpty(), "a bare-handed Creative break dropped something");
         check(BrokenBlockDataStorage.get(level).getBrokenBlocks().get(cell) == null,
-                "a Creative break filed restoration debt");
+                "a bare-handed Creative break filed restoration debt");
+        helper.succeed();
+    }
+
+    /**
+     * A Creative player attacking with the Britannia pickaxe is a tester, and the managed flow
+     * runs for them unchanged: coal in hand, the cell depleted, and the restoration debt on file.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void creativeTesterWithThePickaxeExtractsTheCoal(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos cell = plantCoal(helper);
+
+        ServerPlayer tester = ManagedResourceTestPlayers.survival(level, "coal-tester");
+        tester.setGameMode(GameType.CREATIVE);
+        tester.setItemInHand(InteractionHand.MAIN_HAND, pickaxe());
+        SkillManager.applyConfirmedValue(tester, MiningSkill.SKILL_ID, 100.0f);
+        breakThroughTheEventBus(level, cell, tester);
+
+        check(!level.getBlockState(cell).is(coalBlock()),
+                "a creative tester's pickaxe did not extract the coal");
+        check(takeDrops(level, cell).stream().anyMatch(drop -> drop.is(Items.COAL)),
+                "a creative tester was not handed the coal");
+        check(BrokenBlockDataStorage.get(level).getBrokenBlocks().get(cell) != null,
+                "a creative tester's extraction filed no restoration debt");
+        BrokenBlockDataStorage.get(level).remove(cell);
         helper.succeed();
     }
 }
