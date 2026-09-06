@@ -58,3 +58,9 @@ src/main/resources/assets/britannia_mod/models/banner/small/star_standard/geomet
 # Client-branding corpus hashes are recorded over LF bytes.
 src/main/resources/assets/minecraft/texts/splashes.txt text eol=lf
 src/test/resources/client-branding-vanilla-splash-hashes.txt text eol=lf
+
+# ClientBrandingBackgroundPolicyTest pins this file's SHA-256 to prove the branding mixin
+# has not been tampered with. A source file's bytes are otherwise platform-dependent, so the
+# hash only holds if its line endings are the same everywhere. Pinned in the byte form the
+# committed hash was recorded over, exactly like the geometry assets above.
+src/main/java/com/seggellion/britannia_mod/mixin/TitleScreenBackgroundMixin.java text eol=crlf
