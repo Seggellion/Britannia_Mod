@@ -6,7 +6,7 @@ Patch 18 is a broad expansion of UltimaCraft's living-world systems. Farming, mi
 
 - A deep Farming system now covers 67 crop definitions, skill-based planting, soil care, climate preferences, specialized harvesting and persistent farm plots.
 - Mining has become a server-curated resource profession, with 29 managed resource definitions, skill and tool requirements, shaped deposits, restoration and economy-ready output.
-- Blacksmiths receive a catalogue of 202 craftable entries across weapons, armor, shields, tools, components and artillery.
+- Blacksmiths receive a catalogue of 204 craftable entries across weapons, armor, shields, tools, components and artillery.
 - Bankers now provide a complete banking experience: item storage, account balances, coin deposits and withdrawals, cheques and cheque cashing.
 - The Architect can sell 10 implemented house-deed styles, including the new two-story villa, large patio and stone keep.
 - Grabby Hands turns furniture, containers and loose goods into physical possessions that can be lifted, moved and arranged.
@@ -55,8 +55,9 @@ The UltimaCraft server decides where managed deposits exist. Patch 18 supplies t
 
 Blacksmithing now has the breadth expected of a true UltimaCraft craft profession.
 
-- The final catalogue contains 202 craftable entries: 120 weapons plus armor, helmets, shields, miscellaneous components and cannon equipment.
+- The final catalogue contains 204 craftable entries: 121 weapons plus armor, helmets, shields, miscellaneous components and cannon equipment.
 - Major weapon groups include bladed weapons, axes, bashing weapons, polearms and throwing weapons.
+- The supplied viking sword, katana, rapier, halberd and decorative shield artwork now has usable equipment and blacksmith crafting integration, with dagger combat and durability repaired. See [the asset inventory and verification guide](docs/new-assets/PATCH18_WEAPON_INTEGRATION.md).
 - Crafting is performed with a blacksmith's hammer near an anvil, using the selected supported metal and the recipe's other ingredients.
 - Skill requirements and success chances are enforced by the server. Difficult work can fail, while sufficiently skilled smiths can produce exceptional results.
 - Crafted equipment records material, quality, maker and city provenance where the recipe supports them.
@@ -273,7 +274,7 @@ This index is intended as source material for announcements, feature pages, trai
 
 ### Blacksmithing and bronze
 
-**Feature:** 202 craftable catalogue entries, 120 weapons, skill-based success, exceptional results, repair, smelting and bronze alloying.
+**Feature:** 204 craftable catalogue entries, 121 weapons, skill-based success, exceptional results, repair, smelting and bronze alloying.
 
 **Player fantasy / benefit:** Build a reputation as a smith whose material, skill, maker identity and city follow the equipment they create.
 

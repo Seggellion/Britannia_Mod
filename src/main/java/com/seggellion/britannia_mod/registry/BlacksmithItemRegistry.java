@@ -17,7 +17,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 /** Registers stable placeholder outputs only where an established item ID does not already exist. */
 public final class BlacksmithItemRegistry {
     private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(Registries.ITEM, BritanniaMod.MODID);
-    private static final Set<String> EXISTING_OUTPUTS = Set.of("dagger", "viking_sword", "two_handed_axe", "order_shield");
+    private static final Set<String> EXISTING_OUTPUTS = Set.of("dagger", "viking_sword", "katana", "rapier",
+            "halberd", "decorative_shield", "two_handed_axe", "order_shield");
     private static final Set<String> LEGACY_OUTPUTS = Set.of("heavy_cannonball", "light_cannonball",
             "heavy_grapeshot", "light_grapeshot", "heavy_ship_cannon", "light_ship_cannon");
     private static boolean populated;

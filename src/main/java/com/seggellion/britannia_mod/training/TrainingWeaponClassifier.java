@@ -1,6 +1,8 @@
 package com.seggellion.britannia_mod.training;
 
 import com.seggellion.britannia_mod.item.BlacksmithEquipmentItem;
+import com.seggellion.britannia_mod.item.QualitySwordItem;
+import com.seggellion.britannia_mod.skill.crafting.CraftableRegistry;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
@@ -18,7 +20,7 @@ public final class TrainingWeaponClassifier {
     private static final Set<String> FENCING_BLADED_IDS = Set.of(
             "assassin_spike", "charged_assassin_spike", "true_assassin_spike",
             "wounding_assassin_spike", "magekiller_assassin_spike", "dagger",
-            "gargish_dagger", "kryss", "gargish_kryss", "leafblade",
+            "gargish_dagger", "kryss", "rapier", "gargish_kryss", "leafblade",
             "leafblade_of_ease", "true_leafblade", "magekiller_leafblade",
             "sai", "shortblade", "tekagi", "gargish_tekagi");
 
@@ -49,6 +51,10 @@ public final class TrainingWeaponClassifier {
         }
         if (item instanceof BlacksmithEquipmentItem equipment) {
             return classifyCatalogueCategory(equipment.definition().category(), path);
+        }
+        if (item instanceof QualitySwordItem && "britannia_mod".equals(itemId.getNamespace())) {
+            var definition = CraftableRegistry.get(path);
+            if (definition != null) return classifyCatalogueCategory(definition.category(), path);
         }
         if (item instanceof SwordItem) {
             return Optional.of(TrainingWeaponSkill.SWORDSMANSHIP);

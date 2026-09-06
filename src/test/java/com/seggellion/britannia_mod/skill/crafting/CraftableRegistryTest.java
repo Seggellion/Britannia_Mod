@@ -13,19 +13,19 @@ class CraftableRegistryTest {
     @Test
     void authoritativeCatalogueHasExpectedCoverage() {
         var all = CraftableRegistry.getAll();
-        assertEquals(202, all.size());
+        assertEquals(204, all.size());
         Map<String, Long> counts = all.stream().collect(Collectors.groupingBy(CraftableDef::category, Collectors.counting()));
         assertEquals(34, counts.get("Armor"));
         assertEquals(15, counts.get("Axes"));
         assertEquals(17, counts.get("Bashing"));
-        assertEquals(69, counts.get("Bladed"));
+        assertEquals(70, counts.get("Bladed"));
         assertEquals(4, counts.get("Cannons"));
         assertEquals(17, counts.get("Helmets"));
         assertEquals(12, counts.get("Miscellaneous"));
         assertEquals(16, counts.get("Polearms"));
-        assertEquals(15, counts.get("Shields"));
+        assertEquals(16, counts.get("Shields"));
         assertEquals(3, counts.get("Throwing"));
-        assertEquals(120, all.stream().filter(def -> CraftableDef.isWeaponCategory(def.category())).count());
+        assertEquals(121, all.stream().filter(def -> CraftableDef.isWeaponCategory(def.category())).count());
     }
 
     @Test

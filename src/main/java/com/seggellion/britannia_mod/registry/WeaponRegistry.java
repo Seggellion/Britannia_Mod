@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.item.QualitySwordItem;
+import com.seggellion.britannia_mod.item.DecorativeShieldItem;
 import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -59,6 +60,25 @@ public class WeaponRegistry {
             new Item.Properties().stacksTo(1)
         )
     );
+
+    // Promote existing catalogue IDs without changing saved item identities.
+    public static final DeferredHolder<Item, QualitySwordItem> KATANA = registerBlade("katana");
+    public static final DeferredHolder<Item, QualitySwordItem> RAPIER = registerBlade("rapier");
+    public static final DeferredHolder<Item, QualitySwordItem> HALBERD = registerBlade("halberd");
+    public static final DeferredHolder<Item, DecorativeShieldItem> DECORATIVE_SHIELD = WEAPONS.register(
+            "decorative_shield", () -> new DecorativeShieldItem(new Item.Properties().durability(
+                    com.seggellion.britannia_mod.skill.crafting.ShieldProfileRegistry
+                            .get("decorative_shield").maximumDurability())));
+
+    private static DeferredHolder<Item, QualitySwordItem> registerBlade(String id) {
+        return WEAPONS.register(id, () -> new QualitySwordItem(
+                UOMetalToolMaterial.IRON.getTier(), new Item.Properties().stacksTo(1)));
+    }
+
+    public static Item[] implementedItems() {
+        return new Item[] {DAGGER.get(), VIKING_SWORD.get(), KATANA.get(), RAPIER.get(),
+                HALBERD.get(), DECORATIVE_SHIELD.get()};
+    }
 
     // Generic factory method that works for ANY weapon in this registry
     public static ItemStack createWeapon(Item weaponItem, UOMetalToolMaterial material, int quality) {

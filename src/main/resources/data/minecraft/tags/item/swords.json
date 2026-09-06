@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "britannia_mod:dagger",
+    "britannia_mod:viking_sword",
+    "britannia_mod:katana",
+    "britannia_mod:rapier",
+    "britannia_mod:halberd"
+  ]
+}

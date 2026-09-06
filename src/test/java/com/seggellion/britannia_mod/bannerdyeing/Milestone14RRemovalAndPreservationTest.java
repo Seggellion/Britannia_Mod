@@ -110,7 +110,10 @@ class Milestone14RRemovalAndPreservationTest {
         // 929 as of 2026-09-03: the Starfarer's Medallion. A plain commemorative item with no
         // block form, no recipe and no gameplay effect, so it adds exactly one id and no
         // registration code beyond its own entry.
-        assertEquals(929, repositoryItems);
+        // Patch 18 weapon completion: katana and halberd move from BlacksmithItemRegistry
+        // (not counted here) into WeaponRegistry; rapier and decorative_shield are new.
+        // Net new saved IDs = 2, but this deliberately scoped registry count increases by 4.
+        assertEquals(933, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));

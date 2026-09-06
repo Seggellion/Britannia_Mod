@@ -430,6 +430,7 @@ public class CreativeTabRegistry {
                 output.accept(ToolRegistry.createPickaxe(UOMetalToolMaterial.IRON, 3));
                 output.accept(ToolRegistry.createShovel(UOMetalToolMaterial.IRON, 3));
                 safeAccept(output, ItemRegistry.ORDER_SHIELD.get());
+                for (Item weapon : WeaponRegistry.implementedItems()) safeAccept(output, weapon);
 
                 // Musical Instruments
                 safeAccept(output, ItemRegistry.LAP_HARP.get());

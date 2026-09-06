@@ -139,7 +139,8 @@ public class ClientModSetup {
             // Force Alpha to 100% and strip any existing alpha data
             return 0xFF000000 | (tint & 0xFFFFFF);
             
-        }, WeaponRegistry.VIKING_SWORD.get(), WeaponRegistry.DAGGER.get(), ToolRegistry.PICKAXE.get(), ToolRegistry.SHOVEL.get());
+        }, WeaponRegistry.VIKING_SWORD.get(), WeaponRegistry.DAGGER.get(), WeaponRegistry.KATANA.get(),
+                WeaponRegistry.RAPIER.get(), ToolRegistry.PICKAXE.get(), ToolRegistry.SHOVEL.get());
 
         event.register((stack, tintIndex) -> {
             if (tintIndex != 0 || !(stack.getItem() instanceof BlacksmithEquipmentItem equipment)
@@ -645,6 +646,11 @@ public class ClientModSetup {
         ManaOverlayScreen.register();
 
         event.enqueueWork(() -> {
+
+            ItemProperties.register(WeaponRegistry.DECORATIVE_SHIELD.get(),
+                    ResourceLocation.withDefaultNamespace("blocking"),
+                    (stack, level, entity, seed) -> entity != null && entity.isUsingItem()
+                            && entity.getUseItem() == stack ? 1.0F : 0.0F);
 
             // Register the blocking property for the Order Shield
             ItemProperties.register(
