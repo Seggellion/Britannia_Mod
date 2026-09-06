@@ -65,7 +65,8 @@ public final class CraftableRegistry {
                 json.get("output_count").getAsInt(), json.get("retains_color").getAsBoolean(),
                 json.get("makers_mark").getAsBoolean(), nullableString(json, "learned_recipe"),
                 nullableString(json, "race"), nullableString(json, "gender"),
-                json.get("batch").getAsBoolean(), json.get("recyclable").getAsBoolean());
+                json.get("batch").getAsBoolean(), json.get("recyclable").getAsBoolean(),
+                json.has("provisional") && json.get("provisional").getAsBoolean());
     }
 
     private static String nullableString(JsonObject json, String key) {
@@ -78,7 +79,7 @@ public final class CraftableRegistry {
     }
 
     public static void validate() {
-        if (CRAFTABLES.size() != 202) throw new IllegalStateException("Expected 202 recipes, found " + CRAFTABLES.size());
+        if (CRAFTABLES.size() != 204) throw new IllegalStateException("Expected 204 recipes, found " + CRAFTABLES.size());
         Map<ResourceLocation, String> outputs = new java.util.HashMap<>();
         for (CraftableDef def : CRAFTABLES.values()) {
             String duplicate = outputs.putIfAbsent(def.resultItem(), def.id());
@@ -95,7 +96,7 @@ public final class CraftableRegistry {
                 throw new IllegalStateException("Blank learned recipe key for " + def.id());
         }
         long weapons = CRAFTABLES.values().stream().filter(def -> CraftableDef.isWeaponCategory(def.category())).count();
-        if (weapons != 120) throw new IllegalStateException("Expected 120 weapons, found " + weapons);
+        if (weapons != 121) throw new IllegalStateException("Expected 121 weapons, found " + weapons);
     }
 
     public static CraftableDef get(String id) {

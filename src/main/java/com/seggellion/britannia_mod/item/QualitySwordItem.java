@@ -7,6 +7,7 @@ import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tier;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.neoforged.neoforge.common.extensions.IItemExtension;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.network.chat.Component;
@@ -21,7 +22,11 @@ public class QualitySwordItem extends SwordItem implements IItemExtension {
     // --- QUALITY METHODS ---
     public static int getQuality(ItemStack stack) {
         CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag())).copyTag();
-        return tag.contains("Quality") ? tag.getInt("Quality") : 1;
+        if (tag.contains("Quality")) return tag.getInt("Quality");
+        // Katana/halberd stacks crafted before their placeholder promotion already use
+        // the catalogue metadata, without the older QualitySwordItem top-level keys.
+        CompoundTag smithing = tag.getCompound("BritanniaBlacksmithing");
+        return smithing.contains("quality") ? smithing.getInt("quality") : 1;
     }
 
     public static void setQuality(ItemStack stack, int quality) {
@@ -32,8 +37,8 @@ public class QualitySwordItem extends SwordItem implements IItemExtension {
 
     // --- MATERIAL METHODS (NEW) ---
     public static String getMaterial(ItemStack stack) {
-        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag())).copyTag();
-        return tag.contains("Material") ? tag.getString("Material") : "iron"; // Default to iron
+        String material = BlacksmithItemData.materialId(stack);
+        return material == null ? "iron" : material.replace('_', ' ');
     }
 
     public static void setMaterial(ItemStack stack, UOMetalToolMaterial material) {
@@ -43,15 +48,22 @@ public class QualitySwordItem extends SwordItem implements IItemExtension {
     }
 
     @Override
-    public int getDamage(ItemStack stack) {
-        int baseDamage = (int) this.getTier().getAttackDamageBonus();
-        int quality = getQuality(stack);
-        return baseDamage + (quality - 1);
+    public ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack) {
+        // getDamage(ItemStack) is durability WEAR, not attack damage. Use the actual
+        // combat hook, preserving the legacy +1 per quality step (including old 1-4 stacks).
+        // Until authored Minecraft balance is supplied, use the vanilla iron sword analogue.
+        int qualityBonus = Math.clamp(getQuality(stack), 1, 4) - 1;
+        return SwordItem.createAttributes(getTier(), 3 + qualityBonus, -2.4F);
     }
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
+
+        if (stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains("BritanniaBlacksmithing")) {
+            BlacksmithItemData.appendTooltip(stack, tooltip);
+            return;
+        }
 
         // Read dynamically directly from custom data
         String material = getMaterial(stack);

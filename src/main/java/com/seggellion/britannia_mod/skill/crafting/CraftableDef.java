@@ -59,13 +59,21 @@ public record CraftableDef(
                                          List<IngredientRequirement> ingredients, List<SkillRequirement> skills,
                                          int outputCount, boolean retainsColor, boolean makersMark, String learnedRecipe,
                                          String race, String gender, boolean batch, boolean recyclable) {
+        return catalogue(id, category, displayName, resultItem, ingredients, skills, outputCount,
+                retainsColor, makersMark, learnedRecipe, race, gender, batch, recyclable, false);
+    }
+
+    public static CraftableDef catalogue(String id, String category, String displayName, ResourceLocation resultItem,
+                                         List<IngredientRequirement> ingredients, List<SkillRequirement> skills,
+                                         int outputCount, boolean retainsColor, boolean makersMark, String learnedRecipe,
+                                         String race, String gender, boolean batch, boolean recyclable, boolean provisional) {
         String equipmentType = inferEquipmentType(category, displayName);
         return new CraftableDef(id, category, displayName, resultItem, ingredients, skills, false, outputCount,
                 retainsColor, makersMark, learnedRecipe, race, gender, equipmentType,
                 isWeaponCategory(category) ? id : null,
                 equipmentType.equals("armor") ? inferArmorProfile(category, displayName) : null,
                 equipmentType.equals("shield") ? id : null,
-                inferWeight(category, displayName), false, batch, recyclable);
+                inferWeight(category, displayName), provisional, batch, recyclable);
     }
 
     public float minimumBlacksmithy() {

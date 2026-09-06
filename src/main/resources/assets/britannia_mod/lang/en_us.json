@@ -1691,5 +1691,7 @@
   "message.britannia_mod.dirt_gather.cooldown": "You can gather dirt again in %s seconds.",
   "message.britannia_mod.dirt_gather.denied_mode": "Dirt gathering is only available in Survival or Adventure mode.",
   "message.britannia_mod.dirt_gather.out_of_reach": "That dirt is too far away.",
-  "message.britannia_mod.dirt_gather.denied_world": "You cannot gather dirt here."
+  "message.britannia_mod.dirt_gather.denied_world": "You cannot gather dirt here.",
+  "item.britannia_mod.rapier": "Rapier",
+  "item.britannia_mod.decorative_shield": "Decorative Shield"
 }

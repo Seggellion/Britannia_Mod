@@ -1,4 +1,4 @@
-﻿{
+{
     "schema":  1,
     "recipes":  [
                     {
@@ -5596,6 +5596,60 @@
                         "gender":  null,
                         "batch":  false,
                         "recyclable":  true
-                    }
-                ]
+                    },
+{
+    "id": "rapier",
+    "category": "Bladed",
+    "display_name": "Rapier",
+    "output": "britannia_mod:rapier",
+    "output_count": 1,
+    "ingredients": [
+        {
+            "key": "ingot",
+            "count": 8
+        }
+    ],
+    "skills": [
+        {
+            "key": "blacksmithy",
+            "minimum": 36.7
+        }
+    ],
+    "retains_color": true,
+    "makers_mark": true,
+    "learned_recipe": null,
+    "race": null,
+    "gender": null,
+    "batch": false,
+    "recyclable": true,
+    "provisional": true
+},
+{
+    "id": "decorative_shield",
+    "category": "Shields",
+    "display_name": "Decorative Shield",
+    "output": "britannia_mod:decorative_shield",
+    "output_count": 1,
+    "ingredients": [
+        {
+            "key": "ingot",
+            "count": 14
+        }
+    ],
+    "skills": [
+        {
+            "key": "blacksmithy",
+            "minimum": 0
+        }
+    ],
+    "retains_color": false,
+    "makers_mark": true,
+    "learned_recipe": null,
+    "race": null,
+    "gender": null,
+    "batch": false,
+    "recyclable": true,
+    "provisional": true
+}
+]
 }

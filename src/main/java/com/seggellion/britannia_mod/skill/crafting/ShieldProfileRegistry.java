@@ -25,6 +25,8 @@ public final class ShieldProfileRegistry {
             Map.entry("chaos_shield", new ShieldProfile(bonus(1,0,0,0,0),95,100,125)),
             Map.entry("heater_shield", new ShieldProfile(bonus(0,1,0,0,0),90,50,65)),
             Map.entry("metal_shield", new ShieldProfile(bonus(0,1,0,0,0),45,50,65)),
+            // Source art has no balance data; use the existing metal shield analogue.
+            Map.entry("decorative_shield", new ShieldProfile(bonus(0,1,0,0,0),45,50,65,true)),
             Map.entry("metal_kite_shield", new ShieldProfile(bonus(0,0,0,0,1),45,45,60)),
             Map.entry("order_shield", new ShieldProfile(bonus(1,0,0,0,0),95,100,125)),
             Map.entry("tear_kite_shield", new ShieldProfile(bonus(0,0,0,0,1),20,50,65)),

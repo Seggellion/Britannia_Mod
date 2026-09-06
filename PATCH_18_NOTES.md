@@ -6,7 +6,7 @@ Patch 18 is a broad expansion of UltimaCraft's living-world systems. Farming, mi
 
 - A deep Farming system now covers 67 crop definitions, skill-based planting, soil care, climate preferences, specialized harvesting and persistent farm plots.
 - Mining has become a server-curated resource profession, with 29 managed resource definitions, skill and tool requirements, shaped deposits, restoration and economy-ready output.
-- Blacksmiths receive a catalogue of 202 craftable entries across weapons, armor, shields, tools, components and artillery.
+- Blacksmiths receive a catalogue of 204 craftable entries across weapons, armor, shields, tools, components and artillery.
 - Bankers now provide a complete banking experience: item storage, account balances, coin deposits and withdrawals, cheques and cheque cashing.
 - The Architect can sell 10 implemented house-deed styles, including the new two-story villa, large patio and stone keep.
 - Grabby Hands turns furniture, containers and loose goods into physical possessions that can be lifted, moved and arranged.
@@ -55,13 +55,54 @@ The UltimaCraft server decides where managed deposits exist. Patch 18 supplies t
 
 Blacksmithing now has the breadth expected of a true UltimaCraft craft profession.
 
-- The final catalogue contains 202 craftable entries: 120 weapons plus armor, helmets, shields, miscellaneous components and cannon equipment.
+- The final catalogue contains 204 craftable entries: 121 weapons plus armor, helmets, shields, miscellaneous components and cannon equipment.
 - Major weapon groups include bladed weapons, axes, bashing weapons, polearms and throwing weapons.
+- The supplied viking sword, katana, rapier, halberd and decorative shield artwork now has usable equipment and blacksmith crafting integration, with dagger combat and durability repaired.
 - Crafting is performed with a blacksmith's hammer near an anvil, using the selected supported metal and the recipe's other ingredients.
 - Skill requirements and success chances are enforced by the server. Difficult work can fail, while sufficiently skilled smiths can produce exceptional results.
 - Crafted equipment records material, quality, maker and city provenance where the recipe supports them.
 - Learned recipes, race restrictions and gender restrictions are honored where the catalogue calls for them.
 - The same interface now supports crafting, repairs and smelting down eligible work. Repairing consumes matching material; smelting recovers part of the original material.
+
+### Completed weapon equipment
+
+All item IDs below use the `britannia_mod:` namespace. Source paths are relative to the supplied `weapons` directory. The five `.bbmodel` files accompany the exported JSON and PNG files; they are authoring projects for the same items.
+
+| Item ID | Source files | Ingots | Minimum Blacksmithy | Training skill |
+| --- | --- | ---: | ---: | --- |
+| `dagger` | `dagger/dagger.json`, `dagger/dagger.png` | 3 | 0.0 | Fencing |
+| `viking_sword` | `viking_sword.bbmodel`, `viking_sword/viking_sword.json`, `viking_sword/viking_sword.png` | 14 | 24.3 | Swordsmanship |
+| `katana` | `katana.bbmodel`, `katana/katana.json`, `katana/katana.png` | 8 | 44.1 | Swordsmanship |
+| `rapier` | `rapier.bbmodel`, `rapier/rapier.json`, `rapier/rapier.png` | 8 | 36.7 | Fencing |
+| `halberd` | `halberd.bbmodel`, `halberd/halberd.json`, `halberd/halberd.png` | 20 | 39.1 | Fencing (existing Polearms convention) |
+| `decorative_shield` | `decorative_shield.bbmodel`, `decorative_shield - Converted.json`, `decorative_shield.png` | 14 | 0.0 | Shield |
+
+The dagger keeps its artwork and oyster-harvesting behavior, with corrected combat attributes and durability. Viking sword receives its supplied model; katana and halberd retain their existing registry IDs and become functional melee equipment. Rapier and decorative shield are new equipment IDs. Existing shield wall decorations remain separate.
+
+Rapier requirements provisionally follow the existing kryss recipe. Decorative shield requirements provisionally follow the metal shield recipe, including 50-65 initial durability and a maximum of 65. All five melee items use the existing iron-sword analogue: 250 durability, 6 total attack damage and 1.6 attacks per second at normal quality; exceptional quality gives 7 total damage. These are provisional Minecraft combat values. Existing material tint and provenance remain supported; material selection does not add melee damage or durability multipliers.
+
+Metal skill thresholds also apply: iron 0, silver 55, tin 65, shadow iron 70, copper 75, bronze 80, gold 85, agapite 90, verite 95 and valorite 99. Crafting requires the greater of the recipe minimum and the metal threshold. An accepted attempt consumes its ingredients even if the existing success roll fails.
+
+For an operator-enabled test world:
+
+```mcfunction
+/give @s britannia_mod:dagger
+/give @s britannia_mod:viking_sword
+/give @s britannia_mod:katana
+/give @s britannia_mod:rapier
+/give @s britannia_mod:halberd
+/give @s britannia_mod:decorative_shield
+/give @s britannia_mod:blacksmith_hammer
+/give @s minecraft:iron_ingot 64
+/give @s minecraft:anvil
+/skill @s blacksmithy 100
+```
+
+Place the anvil, hold the hammer in the main hand and enough matching ingots together in the offhand, leave an inventory slot free, and right-click the anvil. Select the equipment under Weapons (Bladed or Polearms) or Shields. At Blacksmithy 100 these recipes succeed exceptionally. Check the table's ingredient consumption, then repeat with insufficient ingots and lower skill to verify refusals. To repair or smelt, hold the crafted item in the main hand and matching ingots in the offhand and right-click the anvil. Repair consumes half the recipe's ingots rounded up; smelting recovers half rounded down through the existing workflow.
+
+Runtime assets use baked Java item models and the supplied PNG artwork. With Java 21 installed, run `./gradlew build runGameTestServer --no-configuration-cache --console=plain` for automated verification. To verify the source inventory and deterministic imports, run `python tools/new-assets/import_patch18_weapons.py --source "path/to/weapons" --check`; [the portable manifest](tools/new-assets/patch18_weapon_assets.json) accounts for all 17 source files. Omit `--check` to regenerate from the source exports.
+
+Client startup and asset reload have been checked. Inventory, first-person and third-person held views, dropped items, item frames, shield blocking transforms and the graphical blacksmith menu still require visual verification in a game world. Melee combat wear, shield blocking, crafting, repair, smelting and server validation are covered by automated tests.
 
 Together with purity ore, bronze alloying and the expanded resource ladder, this makes gathering and smithing parts of one economic journey.
 
@@ -273,7 +314,7 @@ This index is intended as source material for announcements, feature pages, trai
 
 ### Blacksmithing and bronze
 
-**Feature:** 202 craftable catalogue entries, 120 weapons, skill-based success, exceptional results, repair, smelting and bronze alloying.
+**Feature:** 204 craftable catalogue entries, 121 weapons, skill-based success, exceptional results, repair, smelting and bronze alloying.
 
 **Player fantasy / benefit:** Build a reputation as a smith whose material, skill, maker identity and city follow the equipment they create.
 
