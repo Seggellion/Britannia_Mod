@@ -1,0 +1,10 @@
+{
+  "type": "neoforge:remove_features",
+  "biomes": "#minecraft:is_overworld",
+  "features": [
+    "minecraft:patch_pumpkin",
+    "minecraft:patch_melon",
+    "minecraft:patch_melon_sparse"
+  ],
+  "steps": "vegetal_decoration"
+}

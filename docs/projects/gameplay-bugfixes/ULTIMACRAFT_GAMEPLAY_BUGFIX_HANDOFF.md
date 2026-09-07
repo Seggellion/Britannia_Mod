@@ -18,7 +18,7 @@ Verdict: IN PROGRESS. Base and workspace identity, frozen decisions, milestone c
 | BUG-12 | Pending fence collision | M8 |
 | BUG-13 | Pending path retention | M8 |
 | BUG-14 | State selection implemented/tested; PENDING_USER_ASSET for full artwork/display | M5 |
-| BUG-15 | Pending landscape suppression | M6 |
+| BUG-15 | Implemented; exhaustive loaded-biome/native/structure server proof; normal-terrain/restart checks pending | M6 |
 | BUG-16 | Implemented; server hand/pigment matrices; client pending | M2 |
 | BUG-17 | Implemented; count/component/final merge server proof; client pending | M2 |
 | BUG-18 | Pending full produce mapping/catalog; Jhelom/Britannia live evidence | M7 |
@@ -70,3 +70,12 @@ Verified planting now precedes a shared localized actionbar confirmation, one so
 The can predicate is britannia_mod:full, derived solely from charges:12full,0..11base,missing legacy data12. State and refill/dispense tests preserve unrelated components. Full artwork is absent from the supplied/repository locations; no invented artwork or broken override was added. PENDING_USER_ASSET applies to the final full-can visual gate. No item/save migration is needed; PlotStatusVersion is packet-only and does not change disk crop data.
 
 Final focused JUnit172total/166passes/6skips/0failures/errors and all1131registered required GameTests passed, BUILD SUCCESSFUL2m12s. Commands and earlier corrections are recorded in the scratchpad. Actual GUI placement, client hands/inventory/dropped-item appearance, reconnect/resource reload and physical aiming remain separate M11 acceptance checks. Reverting M5 removes the message/HUD/predicate and restores the former planting boundary; it does not require changing already planted crop or watering-can save data.
+
+
+## M6 evidence
+
+The biome modifier removes only minecraft:patch_pumpkin, minecraft:patch_melon and minecraft:patch_melon_sparse from Overworld vegetal decoration. The loaded audit sees53Overworld biomes, removes49original references (46/2/1) and preserves every other vegetation feature exactly. All13fruit/stem structure templates remain. Native seed planting, bonemeal and vanilla growth still create pumpkin and melon fruit; custom/native-compatible gourd routes remain passing in the full farming suite.
+
+Final JUnit182total/176passes/6skips/0failures/errors; all1134registered required GameTests passed, BUILD SUCCESSFUL2m14s. The corrected fixture and exact commands are in the scratchpad. GameTestServer uses FLAT; these results do not claim a normal-terrain seed survey or physical restart. Those remain M11 checks.
+
+Existing blocks and chunks require no migration and are never scanned or deleted. Removing the new modifier later restores future landscape feature generation after the worldgen registries reload; it does not create/remove fruit in already generated chunks. Structure files, native stems, recipes, seed items, randomTickSpeed and the existing ore policy are unchanged.

@@ -248,3 +248,13 @@ M4 final:186focused JUnit total/180passes/6skips;1127required registered GameTes
 - [ ]Actual graphical HUD targeting/layout/reconnect/chunk-load behavior: M11 client acceptance pending.
 - [ ]Full watering-can visual gate: PENDING_USER_ASSET. No full texture/model supplied in searched locations; no broken resource reference committed.
 - [ ]Actual inventory/mainhand/offhand/dropped item/pickup/resource-reload agreement: client acceptance pending, dependent on supplied full art for the full-state distinction.
+
+
+## M6 implementation evidence addendum
+
+- [x] Exact three-feature policy/modifier agreement and scope pass automated checks.
+- [x] Loaded audit:53Overworld biomes,49original landscape references removed, no survivors in any step, all other vegetation feature sets preserved.
+- [x] All13Minecraft fruit/stem structure templates remain loaded.
+- [x] Native seed dispatch, bonemeal maturation, ordinary stem growth and attached-stem serialization pass for both pumpkin and melon.
+- [x] Full registered farming suite still passes custom and native-compatible gourd routes; final1134GameTests and176executed focused JUnit tests passed (6JUnit skips).
+- [ ] Non-flat known-seed new-chunk survey, actual chunk/restart preservation and resource-reload observation remain M11 checks. A flat GameTest world is not that evidence.

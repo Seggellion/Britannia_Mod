@@ -1,6 +1,6 @@
 # Gameplay bugfix implementation scratchpad
 
-Current: M5 complete; next M6. Authorized execution: M0–M11, local commits, no push/merge/deploy/production writes or Fabric work. Playbook and kickoff supersede historical discovery recommendations. All five authoritative documents read in full before code edits.
+Current: M6 complete; next M7 (fresh Rails inspection/worktree required). Authorized execution: M0–M11, local commits, no push/merge/deploy/production writes or Fabric work. Playbook and kickoff supersede historical discovery recommendations. All five authoritative documents read in full before code edits.
 
 ## Workspace and frozen contract
 
@@ -19,8 +19,8 @@ Decisions: 1200 online game ticks, exact hoed restoration, unused fertilizer for
 | M2 hand recipes/output | PASS (client checks pending) | f31550eefb215e198afc60a35dec355661a5f173 / 558b5236ef3d4db55e282e3c3b5193f7cd50ea4d |
 | M3 display-case transactions | PASS (two-client checks pending) | 558b5236ef3d4db55e282e3c3b5193f7cd50ea4d / c6496588042b8109266d55443c3b1fe68ee062e7 |
 | M4 harvest gates/outcomes | PASS (client checks pending) | c6496588042b8109266d55443c3b1fe68ee062e7 / cabc1050dba8d3d9865623fe9beacc2f7f89033d |
-| M5 feedback/can state | PASS (client pending; full art PENDING_USER_ASSET) | cabc1050dba8d3d9865623fe9beacc2f7f89033d / pending |
-| M6 landscape features | PENDING | |
+| M5 feedback/can state | PASS (client pending; full art PENDING_USER_ASSET) | cabc1050dba8d3d9865623fe9beacc2f7f89033d / b8101aed6c2bb6a14835fbb8abf4ddd2510fa041 |
+| M6 landscape features | PASS (non-flat terrain/restart checks pending) | b8101aed6c2bb6a14835fbb8abf4ddd2510fa041 / pending |
 | M7 produce mod + Rails | PENDING | paired SHAs required |
 | M8 fence joins/collision/path | PENDING | |
 | M9 Creative decoration | PENDING | |
@@ -152,3 +152,19 @@ Commands (JDK21 as M0), normal source sets:
 Remaining named client evidence: actual HUD position/readability and targeting through invisible/tall/trellis/tree phases, graphical reconnect/chunk load/removal, user-supplied full-can inventory/main/offhand/dropped/pickup/resource-reload display. No physical client observation or user asset was fabricated. No production or Fabric action performed.
 
 M5 final review: tracked diff and all six new Java files reviewed; diff --check clean. Final M5 head to be recorded in M6 after the local commit.
+
+## M6 in progress
+
+M5 local commit b8101aed6c2bb6a14835fbb8abf4ddd2510fa041. Preserved BUG-15 supplemental loaded feature evidence:46pumpkin+2melon+1sparse-melon biome references and13structure templates. Adding only a vegetal_decoration remove_features modifier for the three exact IDs plus an auditable policy manifest/anti-drift test, following the existing ore policy pattern without broadening its19ore set. Native items/recipes/stems/crop data and structure files remain intact. Normal GameTestServer hard-codes WorldPresets.FLAT; loaded biome inputs and explicit cultivation are meaningful server proof, but zero fruit in its generated chunks is not normal-world distribution evidence. Known-seed non-flat chunk/restart checks remain M11 acceptance work.
+
+### M6 review and evidence
+
+Only production changes: new neoforge/biome_modifier/suppress_landscape_pumpkin_melon.json removes minecraft:patch_pumpkin,patch_melon,patch_melon_sparse in vegetal_decoration for #minecraft:is_overworld; worldgen/landscape_crop_feature_policy.json records the exact boundary and preserved routes. No production Java, existing ore policy, crop/seed/recipe/structure file, stem random tick, game rule or old chunk is changed. Worldgen registries and NeoForge's cached biome modifications load at server/world startup; ordinary resource reload does not silently reconstruct their original feature lists. An intentional overriding worldgen datapack plus reload/restart remains an explicit operator action.
+
+New LandscapeCropFeaturePolicyTest pins the exact3IDs, no duplicates, scope/step, policy/modifier agreement and preserved categories. GameplayLandscapeCropGameTests has3registered cases: exhaustive original-versus-current vegetation equality after removing only the3IDs;13original Minecraft fruit/stem structure templates; actual native seed dispatch, bonemeal maturation, deterministic explicit vanilla random ticks to one adjacent fruit/attached stem, and state serialization for pumpkin and melon. The seed20260907 is a stem RNG seed, NOT a normal-terrain world-seed survey.
+
+Runtime evidence:53Overworld biomes; original references pumpkin46,melon2,sparse-melon1; remaining0in every decoration step. Every other vegetation feature set remains exactly equal to the original, including control biomes. All13structure templates remain loaded: outpost feature_tent2; savanna small farm and six ordinary/zombie streets; four taiga ordinary/zombie farms; woodland_mansion/1x2_a8. Custom and native-compatible gourd planting/harvesting remain covered by the unchanged M4/M5 matrices in the full registered suite.
+
+Command JDK21: `./gradlew.bat test --tests 'com.seggellion.britannia_mod.worldgen.*' --tests 'com.seggellion.britannia_mod.farming.*' runGameTestServer --no-configuration-cache --console=plain`. m6-server.log ran3m25s; loaded biome/structure controls passed,1133/1134GameTests passed; native seed control failed after its3tick light wait because the existing SurvivalZoneHandler changes players to Adventure each tick. Corrected fixture to set Survival at interaction time and stand beside its temporary sky-lit farmland; no gameplay permission changed. Final same command with -x processResources (new resources already processed normally, only fixture Java changed): m6-final.log BUILD SUCCESSFUL2m14s; all1134requiredGameTests pass. Focused XML182total/176passes/6skips/0failures/errors/27suites, saved in m6-junit-summary.json. All changed/new files reviewed; diff --check clean.
+
+M11 pending evidence: known-seed NEW chunks in a non-flat ordinary world, actual existing-fruit chunk unload/restart and explicit resource-reload observation. The flat harness never substitutes for natural distribution evidence. Source and exhaustive generation-input proof are complete. No world scan, production change, deployment or Fabric work. Next: local M6 commit, record SHA, then inspect current Rails original without modifying it and create the authorized isolated M7 worktree.
