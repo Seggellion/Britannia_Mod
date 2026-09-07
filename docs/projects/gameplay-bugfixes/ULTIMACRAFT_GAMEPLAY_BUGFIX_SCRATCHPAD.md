@@ -1,6 +1,6 @@
 # Gameplay bugfix implementation scratchpad
 
-Current: M2 complete; next M3. Authorized execution: M0–M11, local commits, no push/merge/deploy/production writes or Fabric work. Playbook and kickoff supersede historical discovery recommendations. All five authoritative documents read in full before code edits.
+Current: M3 complete; next M4. Authorized execution: M0–M11, local commits, no push/merge/deploy/production writes or Fabric work. Playbook and kickoff supersede historical discovery recommendations. All five authoritative documents read in full before code edits.
 
 ## Workspace and frozen contract
 
@@ -16,8 +16,8 @@ Decisions: 1200 online game ticks, exact hoed restoration, unused fertilizer for
 |---|---|---|
 | M0 workspace, baseline, contract | PASS | 421e27853dde4099d1d794568e33e6709507a53b / a95538d862a6c9316d7f45077fbc620e3241d097 |
 | M1 soil, expiry, bowls | PASS (client checks pending) | a95538d862a6c9316d7f45077fbc620e3241d097 / f31550eefb215e198afc60a35dec355661a5f173 |
-| M2 hand recipes/output | PASS (client checks pending) | f31550eefb215e198afc60a35dec355661a5f173 / pending |
-| M3 display-case transactions | PENDING | |
+| M2 hand recipes/output | PASS (client checks pending) | f31550eefb215e198afc60a35dec355661a5f173 / 558b5236ef3d4db55e282e3c3b5193f7cd50ea4d |
+| M3 display-case transactions | PASS (two-client checks pending) | 558b5236ef3d4db55e282e3c3b5193f7cd50ea4d / pending |
 | M4 harvest gates/outcomes | PENDING | |
 | M5 feedback/can state | PENDING | |
 | M6 landscape features | PENDING | |
@@ -80,3 +80,19 @@ GameplayHandRecipeGameTests:24 recipe/hand/count series (3recipes×2hands×1/2/3
 Command (JAVA_HOME JDK21): `./gradlew.bat test --tests 'com.seggellion.britannia_mod.bowlpreparation.*' --tests 'com.seggellion.britannia_mod.bannerdyeing.DyeTubLoadingServiceTest' --tests 'com.seggellion.britannia_mod.farming.*' runGameTestServer -x processResources --no-configuration-cache --console=plain`. Ordinary source sets/namespace, unchanged already-generated resources reused; no diagnostic init script or namespace. m2-junit.log initial focused run BUILD SUCCESSFUL41s. m2-server.log BUILD SUCCESSFUL1m59s/all1114 required tests passed. Final review adds menu synchronization and source-water regression; m2-final.log BUILD SUCCESSFUL2m/all1115 required GameTests passed; source-water precedence verified both ways. Focused XML184total/178executed passes/6skips/0failures/errors/28suites.
 
 Review: complete source/test diffs and all five new files inspected, no assets/resources/prices/build-source-set changes, diff --check clean. Prior full/near-full inventory/drop/Creative tests remain in registered suite. Sound/particle emission remains one call per successful adapter result by source proof; no physical audio or client packet-count capture asserted. Physical swapped-hand input, final inventory merge/reconnect, screen/preview/anvil/case controls remain named manual M11 checks. No live service or production action performed. Next: record final result, commit M2 locally, begin M3 case-specific ejection/atomic rotation.
+
+## M3 in progress
+
+Preserved corrected sixteen-gesture BUG-19 follow-up evidence in original ignored tmp/gameplay-bugfixes: component/count conservation held, but generic one-cell rotation dismantled the case; stone could bypass to placement. Implementing early case-specific MAIN gesture ownership, live root/part/permission validation, insertion-confirmed exact ejection and rollback-capable whole-case rotation. No art or unrelated container policy changes.
+
+### M3 review/evidence
+
+Files: new structure/interaction/DisplayCaseDecoratorService and NORMAL DisplayCaseDecoratorInteractionHandler registered in BritanniaMod; InteriorDecoratorToolItem explicitly routes cases away from generic rotation; DisplayCaseBlockEntity adds a root content lock and insertion-confirmed transfer. Two focused BE JUnit cases and three registered GameplayDisplayCaseGameTests added. No final change to DisplayCaseBlock, assets, resource data or source sets.
+
+Server validates both loaded expected cells, facing/part, world border, level permission and existing mayUseItemAt policy. MAIN decorator wins when both hands hold tools; OFF-only action is owned by the MAIN event even for sneaking or placeable main items. Ejection selects a collision-free adjacent position, preserves full count/components, requires addFreshEntity acknowledgment and unchanged entity/root/contents/tool/rights, then clears and synchronizes once. Rejected/throwing/reentrant/stale insertion cannot clear replacement storage; provisional entity is discarded. Rotation locks contents and sets both facings under the existing multiblock mutation guard, with notifications deferred until complete and ordinary world rollback on rejected/throwing setters. Existing connection derivation/teardown remains unchanged.
+
+Command (JDK21): `./gradlew.bat test --tests 'com.seggellion.britannia_mod.structure.DisplayCase*' runGameTestServer -x processResources --no-configuration-cache --console=plain`. m3-junit.log: focused9passes/0skips/0failures/errors, BUILD SUCCESSFUL38s. First m3-server.log: new tests passed, one old teardown/disconnection regression from unnecessary neighbor suppression; reverted suppression, preserving deferred rotation notification. Final m3-final.log: BUILD SUCCESSFUL1m56s, all1118 required GameTests passed and focused9JUnit passes. Normal Java inputs; unchanged normal resources reused; no diagnostic source set.
+
+New server matrix:16neighborhoods×2cells×2sneak×5main items=320gestures, actual ServerPlayerGameMode dispatch OFF→MAIN→OFF, full inventory, named/damaged/quality/owner/origin legacy count3, repeated empty clicks; both-tool whole rotation with preserved neighboring flags. EntityJoinLevelEvent rejection plus second-player reentry retains exact storage; sequential two-player success produces one entity; success and failure BE disk round trips. Upper-write rejection and exception restore both facings/content; Adventure/spectator denial and malformed pair remain unchanged. Focused JUnit additionally covers throwing insertion, stale replacement, reentrant take/store/eject, exact components and disk state. Review includes all new files and complete diff; diff --check clean.
+
+Pending actual clients: physical main/offhand inputs, two-client display/inventory sync and absence of ghost display, actual world save/restart. Headless dispatch and BE serialization are not those observations. Original corrected discovery evidence remains preserved. No new persistence format or migration; rollback restores the old unsafe gesture path but stored item format is unchanged. Next: M4 shared harvest gate/outcome transaction, all crop/flower/tree routes, then remaining milestones.

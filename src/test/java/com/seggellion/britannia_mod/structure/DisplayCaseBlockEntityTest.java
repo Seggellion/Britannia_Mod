@@ -115,6 +115,54 @@ class DisplayCaseBlockEntityTest {
         assertBlessedIdentity(retrieved, ownerUuid, deedId, "on the retrieved stack");
     }
 
+    @Test
+    void ejectionRequiresAcknowledgmentAndRollsBackInsertionOnExceptionOrReplacement() {
+        DisplayCaseBlock block = new DisplayCaseBlock(BlockBehaviour.Properties.of());
+        DisplayCaseBlockEntity display = entity(block);
+        display.storeOne(new ItemStack(Items.APPLE));
+        var undo = new java.util.concurrent.atomic.AtomicInteger();
+        assertFalse(display.eject(stack -> false, undo::incrementAndGet));
+        assertTrue(display.displayedItem().is(Items.APPLE));
+        assertFalse(display.eject(stack -> { throw new IllegalStateException("injected insertion failure"); }, undo::incrementAndGet));
+        assertTrue(display.displayedItem().is(Items.APPLE));
+        DisplayCaseBlockEntity replacement = entity(block);
+        replacement.storeOne(new ItemStack(Items.DIAMOND));
+        assertFalse(display.eject(stack -> {
+            display.loadWithComponents(replacement.saveWithoutMetadata(RegistryAccess.EMPTY), RegistryAccess.EMPTY);
+            return true;
+        }, undo::incrementAndGet));
+        assertTrue(display.displayedItem().is(Items.DIAMOND));
+        assertEquals(3, undo.get());
+    }
+
+    @Test
+    void ejectionLocksReentrantTransfersAndPreservesExactLegacyStackAcrossReload() {
+        DisplayCaseBlock block = new DisplayCaseBlock(BlockBehaviour.Properties.of());
+        DisplayCaseBlockEntity display = entity(block);
+        ItemStack merchandise = new ItemStack(Items.DIAMOND_SWORD, 3);
+        merchandise.setDamageValue(27);
+        merchandise.set(DataComponents.CUSTOM_NAME, Component.literal("Legacy sample"));
+        CompoundTag metadata = new CompoundTag();
+        metadata.putString("owner", "display-owner"); metadata.putString("origin", "Jhelom"); metadata.putInt("quality", 73);
+        merchandise.set(DataComponents.CUSTOM_DATA, CustomData.of(metadata));
+        CompoundTag saved = new CompoundTag(); saved.put("DisplayedItem", merchandise.save(RegistryAccess.EMPTY));
+        display.loadWithComponents(saved, RegistryAccess.EMPTY);
+        var inserted = new java.util.concurrent.atomic.AtomicReference<ItemStack>();
+        assertTrue(display.eject(stack -> {
+            assertTrue(ItemStack.matches(merchandise, stack));
+            assertTrue(display.takeDisplayedItem().isEmpty());
+            assertFalse(display.storeOne(new ItemStack(Items.APPLE)));
+            assertFalse(display.eject(ignored -> { throw new AssertionError("reentered"); }, () -> {}));
+            inserted.set(stack); return true;
+        }, () -> { throw new AssertionError("undo successful insertion"); }));
+        assertTrue(ItemStack.matches(merchandise, inserted.get()));
+        assertFalse(display.hasDisplayedItem());
+        DisplayCaseBlockEntity copy = entity(block);
+        copy.loadWithComponents(display.saveWithoutMetadata(RegistryAccess.EMPTY), RegistryAccess.EMPTY);
+        assertFalse(copy.hasDisplayedItem());
+        assertFalse(display.eject(stack -> { throw new AssertionError("empty insertion"); }, () -> {}));
+    }
+
     private static void assertBlessedIdentity(
             ItemStack stack, String ownerUuid, String deedId, String stage) {
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);

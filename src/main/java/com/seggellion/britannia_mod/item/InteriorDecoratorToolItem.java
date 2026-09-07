@@ -53,6 +53,11 @@ public class InteriorDecoratorToolItem extends Item {
 
         if (player == null) return InteractionResult.PASS;
 
+        if (state.getBlock() instanceof com.seggellion.britannia_mod.block.DisplayCaseBlock) {
+            return com.seggellion.britannia_mod.structure.interaction.DisplayCaseDecoratorService.interact(
+                    level, player, ctx.getHand(), new net.minecraft.world.phys.BlockHitResult(ctx.getClickLocation(), ctx.getClickedFace(), pos, ctx.isInside()));
+        }
+
         // Large-structure ownership must win over the generic horizontal-facing rotation below.
         if (state.is(LargeStructureRegistry.LARGE_STRUCTURE_ANCHOR.get())
                 || state.is(LargeStructureRegistry.LARGE_STRUCTURE_PART.get())) {

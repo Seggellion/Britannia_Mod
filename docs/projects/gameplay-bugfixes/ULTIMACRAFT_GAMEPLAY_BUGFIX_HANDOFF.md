@@ -22,7 +22,7 @@ Verdict: IN PROGRESS. Base and workspace identity, frozen decisions, milestone c
 | BUG-16 | Implemented; server hand/pigment matrices; client pending | M2 |
 | BUG-17 | Implemented; count/component/final merge server proof; client pending | M2 |
 | BUG-18 | Pending full produce mapping/catalog; Jhelom/Britannia live evidence | M7 |
-| BUG-19 | Pending case transactions | M3 |
+| BUG-19 | Implemented; server transaction/gesture matrix; two-client pending | M3 |
 
 Final delivery will include milestone SHAs in both repositories, exact automated/manual evidence, clean normal JAR SHA/size/embedded HEAD/dirty flag/dependencies, changed files/status, rollback and existing-world notes. No push, merge, deployment, production seed/migration/data/world change, server JAR replacement or Fabric work authorized or performed.
 
@@ -45,3 +45,9 @@ Three bowl recipes and seven tub pigments now use actual ingredient roles in eit
 Focused JUnit178passes/6skips (184total); final registered GameTests1115passed, BUILD SUCCESSFUL2m, including the both-hand source-water regression. The24bowl series execute420crafts with both hand orders, counts1/2/3/64, compatible-headroom and named-incompatible controls. Seven pigments in both hands and both modes preserve tub metadata, costs and same-pigment no-op. Existing full/near-full capacity cases remain passing. Final command/result and M2 commit are in scratchpad.
 
 No item NBT migration is needed. Reverting M2 restores restricted drivers and final-output hand placement; outputs already made are ordinary unchanged registry/component stacks. Physical input/reconnect, inventory display, source targeting and dye-preview/anvil/case client controls remain pending; server tests do not certify those observations.
+
+## M3 evidence
+
+Case-specific MAIN-phase dispatch now owns decorator use on either cell. Offhand-only ejects the exact stored stack to a collision-free world position after confirmed insertion; mainhand/both tools rotate the complete pair with rollback. Root locking and live identity/content checks prevent reentrant duplication and stale clearing. Existing world permissions and case-neighbor policy remain in force. No NBT or artwork change.
+
+Final focused JUnit9passes; all1118 registered required GameTests passed, BUILD SUCCESSFUL1m56s. New320gesture matrix includes all16neighborhood patterns, both cells, sneaking, air/stick/food/placeable/decorator main items, full inventory and exact legacy count/components. Rejected spawn with second-player reentry, two-player repeat, malformed/denied cases, rejected/throwing upper rotation and success/failure disk serialization pass. An old connection-teardown regression was caught and corrected before the final suite. Detailed command/log evidence and commit ledger are in scratchpad. Physical hand input and two-client ghost-display/synchronization acceptance remain pending.

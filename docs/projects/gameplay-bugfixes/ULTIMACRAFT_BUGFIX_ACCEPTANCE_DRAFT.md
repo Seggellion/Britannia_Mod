@@ -217,3 +217,12 @@ The playbook and kickoff close the historical Q1–Q5 recommendations. Original 
 - [x] **A:**separate legitimate clicks can craft in one tick; no blanket cooldown. Original protected-farm/flower server regressions remain passing.
 - [x] **A:**aimed water-source filling takes precedence over dry crafting in either hand; one bowl filled, dirt/source preserved, redundant callback free.
 - [ ] **M:**physical input and menu synchronization/reconnect, final-output display and water-source targeting, dye preview/anvil/case fallback interaction checks.
+
+## M3 observed server addendum
+
+- [x] 320 actual server-dispatch case gestures conserve exact legacy stack count/components and both cells across all16neighbors, bothcells, sneaking and five main items.
+- [x] Full inventory offhand ejection; both tools choose one whole-case rotation; redundant OFF and empty repeats are free.
+- [x] Spawn rejection/reentry, stale stored replacement, throwing insertion, two-player repeat, malformed/denied cases, upper-write rollback and BE save/load pass.
+- [ ] Physical client hand input, two-client display synchronization/no ghost display, actual save/restart acceptance remain to be observed.
+
+Final M3 evidence:9focused JUnit passes and1118registered required GameTests passed in m3-final.log. No visual/manual acceptance inferred.

@@ -19,6 +19,7 @@ public final class DisplayCaseBlockEntity extends BlockEntity {
     private static final String DISPLAYED_ITEM_TAG = "DisplayedItem";
 
     private ItemStack displayedItem = ItemStack.EMPTY;
+    private boolean contentsLocked;
 
     public DisplayCaseBlockEntity(BlockPos pos, BlockState state) {
         this(BlockEntityRegistry.DISPLAY_CASE.get(), pos, state);
@@ -40,7 +41,7 @@ public final class DisplayCaseBlockEntity extends BlockEntity {
     /** Stores exactly one item, preserving every data component on the source stack. */
     public boolean storeOne(ItemStack source) {
         Objects.requireNonNull(source, "source");
-        if (source.isEmpty() || hasDisplayedItem()) {
+        if (contentsLocked || source.isEmpty() || hasDisplayedItem()) {
             return false;
         }
         displayedItem = source.copyWithCount(1);
@@ -50,13 +51,52 @@ public final class DisplayCaseBlockEntity extends BlockEntity {
 
     /** Removes the merchandise from persistent state and transfers ownership to the caller. */
     public ItemStack takeDisplayedItem() {
-        if (displayedItem.isEmpty()) {
+        if (contentsLocked || displayedItem.isEmpty()) {
             return ItemStack.EMPTY;
         }
         ItemStack taken = displayedItem;
         displayedItem = ItemStack.EMPTY;
         setChangedAndSync();
         return taken;
+    }
+
+    /** Serializes root actions, including callbacks from entity insertion and block updates. */
+    public boolean withContentsLocked(java.util.function.BooleanSupplier action) {
+        if (contentsLocked) return false;
+        contentsLocked = true;
+        try {
+            return action.getAsBoolean();
+        } finally {
+            contentsLocked = false;
+        }
+    }
+
+    /** The destination must acknowledge insertion before the matching source is cleared. */
+    public boolean eject(java.util.function.Predicate<ItemStack> insert, Runnable undoInsertion) {
+        return withContentsLocked(() -> {
+            if (displayedItem.isEmpty()) return false;
+            ItemStack original = displayedItem;
+            ItemStack snapshot = original.copy();
+            boolean committed = false;
+            try {
+                if (!insert.test(snapshot.copy()) || displayedItem != original
+                        || !ItemStack.matches(displayedItem, snapshot) || isRemoved()) return false;
+                displayedItem = ItemStack.EMPTY;
+                try {
+                    setChangedAndSync();
+                } catch (RuntimeException failure) {
+                    displayedItem = original;
+                    throw failure;
+                }
+                committed = true;
+                return true;
+            } catch (RuntimeException failure) {
+                com.mojang.logging.LogUtils.getLogger().warn("Display-case ejection refused at {}", worldPosition, failure);
+                return false;
+            } finally {
+                if (!committed) undoInsertion.run();
+            }
+        });
     }
 
     private void setChangedAndSync() {
