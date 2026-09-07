@@ -144,80 +144,18 @@ public final class ServerEconomyService {
     private static void reserveAndSubmitSale(ServerPlayer player, ServerLevel level, String cityName, String role,
                                              Entity trader, List<SaleStack> selected) {
 
-        // Vendor/Trader Milestone 19.5: the sale's identity is computed BEFORE
-        // anything leaves the inventory, because the durable reservation receipt
-        // is keyed by it -- see reserveItemsDurably.
+        var credentials = ServerAuthRegistry.credentials(level.getServer()).orElse(null);
+        if (credentials == null) { fail(player, "Sale rejected: economy authentication unavailable."); return; }
         UUID transactionUuid = UUID.randomUUID();
         Reservation planned = planReservation(player, selected);
-        if (planned.isEmpty()) {
-            fail(player, "No matching items were found to sell.");
-            return;
-        }
-        String idempotencyKey = "sale:" + player.getUUID() + ":" + trader.getUUID() + ":" +
-                level.getGameTime() + ":" + planned.itemSignature() + ":" + transactionUuid;
-
-        Reservation reservation = reserveItemsDurably(level, player, planned, idempotencyKey);
-        if (reservation.isEmpty()) {
-            fail(player, "No matching items were found to sell.");
-            return;
-        }
-
-        JsonObject payload = buildSalePayload(player, level, cityName, role, trader, reservation, idempotencyKey, transactionUuid);
-        MinecraftServer server = level.getServer();
-
-        LOGGER.info("Wood/trader sale start key={} player={} city={} role={} trader={} items={}",
-                idempotencyKey, player.getStringUUID(), cityName, role, trader.getUUID(), reservation.items().size());
-
-        // The outcome of the call below is unknown to this process until it
-        // answers; the receipt records that so a crash mid-flight is recoverable.
-        TraderSaleReservationStore.get(level)
-                .advance(idempotencyKey, TraderSaleReservationReceipt.Status.DISPATCHED);
-
-        ServerHttpExecutor
-                .submit(server, () -> postSale(level, payload, idempotencyKey))
-                .whenComplete((result, error) -> server.execute(() -> {
-                    if (error != null) {
-                        LOGGER.warn("Wood sale failure key={} error={}", idempotencyKey, error.toString());
-                        reservation.refund(player);
-                        resolveReservation(level, idempotencyKey);
-                        fail(player, "Sale failed: economy server unavailable.");
-                        return;
-                    }
-
-                    if (!result.success()) {
-                        LOGGER.warn("Wood sale failure key={} status={} body={}",
-                                idempotencyKey, result.statusCode(), result.body());
-                        reservation.refund(player);
-                        resolveReservation(level, idempotencyKey);
-                        fail(player, result.message());
-                        return;
-                    }
-
-                    if (result.idempotentReplay()) {
-                        LOGGER.warn("Rails idempotent replay detected key={} receipt={}",
-                                idempotencyKey, result.receiptId());
-                        reservation.refund(player);
-                        resolveReservation(level, idempotencyKey);
-                        fail(player, "That sale was already processed.");
-                        return;
-                    }
-
-                    applyRailsCommodityResponse(level, cityName, result.responseJson(), reservation);
-                    grantCurrency(player, result.gold(), result.silver(), result.copper());
-
-                    // The items are now genuinely sold: the reservation's risk is over.
-                    resolveReservation(level, idempotencyKey);
-                    EconomySyncData.get(level).markApplied(idempotencyKey);
-                    if (!result.receiptId().isBlank()) {
-                        EconomySyncData.get(level).markApplied("rails_receipt:" + result.receiptId());
-                    }
-
-                    LOGGER.info("Wood sale success key={} receipt={} payout={}g {}s {}c",
-                            idempotencyKey, result.receiptId(), result.gold(), result.silver(), result.copper());
-                    player.sendSystemMessage(Component.literal("Sale complete: " +
-                            formatPayout(result.gold(), result.silver(), result.copper()) + "."));
-                    TransactionSuccessS2CPayload.send(player);
-                }));
+        if (planned.isEmpty()) { fail(player, "Sale rejected: selected items changed."); return; }
+        String key = "sale:" + player.getUUID() + ":" + trader.getUUID() + ":"
+                + level.getGameTime() + ":" + planned.itemSignature() + ":" + transactionUuid;
+        JsonObject payload = buildSalePayload(player, level, cityName, role, trader, planned, key, transactionUuid);
+        Reservation reservation = reserveItemsDurably(level, player, planned, key,
+                payload.toString(), credentials.serviceOrigin().toString());
+        if (reservation.isEmpty()) { fail(player, "Sale could not be saved. Your items were not submitted."); return; }
+        TraderSaleSettlementService.dispatch(level, key);
     }
 
     /**
@@ -324,21 +262,22 @@ public final class ServerEconomyService {
 
     private static List<SaleStack> collectRequestedItems(ServerPlayer player, List<SellItemsC2SPayload.ItemRequest> requests) {
         List<SaleStack> out = new ArrayList<>();
-        boolean[] consumedSlots = new boolean[player.getInventory().getContainerSize()];
+        int[] available = new int[player.getInventory().getContainerSize()];
+        for (int slot = 0; slot < available.length; slot++) available[slot] = player.getInventory().getItem(slot).getCount();
 
         for (SellItemsC2SPayload.ItemRequest request : requests) {
             int remaining = Math.max(0, request.quantity());
             if (remaining == 0) continue;
 
             for (int slot = 0; slot < player.getInventory().getContainerSize() && remaining > 0; slot++) {
-                if (consumedSlots[slot]) continue;
+                if (available[slot] == 0) continue;
                 ItemStack stack = player.getInventory().getItem(slot);
                 if (stack.isEmpty() || !matchesRequest(player, stack, request)) continue;
 
-                int take = Math.min(stack.getCount(), remaining);
+                int take = Math.min(available[slot], remaining);
                 out.add(new SaleStack(slot, stack.copyWithCount(take), take));
                 remaining -= take;
-                if (take >= stack.getCount()) consumedSlots[slot] = true;
+                available[slot] -= take;
             }
         }
 
@@ -404,87 +343,51 @@ public final class ServerEconomyService {
         return true;
     }
 
-    /**
-     * Milestone 19.5: decides WHAT would be reserved without touching the
-     * inventory, so the sale's idempotency key (and therefore its durable
-     * receipt) can exist before any item moves.
-     */
+    /** Revalidate the complete selection after asynchronous preflight, including components. */
     private static Reservation planReservation(ServerPlayer player, List<SaleStack> selected) {
-        List<SaleStack> planned = new ArrayList<>();
+        var bySlot = new java.util.LinkedHashMap<Integer, SaleStack>();
         for (SaleStack item : selected) {
+            if (item.slot() < 0 || item.slot() >= player.getInventory().getContainerSize() || item.quantity() <= 0)
+                return new Reservation(List.of());
             ItemStack live = player.getInventory().getItem(item.slot());
-            if (live.isEmpty() || live.getCount() < item.quantity()) continue;
-            planned.add(new SaleStack(item.slot(), live.copyWithCount(item.quantity()), item.quantity()));
+            SaleStack previous = bySlot.get(item.slot());
+            long quantity = (long) item.quantity() + (previous == null ? 0 : previous.quantity());
+            if (live.isEmpty() || quantity > live.getCount()
+                    || !ItemStack.isSameItemSameComponents(live, item.stack())) return new Reservation(List.of());
+            bySlot.put(item.slot(), new SaleStack(item.slot(), live.copyWithCount((int) quantity), (int) quantity));
         }
-        return new Reservation(planned);
+        return new Reservation(List.copyOf(bySlot.values()));
     }
 
-    /**
-     * Milestone 19.5: removes the planned items behind a durable receipt, so a
-     * crash can no longer destroy them.
-     *
-     * <p>Ordering is the whole guarantee, and it is deliberate:
-     * <ol>
-     *   <li>write the receipt as {@code RESERVED} and flush it to disk — a
-     *       later crash can never leave items missing with no record;</li>
-     *   <li>remove the items and force-save the player, so their inventory
-     *       without those items is itself on disk;</li>
-     *   <li>advance the receipt to {@code ITEMS_REMOVED} and flush again —
-     *       only now is the removal provably durable, and only receipts in
-     *       that state (or {@code DISPATCHED}) are ever refunded on recovery.</li>
-     * </ol>
-     * A crash before step 3 leaves a {@code RESERVED} receipt, which recovery
-     * resolves WITHOUT refunding: the player's saved inventory still holds the
-     * items, so refunding would duplicate them. See
-     * {@link TraderSaleReservationRecovery} for why that asymmetry is the right
-     * way to be wrong.
-     */
+    /** Journal first, then exact removal and its marker in one checked player save, then dispatch. */
     private static Reservation reserveItemsDurably(ServerLevel level, ServerPlayer player,
-                                                   Reservation planned, String idempotencyKey) {
-        List<byte[]> payloads = new ArrayList<>();
-        for (SaleStack item : planned.items()) {
-            payloads.add(BankItemCodec.serialize(item.stack(), level.registryAccess()));
+            Reservation planned, String key, String requestJson, String origin) {
+        planned = planReservation(player, planned.items());
+        if (planned.isEmpty()) return planned;
+        var payloads = new ArrayList<byte[]>();
+        for (var item : planned.items()) payloads.add(BankItemCodec.serialize(item.stack(), level.registryAccess()));
+        var store = TraderSaleReservationStore.get(level);
+        if (!store.record(new TraderSaleReservationReceipt(key, player.getUUID(), payloads,
+                TraderSaleReservationReceipt.Status.RESERVED, System.currentTimeMillis(), requestJson, origin, "")))
+            return new Reservation(List.of());
+        if (!store.flush(level)) { store.resolve(key); return new Reservation(List.of()); }
+        var originals = new java.util.LinkedHashMap<Integer, ItemStack>();
+        for (var item : planned.items()) {
+            ItemStack live = player.getInventory().getItem(item.slot());
+            originals.put(item.slot(), live.copy());
+            live.shrink(item.quantity());
         }
-
-        TraderSaleReservationStore store = TraderSaleReservationStore.get(level);
-        boolean recorded = store.record(new TraderSaleReservationReceipt(
-                idempotencyKey, player.getUUID(), payloads,
-                TraderSaleReservationReceipt.Status.RESERVED, System.currentTimeMillis()));
-        if (!recorded) {
-            LOGGER.warn("Refusing a trader sale whose reservation key is already tracked key={}", idempotencyKey);
+        TraderSaleSettlementService.markRemoved(player, key);
+        if (!TraderSalePlayerDurability.save(player)) {
+            originals.forEach((slot, stack) -> player.getInventory().setItem(slot, stack));
+            TraderSaleSettlementService.clearMarker(player, key);
+            store.resolve(key); store.flush(level);
             return new Reservation(List.of());
         }
-        store.flush(level);
-
-        List<SaleStack> reserved = new ArrayList<>();
-        for (SaleStack item : planned.items()) {
-            ItemStack live = player.getInventory().getItem(item.slot());
-            if (live.isEmpty() || live.getCount() < item.quantity()) continue;
-            ItemStack removed = live.copyWithCount(item.quantity());
-            live.shrink(item.quantity());
-            reserved.add(new SaleStack(item.slot(), removed, item.quantity()));
-        }
-        player.inventoryMenu.broadcastChanges();
-        player.inventoryMenu.broadcastFullState();
-
-        if (reserved.isEmpty()) {
-            // Nothing actually moved (the inventory changed under us): drop the
-            // receipt rather than leaving a phantom reservation behind.
-            store.resolve(idempotencyKey);
-            store.flush(level);
-            return new Reservation(reserved);
-        }
-
-        BankTransferPlayerDurability.forceSave(player);
-        store.advance(idempotencyKey, TraderSaleReservationReceipt.Status.ITEMS_REMOVED);
-        store.flush(level);
-        return new Reservation(reserved);
-    }
-
-    private static void resolveReservation(ServerLevel level, String idempotencyKey) {
-        TraderSaleReservationStore store = TraderSaleReservationStore.get(level);
-        store.resolve(idempotencyKey);
-        store.flush(level);
+        store.advance(key, TraderSaleReservationReceipt.Status.ITEMS_REMOVED);
+        store.flush(level); // dispatch rechecks durability; an unavailable disk leaves a pending receipt.
+        player.inventoryMenu.broadcastChanges(); player.inventoryMenu.broadcastFullState();
+        return planned;
     }
 
     private static JsonObject buildSalePayload(ServerPlayer player, ServerLevel level, String cityName, String role,
@@ -627,10 +530,10 @@ public final class ServerEconomyService {
         return item;
     }
 
-    private static SaleResult postSale(ServerLevel level, JsonObject payload, String idempotencyKey) {
+    static SaleResult postSale(ServerLevel level, JsonObject payload, String idempotencyKey) {
         SaleResult result = postSaleToEndpoint(level, Endpoint.TRADER_SALE, payload, idempotencyKey);
-        if (result.statusCode() == HttpURLConnection.HTTP_NOT_FOUND ||
-                result.statusCode() == HttpURLConnection.HTTP_BAD_METHOD) {
+        if (!payload.has("world_npc_public_id") && (result.statusCode() == HttpURLConnection.HTTP_NOT_FOUND ||
+                result.statusCode() == HttpURLConnection.HTTP_BAD_METHOD)) {
             LOGGER.warn("Rails trader_transactions endpoint unavailable, falling back to transactions for key={}", idempotencyKey);
             return postSaleToEndpoint(level, Endpoint.TRANSACTION, payload, idempotencyKey);
         }
@@ -664,20 +567,44 @@ public final class ServerEconomyService {
             JsonObject response = body == null || body.isBlank()
                     ? new JsonObject()
                     : JsonParser.parseString(body).getAsJsonObject();
-            Payout payout = parsePayout(response);
-            String receipt = response.has("receipt_id") ? response.get("receipt_id").getAsString()
-                    : response.has("transaction_id") ? response.get("transaction_id").getAsString()
-                    : "";
-            boolean idempotentReplay = booleanFrom(response, "idempotent_replay");
-
             LOGGER.info("Rails commodity response key={} endpoint={} body={}",
                     idempotencyKey, endpoint.symbolicName(), body);
-            return SaleResult.success(status, body, response, receipt, idempotentReplay,
-                    payout.gold(), payout.silver(), payout.copper());
+            return resultFromReceipt(response);
         } catch (Exception e) {
             LOGGER.warn("Rails sale request failed key={} error={}", idempotencyKey, e.toString());
             return SaleResult.failure(0, e.toString(), "Sale failed: economy server unavailable.");
         }
+    }
+
+    static SaleResult resultFromReceipt(JsonObject response) {
+        if (response.has("success") && !response.get("success").getAsBoolean())
+            return SaleResult.failure(0, "", "Unconfirmed receipt");
+        JsonObject grant = currencyGrantFrom(response);
+        if (grant == null) grant = objectFrom(response, "payout");
+        if (grant == null) grant = objectFrom(response, "currency");
+        if (grant != null) {
+            for (String key : List.of("gold", "silver", "copper")) if (grant.has(key))
+                grant.get(key).getAsBigDecimal().intValueExact();
+        } else {
+            for (String key : List.of("total_gold", "total_copper")) if (response.has(key))
+                response.get(key).getAsBigDecimal().intValueExact();
+        }
+        Payout payout = parsePayout(response);
+        String receipt = response.has("receipt_id") ? response.get("receipt_id").getAsString()
+                : response.has("transaction_id") ? response.get("transaction_id").getAsString() : "";
+        return SaleResult.success(200, response.toString(), response, receipt, booleanFrom(response, "idempotent_replay"),
+                payout.gold(), payout.silver(), payout.copper());
+    }
+
+    static void applyRecoveredSale(ServerLevel level, TraderSaleReservationReceipt receipt, JsonObject response) {
+        var sync = EconomySyncData.get(level);
+        if (!sync.markApplied(receipt.idempotencyKey())) return;
+        var result = resultFromReceipt(response);
+        sync.markApplied("rails_receipt:" + result.receiptId());
+        var request = JsonParser.parseString(receipt.requestJson()).getAsJsonObject();
+        var items = receipt.decodeItems(level.registryAccess()).stream()
+                .map(stack -> new SaleStack(-1, stack, stack.getCount())).toList();
+        applyRailsCommodityResponse(level, request.get("city").getAsString(), response, new Reservation(items));
     }
 
     private static void attachServerAuth(ServerLevel level, HttpURLConnection conn, byte[] body) {
@@ -933,7 +860,7 @@ public final class ServerEconomyService {
 
     private record Payout(int gold, int silver, int copper) {}
 
-    private record SaleResult(boolean success, int statusCode, String body, JsonObject responseJson,
+    static record SaleResult(boolean success, int statusCode, String body, JsonObject responseJson,
                               String receiptId, boolean idempotentReplay, int gold, int silver, int copper,
                               String message) {
         static SaleResult success(int statusCode, String body, JsonObject responseJson, String receiptId,

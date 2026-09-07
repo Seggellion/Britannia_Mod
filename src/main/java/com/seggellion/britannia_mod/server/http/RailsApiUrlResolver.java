@@ -221,6 +221,7 @@ public final class RailsApiUrlResolver {
         ECONOMIC_PURCHASE("economic_purchase"),
         MERCHANT_PURCHASE("merchant_transactions"),
         TRADER_SALE("trader_transactions"),
+        TRADER_SALE_RECEIPT("trader_sale_receipt", "idempotency_key", "player_uuid"),
         TRANSACTION("transactions"),
         HOUSE_CREATE("houses"),
         // Housing Deed Milestone 2: the shard read side, used once at server start to put

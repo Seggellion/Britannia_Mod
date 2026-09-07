@@ -268,3 +268,10 @@ M4 final:186focused JUnit total/180passes/6skips;1127required registered GameTes
 - [x] Actual mod→localRails quote/reservation/sale/currency/city inventory/treasury, real cap-refund, same-keyRails replay, and disconnect before reservation:1receipt,stock3,copper9,treasury491.
 - [ ] Response loss/crash/disconnect AFTER dispatch exactly once: OPEN concrete pre-existing recovery limitation. Do not infer this from preflight disconnect or ordinary replay.
 - [ ] Production Jhelom/Britannia policy/assignment/current rows and deployed behavior: PENDING read-only/live acceptance.
+
+
+- [x] Production read-only Jhelom/Britannia observation2026-09-07T08:28:11Z: activeZorah assignment, active produce policy with no shard override,15legacy rows/all36newrowsmissing. See M7_PRODUCTION_READONLY_EVIDENCE.md.
+- [ ] Deployment/new production rows/player acceptance remains pending separate authority. No live sale or write was performed.
+
+
+M7b update: dedicated-server response-loss recovery is now implemented and verified against real local Rails. All1,142GameTests +27focusedJUnit passed; two local receipts grant9/5copper,stock5,treasury486. Full details, persistence boundaries and operator-pending cases: M7_SALE_RECOVERY.md and scratchpad. M8–M11 remain; no final release verdict yet.

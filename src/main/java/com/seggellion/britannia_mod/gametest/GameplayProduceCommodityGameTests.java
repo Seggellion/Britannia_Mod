@@ -63,7 +63,7 @@ public final class GameplayProduceCommodityGameTests {
     @GameTest(template = TEMPLATE)
     public static void harvestDefaultAndAdminComponentsRetainOneIdentityAndRefundExactly(GameTestHelper h) {
         var policy = new AcceptedCommodityPolicy(List.of(new AcceptedCommodityPolicy.Entry("produce", null, null)));
-        var player = h.makeMockServerPlayerInLevel();
+        var player = ManagedResourceTestPlayers.survival(h.getLevel(), "M7Components");
         for (var crop : CropRegistry.all()) {
             if (!Set.of("broccoli", "orange", "carrot", "apple").contains(crop.id())) continue;
             for (int variant = 0; variant < 3; variant++) {
@@ -85,7 +85,7 @@ public final class GameplayProduceCommodityGameTests {
                 var store = TraderSaleReservationStore.get(h.getLevel());
                 store.record(new TraderSaleReservationReceipt(key, player.getUUID(),
                         List.of(BankItemCodec.serialize(stack, h.getLevel().registryAccess())),
-                        TraderSaleReservationReceipt.Status.DISPATCHED, System.currentTimeMillis()));
+                        TraderSaleReservationReceipt.Status.ITEMS_REMOVED, System.currentTimeMillis()));
                 h.assertTrue(TraderSaleReservationRecovery.refundStrandedReservations(h.getLevel(), player) == 1, "refund missing");
                 h.assertTrue(ItemStack.matches(snapshot, player.getInventory().getItem(0)), "refund changed count/components");
                 h.assertTrue(TraderSaleReservationRecovery.refundStrandedReservations(h.getLevel(), player) == 0, "refund replay minted items");
@@ -98,6 +98,7 @@ public final class GameplayProduceCommodityGameTests {
             var row = ServerEconomyService.describeSaleItem(stack);
             h.assertTrue(!row.has("category") || !row.get("category").getAsString().equals("produce"), "excluded goods offered " + id);
         }
+        h.getLevel().getServer().getPlayerList().remove(player);
         h.succeed();
     }
 }

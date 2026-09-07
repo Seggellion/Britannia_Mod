@@ -35,7 +35,7 @@ public final class GameplayProduceRailsIntegrationGameTests {
         String config = System.getenv("BRITANNIA_M7_INTEGRATION_CONFIG");
         if (config == null || config.isBlank()) return List.of();
         return List.of(new TestFunction("m7_live_rails", "britannia_mod.m7_live_produce",
-                "britannia_mod:service_npc_spawn_test_empty", 1000, 0, true, h -> {
+                "britannia_mod:service_npc_spawn_test_empty", 20000, 0, true, h -> {
                     try { run(h, Path.of(config)); }
                     catch (Exception e) { throw new RuntimeException(e); }
                 }));
@@ -47,6 +47,11 @@ public final class GameplayProduceRailsIntegrationGameTests {
         if (!origin.equals(URI.create("http://127.0.0.1:3118"))) throw new IllegalArgumentException("Local test Rails only");
         var proxy = HttpServer.create(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 0), 0);
         var gate = new CountDownLatch(1);
+        var lostResponseGate = new CountDownLatch(1);
+        var committedLostResponse = new AtomicBoolean();
+        var receiptQueries = new AtomicInteger();
+        var reconnect = new AtomicReference<ServerPlayer>();
+        var secondPayload = new AtomicReference<String>();
         var requestCount = new AtomicInteger();
         var saleBody = new AtomicReference<String>();
         var saleReply = new AtomicReference<JsonObject>();
@@ -70,8 +75,20 @@ public final class GameplayProduceRailsIntegrationGameTests {
                 var response = client.send(request.method(exchange.getRequestMethod(),
                         HttpRequest.BodyPublishers.ofByteArray(bytes)).build(), HttpResponse.BodyHandlers.ofByteArray());
                 JsonObject parsed = JsonParser.parseString(new String(response.body(), StandardCharsets.UTF_8)).getAsJsonObject();
-                if (sale) saleReply.set(parsed);
-                else if (exchange.getRequestURI().getPath().equals("/api/economic_buyback_catalog")) quoteReply.set(parsed);
+                if (sale) {
+                    saleReply.set(parsed);
+                    if (requestCount.get() == 3) {
+                        secondPayload.set(new String(bytes, StandardCharsets.UTF_8));
+                        if (response.statusCode() != 200) throw new IllegalStateException("third sale did not commit");
+                        committedLostResponse.set(true);
+                        lostResponseGate.await(10, TimeUnit.SECONDS);
+                        // Rails committed, but its successful response is lost at the transport boundary.
+                        exchange.sendResponseHeaders(502, -1);
+                        return;
+                    }
+                }
+                if (exchange.getRequestURI().getPath().equals("/api/trader_sale_receipt")) receiptQueries.incrementAndGet();
+                if (exchange.getRequestURI().getPath().equals("/api/economic_buyback_catalog")) quoteReply.set(parsed);
                 exchange.getResponseHeaders().set("Content-Type", "application/json");
                 exchange.sendResponseHeaders(response.statusCode(), response.body().length);
                 exchange.getResponseBody().write(response.body());
@@ -120,13 +137,14 @@ public final class GameplayProduceRailsIntegrationGameTests {
         var cleaned = new AtomicBoolean();
         Runnable cleanup = () -> {
             if (!cleaned.compareAndSet(false, true)) return;
-            gate.countDown(); proxy.stop(0); trader.discard();
-            server.getPlayerList().remove(player);
+            gate.countDown(); lostResponseGate.countDown(); proxy.stop(0); trader.discard();
+            if (reconnect.get() != null) server.getPlayerList().remove(reconnect.get());
+            if (server.getPlayerList().getPlayer(player.getUUID()) == player) server.getPlayerList().remove(player);
             EconomicNpcRegistryCache.replace(oldRegistry);
             if (oldAuth.isPresent()) ServerAuthRegistry.installForGameTesting(server, oldAuth.get());
             else ServerAuthRegistry.clear(server);
         };
-        h.runAtTickTime(999, cleanup);
+        h.runAtTickTime(19999, cleanup);
         var quotedAmount = new AtomicInteger();
         var firstPayload = new AtomicReference<String>();
         var replayFuture = new AtomicReference<CompletableFuture<HttpResponse<String>>>();
@@ -179,17 +197,61 @@ public final class GameplayProduceRailsIntegrationGameTests {
             .thenExecuteAfter(10, () -> {
                 h.assertTrue(requestCount.get() == 2, "disconnected preflight dispatched a sale");
                 h.assertTrue(TraderSaleReservationStore.get(h.getLevel()).forPlayer(player.getUUID()).isEmpty(), "disconnected preflight left reservation");
+            })
+            .thenExecute(() -> {
+                // Rejoin the saved player, then lose the next response after Rails has committed.
+                reconnect.set(rejoin(h, player));
+                reconnect.get().setPos(trader.position());
+                ServerEconomyService.sellRequestedItems(reconnect.get(), request(trader.getId(), 2));
+            })
+            .thenWaitUntil(() -> h.assertTrue(committedLostResponse.get(), "waiting for Rails commit before transport loss"))
+            .thenExecute(() -> {
+                server.getPlayerList().remove(reconnect.get());
+                reconnect.set(null);
+                lostResponseGate.countDown();
+            })
+            .thenWaitUntil(() -> {
+                var records = TraderSaleReservationStore.get(h.getLevel()).forPlayer(player.getUUID());
+                h.assertTrue(records.size() == 1 && records.getFirst().status() == TraderSaleReservationReceipt.Status.RECONCILING,
+                        "lost response must stay pending, without a speculative refund");
+                h.assertTrue(count(player, ItemRegistry.COPPER_COIN.get()) == quotedAmount.get(), "offline original object received payment");
+            })
+            .thenExecute(() -> reconnect.set(rejoin(h, player)))
+            .thenWaitUntil(() -> {
+                h.assertTrue(receiptQueries.get() >= 1, "recovery did not query real Rails receipt");
+                h.assertTrue(count(reconnect.get(), ItemRegistry.COPPER_COIN.get()) == quotedAmount.get() + 5,
+                        "waiting for one recovered payment on the current player");
+                h.assertTrue(count(reconnect.get(), crop.harvestItem().get()) == 1, "committed goods were refunded");
+                h.assertTrue(TraderSaleReservationStore.get(h.getLevel()).forPlayer(player.getUUID()).isEmpty(), "recovered receipt not resolved");
+            })
+            .thenExecute(() -> TraderSaleReservationRecovery.refundStrandedReservations(h.getLevel(), reconnect.get()))
+            .thenExecuteAfter(10, () -> {
+                h.assertTrue(count(reconnect.get(), ItemRegistry.COPPER_COIN.get()) == quotedAmount.get() + 5, "repeated recovery duplicated currency");
+                h.assertTrue(requestCount.get() == 3, "committed receipt unnecessarily reposted");
                 try {
                     var evidence = new JsonObject();
                     evidence.addProperty("payout_copper", quotedAmount.get());
+                    evidence.addProperty("recovered_copper", 5);
                     evidence.addProperty("first_sale", firstPayload.get());
+                    evidence.addProperty("second_sale", secondPayload.get());
                     evidence.addProperty("sale_requests", requestCount.get());
-                    evidence.addProperty("disconnect_scope", "before reservation; no claim for response-loss or process crash");
+                    evidence.addProperty("receipt_queries", receiptQueries.get());
+                    evidence.addProperty("disconnect_scope", "preflight cancellation; response lost after real Rails commit, offline resolution, same-UUID saved player reconnect, one payout");
                     Files.writeString(configPath.resolveSibling("m7-live-mod-evidence.json"), evidence.toString());
                 } catch (Exception e) { throw new RuntimeException(e); }
                 cleanup.run();
             })
             .thenSucceed();
+    }
+
+    private static ServerPlayer rejoin(GameTestHelper h, ServerPlayer prior) {
+        var cookie = net.minecraft.server.network.CommonListenerCookie.createInitial(prior.getGameProfile(), false);
+        var joined = new ServerPlayer(h.getLevel().getServer(), h.getLevel(), cookie.gameProfile(), cookie.clientInformation());
+        var connection = new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
+        new io.netty.channel.embedded.EmbeddedChannel(connection);
+        h.getLevel().getServer().getPlayerList().placeNewPlayer(connection, joined, cookie);
+        joined.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+        return joined;
     }
 
     private static SellItemsC2SPayload request(int trader, int quantity) {
