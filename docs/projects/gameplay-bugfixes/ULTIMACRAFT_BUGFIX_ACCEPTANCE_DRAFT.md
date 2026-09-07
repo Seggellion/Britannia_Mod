@@ -266,17 +266,34 @@ M4 final:186focused JUnit total/180passes/6skips;1127required registered GameTes
 - [x] Rails insert-only rollout and later ordinary seed preserve existing added rows/prices/stock/flags; all36comparables match current baseline prices.
 - [x] Real HTTP routing, live local Jhelom/Britannia-style assignment/policy checks, quote/sale parity, wrong vendor/NPC/shard/city, missing/disabled/cap/treasury/minimum and stale revision refusal.
 - [x] Actual mod→localRails quote/reservation/sale/currency/city inventory/treasury, real cap-refund, same-keyRails replay, and disconnect before reservation:1receipt,stock3,copper9,treasury491.
-- [ ] Response loss/crash/disconnect AFTER dispatch exactly once: OPEN concrete pre-existing recovery limitation. Do not infer this from preflight disconnect or ordinary replay.
-- [ ] Production Jhelom/Britannia policy/assignment/current rows and deployed behavior: PENDING read-only/live acceptance.
+- [x] Dedicated-server response loss AFTER Rails commit and disconnect/rejoin from the actual player file: real receipt lookup, exactly one payout to the current player, no goods refund or repeated POST. Hardware power cut and integrated-host level.dat durability are not claimed; see M7_SALE_RECOVERY.md.
+- [x] Production Jhelom/Britannia policy, assignment and pre-release rows observed in a read-only transaction; deployed behavior remains a separate pending gate below.
 
 
 - [x] Production read-only Jhelom/Britannia observation2026-09-07T08:28:11Z: activeZorah assignment, active produce policy with no shard override,15legacy rows/all36newrowsmissing. See M7_PRODUCTION_READONLY_EVIDENCE.md.
 - [ ] Deployment/new production rows/player acceptance remains pending separate authority. No live sale or write was performed.
 
 
-M7b update: dedicated-server response-loss recovery is now implemented and verified against real local Rails. All1,142GameTests +27focusedJUnit passed; two local receipts grant9/5copper,stock5,treasury486. Full details, persistence boundaries and operator-pending cases: M7_SALE_RECOVERY.md and scratchpad. M8–M11 remain; no final release verdict yet.
+M7b update: dedicated-server response-loss recovery is now implemented and verified against real local Rails. All1,142GameTests +27focusedJUnit passed; two local receipts grant9/5copper,stock5,treasury486. Full details, persistence boundaries and operator-pending cases: M7_SALE_RECOVERY.md and scratchpad. Final M8–M11 evidence and remaining client gates are recorded in the handoff and M11 addendum below.
 
 BUG-11/12/13 M8 local automated gate PASSED: deterministic topology across1,044layouts; collision1.5; vanilla-shovel path survives customfence and queuedticks; oakcontrol preserved. All1,147GameTests +5JUnit. Client visual/restart and keyboardmovement observations remain M11 runtime checks.
 
 
 M9 automated acceptance: all1,154 registered GameTests and7focused JUnit passed. See M9_CREATIVE_DECORATION_EVIDENCE.md for seven new family/mode/footprint/component cases, legacy-state behavior, earlier corrected failures and the separate client/restart gate.
+
+## M11 final acceptance coverage
+
+Test operator: Codex, 2026-09-07. Final artifact source is 4ee0f5d90d70b2429c7d5cb8eacf100b838d0d67, dirty=false; complete hash, commands, failures/skips and file inventory are in M11_RELEASE_IDENTITY.md and M11_REGRESSION_EVIDENCE.md. Original combined A/M boxes remain unchecked when actual manual observation is still owed.
+
+- [x] Full JUnit: 3,492 tests, 3,475 passes, 17 inherited skips, zero failures/errors; normal clean release includes the suite and normal resources.
+- [x] All 1,154 registered required GameTests passed; actual server movement/dispatch, conservation, serialization and receipt/player-file checks are described by their respective milestones.
+- [x] **3,190 runs, 51,848 assertions, 0 failures, 0 errors, 2 inherited conditional skips; all 435 normal test files covered.**
+- [x] Clean packaged client reached welcome and a new normal noise world; fresh Intel UHD/driver 32.0.101.5972 observed in its log. This certifies startup only.
+- [ ] M10-SHADER-3WAY: same-scene no-Iris, shaders-disabled and Photon views, reload, actual player/mount teleport; controlled desktop input was unavailable because concurrent user input interrupted it. Renderer remains unchanged.
+- [ ] M11-ORDINARY-CLIENT: physical farming/HUD, swapped crafting, case actions, local sale, path/fence keyboard movement, Creative decorative placement.
+- [ ] M11-MULTIPLAYER-RELOAD: actual two-client synchronization, reconnect, chunk unload/load, server stop/start and normal/low-TPS timing.
+- [ ] M6-NORMAL-TERRAIN: affected/control-biome new-chunk survey and actual restart preservation of existing native fruit/stems.
+- [ ] M5-FULL-CAN-ART: PENDING_USER_ASSET; complete final resource wiring and visual matrix after the user supplies artwork.
+- [ ] M7-LIVE-ROLLOUT: separately authorized deployment/insert-only backfill and ordinary Jhelom/Britannia player acceptance. Pre-release read-only evidence is already complete.
+- [x] BUG-04, BUG-06 and BUG-07 manual art exclusions preserved; no generated replacement artwork.
+- [x] No push, merge, deployment, production seed/migration/data/world change, server-JAR replacement or Fabric/Atrevion change.

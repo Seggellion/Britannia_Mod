@@ -1,106 +1,143 @@
-# Gameplay bugfix handoff (in progress)
+# UltimaCraft gameplay bugfix handoff
 
-Verdict: IN PROGRESS. Base and workspace identity, frozen decisions, milestone commands/results and commit ledger are maintained in ULTIMACRAFT_GAMEPLAY_BUGFIX_SCRATCHPAD.md. This file will be finalized at M11; M1 implementation has server evidence below; manual acceptance is recorded separately.
+Final classification: **PASS WITH EXTERNAL RUNTIME ACCEPTANCE PENDING**, using M10’s permitted pending exit. All local automated and clean-release gates have passed. Fifteen issues have implemented functional changes; BUG-01 remains pending controlled shader reproduction and any correction it supports. BUG-04, BUG-06 and BUG-07 are excluded artwork. The full watering-can artwork is **PENDING_USER_ASSET**.
 
-| Issue | Status | Milestone |
+The exact remaining acceptance work is named below. Tests establish server behavior, state conservation and local HTTP settlement; they do not establish physical client gestures or visible shader/HUD results. M10 uses the playbook’s permitted bounded-audit exit because concurrent desktop input prevented the controlled comparison.
+
+## Workspaces and local commits
+
+| Repository | Isolated worktree | Branch | Starting HEAD | Validated source HEAD |
+|---|---|---|---|---|
+| NeoForge | `C:/projects/britannia/mod/Britannia_Mod/.claude/worktrees/patch18-gameplay-bugfixes` | `codex/patch18-gameplay-bugfixes` | `421e27853dde4099d1d794568e33e6709507a53b` | `4ee0f5d90d70b2429c7d5cb8eacf100b838d0d67` |
+| Rails | `/home/dusti/ultimacraft-website/.claude/worktrees/patch18-gameplay-bugfixes` | `codex/patch18-gameplay-bugfixes` | `a9425ca41afa9b4ba7539426044e7b50e70a3966` | `4e67f4c41c4d6f531c673e11fd6b2dbd71b59e18` |
+
+Rails ending HEAD is `0646020b331a241222e7c38251e1f0749503661a` (documentation closure, clean worktree). The ending mod documentation SHA is recorded in the final immutable local snapshot, `tmp/gameplay-bugfixes/release/FINAL_HANDOFF.md`, after this documentation commit exists. The artifact’s embedded source HEAD remains the clean tested source above; closing documentation changes do not alter its code/resources.
+
+| Mod milestone | Full local commit | Subject |
 |---|---|---|
-| BUG-01 | Pending shader reproduction | M10 |
-| BUG-02 | Implemented; packet/commit/status server proof; graphical HUD pending | M5 |
-| BUG-03 | Implemented; server proof; physical timing/reload pending | M1 |
-| BUG-04 | EXCLUDED user lettuce artwork | — |
-| BUG-05 | Implemented; both-hand server/conservation proof; client pending | M1 |
-| BUG-06 | EXCLUDED user green-onion artwork | — |
-| BUG-07 | EXCLUDED user green-onion artwork | — |
-| BUG-08 | Implemented;74-species policy/server routes; client pending | M4 |
-| BUG-09 | Implemented; owner/target server matrix; client pending | M1 |
-| BUG-10 | Pending Creative substrates | M9 |
-| BUG-11 | Pending fence convergence | M8 |
-| BUG-12 | Pending fence collision | M8 |
-| BUG-13 | Pending path retention | M8 |
-| BUG-14 | State selection implemented/tested; PENDING_USER_ASSET for full artwork/display | M5 |
-| BUG-15 | Implemented; exhaustive loaded-biome/native/structure server proof; normal-terrain/restart checks pending | M6 |
-| BUG-16 | Implemented; server hand/pigment matrices; client pending | M2 |
-| BUG-17 | Implemented; count/component/final merge server proof; client pending | M2 |
-| BUG-18 | All36 additions/catalog/HTTP routing implemented; real local quote/sale/refund/replay proof; response-loss recovery acceptance OPEN; production pending | M7 |
-| BUG-19 | Implemented; server transaction/gesture matrix; two-client pending | M3 |
+| M0 | `a95538d862a6c9316d7f45077fbc620e3241d097` | docs(gameplay): freeze bugfix contract and isolated baseline |
+| M1 | `f31550eefb215e198afc60a35dec355661a5f173` | fix(farming): restore timed soil and hydrate from either bowl hand |
+| M2 | `558b5236ef3d4db55e282e3c3b5193f7cd50ea4d` | fix(crafting): resolve hand roles and merge compatible outputs first |
+| M3 | `c6496588042b8109266d55443c3b1fe68ee062e7` | fix(display-case): eject transactionally and rotate the complete case |
+| M4 | `cabc1050dba8d3d9865623fe9beacc2f7f89033d` | fix(farming): unify species gates and commit paid harvest outcomes |
+| M5 | `b8101aed6c2bb6a14835fbb8abf4ddd2510fa041` | fix(farming): acknowledge committed planting and expose synchronized plot state |
+| M6 | `2ec14a9722a6c3dee24428e13fed1afb3055627b` | fix(worldgen): suppress only random pumpkin and melon patches |
+| M7a | `5c195339a33f8e79fcdd1d4589ceec45c23a4ae4` | fix(economy): map approved produce and verify real Rails buyback |
+| M7b | `934790ec7ec45b193cdff299a876dceb2b611603` | fix(economy): recover trader sales by durable receipt and current player |
+| M8 | `ea8499f764fcd059edf4d4b0a0cfc98c0d9db8ea` | fix(fences): derive stable connections and preserve paths with full-height collision |
+| M9 | `65bc1a6a21f04df2a222c971c1494b1729c275d4` | fix(decorations): allow Creative substrates while preserving structure validity |
+| M10 bounded audit | `991fb1f33e6f85b38df2b4385d9c97ee5a652333` | docs(gameplay): record clean shader baseline and remaining client acceptance |
+| M11 test closure | `4ee0f5d90d70b2429c7d5cb8eacf100b838d0d67` | test(gameplay): reconcile full-suite contracts and durable refund checks |
 
-Final delivery will include milestone SHAs in both repositories, exact automated/manual evidence, clean normal JAR SHA/size/embedded HEAD/dirty flag/dependencies, changed files/status, rollback and existing-world notes. No push, merge, deployment, production seed/migration/data/world change, server JAR replacement or Fabric work authorized or performed.
+| Rails milestone | Full local commit | Subject |
+|---|---|---|
+| M7a | `6cc948f9a814add4f4a7b8a4f122514d9ed45bf8` | fix(economy): backfill approved produce and route economic NPC sales |
+| M7b | `a506d67d1b478789c2a68094b5d081a4e9afb924` | fix(economy): resolve committed sale receipts after response loss |
+| M11 test isolation | `f5ec7915d6189fa2eb7208479b2eb137ed1fd67b` | test(admin): scope refusal and reconciliation assertions to their operations |
+| M11 regression correction | `4e67f4c41c4d6f531c673e11fd6b2dbd71b59e18` | fix(regression): remove redundant page queries and scope restore audits |
+| M11 Rails documentation closure | `0646020b331a241222e7c38251e1f0749503661a` | docs(gameplay): close Rails regression and record production read-only evidence |
 
+M7a and M7b are paired mod/Rails boundaries. M8, M9 and the M10 audit remain separate commits. M11 also resolved inherited source-test assumptions and public-page query overhead exposed by full regression; the query budgets were retained.
 
-## M1 evidence
+## Nineteen-issue status
 
-Soil fertilizer now accepts only prepared community plots or empty farmland within the actor's registered house. One saved online game-time deadline restores the exact previous hoed state and forfeits unused fertilizer; remaining community preparation time resumes without a fresh budget. Flower conversion cancels the empty deadline and preserves soil ownership/uses through rollback, care and uproot. Bowl water adds one hydration, consumes the actual hand once and returns one custom bowl; full/protected targets do not spend it.
+| Issue | Report | Outcome / remaining acceptance |
+|---|---|---|
+| BUG-01 | Moongate with Photon | PENDING M10-SHADER-3WAY; renderer unchanged. Controlled reproduction and any supported correction remain. |
+| BUG-02 | Planting feedback / plot HUD | Implemented: committed feedback and authoritative plot state. Graphical aiming, layout and reconnect pending. |
+| BUG-03 | Empty fertilized soil expiry | Implemented: 1,200 online ticks, exact prior hoed state, unused fertilizer forfeited. Physical timing/restart pending. |
+| BUG-04 | Lettuce artwork | EXCLUDED manual asset polishing; assets untouched. |
+| BUG-05 | Bowl hydration | Implemented: either hand, +1 hydration, one custom empty bowl, free refusal on full/protected targets. Client input pending. |
+| BUG-06 | Green-onion artwork | EXCLUDED manual asset polishing; assets untouched. |
+| BUG-07 | Green-onion artwork | EXCLUDED manual asset polishing; assets untouched. |
+| BUG-08 | Planting / harvest skill consistency | Implemented across 67 crops and 7 flowers; grapes require 80. Paid probabilistic outcomes and lifecycles tested. |
+| BUG-09 | Fertilizer target restrictions | Implemented: prepared community or empty vanilla farmland inside the acting player’s owned house; live authority revalidated. |
+| BUG-10 | Creative decorative substrates | Implemented across bounded family audit; technical footprint, collision, permissions and part integrity retained. Client/restart pending. |
+| BUG-11 | History-dependent fence joins | Implemented: deterministic final topology, bounded loaded-state reconciliation; authored models unchanged. Visual comparison pending. |
+| BUG-12 | Custom fence collision | Implemented: occupied arms/posts 1.5 high, outline 1.0; Survival/Adventure server movement probes pass. Keyboard movement pending. |
+| BUG-13 | Dirt path under custom fence | Implemented: actual vanilla-shovel path survives custom fence and queued updates; oak control retained. Actual restart pending. |
+| BUG-14 | Full watering-can state | Functional selection implemented: 12 full, 0–11 base, legacy missing data 12. PENDING_USER_ASSET and final display acceptance. |
+| BUG-15 | Random landscape pumpkin / melon | Implemented: exactly three random features removed. Existing blocks, structures and intentional cultivation preserved. Normal-terrain survey/restart pending. |
+| BUG-16 | Swapped-hand pseudo-crafting | Implemented: role-based three bowl recipes and seven pigments, one MAIN-phase commit. Physical input pending. |
+| BUG-17 | Final crafted stack merge | Implemented: compatible stacks first, exact components/remainders and full-inventory conservation. Menu/reconnect display pending. |
+| BUG-18 | Produce trader coverage / settlement | Implemented: all 36 additions, exact mapping, insert-only prices, real local Rails receipt/recovery proof. Production backfill/player acceptance requires separate release authority. |
+| BUG-19 | Display-case decorator | Implemented: offhand exact world ejection; mainhand atomic whole-case rotation. Two-client display/restart pending. |
 
-Focused JUnit:169 passed/6skipped (175 total). Final server run:1111 required GameTests passed; BUILD SUCCESSFUL1m55s. Final focused JUnit169passes/6skips. Commands and earlier fixture corrections are recorded in scratchpad. Existing five-harvest lifecycle/full loop remain passing with authorized owned-farmland fixtures. Full inventory drops exactly one bowl remainder. Build outputs here are diagnostic, not the M11 deliverable.
+## Implemented decisions
 
-Existing-world notes: old private soil without timer/fertility tags remains untimed/untracked(-1); old timed community soil with no origin restores hoed soil with no invented preparation budget. Missing prepared time captures one tick, never3600 free ticks. Occupied crops/flowers and paid house plots do not expire. No chunk scan/migration/cleanup is required. Private flower owner metadata is optional for legacy saves and excluded from client tags. Reverting the code would ignore new origin/owner fields and restore the former incorrect timer/eligibility behavior; preserve world backups before any separately authorized release.
+Empty fertile soil expires after 1,200 online simulation ticks, restores the exact saved hoed state and loses the application and all unused fertile uses. Planting cancels the deadline; community preparation time pauses and resumes without a fresh allowance. Fertilizer accepts prepared community soil and empty vanilla farmland within the acting player’s registered owned-house bounds. Buckets, cans, bowls and rain retain hydration behavior; a bowl adds one hydration and returns one custom empty bowl, preserving initial fertilizer moisture.
 
-Pending actual clients: standard/low-TPS sixty-second timing, chunk unload/reload, server stop/start, ordinary farming and hydration, two-client remainder/synchronization. Server fixtures are not those observations.
+All 74 cultivated species use matching planting/harvest thresholds. Eligible success is `min(95%, 75% + 1% × Farming surplus)`. Failure destroys produce/byproducts, consumes normal durability/fertility, runs the existing practice opportunity, and follows annual/perennial/tree lifecycle. Creative/operator-level-2 success is deterministic and free. Native cultivation outside the custom system remains vanilla. Feedback follows committed planting, and plot HUD state requires authoritative server data.
 
+The three bowl recipes and seven pigments resolve actual hand roles. One MAIN callback owns the gesture; the redundant OFF callback cannot craft twice. Compatible component-equal stacks receive output first. Display-case offhand use ejects the exact saved item into the world; mainhand/both tools rotate both cells under one guarded transaction with rollback.
 
-## M2 evidence
+Worldgen suppression removes only `minecraft:patch_pumpkin`, `minecraft:patch_melon` and `minecraft:patch_melon_sparse` from Overworld vegetal decoration. It neither scans nor deletes old chunks/blocks. Structure templates, native stems, custom crops, recipes and random tick speed are retained.
 
-Three bowl recipes and seven tub pigments now use actual ingredient roles in either hand. The main callback owns a matched gesture; a redundant offhand callback cannot craft twice, while separate clicks in one tick still work. Compatible outputs/remainders merge first, preserve meaningful components, and use available capacity before one excess drop. Creative bowl costs and dye pigment exemption remain unchanged. Invalid nonmatches pass to established item behavior; source-water and block-target precedence remain.
+Fences converge from final topology, preserve intentional isolated facing, use 1.5-high occupied collision and retain an actual vanilla-shovel dirt path through a narrow custom-fence exception. Creative decoration bypasses gameplay substrate restrictions while bounds, loaded space, replaceability, block entities, collision, protection and structural parts remain authoritative.
 
-Focused JUnit178passes/6skips (184total); final registered GameTests1115passed, BUILD SUCCESSFUL2m, including the both-hand source-water regression. The24bowl series execute420crafts with both hand orders, counts1/2/3/64, compatible-headroom and named-incompatible controls. Seven pigments in both hands and both modes preserve tub metadata, costs and same-pigment no-op. Existing full/near-full capacity cases remain passing. Final command/result and M2 commit are in scratchpad.
+## Produce policy, economics and live evidence
 
-No item NBT migration is needed. Reverting M2 restores restricted drivers and final-output hand placement; outputs already made are ordinary unchanged registry/component stacks. Physical input/reconnect, inventory display, source targeting and dye-preview/anvil/case client controls remain pending; server tests do not certify those observations.
+The byte-identical mod/Rails manifest contains 55 exact item IDs / 51 commodity keys and accounts for all 67 crop definitions: 50 supported and 17 excluded. SHA-256: `9bd07850fce0bf25906daba76ac95e25bf389cd1fb7f0fff49c36dd44934e5bc`.
 
-## M3 evidence
+All 36 approved additions are implemented: yellow_onion, green_onion, watermelon, beans, vanilla_melon, pineapple, strawberry, blueberry, raspberry, cranberry, blackberry, huckleberry, mulberry, elderberry, cherries, snow_peas, peas, turnips, lemon, lime, orange, olive, plum, bell_peppers, cucumbers, honeydew, cantaloupe, broccoli, cauliflower, rhubarb, celery, radish, parsnip, yam, rutabaga and grapes. Vanilla melon maps to `minecraft:melon_slice` / `produce|fruit|melon_slice`. Existing apple/carrot and other legacy mappings remain.
 
-Case-specific MAIN-phase dispatch now owns decorator use on either cell. Offhand-only ejects the exact stored stack to a collision-free world position after confirmed insertion; mainhand/both tools rotate the complete pair with rollback. Root locking and live identity/content checks prevent reentrant duplication and stale clearing. Existing world permissions and case-neighbor policy remain in force. No NBT or artwork change.
+The complete exact item/category/subcategory/key/base-price/cap/comparable table is the handoff’s [produce mapping and prices annex](M7_PRODUCE_MAPPING_AND_PRICES.md). New prices use existing family/tier/lifecycle comparables: alliums 1.50, roots 1.60, gourds 2.20, ordinary annual/trellis produce 2.00, tree fruit 2.00, perennial grapes 2.50; caps follow existing 3,000 crop / 2,000 food conventions. Pineapple’s conservative 2.00 same-tier fallback is explicit. Existing prices, stock, buy flags, caps and curves are never reset. Existing dynamic quote/denomination/minimum/treasury/stock/revision controls remain.
 
-Final focused JUnit9passes; all1118 registered required GameTests passed, BUILD SUCCESSFUL1m56s. New320gesture matrix includes all16neighborhood patterns, both cells, sneaking, air/stick/food/placeable/decorator main items, full inventory and exact legacy count/components. Rejected spawn with second-player reentry, two-player repeat, malformed/denied cases, rejected/throwing upper rotation and success/failure disk serialization pass. An old connection-teardown regression was caught and corrected before the final suite. Detailed command/log evidence and commit ledger are in scratchpad. Physical hand input and two-client ghost-display/synchronization acceptance remain pending.
+Excluded crop definitions are wheat, rye, barley, oats, mustard, rice, garlic, ginseng, mandrake, nightshade, brown_mushroom, red_mushroom, cotton, flax, hemp, hops and tobacco. Seeds, cultivated flowers, processed food, reagents and textiles remain outside produce policy. Native carrot/potato produce-as-seed exceptions are intentional; beans are approved produce.
 
-## M4 evidence
+At `2026-09-07T08:28:11.16914Z`, an authenticated, read-only transaction against the verified UltimaCraft production app found the Britannia/Jhelom enabled produce post assigned to active **Zorah**, active/spawnable produce policy revision 2, and no Britannia override. Fifteen legacy rows existed; all 36 new keys were absent. Apple base/current 2/3 and carrots 1.8/2.7 were enabled controls. Exact post/assignment/NPC IDs and observations are in [production read-only evidence](M7_PRODUCTION_READONLY_EVIDENCE.md). No production sale or write was made. Deployment and the insert-only backfill are future separately authorized work.
 
-All67crop and7flower definitions now use the same planting/harvest requirement, including Farming80 for both grape entrypoints. One server outcome draw after live root/maturity/tool/rights/readiness checks implements75% at threshold, +1% per extra point, capped95%. Failed eligible attempts destroy yield/byproducts, pay one normal use/tool cost, run existing practice, and follow annual/perennial/fruit/tree lifecycle. Creative/operator-level2 has free deterministic success and no outcome draw/practice. Native crops outside custom soil are unchanged. Poppy's separate knife/Farming100 advancement remains.
+Real local mod→Rails proof includes after-commit response loss, disconnect/rejoin from the actual dedicated-server player file, receipt lookup and one payout to the current UUID. The independent verifier found two receipts, quantities 3 and 2, grants 9 and 5 copper, stock 5 and treasury 486 from 500. Exact refund, replay, wrong policy and refusal cases also pass. [Sale recovery](M7_SALE_RECOVERY.md) describes uncertainty that remains deliberately pending instead of risking duplication, including unknown legacy DISPATCHED records and ambiguous retries.
 
-Fruit/tree and flower harvests now share finite-use accounting. Economic tree felling requires ripe fruit and still removes the tree on eligible failure with no byproducts. Environmental/support cleanup remains separate. Flower quality is bounded to its persisted1..100 domain. Success is exposed through one post-commit FarmingHarvestCommittedEvent, with administrative provenance; no quest listener, reward or backend seed was introduced. Ordinary and Creative inventory delivery uses the existing compatible insertion helper and retains excess as a world drop.
+## Tests and observed client evidence
 
-Final command in scratchpad:180focused JUnit passes/6skips (186total), all1127registered required GameTests passed, BUILD SUCCESSFUL2m15s. New tests cover74species probability/refusal/bypass policy,58soil species success/failure,7flowers,9fruit species×3routes×2outcomes, below/unripe rejection, full inventories, actual grape entrypoints, ordinary tall/trellis two-player dispatch, Adventure tree BreakEvent, stale/reentrant root, finite-use reload and last-flower-use/Creative conservation. Earlier assertion/fixture failures and the quality boundary fix are recorded explicitly in scratchpad.
+| Gate | Executed result | Evidence |
+|---|---|---|
+| Clean normal release + full JUnit | 3,492 tests: 3,475 passes, 17 inherited skips, 0 failures/errors; 454 suites; build successful 6m38s | `m11-clean-release.log`, fresh XML and release identity JSON |
+| Full registered NeoForge server | All 1,154 required GameTests passed in 2.244 minutes | `m11-gametest-final.log` |
+| Real local Rails recovery + registered server | 1,142 GameTests and 27 focused JUnit passed, including opt-in real HTTP | `m7b-live-2.log`, [recovery evidence](M7_SALE_RECOVERY.md) |
+| Relevant Rails economy gate | 208 runs, 1,974 assertions, 0 failures/errors, 1 existing opt-in parity-writer skip | `m7b-final-rails.log` |
+| M11 Rails refusal/reconciliation correction | 18 runs, 81 assertions, 0 failures/errors/skips | `m11-rails-corrected-fresh.log` |
+| M11 Rails query/auth/image/refusal correction | 55 runs, 337 assertions, 0 failures/errors/skips | `m11-rails-corrections.log` |
+| Complete normal Rails regression | **3,190 runs, 51,848 assertions, 0 failures, 0 errors, 2 inherited conditional skips; all 435 normal test files covered.** | `m11-rails-final-partition-0.log` through `-7.log`; exact 435-file manifest |
 
-No world migration or backend change is needed; existing finite-use/legacy-1 fields are reused. Manual ordinary farming/physical inputs, two-client sync, reconnect/readiness and actual save/restart remain pending. Revert restores previous grape/harvest behavior; generated harvest items require no conversion.
+All mod logs are under this worktree’s ignored `tmp/gameplay-bugfixes`; Rails logs are under the Rails worktree’s corresponding directory. [M11 regression evidence](M11_REGRESSION_EVIDENCE.md) records exact commands, earlier failures/corrections, skips and limits. The [scratchpad](ULTIMACRAFT_GAMEPLAY_BUGFIX_SCRATCHPAD.md) retains chronological evidence and every focused milestone gate. Full default GameTests do not enable the optional external Rails fixture; its actual earlier run is recorded separately.
 
+The packaged clean M10 baseline reached the welcome screen and a fresh normal singleplayer world. Fresh log evidence identifies Intel UHD Graphics, OpenGL 4.6, driver 32.0.101.5972. The normal noise world seed is `-6858865061500343773`. This is client startup/world-load evidence only. No moongate placement, three-way shader comparison, ordinary farming journey or physical multiplayer acceptance was completed. No occluded capture showing another app counts as Minecraft evidence.
 
-## M5 evidence
+## Remaining acceptance and smallest next actions
 
-Verified planting now precedes a shared localized actionbar confirmation, one sound and the existing paid practice opportunity. Flower, grape, ordinary and tree planting use canonical species names. Failed placement, stale/replaced soil, duplicate hand input and a second player cannot produce an extra success set. HUD state resolves live soil and supported parts, distinguishes packet readiness from default empty data, and discards removed/unknown occupancy. Tree ready means ripe fruit exists. No optimistic or persistent client crop-name cache is used.
+| Named gate | Exact remaining action |
+|---|---|
+| M10-SHADER-3WAY | With coordinated foreground desktop control, use the exact candidate in one fixed scene: no Iris/Sodium; Iris 1.8.0 + Sodium 0.6.0 shaders off; Photon v1.1. Compare placed/inventory/held, front/back, distance, animation, chunk edge and resource reload; verify player/mount teleport separately. Apply a renderer correction only if the comparison supports it, then repeat. [Setup and input hashes](M10_SHADER_ACCEPTANCE.md). |
+| M11-ORDINARY-CLIENT | Physical prepare→fertilize→water→plant→HUD→grow→harvest journey; swapped recipes/final-stack menu; case rotate/eject; local produce sale; shovel/path/fence keyboard walk/run/jump alongside oak control; Creative decorative family placement. |
+| M11-MULTIPLAYER-RELOAD | Two actual clients for simultaneous planting/harvest/ejection and display synchronization; inventory conservation after reconnect, chunk unload/load and actual server stop/start; normal and low-TPS fertilizer timing. Server dispatch/NBT round trips are separate evidence. |
+| M6-NORMAL-TERRAIN | Survey known-seed newly generated affected/control biomes, and preserve pre-existing native fruit/stems through a real restart. The flat GameTest registry audit is not a natural distribution survey. |
+| M5-FULL-CAN-ART | User supplies full-can artwork; wire the final resource override and observe inventory/mainhand/offhand/dropped/pickup/reconnect/resource reload at 0, 1, 11 and 12 charges. Functional predicate and component preservation already pass. |
+| M7-LIVE-ROLLOUT | After separate release authority, deploy the paired code, execute only the documented insert-only rollout, then verify the Jhelom/Britannia catalog and ordinary player sale. Read-only pre-release evidence is already recorded. |
 
-The can predicate is britannia_mod:full, derived solely from charges:12full,0..11base,missing legacy data12. State and refill/dispense tests preserve unrelated components. Full artwork is absent from the supplied/repository locations; no invented artwork or broken override was added. PENDING_USER_ASSET applies to the final full-can visual gate. No item/save migration is needed; PlotStatusVersion is packet-only and does not change disk crop data.
+Client control was paused after repeated concurrent-input interruptions. At final read-only inspection, its former PID 9232 and all javaw processes were absent; the reason for exit was not observed. The isolated client files and test world remain available for the next acceptance run. No further permission for ordinary local tests is inferred from this note; a coordinated control window is the missing practical prerequisite. The local baseline client still contains the M10 baseline, whose code/resources match the final candidate except build metadata. Use the final candidate when completing acceptance.
 
-Final focused JUnit172total/166passes/6skips/0failures/errors and all1131registered required GameTests passed, BUILD SUCCESSFUL2m12s. Commands and earlier corrections are recorded in the scratchpad. Actual GUI placement, client hands/inventory/dropped-item appearance, reconnect/resource reload and physical aiming remain separate M11 acceptance checks. Reverting M5 removes the message/HUD/predicate and restores the former planting boundary; it does not require changing already planted crop or watering-can save data.
+## Clean local candidate
 
+`britannia_mod-0.1.8a-all.jar`: **34,690,262 bytes**, SHA-256 **`e25d2596058f0ae78ba67bc87e4d2d76fc7e46fddbd4700f17c9b512d3373709`**. Embedded HEAD `4ee0f5d90d70b2429c7d5cb8eacf100b838d0d67`, branch `codex/patch18-gameplay-bugfixes`, dirty **false**, timestamp `2026-09-07T15:03:26.277379Z`. Runtime Minecraft 1.21.1 / NeoForge 21.1.72 / Java 21; bundled GeckoLib 4.6.6 and nanohttpd 2.2.0.
 
-## M6 evidence
+Stable archive: `tmp/gameplay-bugfixes/release/britannia_mod-0.1.8a-all-4ee0f5d9.jar`; normal build output remains in `build/libs`. [Full release identity](M11_RELEASE_IDENTITY.md) includes the plain JAR hash and ZIP inspection. No diagnostic source-set injections, GameTest classes, generated empty test structures or acceptance fixture namespace occur in the bundled candidate. Every ZIP entry matches the observed clean M10 baseline except `britannia_mod_build.properties`. This comparison does not establish Photon visibility.
 
-The biome modifier removes only minecraft:patch_pumpkin, minecraft:patch_melon and minecraft:patch_melon_sparse from Overworld vegetal decoration. The loaded audit sees53Overworld biomes, removes49original references (46/2/1) and preserves every other vegetation feature exactly. All13fruit/stem structure templates remain. Native seed planting, bonemeal and vanilla growth still create pumpkin and melon fruit; custom/native-compatible gourd routes remain passing in the full farming suite.
+## Existing worlds and rollback
 
-Final JUnit182total/176passes/6skips/0failures/errors; all1134registered required GameTests passed, BUILD SUCCESSFUL2m14s. The corrected fixture and exact commands are in the scratchpad. GameTestServer uses FLAT; these results do not claim a normal-terrain seed survey or physical restart. Those remain M11 checks.
+Old private soil without timer/fertility tags remains untimed/untracked (`-1`). Old timed community soil with no saved origin restores hoed soil without inventing preparation time; missing prepared metadata receives one remaining tick, never a free 3,600. Planted crops/flowers and paid house plots do not expire. Optional owner/origin fields do not require a world migration.
 
-Existing blocks and chunks require no migration and are never scanned or deleted. Removing the new modifier later restores future landscape feature generation after the worldgen registries reload; it does not create/remove fruit in already generated chunks. Structure files, native stems, recipes, seed items, randomTickSpeed and the existing ore policy are unchanged.
+M2 recipes and M3 display cases retain ordinary item/component and case storage formats. M4 reuses finite-use and legacy `-1` semantics. M5’s readiness version is packet-only; the can’s legacy missing charge remains full. Already crafted, stored or planted items require no conversion.
 
-## M7 mapping, pricing and transaction evidence
+Worldgen changes affect new generation after registry loading, never existing blocks. Reverting the modifier restores future random patches and does not create/delete existing fruit. Fence reconciliation is bounded to loaded chunks and neighbors with four tasks per tick, with no forced chunk loads. Five recurring Creative families persist a false-default `creative_origin` blockstate (fern, hedge, blood, stalactite and triple `iron_fence_gate`); old states retain Survival substrate semantics. Removing the new code may restore substrate breakage on previously bypassed decorations; preserve world backups before any separately authorized release.
 
-All36missing outputs now map through an explicit55-item/51-key manifest. It accounts for every67CropRegistry definition (50supported,17excluded), retains legacy produce/native controls, and refuses unrelated namespace aliases. Rails uses the byte-identical manifest for insert-only rollout and new-city seeding; existing prices/stock/flags/caps/curve parameters survive reruns. The complete table and comparator rationale are in [M7_PRODUCE_MAPPING_AND_PRICES.md](M7_PRODUCE_MAPPING_AND_PRICES.md). Actual prices continue to use the existing live Rails scarcity/form/denomination rules.
+Keep M7 mod/Rails mapping, rollout and receipt API changes paired. Reverting code does not delete inserted commodity rows and must not reset prices. **Do not downgrade while sale journals contain pending receipts**: preserve the exact request, inventory/removal/delivery markers and journal, and reconcile uncertain outcomes against the authoritative receipt first. Full inventory intentionally waits; recovery never invents a world-drop payout. Dedicated player-file durability tests are not a hardware power-cut experiment or proof of the integrated host’s separate `level.dat` player snapshot.
 
-The real HTTP test exposed and fixed Rails strong params dropping world_npc_public_id before the existing economic router. Both top-level and wrapped requests now reach authoritative assignment/policy/treasury settlement. No new sale formula, NPC activation or shard-policy widening was added. Catalog opens already fetch live rows and use the existing row-sensitive revision.
+## Changed files, status and project records
 
-Validation:111mod economy JUnit passes;1137registered GameTests pass including opt-in real Rails integration;205Rails economy/controller tests,1957assertions,0failures/errors,1existing skip. The final manifest's lifecycle/pricing refinement has a further normally processed111-test mod gate and the final205-test Rails gate. Earlier setup/fixture failures and their corrections are in scratchpad.
+[Complete changed-file inventory](M11_CHANGED_FILES.md) enumerates every added/modified file in both isolated repositories. The final snapshot records exact ending documentation SHAs and final `git status --short`. Original NeoForge HEAD remains `421e27853dde4099d1d794568e33e6709507a53b` with no tracked diff; existing untracked documents remain. Original Rails HEAD remains `a9425ca41afa9b4ba7539426044e7b50e70a3966`; its existing Avatar article change (2 insertions / 2 deletions) and untracked files are preserved.
 
-Two independently created local Jhelom fixtures proved actual mod prepare/fetch, durable reservation of exact quality components/count, sale/copper delivery, same-key Rails replay, real stock-cap failure/exact refund and preflight disconnect. Read-only DB verification:1transaction/1line,broccoli stock3,treasury500→491,copper grant9,market price aftersale2.4. A test proxy paused forwarding only to inspect the reservation; all economic responses were real Rails. No production evidence is inferred.
+Authoritative records: [playbook](ULTIMACRAFT_GAMEPLAY_BUGFIX_PLAYBOOK.md), [kickoff](ULTIMACRAFT_GAMEPLAY_BUGFIX_KICKOFF.md), [scratchpad](ULTIMACRAFT_GAMEPLAY_BUGFIX_SCRATCHPAD.md), [updated acceptance draft](ULTIMACRAFT_BUGFIX_ACCEPTANCE_DRAFT.md), [this handoff](ULTIMACRAFT_GAMEPLAY_BUGFIX_HANDOFF.md), [fence evidence](M8_FENCE_EVIDENCE.md), [Creative placement evidence](M9_CREATIVE_DECORATION_EVIDENCE.md), [shader acceptance](M10_SHADER_ACCEPTANCE.md).
 
-OPEN acceptance: existing post-dispatch response-loss/crash recovery knowingly refunds goods even if Rails may have committed; the callback also targets a captured player. This is a concrete pre-existing code limitation, not an unavailable external check. Preflight disconnect/replay tests do not prove that window safe. Further recovery work remains before an unqualified exactly-once verdict. Production Jhelom/Britannia assignment/override/catalog acceptance is separately pending.
-
-
-M7a paired local source commits: NeoForge5c195339a33f8e79fcdd1d4589ceec45c23a4ae4; Rails6cc948f9a814add4f4a7b8a4f122514d9ed45bf8. Both isolated worktrees were clean after their commits. Final manifest LF blob SHA2569bd07850fce0bf25906daba76ac95e25bf389cd1fb7f0fff49c36dd44934e5bc. The one Rails skip is an opt-in parity fixture writer, not an acceptance scenario.
-
-Production read-only observation subsequently became available through WSL Heroku auth and verified remote app ultimacraft. At2026-09-07T08:28:11.16914Z, transaction_read_only=on: produce_trader active/spawnable revision2, categoryproduce, noBritanniaoverride; Jhelom registered/enabledpost assigned to activeZorah. Exactly15existingproduce rows; all36approvednewkeys absent, includingbroccoli/orange. Controls applebase2/current3 andcarrotsbase1.8/current2.7 enabled. Full IDs/prices/missinglist in M7_PRODUCTION_READONLY_EVIDENCE.md. The first SELECT failed only for a nonexistent guessed FK; corrected using verified source, no writes in either transaction. This supersedes earlier statements that production read-only evidence was unavailable. Deployed/new-row acceptance remains pending; no production changes performed.
-
-
-M7b update: dedicated-server response-loss recovery is now implemented and verified against real local Rails. All1,142GameTests +27focusedJUnit passed; two local receipts grant9/5copper,stock5,treasury486. Full details, persistence boundaries and operator-pending cases: M7_SALE_RECOVERY.md and scratchpad. M8–M11 remain; no final release verdict yet.
-
-
-M7b paired local commits: NeoForge934790ec7ec45b193cdff299a876dceb2b611603; Railsa506d67d1b478789c2a68094b5d081a4e9afb924. Final Rails gate208runs/1,974assertions/0failures/0errors/1existing parity-writer skip,67.887533s. Both worktrees clean after commits. Mod commit has a harmless extra EOF blank line in the new settlement service; no functional issue.
-
-M8 implemented and verified: all1,147GameTests +5JUnit passed; see M8_FENCE_EVIDENCE.md. M9–M11 remain; no final release verdict yet.
+Nothing was pushed, merged, deployed, seeded or migrated in production. No production data/world settings or server JAR were changed. Fabric, Atrevion and unrelated worktrees were untouched. Disposable local PostgreSQL databases and an isolated offline client were used for authorized testing; prior test databases and evidence were preserved.
