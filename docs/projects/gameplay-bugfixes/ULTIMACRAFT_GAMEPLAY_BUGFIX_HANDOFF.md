@@ -99,3 +99,8 @@ Production read-only observation subsequently became available through WSL Herok
 
 
 M7b update: dedicated-server response-loss recovery is now implemented and verified against real local Rails. All1,142GameTests +27focusedJUnit passed; two local receipts grant9/5copper,stock5,treasury486. Full details, persistence boundaries and operator-pending cases: M7_SALE_RECOVERY.md and scratchpad. M8–M11 remain; no final release verdict yet.
+
+
+M7b paired local commits: NeoForge934790ec7ec45b193cdff299a876dceb2b611603; Railsa506d67d1b478789c2a68094b5d081a4e9afb924. Final Rails gate208runs/1,974assertions/0failures/0errors/1existing parity-writer skip,67.887533s. Both worktrees clean after commits. Mod commit has a harmless extra EOF blank line in the new settlement service; no functional issue.
+
+M8 implemented and verified: all1,147GameTests +5JUnit passed; see M8_FENCE_EVIDENCE.md. M9–M11 remain; no final release verdict yet.

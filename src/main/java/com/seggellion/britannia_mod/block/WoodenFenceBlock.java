@@ -22,8 +22,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * A wall-connected, edge-mounted timber fence derived from the bannister construction language.
  *
  * <p>The four side flags are authoritative, server-derived connection state. {@link #FACING}
- * remains the occupied edge for isolated and linear pieces, and is a stable rotation tie-breaker
- * for four-way pieces. Unlike a vanilla fence, the collision and models occupy 4-voxel edge strips
+ * remains the intentional edge for isolated pieces; connected pieces derive it from topology.
+ * Linear runs use the occupied edge of a junction, never a neighbour's previous facing. Unlike a vanilla fence, the collision and models occupy 4-voxel edge strips
  * instead of meeting at the centre of the block.
  */
 public class WoodenFenceBlock extends Block {
@@ -71,29 +71,28 @@ public class WoodenFenceBlock extends Block {
         return deriveConnections(state, level, currentPos);
     }
 
-    private BlockState deriveConnections(BlockState state, LevelAccessor level, BlockPos pos) {
-        boolean north = connectsTo(level.getBlockState(pos.north()));
-        boolean east = connectsTo(level.getBlockState(pos.east()));
-        boolean south = connectsTo(level.getBlockState(pos.south()));
-        boolean west = connectsTo(level.getBlockState(pos.west()));
+    public BlockState deriveConnections(BlockState state, LevelAccessor level, BlockPos pos) {
+        boolean north = connectsAt(level, pos.north());
+        boolean east = connectsAt(level, pos.east());
+        boolean south = connectsAt(level, pos.south());
+        boolean west = connectsAt(level, pos.west());
 
         state = state.setValue(NORTH, north).setValue(EAST, east)
                      .setValue(SOUTH, south).setValue(WEST, west);
 
         int count = count(north, east, south, west);
-        if (count == 0 || count == 4) {
-            return state;
-        }
+        if (count == 0) return state;
+        if (count == 4) return state.setValue(FACING, Direction.NORTH);
 
         boolean eastWestRun = east || west;
         boolean northSouthRun = north || south;
         if (eastWestRun && !northSouthRun) {
             return state.setValue(FACING,
-                inheritedRunEdge(level, pos, state.getValue(FACING), Direction.Axis.X));
+                resolvedRunEdge(level, pos, Direction.Axis.X));
         }
         if (northSouthRun && !eastWestRun) {
             return state.setValue(FACING,
-                inheritedRunEdge(level, pos, state.getValue(FACING), Direction.Axis.Z));
+                resolvedRunEdge(level, pos, Direction.Axis.Z));
         }
 
         // Mixed-axis topology is anchored on an outside edge. This is deterministic, so corners
@@ -107,31 +106,44 @@ public class WoodenFenceBlock extends Block {
         return state.setValue(FACING, Direction.WEST);
     }
 
-    private boolean connectsTo(BlockState neighbour) {
-        return neighbour.getBlock() instanceof WoodenFenceBlock;
+    private static boolean connectsAt(LevelAccessor level, BlockPos pos) {
+        return level.hasChunk(pos.getX() >> 4, pos.getZ() >> 4)
+                && level.getBlockState(pos).getBlock() instanceof WoodenFenceBlock;
     }
 
-    /**
-     * Linear pieces inherit a compatible edge from an existing run. This makes a newly placed
-     * section converge with its neighbour even if the player approached the second block from the
-     * opposite side. With no established run, the placement-facing edge is preserved.
-     */
-    private static Direction inheritedRunEdge(LevelAccessor level, BlockPos pos,
-                                              Direction current, Direction.Axis runAxis) {
-        Direction.Axis requiredEdgeAxis = runAxis == Direction.Axis.X
-            ? Direction.Axis.Z : Direction.Axis.X;
-        for (Direction direction : Direction.Plane.HORIZONTAL) {
-            if (direction.getAxis() != runAxis) continue;
-            BlockState neighbour = level.getBlockState(pos.relative(direction));
-            if (neighbour.getBlock() instanceof WoodenFenceBlock
-                    && neighbour.getValue(FACING).getAxis() == requiredEdgeAxis) {
-                return neighbour.getValue(FACING);
+    /** All pieces in one loaded linear run choose the same junction, independent of history. */
+    private static Direction resolvedRunEdge(LevelAccessor level, BlockPos pos, Direction.Axis axis) {
+        Direction negative = axis == Direction.Axis.X ? Direction.WEST : Direction.NORTH;
+        for (Direction step : new Direction[]{negative, negative.getOpposite()}) {
+            BlockPos cursor = pos.relative(step);
+            while (connectsAt(level, cursor)) {
+                boolean n = connectsAt(level, cursor.north()), e = connectsAt(level, cursor.east());
+                boolean s = connectsAt(level, cursor.south()), w = connectsAt(level, cursor.west());
+                if ((axis == Direction.Axis.X && (n || s)) || (axis == Direction.Axis.Z && (e || w))) {
+                    // Match the existing model's outside strips, not its incidental facing field.
+                    int count = count(n, e, s, w);
+                    Direction first = count == 4 ? Direction.NORTH
+                            : !n ? Direction.NORTH : !e ? Direction.EAST : !s ? Direction.SOUTH : Direction.WEST;
+                    if (count == 2) return axis == Direction.Axis.X
+                            ? (!n ? Direction.NORTH : Direction.SOUTH) : (!w ? Direction.WEST : Direction.EAST);
+                    return first.getAxis() != axis ? first : first.getCounterClockWise();
+                }
+                cursor = cursor.relative(step);
             }
         }
-        if (current.getAxis() == requiredEdgeAxis) {
-            return current;
-        }
-        return requiredEdgeAxis == Direction.Axis.Z ? Direction.NORTH : Direction.WEST;
+        return axis == Direction.Axis.X ? Direction.NORTH : Direction.WEST;
+    }
+
+    @Override
+    protected void onPlace(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, BlockState old, boolean moved) {
+        super.onPlace(state, level, pos, old, moved);
+        if (!level.isClientSide && old.getBlock() != this) level.scheduleTick(pos, this, 1);
+    }
+
+    @Override
+    protected void tick(BlockState state, net.minecraft.server.level.ServerLevel level, BlockPos pos, net.minecraft.util.RandomSource random) {
+        BlockState resolved = deriveConnections(state, level, pos);
+        if (resolved != state) level.setBlock(pos, resolved, Block.UPDATE_ALL);
     }
 
     public static int connectionCount(BlockState state) {
@@ -201,7 +213,11 @@ public class WoodenFenceBlock extends Block {
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos,
                                            CollisionContext context) {
-        return getShape(state, level, pos, context);
+        // Preserve the authored footprint and selection bounds; only collision reaches 1.5 blocks.
+        VoxelShape collision = Shapes.empty();
+        for (var box : getShape(state, level, pos, context).toAabbs())
+            collision = Shapes.or(collision, Shapes.box(box.minX, box.minY, box.minZ, box.maxX, 1.5D, box.maxZ));
+        return collision;
     }
 
     @Override

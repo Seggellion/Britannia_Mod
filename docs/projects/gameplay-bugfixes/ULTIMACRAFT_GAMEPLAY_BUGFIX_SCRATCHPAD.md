@@ -240,3 +240,14 @@ Real local Rails integration passed quote, exact reservation, sale, same-key rep
 This closes the observed dedicated-server sale duplication/refund compromise, superseding the earlier OPEN RECOVERY FINDING. No hardware power-loss or integrated-singleplayer level.dat snapshot claim is made. Corrupt/legacy unknown outcomes and uncertain requests subsequently refused remain explicit operator reconciliation cases. Do not downgrade while pending new-format receipts exist; pair backend/mod rollout and settle or retain evidence before rollback.
 
 M8 fences, M9 Creative placement, M10 observed shader rendering, and M11 integrated/release gates remain to do. No publication, production data write, server JAR replacement, or Fabric/Atrevion change.
+
+
+M7b paired local commits: NeoForge934790ec7ec45b193cdff299a876dceb2b611603; Railsa506d67d1b478789c2a68094b5d081a4e9afb924. Final Rails gate208runs/1,974assertions/0failures/0errors/1existing parity-writer skip,67.887533s. Both worktrees clean after commits. Mod commit has a harmless extra EOF blank line in the new settlement service; no functional issue.
+
+### M8 active implementation and first verification
+
+Implemented topology-based loaded-run facing, fixed cross tie-breaker, preserved isolated facing, 1.5-block collision on existing strips, a narrow dirt-path survival/queued-tick Mixin, and bounded loaded-chunk reconciliation. Added six GameplayFenceGameTests and M8_FENCE_EVIDENCE.md. Existing authored assets are unchanged.
+
+m8-1 compile failed because the new Mixin initially requested unavailable obfuscation mappings; corrected to the existing NeoForge remap=false convention. m8-2 processed normal resources and completed all1,147GameTests (2.151min) with exactly one failure: the player movement probe did not clear the fence above1.5. All topology, path, collision-shape, loaded-state checks and existing tests passed. The movement fixture now clears nearby geometry, explicitly distinguishes grounded/airborne state, and reports mode/block/actual coordinates. m8-3 is running the corrected test plus full suite, reusing the already processed unchanged resources. Do not claim M8 complete until this check passes or the precise defect is resolved. No M8 commit yet.
+
+M8 final gate: m8-3.log BUILD SUCCESSFUL6m27s; all1,147requiredGameTests passed in2.303min and5WoodenFenceContractTest JUnit tests passed/0skips. The sole prior movement-fixture failure is resolved by explicitly clearing the collision corridor and setting grounded/airborne state before each probe; no production collision relaxation was made. All1,044placement layouts, direct/history L variants,64shape states,path/oak controls,loaded-state repair and Survival/Adventure movement-envelope probes passed. Interactive keyboard/client visual and full restart observations remain named M11 runtime checks; headless evidence is not presented as those observations. No authored fence models/textures changed. Diff check clean for M8.
