@@ -10,6 +10,8 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -45,9 +47,15 @@ public final class GameplayDisplayCaseGameTests {
                     player.setShiftKeyDown(sneak);
                     var display=(DisplayCaseBlockEntity)level.getBlockEntity(root);
                     ItemStack expected=merchandise(); load(h,display,expected);
+                    var replicas = new DisplayCaseBlockEntity[]{
+                            new DisplayCaseBlockEntity(root, level.getBlockState(root)),
+                            new DisplayCaseBlockEntity(root, level.getBlockState(root))};
+                    syncPacket(h, display, replicas);
+                    h.assertTrue(level.getBlockEntity(root.above()) == null, "upper cell acquired independent storage");
                     var before=level.getBlockState(root); var above=level.getBlockState(root.above());
                     BlockHitResult hit=hit(upper?root.above():root);
                     use(player,InteractionHand.OFF_HAND,hit); use(player,InteractionHand.MAIN_HAND,hit); use(player,InteractionHand.OFF_HAND,hit);
+                    syncPacket(h, display, replicas);
                     var drops=level.getEntitiesOfClass(ItemEntity.class,new AABB(root).inflate(2.5));
                     if(main==ItemRegistry.INTERIOR_DECORATOR_TOOL.get()) {
                         h.assertTrue(drops.isEmpty() && ItemStack.matches(expected,display.displayedItem()),"both tools ejected or lost merchandise");
@@ -60,6 +68,11 @@ public final class GameplayDisplayCaseGameTests {
                         use(player,InteractionHand.MAIN_HAND,hit);
                         h.assertTrue(level.getEntitiesOfClass(ItemEntity.class,new AABB(root).inflate(2.5)).size()==1,"empty repeat duplicated merchandise");
                         drops.forEach(ItemEntity::discard);
+                        h.assertTrue(display.storeOne(new ItemStack(Items.EMERALD)), "empty case refused replacement");
+                        syncPacket(h, display, replicas);
+                        h.assertTrue(replicas[0].displayedItem().is(Items.EMERALD)
+                                && replicas[1].displayedItem().is(Items.EMERALD), "old item survived replacement packet");
+                        display.takeDisplayedItem();
                     }
                     h.assertTrue(player.getMainHandItem().getItem()==main && player.getOffhandItem().is(ItemRegistry.INTERIOR_DECORATOR_TOOL.get()),"decorator action mutated hands");
                     for(int slot=1;slot<36;slot++) h.assertTrue(player.getInventory().getItem(slot).getCount()==64,"full inventory was used for ejection");
@@ -89,6 +102,7 @@ public final class GameplayDisplayCaseGameTests {
             var copy=new DisplayCaseBlockEntity(root,level.getBlockState(root));
             copy.loadWithComponents(display.saveWithoutMetadata(level.registryAccess()),level.registryAccess());
             h.assertTrue(ItemStack.matches(expected,copy.displayedItem()),"failure did not persist");
+            syncPacket(h, display, copy);
         } finally { NeoForge.EVENT_BUS.unregister(reject); }
         try {
             use(first,InteractionHand.MAIN_HAND,hit(root)); use(second,InteractionHand.MAIN_HAND,hit(root.above()));
@@ -155,6 +169,20 @@ public final class GameplayDisplayCaseGameTests {
     }
     private static void load(GameTestHelper h,DisplayCaseBlockEntity display,ItemStack stack) {
         var tag=new CompoundTag(); tag.put("DisplayedItem",stack.save(h.getLevel().registryAccess())); display.loadWithComponents(tag,h.getLevel().registryAccess());
+    }
+    private static void syncPacket(GameTestHelper h, DisplayCaseBlockEntity source, DisplayCaseBlockEntity... replicas) {
+        var buffer = new RegistryFriendlyByteBuf(io.netty.buffer.Unpooled.buffer(), h.getLevel().registryAccess());
+        try {
+            ClientboundBlockEntityDataPacket.STREAM_CODEC.encode(buffer,
+                    (ClientboundBlockEntityDataPacket) source.getUpdatePacket());
+            var decoded = ClientboundBlockEntityDataPacket.STREAM_CODEC.decode(buffer);
+            h.assertTrue(decoded.getPos().equals(source.getBlockPos()) && decoded.getType() == source.getType(), "wrong packet root/type");
+            for (var replica : replicas) {
+                replica.onDataPacket(null, decoded, h.getLevel().registryAccess());
+                h.assertTrue(ItemStack.matches(source.displayedItem(), replica.displayedItem()),
+                        "wire update left renderer-facing state stale");
+            }
+        } finally { buffer.release(); }
     }
     private static BlockHitResult hit(BlockPos pos) { return new BlockHitResult(Vec3.atCenterOf(pos),Direction.UP,pos,false); }
     private static void use(ServerPlayer player,InteractionHand hand,BlockHitResult hit) { player.gameMode.useItemOn(player,player.level(),player.getItemInHand(hand),hand,hit); }

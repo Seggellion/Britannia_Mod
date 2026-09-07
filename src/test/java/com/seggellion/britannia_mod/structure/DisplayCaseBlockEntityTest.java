@@ -13,6 +13,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
@@ -161,6 +162,84 @@ class DisplayCaseBlockEntityTest {
         copy.loadWithComponents(display.saveWithoutMetadata(RegistryAccess.EMPTY), RegistryAccess.EMPTY);
         assertFalse(copy.hasDisplayedItem());
         assertFalse(display.eject(stack -> { throw new AssertionError("empty insertion"); }, () -> {}));
+    }
+
+    @Test
+    void emptyPacketClearsEveryOccupiedRendererReplicaAndNextItemReplacesIt() throws Exception {
+        var block = new DisplayCaseBlock(BlockBehaviour.Properties.of());
+        var server = entity(block);
+        var initiatingClient = entity(block);
+        var trackingClient = entity(block);
+        assertTrue(server.storeOne(new ItemStack(Items.DIAMOND_SWORD)));
+        for (var client : new DisplayCaseBlockEntity[]{initiatingClient, trackingClient}) {
+            client.onDataPacket(null, packet(server), RegistryAccess.EMPTY);
+            assertTrue(client.displayedItem().is(Items.DIAMOND_SWORD));
+        }
+        assertTrue(server.eject(stack -> true, () -> { throw new AssertionError("committed ejection undone"); }));
+        var empty = packet(server);
+        for (var client : new DisplayCaseBlockEntity[]{initiatingClient, trackingClient}) {
+            // NeoForge's live packet handler ignores an empty top-level tag. Chunk tags
+            // take a different path, so testing handleUpdateTag alone misses the ghost.
+            client.onDataPacket(null, empty, RegistryAccess.EMPTY);
+            assertTrue(client.displayedItem().isEmpty(), "live packet left renderer-facing merchandise behind");
+            client.onDataPacket(null, empty, RegistryAccess.EMPTY);
+            assertTrue(client.displayedItem().isEmpty(), "duplicate empty update restored merchandise");
+        }
+        assertFalse(empty.getTag().isEmpty(), "authoritative empty must survive NeoForge's packet guard");
+        assertTrue(server.storeOne(new ItemStack(Items.APPLE)));
+        for (var client : new DisplayCaseBlockEntity[]{initiatingClient, trackingClient}) {
+            client.onDataPacket(null, packet(server), RegistryAccess.EMPTY);
+            assertTrue(ItemStack.matches(server.displayedItem(), client.displayedItem()));
+        }
+    }
+
+    @Test
+    void rejectedEjectionPacketRetainsExactComponentsAndCount() throws Exception {
+        var block = new DisplayCaseBlock(BlockBehaviour.Properties.of());
+        var server = entity(block);
+        var client = entity(block);
+        var exact = new ItemStack(Items.DIAMOND_SWORD, 3);
+        exact.setDamageValue(27);
+        exact.set(DataComponents.CUSTOM_NAME, Component.literal("Packet conservation"));
+        var owner = new CompoundTag(); owner.putString("owner", "test-owner"); owner.putInt("quality", 73);
+        exact.set(DataComponents.CUSTOM_DATA, CustomData.of(owner));
+        var saved = new CompoundTag(); saved.put("DisplayedItem", exact.save(RegistryAccess.EMPTY));
+        server.loadWithComponents(saved, RegistryAccess.EMPTY);
+        client.onDataPacket(null, packet(server), RegistryAccess.EMPTY);
+        for (boolean throwsOnInsert : new boolean[]{false, true}) {
+            assertFalse(server.eject(stack -> {
+                if (throwsOnInsert) throw new IllegalStateException("injected packet rollback");
+                return false;
+            }, () -> {}));
+            client.onDataPacket(null, packet(server), RegistryAccess.EMPTY);
+            assertTrue(ItemStack.matches(exact, server.displayedItem()));
+            assertTrue(ItemStack.matches(exact, client.displayedItem()));
+        }
+    }
+
+    @Test
+    void emptyDiskAndChunkTagsClearStaleStateIncludingLegacyMissingField() {
+        var block = new DisplayCaseBlock(BlockBehaviour.Properties.of());
+        var server = entity(block);
+        server.storeOne(new ItemStack(Items.DIAMOND));
+        server.takeDisplayedItem();
+        for (var tag : new CompoundTag[]{server.saveWithoutMetadata(RegistryAccess.EMPTY),
+                server.getUpdateTag(RegistryAccess.EMPTY), new CompoundTag()}) {
+            var restored = entity(block);
+            restored.storeOne(new ItemStack(Items.APPLE));
+            restored.loadWithComponents(tag, RegistryAccess.EMPTY);
+            assertTrue(restored.displayedItem().isEmpty(), "restart/disk load retained old merchandise");
+            restored.storeOne(new ItemStack(Items.APPLE));
+            restored.handleUpdateTag(tag, RegistryAccess.EMPTY);
+            assertTrue(restored.displayedItem().isEmpty(), "chunk/reconnect update retained old merchandise");
+        }
+    }
+
+    private static ClientboundBlockEntityDataPacket packet(DisplayCaseBlockEntity source) throws Exception {
+        var constructor = ClientboundBlockEntityDataPacket.class.getDeclaredConstructor(
+                BlockPos.class, BlockEntityType.class, CompoundTag.class);
+        constructor.setAccessible(true);
+        return constructor.newInstance(source.getBlockPos(), source.getType(), source.getUpdateTag(RegistryAccess.EMPTY));
     }
 
     private static void assertBlessedIdentity(

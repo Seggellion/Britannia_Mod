@@ -117,16 +117,16 @@ public final class DisplayCaseBlockEntity extends BlockEntity {
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        displayedItem = tag.contains(DISPLAYED_ITEM_TAG)
-                ? ItemStack.parse(registries, tag.getCompound(DISPLAYED_ITEM_TAG))
-                        .orElse(ItemStack.EMPTY)
-                : ItemStack.EMPTY;
+        displayedItem = ItemStack.parseOptional(registries, tag.getCompound(DISPLAYED_ITEM_TAG));
     }
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);
         saveAdditional(tag, registries);
+        // NeoForge ignores completely empty live update tags. Represent an empty
+        // slot explicitly so tracking clients clear the renderer's previous stack.
+        tag.put(DISPLAYED_ITEM_TAG, displayedItem.saveOptional(registries));
         return tag;
     }
 
