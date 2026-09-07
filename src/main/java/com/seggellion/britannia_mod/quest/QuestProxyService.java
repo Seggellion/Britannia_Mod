@@ -309,7 +309,7 @@ public final class QuestProxyService {
             accepted.forEach(entry -> ServerQuestTable.addFromRailsAcceptSuccess(player, entry));
 
             QuestModels.QuestResponse response = GSON.fromJson(root, QuestModels.QuestResponse.class);
-            QuestRewardService.apply(player, response);
+            QuestRewardService.apply(player, response, root);
 
             if (request.action() == QuestActionC2SPayload.Action.CHOOSE && hasClientAction(root, "spawn_escort")) {
                 String questStateId = string(root, "quest_state_id");

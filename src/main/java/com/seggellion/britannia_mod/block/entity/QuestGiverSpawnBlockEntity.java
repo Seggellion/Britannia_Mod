@@ -37,6 +37,18 @@ public class QuestGiverSpawnBlockEntity extends BlockEntity {
     private static final List<String> ESCORT_DESTINATIONS = List.of("Jhelom", "Vesper", "Ocllo", "Buccaneer's Den", "Cove", "Britain", "Minoc", "Moonglow", "Trinsic", "Yew", "Skara Brae", "New Magincia", "Serpent's Hold", "Nujel'm");
     private static final Random RANDOM = new Random();
 
+    /**
+     * The archetypes the configuration screen offers, mirrored here so the SERVER can refuse a
+     * crafted packet naming anything else (Rowan farming questline M1, discovery D3). The screen's
+     * list is client-only code; this one is the authority, and a unit test keeps the two identical.
+     */
+    public static final List<String> SUPPORTED_ARCHETYPES = List.of(
+            "Zorathiel", "Lord British", "Iolo", "Dupre", "Shamino", "Generic Escort", "Generic Combat");
+
+    public static boolean supportsArchetype(String npcName) {
+        return npcName != null && SUPPORTED_ARCHETYPES.contains(npcName);
+    }
+
     private UUID spawnedNpcId = null;
     private CompoundTag savedNpcData = null;
     private int spawnCooldown = 0;
