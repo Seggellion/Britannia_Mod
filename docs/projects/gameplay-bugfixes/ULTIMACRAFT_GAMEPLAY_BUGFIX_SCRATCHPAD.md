@@ -1,6 +1,6 @@
 # Gameplay bugfix implementation scratchpad
 
-Current: M0–M8 implemented, verified and locally committed. M9 Creative placement is in full regression; M10 client baseline preparation is local and isolated; M11 remains. Authorized M0–M11 execution includes local commits, no push/merge/deploy/production writes or Fabric work. All five authoritative documents were read in full before edits.
+Current: M0–M9 implemented, automated gates passed and locally committed. M10 clean packaged client startup observed; controlled moongate shader matrix pending safe desktop control (M10-SHADER-3WAY). M11 full regression/final artifacts in progress. Authorized local execution only; no publication, production writes or Fabric/Atrevion changes.
 
 ## Workspace and frozen contract
 
@@ -23,9 +23,9 @@ Decisions: 1200 online game ticks, exact hoed restoration, unused fertilizer for
 | M6 landscape features | PASS (non-flat terrain/restart checks pending) | b8101aed6c2bb6a14835fbb8abf4ddd2510fa041 / 2ec14a9722a6c3dee24428e13fed1afb3055627b |
 | M7 produce mod + Rails | PASS local; production backfill pending | mod 5c195339a33f8e79fcdd1d4589ceec45c23a4ae4 + 934790ec7ec45b193cdff299a876dceb2b611603; Rails 6cc948f9a814add4f4a7b8a4f122514d9ed45bf8 + a506d67d1b478789c2a68094b5d081a4e9afb924 |
 | M8 fence joins/collision/path | PASS automated; client pending | 934790ec7ec45b193cdff299a876dceb2b611603 / ea8499f764fcd059edf4d4b0a0cfc98c0d9db8ea |
-| M9 Creative decoration | PASS automated; actual reload/client pending | start ea8499f764fcd059edf4d4b0a0cfc98c0d9db8ea |
-| M10 shader reproduction/correction | PENDING | |
-| M11 final gates/build/handoff | PENDING | |
+| M9 Creative decoration | PASS automated; actual reload/client pending | ea8499f764fcd059edf4d4b0a0cfc98c0d9db8ea / 65bc1a6a21f04df2a222c971c1494b1729c275d4 |
+| M10 shader reproduction/correction | PENDING M10-SHADER-3WAY; packaged client loads | baseline65bc1a6a21f04df2a222c971c1494b1729c275d4; renderer unchanged |
+| M11 final gates/build/handoff | IN PROGRESS | full regression and release closure |
 
 ## M0 evidence
 
@@ -262,3 +262,14 @@ m9-compile.log: production draft compiled successfully in1m6s. m9-1.log: all1,15
 Computer-use skill read at C:/Users/dusti/.codex/plugins/cache/openai-bundled/computer-use/26.901.41600/skills/computer-use/SKILL.md plus guidance/api/confirmations. The prescribed @oai/sky entrypoint initialized. First list_apps timed out; one retry succeeded and showed no Minecraft window. Existing installed NeoForge21.1.72 launch metadata,90 cached libraries,eight native DLLs and asset index17 permit a separate offline client in ignored tmp/gameplay-bugfixes/client. No original profiles/configs/worlds/servers/credentials copied or changed. This is capability preparation, not a rendered shader acceptance claim.
 
 M9 final server gate m9-2.log: all1,154 required GameTests passed in2.544min;7focused JUnit passed,0failures/errors/skips. Review and diff check passed; details in M9_CREATIVE_DECORATION_EVIDENCE.md. Actual client/restart observations remain pending.
+
+
+## M10 bounded audit and packaged client
+
+M9 commit65bc1a6a21f04df2a222c971c1494b1729c275d4. Final M9 build SUCCESSFUL5m43s. M10 baseline normal build SUCCESSFUL1m45s, bundled JAR34,690,265bytes SHA2568794a00fb6d288937eb6b83fc5802076873f5e842218cff9c745f5e316706c48, embeddedHEAD65bc1a6a/dirty=false, GeckoLib4.6.6+nanohttpd2.2.0, no gametest/empty-template diagnostic content. Archive and full input/hardware/runtime evidence in M10_SHADER_ACCEPTANCE.md.
+
+The installed production NeoForge launcher loaded the packaged JAR in a disposable offline directory; first duplicate-classpath failure was a local launcher setup error, corrected without source changes. Actual welcome screen and a new normal world observed. Fresh GPU evidence Intel UHD/OpenGL4.6/driver32.0.101.5972. The singleplayer normal noise world has seed-6858865061500343773. No three-way moongate visual comparison or player/mount teleport acceptance is claimed. Concurrent desktop input repeatedly interrupted control and occluded captures returned other apps; UI paused and a coordination question remains pending. No renderer/material mutation is justified without the required controlled evidence. Named gate M10-SHADER-3WAY includes placed/inventory/held, front/back/distance/animation/chunkedge/reload and independent teleport. Original game directories remain untouched.
+
+## M11 integrated gates in progress
+
+First full NeoForge JUnit gate m11-full-junit.log:3,492tests/3failures/0errors/17existing skips across454suites,BUILD FAILED4m1s. Two historical dye source checks still required the former mainhand-only adapter; updated them to require main-phase dispatch with either role, server-only mutation before effects and retained mainhand banner preview/nonmatch behavior. The credential-source guard caught a direct environment read in the opt-in GameTest. Kept the guard intact; test-only fixture selection now uses JVM property britannia.m7.integrationConfig instead. It is not an application credential source and the class remains excluded from release JAR. Historical M7 commands used the then-current environment selector; new live runs pass the property to the GameTest JVM (for example through JAVA_TOOL_OPTIONS). Focused corrected contracts:13tests passed/0skip,BUILD SUCCESSFUL1m48s in m11-corrected-contracts.log. Full final JUnit+GameTest rerun started in m11-full-final.log. Full Rails suite uses only guarded Rails=test/PostgreSQL socket databaseultimacraft_test-1808; no production seed/migration/data action.
