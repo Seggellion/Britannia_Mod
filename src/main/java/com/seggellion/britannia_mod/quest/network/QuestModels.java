@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.quest.network;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
@@ -31,9 +32,24 @@ public class QuestModels {
         // NEW: Array to hold the list of items the server wants to give the player
         public List<ItemData> granted_items; 
         public List<ClientAction> client_actions;
-        
+
         public boolean completed;
-        public String error; 
+        public String error;
+
+        /**
+         * Rowan farming questline M3 (protocol section 1.3): the durable delivery a transition
+         * produced, when Rails publishes one, and whether the response is a replay of an earlier
+         * transition. Carried here so a trigger result -- which reaches
+         * {@code QuestRewardService} only as this parsed object -- can still be applied through
+         * the delivery ledger rather than granting {@code granted_items} a second time.
+         *
+         * <p>Declared as {@link JsonElement}, not {@code JsonObject}: Rails may send JSON
+         * {@code null} for a transition that granted nothing, and Gson refuses to bind a null
+         * element to a {@code JsonObject} field -- which would throw while parsing a response that
+         * is perfectly legal. The delivery parser already reads a null element as "no delivery".
+         */
+        public JsonElement reward_delivery;
+        public Boolean replayed;
     }
 
 public static class ClientAction {

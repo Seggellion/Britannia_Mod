@@ -259,6 +259,14 @@ public final class RailsApiUrlResolver {
         RESOURCE_DEPOSIT_REMOVAL_PREVIEW_RESULT("v2/resource_deposit_removal_previews/:preview_uuid/result"),
         RESOURCE_DEPOSIT_REMOVALS_PENDING("v2/resource_deposit_removals/pending"),
         RESOURCE_DEPOSIT_REMOVAL_RESULT("v2/resource_deposit_removals/:operation_uuid/result"),
+        /**
+         * Rowan farming questline M3 (protocol sections 1.6, 1.7): the v2 reward-delivery tier.
+         * The pending listing serves on-demand reconciliation (the world bootstrap carries the
+         * same array at login); the result callback is where this server reports {@code applied}
+         * or {@code queued} once its own durable ledger and player marker exist.
+         */
+        QUEST_REWARD_DELIVERIES_PENDING("v2/quest_reward_deliveries/pending", "player_uuid"),
+        QUEST_REWARD_DELIVERY_RESULT("v2/quest_reward_deliveries/:delivery_uuid/result"),
         BANKING_OPEN("banking/open"),
         BANKING_DEPOSIT_PREPARE("banking/deposit/prepare"),
         BANKING_WITHDRAWAL_PREPARE("banking/withdrawal/prepare"),

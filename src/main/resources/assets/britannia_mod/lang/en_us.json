@@ -1695,5 +1695,8 @@
   "message.britannia_mod.dirt_gather.out_of_reach": "That dirt is too far away.",
   "message.britannia_mod.dirt_gather.denied_world": "You cannot gather dirt here.",
   "item.britannia_mod.rapier": "Rapier",
-  "item.britannia_mod.decorative_shield": "Decorative Shield"
+  "item.britannia_mod.decorative_shield": "Decorative Shield",
+  "message.britannia_mod.quest.reward.received": "You receive your quest reward.",
+  "message.britannia_mod.quest.reward.queued": "Your quest reward is waiting for room in your pack.",
+  "message.britannia_mod.quest.reward.delivered": "Your waiting quest reward has been delivered."
 }

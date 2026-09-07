@@ -298,11 +298,13 @@ public final class QuestRewardDurabilityGameTests {
 
     /**
      * The ring: the destination node's destroy objective names it. With {@code temporary} null the
-     * response is today's (heuristic); otherwise it carries a reward_delivery verdict.
+     * response is today's (heuristic); otherwise it carries a reward_delivery verdict. Since M3 a
+     * reward_delivery is a durable delivery applied once per identity, so every call mints a
+     * fresh delivery uuid: the same grant sent twice would otherwise be refused as a replay.
      */
     private static String ringGrant(Boolean temporary) {
         String delivery = temporary == null ? "" : ",\"reward_delivery\":{\"protocol_version\":1,"
-            + "\"delivery_uuid\":\"6f1d0c8e-3c2f-4d0a-9a9b-2b0f6f5a8e01\",\"quest_id\":" + RING_QUEST_ID + ","
+            + "\"delivery_uuid\":\"" + java.util.UUID.randomUUID() + "\",\"quest_id\":" + RING_QUEST_ID + ","
             + "\"quest_state_id\":\"" + RING_QUEST_STATE_ID + "\",\"transition_key\":\"1757200000:1301:choice:accept\","
             + "\"items\":[{\"id\":\"britannia_mod:magic_ring\",\"count\":1,\"temporary\":" + temporary + "}],"
             + "\"state\":\"pending\"}";

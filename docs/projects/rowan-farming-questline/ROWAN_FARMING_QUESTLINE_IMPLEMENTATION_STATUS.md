@@ -20,9 +20,9 @@ were not switched, stashed, reset, or modified.
 | Milestone | Status | Mod commit | Rails commit | Closed |
 | --- | --- | --- | --- | --- |
 | M0 Baselines, worktrees, executable contracts | **PASSED** | `45ad0434` | `3400742` | 2026-09-06 |
-| M1 Quest security and permanent-item safety | **PASSED** | (this commit) | — | 2026-09-07 |
-| M2 Rails reward-delivery ledger and replay | **PASSED** | — | (this commit) | 2026-09-07 |
-| M3 NeoForge reward reconciliation | not started | | | |
+| M1 Quest security and permanent-item safety | **PASSED** | `85291cb5` | — | 2026-09-07 |
+| M2 Rails reward-delivery ledger and replay | **PASSED** | — | `78d640a` | 2026-09-07 |
+| M3 NeoForge reward reconciliation | **PASSED** | (this commit) | — | 2026-09-07 |
 | M4 Rails action-objective and progress contract | not started | | | |
 | M5 NeoForge farming events, outbox, crop attribution | not started | | | |
 | M6 Rowan archetype | not started | | | |
@@ -353,8 +353,136 @@ all disposable databases were removed.
 | --- | --- |
 | D2 | **fixed** (M2) — every grant-bearing transition is replay-protected and durable |
 
-### Next action
+### Next action (at M2 close)
 
 M3 — NeoForge reward reconciliation (mod only) and M4 — Rails action-objective contract (Rails
 only), in parallel; the M3 cross-repository gate runs against the M2 Rails code in a disposable
 database.
+## M3 — NeoForge reward reconciliation (PASSED 2026-09-07, NeoForge only)
+
+Delegated to a NeoForge sub-agent (cut off once by a usage limit and resumed from the same
+uncommitted diff); reviewed hunk by hunk and gated by the integrator, who also ran the
+cross-repository live gate below.
+
+### Changes (`src/main`, `src/test`, one lang file; no Rails change)
+
+* `quest/delivery/` (15 new classes) — `QuestRewardDelivery`/`Item` (the wire records; `temporary`
+  is a nullable Boolean so "no verdict" is never read as true), `Parser` (transition →
+  Present/Absent/Malformed, strict v2 listing, per-entry-tolerant bootstrap array), `Protocol`
+  (acknowledgement encoder, response parser, terminal error codes), `Client` (signed v2 transport
+  with four test seams; distinguishes a 404 carrying `delivery_not_found` from a 404 meaning the
+  route does not exist), `LedgerEntry`/`LedgerStore`/`Ledger` (the fsync'd SavedData),
+  `InventoryInsertion` (all-or-nothing planner), `ReconciliationDecision` (the pure restart
+  table), `Service` (the apply sequence), `Reconciler` (login, journal refresh, periodic),
+  `Backoff`, `Notices`, `LocalState`.
+* `quest/QuestRewardService.java` — a response carrying `reward_delivery` is applied through the
+  ledger and `granted_items` is ignored; a malformed delivery grants nothing at all (Rails has a
+  record of it and the pending listing will hand it back); only a response with no delivery takes
+  the legacy immediate path, logged `delivery_mode=legacy`. `buildDeliveryStacks` reuses M1's
+  temporary-item policy so a delivery applied at login is stamped exactly as one applied inline.
+* `network/WorldBootstrapAPI.java` + its records parse `pending_reward_deliveries`;
+  `event/WorldBootstrapHandler.java` applies them at login; `quest/QuestJournalRefresh.java` fires
+  a reconciliation; `event/QuestRewardDeliveryReconcilerHandler.java` drives the periodic sweep and
+  clears per-server state on logout and shutdown; `server/http/RailsApiUrlResolver.java` gains the
+  two v2 endpoints; `quest/network/QuestModels.java` carries `reward_delivery`/`replayed`;
+  `quest/QuestProxyService.java` passes its `request_uuid`.
+* `player/PlayerDataStore.java` — the bounded (256) `applied_delivery_uuids` marker list, carried
+  across a profile save so a login write cannot drop it.
+* `assets/britannia_mod/lang/en_us.json` — three delivery notices.
+* Tests: 7 unit classes under `quest/delivery/` (parser against the four frozen fixtures, malformed
+  cases, byte-compared acknowledgement body, ledger round-trip/schema/quarantine/bound,
+  reconciliation table), `sync/WorldBootstrapAPIPendingRewardDeliveriesTest`, and
+  `gametest/QuestRewardDeliveryGameTests` (11 GameTests driving real server players).
+
+### Durability model as implemented
+
+Ledger `britannia_quest_reward_deliveries` (overworld SavedData, `SchemaVersion=1`, corrupt rows
+quarantined verbatim, 256 newest per player, only `acknowledged` rows pruned). Two fields beyond
+the protocol's list, both required by the sequence: `AckOutcome` (so a queued row is not
+acknowledged twice and the applied upgrade is sent once) and `AckError` (a terminal Rails answer,
+so it is never retried forever).
+
+Order per delivery, on the server thread: ledger `pending_local` → flush → all-or-nothing
+insertion → (does not fit: `queued` → flush → acknowledge `queued` → notice → stop) → player
+marker → `PlayerList#saveAll()` → ledger `applied` → flush → acknowledge → `acknowledged` → flush.
+`PlayerList#saveAll()` is the only public route to the vanilla player-file write (temp file,
+`SYNC`, atomic replace), which is what makes "items and marker persist together or not at all"
+true; the price is that it saves every online player, acceptable at one call per quest transition.
+
+The insertion planner deliberately does not use `Inventory#add`: that method grants what fits and
+drops the rest, and for a creative player (which every GameTest mock player is) it reports success
+while discarding. The planner follows vanilla's slot rules over a scratch copy of the 36 main
+slots and commits only when everything fits.
+
+### Integrator review findings (corrected by the resumed agent before the gates)
+
+* A `reward_delivery: null` in a legal Rails response threw during Gson binding, because the field
+  was typed `JsonObject`. Now `JsonElement`, with JSON null read as "no delivery".
+* One trigger posted two acknowledgements: the login path applied the bootstrap deliveries and
+  then swept the same rows, both bypassing the backoff. Sweeps now carry the set already visited.
+* The 11 GameTests share process-wide single-slot seams and were interfering inside one batch;
+  each now has its own batch.
+
+### Tests and gates
+
+| Run | Result |
+| --- | --- |
+| Focused (`quest.delivery.*`, `sync.WorldBootstrapAPI*`) | 89 tests, 0 failures, 0 errors, 2 skipped (the live tests) |
+| Full JUnit (integrator, final tree) | 3634 tests, 0 failures, 0 errors, 20 skipped (462 suites; +76 over M1, of which 3 are the opt-in live tests skipping without credentials) |
+| GameTests (integrator-verified log) | 1123 required tests passed, 0 failed (baseline 1112, +11 = exactly the new class) |
+| `git diff --check` | clean |
+
+### Cross-repository live gate (playbook M3 requirement)
+
+Run by the integrator against an **isolated** Rails: a temporary detached worktree at the
+committed M2 state `78d640a`, a disposable database `ultimacraft_test-91`, a generated shard
+secret and Minecraft server key, and one seeded pending delivery. Nothing touched the owner's
+checkout, the M4 worktree, or any real data; the server was bound to the WSL host-only interface,
+the secret was shredded, and the worktree, database and temporary files were removed afterwards.
+
+The mod's own client (production signing path, production transport) proved end to end:
+
+1. `GET /api/v2/quest_reward_deliveries/pending` on the signed v2 tier lists the seeded delivery
+   with its items for the right player, and the mod's parser reads what Rails actually sends.
+2. `POST …/:delivery_uuid/result` with `applied` → `state: acknowledged`, `outcome: applied`,
+   `duplicate: false`.
+3. The same report again → `duplicate: true`, nothing moved.
+4. `queued` after `applied` → `409 conflicting_delivery_result`, refused as a contradiction.
+5. The acknowledged delivery no longer appears in the pending listing.
+6. An unknown `delivery_uuid` → `404 delivery_not_found`.
+
+Server-side confirmation in the isolated database: the row ended `state=acknowledged`,
+`acknowledged_outcome=applied`, with `acknowledged_at`, `applied_at` and
+`acknowledged_by_minecraft_server_id` all set. The delivery identity and the acknowledgement flow
+therefore agree across the two repositories, which is the playbook's condition for committing
+either side.
+
+The gate revealed one environment fact worth recording for M12: a Rails server bound to
+`127.0.0.1` inside WSL is unreachable from the Windows-side JVM; the live tests need it bound to
+an interface the host can route to.
+
+### Failure model (protocol §1.8) and its coverage
+
+| Failure point | Outcome | Covered by |
+| --- | --- | --- |
+| Crash after recording `pending_local`, before insertion | re-applied on restart, nothing inserted | GameTest restart without marker |
+| Crash after insertion, before the player save | file lacks items and marker → applied once | same |
+| Crash after the marker, before the ledger says applied | marker present → ledger repaired, no second insert | GameTest restart with marker |
+| Crash after applied, before acknowledgement | acknowledgement retried; ledger says applied → ack only | GameTest acknowledgement failure |
+| Rails lost the acknowledgement response | second acknowledgement → `duplicate: true` | same, and the live gate |
+| Full inventory | `queued`, no ground drop; delivered when space frees | GameTest full inventory |
+| Two Rowans, same delivery | ledger refuses the second application | GameTest same delivery from every direction |
+| Terminal Rails answer (404/409) | row closed with its reason, never retried | GameTest terminal rejection, and the live gate |
+| Malformed delivery | nothing granted, no ledger row, no acknowledgement | GameTest and parser unit tests |
+| Legacy response | immediate path, no ledger row | GameTest legacy response |
+| Power loss defeating `fsync` | not covered; same limitation as the blessed-item and banking receipts | — |
+
+### Defect register update
+
+No new defects. D1 and D2 remain fixed; the delivery path now supersedes the legacy immediate
+grant for every Rails that publishes a delivery.
+
+### Next action
+
+M4 (Rails action objectives) is running in parallel; M5 (NeoForge farming events, outbox and crop
+attribution) starts once M4 is committed, since it consumes the action-event contract.
