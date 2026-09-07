@@ -22,8 +22,8 @@ were not switched, stashed, reset, or modified.
 | M0 Baselines, worktrees, executable contracts | **PASSED** | `45ad0434` | `3400742` | 2026-09-06 |
 | M1 Quest security and permanent-item safety | **PASSED** | `85291cb5` | — | 2026-09-07 |
 | M2 Rails reward-delivery ledger and replay | **PASSED** | — | `78d640a` | 2026-09-07 |
-| M3 NeoForge reward reconciliation | **PASSED** | (this commit) | — | 2026-09-07 |
-| M4 Rails action-objective and progress contract | not started | | | |
+| M3 NeoForge reward reconciliation | **PASSED** | `71f1713b` | — | 2026-09-07 |
+| M4 Rails action-objective and progress contract | **PASSED** | — | `0fff0b3` | 2026-09-07 |
 | M5 NeoForge farming events, outbox, crop attribution | not started | | | |
 | M6 Rowan archetype | not started | | | |
 | M7 Rails content, seed, admin | not started | | | |
@@ -482,7 +482,129 @@ an interface the host can route to.
 No new defects. D1 and D2 remain fixed; the delivery path now supersedes the legacy immediate
 grant for every Rails that publishes a delivery.
 
-### Next action
+### Next action (at M3 close)
 
 M4 (Rails action objectives) is running in parallel; M5 (NeoForge farming events, outbox and crop
 attribution) starts once M4 is committed, since it consumes the action-event contract.
+## M4 — Rails action-objective and progress contract (PASSED 2026-09-07, Rails only)
+
+Delegated to a Rails sub-agent (cut off once by a usage limit and resumed from the same
+uncommitted diff); reviewed hunk by hunk and gated by the integrator.
+
+### Changes (`app/`, `config/routes.rb`, `db/`, `test/`)
+
+* `db/migrate/20260907120000_add_journal_fields_to_quests.rb` — `quests.quest_key` (nullable) and
+  `quests.journal_metadata` jsonb, with a partial unique index on `(shard_id, quest_key)` so legacy
+  rows stay unkeyed.
+* `db/migrate/20260907121000_create_quest_action_events.rb` — the idempotency record: unique
+  `(shard_id, event_uuid)`, an index on `(shard_id, player_uuid, created_at)`, FKs restrict on
+  shard and user and nullify on the journal row, and a check constraint on `result`.
+  `duplicate` is never stored; it is the answer for a row that already exists.
+* `app/models/quest_action_event.rb` — `PROTOCOL_VERSION`, the eleven actions, the stored results
+  and rejection reasons, validations mirroring the constraints, every column `attr_readonly`, and
+  `duplicate_response`, which rebuilds the envelope with `result: "duplicate"` and
+  `original_result` and replays the stored body verbatim.
+* `app/services/quest_action_events/` — `contract` (per-action shape check naming the offending
+  field), `matcher` (`match`, `$flag:` resolution, `require_planter`, `require_bound`, returning
+  the most specific reason), `progress` (ordered steps then trigger; `done` always read live),
+  `presenter` (client-facing node and choices), `transition` (the advance an `action_trigger`
+  performs, publishing its delivery under a third transition kind `…:action:<trigger_key>`), and
+  `process` (the decision, the transaction, the row lock and the stored answer).
+* `app/controllers/api/v2/quest_action_events_controller.rb` + `config/routes.rb` —
+  `POST /api/v2/quest_action_events` on the v2 tier with its own rate limit, the §6 status codes,
+  and the same player resolution every quest action uses.
+* `app/serializers/quest_journal_entry_serializer.rb` — the additive §3.1 fields and
+  `triggers.action`/`triggers.steps` with placeholders resolved and `require_bound` published as
+  the currently bound values.
+* `app/models/quest.rb` — `quest_key` normalisation, `CLIENT_METADATA_SERVER_ONLY_KEYS`,
+  `CLIENT_METADATA_FILTER` (default **off** per §3.2, with a runtime override), and
+  `client_node_metadata`, the single filter every response builder calls, which also derives
+  `progress_steps` from `action_steps` when a node authors none.
+* `app/services/quest_engine/effect_applier.rb` — `give_random_item` rolls one pool entry once
+  inside the transition and returns the flags; `processor.rb` merges them into the journal row,
+  filters node metadata, passes `presentation` through, and refuses a presentation choice with
+  `422 presentation_only` before any effect runs; `quest_states_controller.rb` adds
+  `inherit_flags` at all four create/restart sites and the same filtering on its own paths.
+* Tests (new, 9 files): model constraints, journal fields, the processing decision table, the
+  serializer, the client-metadata filter in both states, random-item stability and inheritance,
+  the v2 controller (auth tiers, every status code, every result), and a contract test driving the
+  real controller against the five frozen response fixtures.
+
+### Integrator review findings (corrected by the resumed agent)
+
+* Two touched files (`app/models/quest.rb`, `app/services/quest_engine/effect_applier.rb`) carry
+  **mixed** CRLF/LF in the committed tree. The first agent's blanket LF normaliser rewrote them
+  whole, inflating a +54/+37 diff to +99/+299 and making pre-existing trailing whitespace look
+  newly added. Restored to a line-accurate merge; the integrator confirmed both files have the
+  same CRLF line counts as at `HEAD` and that **no added line carries a CR**.
+* Three of the agent's own new tests were wrong rather than the code: an `attr_readonly` update
+  raises in this application rather than silently no-opping; a jsonb object cannot preserve
+  authored key order; and a fixture state already seeds two flags.
+* A `target.quest_state_id` of nineteen nines is accepted by the shape rule, so a test now pins
+  that it answers a terminal result rather than a 500 the outbox would retry forever.
+
+### Tests and gates
+
+| Run | Result |
+| --- | --- |
+| The nine new test files | 102 runs, 869 assertions, 0 failures, 0 errors |
+| Quest selection (integrator, fresh `ultimacraft_test-90`) | 666 runs, 3147 assertions, 0 failures, 0 errors |
+| Full suite (integrator, fresh `ultimacraft_test-90`) | 3365 runs (3263 + exactly the 102 new), 52665 assertions, 12 failures, 0 errors, 1 skip — 11 audit-count admin tests + the stable food-supply one; none attributable to M4 |
+| Admin family on a fresh database (integrator control) | all four admin classes together: 51 runs, 208 assertions, 0 failures — the 11 are order/state pollution |
+| Migration ⇔ schema proof on `ultimacraft_test-92` | both migrations down and up; dumper rendering of both `create_table` blocks and both `add_foreign_key` groups byte-identical to `db/schema.rb`; version stamp `2026_09_07_121000` |
+| `git diff --check` | clean |
+
+**The pre-existing failure family is wider than M0 recorded.** M0 named four
+`Admin::RedeemShardResetsControllerTest` cases; later runs show `Admin::BankChequesControllerTest`,
+`Admin::BankReconciliationsControllerTest` and `Admin::RedeemsControllerTest` failing instead or as
+well, and `ShardPlatformQueryBudgetTest` coming and going. The mechanism is now identified: those
+tests assert an **unscoped** `AdminActionAudit.count == 0`, and other suites commit audit rows
+outside their own transactions, so which of them fails depends on the seed and the order. All of
+them pass together on a fresh database. `Economy::CityFoodSupplyRecalculatorTest` (100.0 vs 99.7)
+fails on a fresh database too and is the one genuinely stable pre-existing failure. Nothing in the
+M4 diff mentions `AdminActionAudit`.
+
+The gate for later Rails runs is therefore: **the `Economy::CityFoodSupplyRecalculatorTest`
+failure plus any subset of the audit-count admin family, and nothing else** — with a fresh-database
+control run whenever a new name joins the set.
+
+### Processing decision table (as implemented and tested)
+
+| Input | Result | State change |
+| --- | --- | --- |
+| `event_uuid` already answered on this shard | `duplicate` + `original_result` | none; stored answer replayed verbatim |
+| two copies race past the lookup | loser answers `duplicate` | loser's work rolled back by the unique index |
+| target state on another shard, or another player's | `rejected` `wrong_shard` / `wrong_player` | none |
+| target state's current node is not `target.node_id` | `stale` (+ both node ids) | none |
+| no active journal row subscribes to this action | `irrelevant` | none |
+| listening step is ahead of the expected next one | `rejected` `step_out_of_order` | none |
+| a `match`/`require_bound` check fails | `rejected` `not_planter`/`wrong_crop`/`wrong_plot`/`wrong_cycle`/`mismatch` | none |
+| step arrived after its `deadline` | `rejected` `window_expired` + `reset_to` | progress and bindings cleared from `reset_to` on |
+| the last recorded step again, identical bindings | `applied` | none |
+| the expected next step | `applied` | progress, timestamp and bindings recorded; node unchanged |
+| an earlier step, or the last one with different bindings | `applied` + `restarted` | cleared from that step on, then recorded |
+| `action_trigger` matches | `applied` | effects, flags, node advance, delivery under `…:action:…`, `completion_result` for an ending |
+| the advance's grant is refused by the delivery contract | `rejected` `mismatch` | none; the refusal is stored so the outbox stops retrying |
+
+Every outcome writes its `quest_action_events` row in the same transaction and under the same
+journal-row lock as the change it describes.
+
+### Assumptions recorded by the agent (each documented in code)
+
+* §2.1's "an already-recorded step returns applied unchanged" and "an earlier step restarts"
+  overlap. Implemented as: the last recorded step with identical bindings changes nothing;
+  anything earlier, or the last one with different bindings, restarts from there. This is the
+  reading that makes the protocol's own reclaimed-plot example behave.
+* `triggers.steps[]` publishes no `label` (nor does the frozen fixture); labels travel in
+  `progress[]`.
+* `inherit_flags` keys on `start_conditions.prerequisite_quest_id`, the key `interact` already uses.
+
+### Defect register update
+
+No new defects. The client-metadata filter ships **off**, as §3.2 requires during the compatibility
+window; turning it on is an M8 rollout step and both states are covered by tests.
+
+### Next action
+
+M5 — NeoForge farming events, outbox and crop attribution, which is the mod half of this contract
+and the last piece before Rowan's content can be authored.
