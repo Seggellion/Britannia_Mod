@@ -27,21 +27,20 @@ public final class DyeTubItem extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+        var matched = com.seggellion.britannia_mod.bowlpreparation.HandRecipeInteraction.use(level, player, hand);
+        if (matched.getResult().consumesAction()) return matched;
         ItemStack tubStack = player.getItemInHand(hand);
-        if (hand != InteractionHand.MAIN_HAND) {
-            return InteractionResultHolder.pass(tubStack);
+        if (hand == InteractionHand.MAIN_HAND && player.getOffhandItem().is(BannerItemRegistry.BANNER.get())) {
+            if (player instanceof ServerPlayer serverPlayer) DyePreviewRuntime.openPreview(serverPlayer);
+            return InteractionResultHolder.sidedSuccess(tubStack, level.isClientSide);
         }
-        if (level.isClientSide()) {
-            return InteractionResultHolder.sidedSuccess(tubStack, true);
-        }
+        return InteractionResultHolder.pass(tubStack);
+    }
 
-        ItemStack pigmentStack = player.getOffhandItem();
-        if (DyeItemRegistry.pigmentId(pigmentStack.getItem()).isEmpty()
-                && pigmentStack.getItem() == BannerItemRegistry.BANNER.get()
-                && player instanceof ServerPlayer serverPlayer) {
-            DyePreviewRuntime.openPreview(serverPlayer);
-            return InteractionResultHolder.sidedSuccess(tubStack, false);
-        }
+    public void loadFromHands(Level level, Player player, com.seggellion.britannia_mod.bowlpreparation.HandRecipeRoles roles) {
+        if (level.isClientSide || !roles.matches(player)) return;
+        ItemStack tubStack = player.getItemInHand(roles.driverHand());
+        ItemStack pigmentStack = player.getItemInHand(roles.ingredientHand());
         DyeTubLoadPlan plan = DyeTubLoadingService.plan(
                 tubStack,
                 this,
@@ -50,6 +49,7 @@ public final class DyeTubItem extends Item {
                 BannerDataRegistries.current(),
                 BannerDataRegistries.isAvailable(),
                 DataComponentRegistry.DYE_TUB_STATE.get());
+        if (!roles.matches(player)) return;
         DyeTubLoadResult result = DyeTubLoadingService.apply(
                 plan,
                 tubStack,
@@ -77,7 +77,6 @@ public final class DyeTubItem extends Item {
                     0.25D,
                     0.02D);
         }
-        return InteractionResultHolder.sidedSuccess(tubStack, false);
     }
 
     private static void sendFeedback(Player player, DyeTubLoadResult result) {

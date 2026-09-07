@@ -206,3 +206,14 @@ The playbook and kickoff close the historical Q1–Q5 recommendations. Original 
 - [x] **A:**MAIN phase uses actual MAIN/OFF bowl, redundant OFF callback cannot spend again; full/foreign soil and protected flowers refuse free; one full-inventory remainder world drop.
 - [x] **A:**legacy untimed private soil remains untracked(-1) with no invented deadline.
 - [ ] **M:**physical input, normal/low-TPS timing, two clients, actual chunk unload and server restart, ordinary watering and rain/dry progression observations.
+
+
+## Implementation evidence addendum — M2
+
+- [x] **A:**three bowl recipes ×both hand orientations ×counts1/2/3/64 through registered server use dispatch;420craft matrix, repeated/reversed OFF callbacks never add a commit.
+- [x] **A:**compatible final output merges into pre-existing partial stacks; named incompatible output stays separate; exact2empty-bowl remainders per final mix, full/near-full inventory conservation and Creative costs.
+- [x] **A:**all7pigments ×both hands ×Survival/Creative load the intended pigment and preserve tub name/count; same pigment does not charge again. Existing unavailable/disabled/missing registry tests remain passing.
+- [x] **A:**immutable actual-role snapshots; stale component/count checks; alias/ambiguous recipe rejection; deterministic equal-item role selection; canonical outputs do not inherit input names.
+- [x] **A:**separate legitimate clicks can craft in one tick; no blanket cooldown. Original protected-farm/flower server regressions remain passing.
+- [x] **A:**aimed water-source filling takes precedence over dry crafting in either hand; one bowl filled, dirt/source preserved, redundant callback free.
+- [ ] **M:**physical input and menu synchronization/reconnect, final-output display and water-source targeting, dye preview/anvil/case fallback interaction checks.

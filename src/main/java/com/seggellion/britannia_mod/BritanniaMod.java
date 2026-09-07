@@ -200,6 +200,7 @@ CraftableRegistry.init();
         NeoForge.EVENT_BUS.register(new FlowerInteractionHandler());
         NeoForge.EVENT_BUS.register(new HouseFarmPlotInteractionHandler());
         NeoForge.EVENT_BUS.register(new com.seggellion.britannia_mod.event.BowlWateringInteractionHandler());
+        NeoForge.EVENT_BUS.register(new com.seggellion.britannia_mod.event.HandRecipeInteractionHandler());
         NeoForge.EVENT_BUS.register(new ManagedVegetationInteractionHandler());
         NeoForge.EVENT_BUS.register(new TrainingDummyEventHandler());
         // UltimaCraft parrots are protected from all player-caused damage; see the handler.

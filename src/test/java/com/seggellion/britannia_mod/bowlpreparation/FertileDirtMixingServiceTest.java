@@ -39,13 +39,13 @@ class FertileDirtMixingServiceTest {
     }
 
     @Test
-    void plansOnlyTheExactFixedHandFinalTuple() {
+    void plansBothArrangementsOfTheExactFinalTuple() {
         FertileDirtMixingPlan plan =
                 plan(new ItemStack(fertileBowl), new ItemStack(waterBowl)).orElseThrow();
         assertEquals(fertilizedDirt, plan.fertilizedDirt());
         assertEquals(emptyBowl, plan.emptyBowl());
 
-        assertFalse(plan(new ItemStack(waterBowl), new ItemStack(fertileBowl)).isPresent());
+        assertTrue(plan(new ItemStack(waterBowl), new ItemStack(fertileBowl)).isPresent());
         assertFalse(plan(new ItemStack(fertileBowl), new ItemStack(Items.WATER_BUCKET)).isPresent());
         assertFalse(plan(new ItemStack(Items.BOWL), new ItemStack(waterBowl)).isPresent());
         assertFalse(plan(ItemStack.EMPTY, new ItemStack(waterBowl)).isPresent());

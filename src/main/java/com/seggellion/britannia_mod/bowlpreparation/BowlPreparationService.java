@@ -31,21 +31,12 @@ public final class BowlPreparationService {
         Objects.requireNonNull(offhand, "offhand");
         Objects.requireNonNull(recipes, "recipes");
 
-        if (mainHand.is(recipes.emptyBowl()) && offhand.is(recipes.dirt())) {
-            return Optional.of(new BowlPreparationPlan(
-                    BowlPreparationPlan.Step.DIRT,
-                    mainHand,
-                    offhand,
-                    recipes.bowlOfDirt()));
-        }
-        if (mainHand.is(recipes.bowlOfDirt()) && offhand.is(recipes.dung())) {
-            return Optional.of(new BowlPreparationPlan(
-                    BowlPreparationPlan.Step.FERTILE_MIX,
-                    mainHand,
-                    offhand,
-                    recipes.bowlOfFertileDirt()));
-        }
-        return Optional.empty();
+        var dirt = HandRecipeRoles.match(mainHand, offhand, recipes.emptyBowl(), recipes.dirt());
+        var fertile = HandRecipeRoles.match(mainHand, offhand, recipes.bowlOfDirt(), recipes.dung());
+        if (dirt.isPresent() == fertile.isPresent()) return Optional.empty(); // absent or ambiguous recipe
+        var roles = dirt.orElseGet(fertile::orElseThrow);
+        return Optional.of(new BowlPreparationPlan(dirt.isPresent() ? BowlPreparationPlan.Step.DIRT : BowlPreparationPlan.Step.FERTILE_MIX,
+                mainHand, offhand, dirt.isPresent() ? recipes.bowlOfDirt() : recipes.bowlOfFertileDirt(), roles.driverHand()));
     }
 
     /**
@@ -61,7 +52,7 @@ public final class BowlPreparationService {
         Objects.requireNonNull(liveMainHand, "liveMainHand");
         Objects.requireNonNull(liveOffhand, "liveOffhand");
 
-        if (!ItemStack.matches(plan.expectedMainHand(), liveMainHand)
+        if (liveMainHand == liveOffhand || !ItemStack.matches(plan.expectedMainHand(), liveMainHand)
                 || !ItemStack.matches(plan.expectedOffhand(), liveOffhand)) {
             return Commit.stale();
         }
@@ -83,12 +74,7 @@ public final class BowlPreparationService {
             return ApplyResult.STALE;
         }
 
-        ItemStack output = commit.output();
-        if (liveMainHand.isEmpty()) {
-            player.setItemInHand(InteractionHand.MAIN_HAND, output);
-        } else {
-            BowlPreparationOutput.giveOrDrop(player, output);
-        }
+        BowlPreparationOutput.giveOrDrop(player, commit.output(), InteractionHand.MAIN_HAND);
         player.getInventory().setChanged();
         return ApplyResult.APPLIED;
     }

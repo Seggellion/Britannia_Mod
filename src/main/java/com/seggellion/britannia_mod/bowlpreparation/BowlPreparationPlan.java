@@ -4,14 +4,19 @@ import java.util.Objects;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-/** Immutable snapshot of one recognized fixed-hand bowl preparation. */
+/** Immutable snapshot of one recognized role-resolved bowl preparation. */
 public final class BowlPreparationPlan {
+    private final net.minecraft.world.InteractionHand driverHand;
     private final Step step;
     private final ItemStack expectedMainHand;
     private final ItemStack expectedOffhand;
     private final Item output;
 
     BowlPreparationPlan(Step step, ItemStack expectedMainHand, ItemStack expectedOffhand, Item output) {
+        this(step, expectedMainHand, expectedOffhand, output, net.minecraft.world.InteractionHand.MAIN_HAND);
+    }
+    BowlPreparationPlan(Step step, ItemStack expectedMainHand, ItemStack expectedOffhand, Item output, net.minecraft.world.InteractionHand driverHand) {
+        this.driverHand = Objects.requireNonNull(driverHand);
         this.step = Objects.requireNonNull(step, "step");
         Objects.requireNonNull(expectedMainHand, "expectedMainHand");
         Objects.requireNonNull(expectedOffhand, "expectedOffhand");
@@ -22,6 +27,8 @@ public final class BowlPreparationPlan {
         this.expectedMainHand = expectedMainHand.copy();
         this.expectedOffhand = expectedOffhand.copy();
     }
+
+    public net.minecraft.world.InteractionHand driverHand() { return driverHand; }
 
     public Step step() {
         return step;

@@ -1,6 +1,6 @@
 # Gameplay bugfix implementation scratchpad
 
-Current: M1 implementation/server validation complete; next M2. Authorized execution: M0–M11, local commits, no push/merge/deploy/production writes or Fabric work. Playbook and kickoff supersede historical discovery recommendations. All five authoritative documents read in full before code edits.
+Current: M2 complete; next M3. Authorized execution: M0–M11, local commits, no push/merge/deploy/production writes or Fabric work. Playbook and kickoff supersede historical discovery recommendations. All five authoritative documents read in full before code edits.
 
 ## Workspace and frozen contract
 
@@ -15,8 +15,8 @@ Decisions: 1200 online game ticks, exact hoed restoration, unused fertilizer for
 | Milestone | Status | Start / end |
 |---|---|---|
 | M0 workspace, baseline, contract | PASS | 421e27853dde4099d1d794568e33e6709507a53b / a95538d862a6c9316d7f45077fbc620e3241d097 |
-| M1 soil, expiry, bowls | PASS (client checks pending) | a95538d862a6c9316d7f45077fbc620e3241d097 / pending |
-| M2 hand recipes/output | PENDING | |
+| M1 soil, expiry, bowls | PASS (client checks pending) | a95538d862a6c9316d7f45077fbc620e3241d097 / f31550eefb215e198afc60a35dec355661a5f173 |
+| M2 hand recipes/output | PASS (client checks pending) | f31550eefb215e198afc60a35dec355661a5f173 / pending |
 | M3 display-case transactions | PENDING | |
 | M4 harvest gates/outcomes | PENDING | |
 | M5 feedback/can state | PENDING | |
@@ -61,3 +61,22 @@ Historical mock-login missing-auth/shard exceptions remain expected harness nois
 
 
 Next: commit M1 locally, record its SHA in M2 entry, then implement three bowl recipes + seven pigments in both hands and compatible-first output. No client or live Rails evidence has been fabricated.
+
+## M2 in progress
+
+Preserved exact BUG-16/17 discovery count/hand/pigment traces at original tmp/gameplay-bugfixes/supplemental. Implementing role snapshots, MAIN phase gesture ownership with no per-tick cooldown, existing adapter commit boundaries, source-water precedence and component-compatible output merge before empty hand/inventory/drop. Implementation reviewed and validated below. M1 local commit f31550eefb215e198afc60a35dec355661a5f173.
+
+
+### M2 review/evidence
+
+Implementation: HandRecipeRoles stores actual driver/input hands and immutable full-stack snapshots; both bowl plan types expose driver hand and preserve live-main/live-off commit snapshots. Ambiguous recipe definitions reject; aliased physical input stacks reject. HandRecipeInteraction owns MAIN-phase matching in a NORMAL RightClickItem listener on both logical sides; OFF callbacks cannot commit, separate MAIN clicks remain allowed in the same tick. Existing item adapters delegate; matching source-water fill precedes dry crafting in either orientation. Block-target/protection dispatch is untouched. DyeTubItem loads the actual tub/pigment slots through existing plan/apply, preserves banner preview, and nonmatches pass. Server committed hand results broadcast to the open inventory menu.
+
+BowlPreparationOutput now copies each output once, tops up component-compatible main/off stacks first, then uses a preferred empty hand (MAIN output, OFF returned bowls), empty normal inventory slots, and one remaining world drop. It never strips components or uses Creative Inventory.add force-clear. Partial capacity is used before dropping excess; legacy capacity helper remains for existing contracts. Existing source-fill output delivery inherits compatible insertion for non-exhausting fills; empty input replacement still returns the filled bowl as before.
+
+New HandRecipeRolesTest:4 tests for actual role slots/immutable snapshots, equal-item deterministic roles/alias refusal, ambiguous recipe refusal, reversed final mix/stale components/canonical outputs. Updated old JUnit reversed-tuple expectations intentionally. Updated two legacy server suites to exercise ServerPlayerGameMode.useItem and expect reversed success while keeping invalid items free.
+
+GameplayHandRecipeGameTests:24 recipe/hand/count series (3recipes×2hands×1/2/3/64 =420 crafts), OFF→MAIN→OFF callbacks for each craft, two compatible control stacks with final headroom plus an incompatible named control, exact final-mix2bowls per craft;7pigments×2hands×Survival/Creative with same-pigment no-op and preserved tub name; separate same-tick Creative clicks preserve paid bowl costs; source-water precedence in both hands.
+
+Command (JAVA_HOME JDK21): `./gradlew.bat test --tests 'com.seggellion.britannia_mod.bowlpreparation.*' --tests 'com.seggellion.britannia_mod.bannerdyeing.DyeTubLoadingServiceTest' --tests 'com.seggellion.britannia_mod.farming.*' runGameTestServer -x processResources --no-configuration-cache --console=plain`. Ordinary source sets/namespace, unchanged already-generated resources reused; no diagnostic init script or namespace. m2-junit.log initial focused run BUILD SUCCESSFUL41s. m2-server.log BUILD SUCCESSFUL1m59s/all1114 required tests passed. Final review adds menu synchronization and source-water regression; m2-final.log BUILD SUCCESSFUL2m/all1115 required GameTests passed; source-water precedence verified both ways. Focused XML184total/178executed passes/6skips/0failures/errors/28suites.
+
+Review: complete source/test diffs and all five new files inspected, no assets/resources/prices/build-source-set changes, diff --check clean. Prior full/near-full inventory/drop/Creative tests remain in registered suite. Sound/particle emission remains one call per successful adapter result by source proof; no physical audio or client packet-count capture asserted. Physical swapped-hand input, final inventory merge/reconnect, screen/preview/anvil/case controls remain named manual M11 checks. No live service or production action performed. Next: record final result, commit M2 locally, begin M3 case-specific ejection/atomic rotation.

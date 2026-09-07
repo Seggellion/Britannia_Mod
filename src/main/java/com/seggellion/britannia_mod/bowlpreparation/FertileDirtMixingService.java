@@ -31,15 +31,15 @@ public final class FertileDirtMixingService {
         Objects.requireNonNull(mainHand, "mainHand");
         Objects.requireNonNull(offhand, "offhand");
         Objects.requireNonNull(recipes, "recipes");
-        if (!mainHand.is(recipes.bowlOfFertileDirt())
-                || !offhand.is(recipes.bowlOfWater())) {
+        var roles = HandRecipeRoles.match(mainHand, offhand, recipes.bowlOfFertileDirt(), recipes.bowlOfWater());
+        if (roles.isEmpty()) {
             return Optional.empty();
         }
         return Optional.of(new FertileDirtMixingPlan(
                 mainHand,
                 offhand,
                 recipes.fertilizedDirt(),
-                recipes.emptyBowl()));
+                recipes.emptyBowl(), roles.orElseThrow().driverHand()));
     }
 
     /**
@@ -54,7 +54,7 @@ public final class FertileDirtMixingService {
         Objects.requireNonNull(plan, "plan");
         Objects.requireNonNull(liveMainHand, "liveMainHand");
         Objects.requireNonNull(liveOffhand, "liveOffhand");
-        if (!ItemStack.matches(plan.expectedMainHand(), liveMainHand)
+        if (liveMainHand == liveOffhand || !ItemStack.matches(plan.expectedMainHand(), liveMainHand)
                 || !ItemStack.matches(plan.expectedOffhand(), liveOffhand)) {
             return Commit.stale();
         }
@@ -78,18 +78,8 @@ public final class FertileDirtMixingService {
             return ApplyResult.STALE;
         }
 
-        ItemStack fertilizedDirt = commit.fertilizedDirt();
-        ItemStack returnedBowls = commit.returnedBowls();
-        if (liveMainHand.isEmpty()) {
-            player.setItemInHand(InteractionHand.MAIN_HAND, fertilizedDirt);
-        } else {
-            BowlPreparationOutput.giveOrDrop(player, fertilizedDirt);
-        }
-        if (liveOffhand.isEmpty()) {
-            player.setItemInHand(InteractionHand.OFF_HAND, returnedBowls);
-        } else {
-            BowlPreparationOutput.giveOrDrop(player, returnedBowls);
-        }
+        BowlPreparationOutput.giveOrDrop(player, commit.fertilizedDirt(), InteractionHand.MAIN_HAND);
+        BowlPreparationOutput.giveOrDrop(player, commit.returnedBowls(), InteractionHand.OFF_HAND);
         player.getInventory().setChanged();
         return ApplyResult.APPLIED;
     }

@@ -6,6 +6,7 @@ import net.minecraft.world.item.ItemStack;
 
 /** Immutable snapshot of one accepted final fertile-dirt mix. */
 public final class FertileDirtMixingPlan {
+    private final net.minecraft.world.InteractionHand driverHand;
     private final ItemStack expectedMainHand;
     private final ItemStack expectedOffhand;
     private final Item fertilizedDirt;
@@ -17,6 +18,11 @@ public final class FertileDirtMixingPlan {
             Item fertilizedDirt,
             Item emptyBowl
     ) {
+        this(expectedMainHand, expectedOffhand, fertilizedDirt, emptyBowl, net.minecraft.world.InteractionHand.MAIN_HAND);
+    }
+    FertileDirtMixingPlan(ItemStack expectedMainHand, ItemStack expectedOffhand, Item fertilizedDirt, Item emptyBowl,
+            net.minecraft.world.InteractionHand driverHand) {
+        this.driverHand = Objects.requireNonNull(driverHand);
         Objects.requireNonNull(expectedMainHand, "expectedMainHand");
         Objects.requireNonNull(expectedOffhand, "expectedOffhand");
         this.fertilizedDirt = Objects.requireNonNull(fertilizedDirt, "fertilizedDirt");
@@ -27,6 +33,8 @@ public final class FertileDirtMixingPlan {
         this.expectedMainHand = expectedMainHand.copy();
         this.expectedOffhand = expectedOffhand.copy();
     }
+
+    public net.minecraft.world.InteractionHand driverHand() { return driverHand; }
 
     public ItemStack expectedMainHand() {
         return expectedMainHand.copy();

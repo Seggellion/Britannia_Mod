@@ -83,7 +83,7 @@ public final class FertileDirtFinalMixGameTests {
     }
 
     @GameTest(template = TEMPLATE, timeoutTicks = 60)
-    public static void invalidOffhandAndReversedHandsPassWithoutMutation(GameTestHelper helper) {
+    public static void invalidInputsRefuseAndReversedHandsCraftOnce(GameTestHelper helper) {
         ServerPlayer player = preparedPlayer(helper, "patch18-final-invalid", GameType.SURVIVAL);
 
         assertInvalidPair(player, ItemRegistry.BOWL_OF_FERTILE_DIRT.get(), Items.WATER_BUCKET,
@@ -98,15 +98,9 @@ public final class FertileDirtFinalMixGameTests {
                 new ItemStack(ItemRegistry.BOWL_OF_WATER.get()));
         player.setItemInHand(InteractionHand.OFF_HAND,
                 new ItemStack(ItemRegistry.BOWL_OF_FERTILE_DIRT.get()));
-        ItemStack beforeMain = player.getMainHandItem().copy();
-        ItemStack beforeOffhand = player.getOffhandItem().copy();
-        check(!use(player, InteractionHand.MAIN_HAND).getResult().consumesAction(),
-                "reversed main-hand water bowl was accepted");
-        check(!use(player, InteractionHand.OFF_HAND).getResult().consumesAction(),
-                "offhand fertile bowl callback accepted reversed hands");
-        check(ItemStack.matches(beforeMain, player.getMainHandItem())
-                        && ItemStack.matches(beforeOffhand, player.getOffhandItem()),
-                "reversed hands mutated an input");
+        check(use(player, InteractionHand.MAIN_HAND).getResult().consumesAction(), "reversed recipe was not accepted");
+        use(player, InteractionHand.OFF_HAND);
+        check(player.getInventory().countItem(ItemRegistry.FERTILIZED_DIRT.get()) == 1, "reversed callbacks did not produce exactly one output");
         disconnect(player);
         helper.succeed();
     }
@@ -316,7 +310,8 @@ public final class FertileDirtFinalMixGameTests {
     }
 
     private static InteractionResultHolder<ItemStack> use(ServerPlayer player, InteractionHand hand) {
-        return player.getItemInHand(hand).getItem().use(player.level(), player, hand);
+        var result = player.gameMode.useItem(player, player.level(), player.getItemInHand(hand), hand);
+        return new InteractionResultHolder<>(result, player.getItemInHand(hand));
     }
 
     private static void disconnect(ServerPlayer player) {
