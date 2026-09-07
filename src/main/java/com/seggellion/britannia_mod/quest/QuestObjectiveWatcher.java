@@ -3,14 +3,19 @@ package com.seggellion.britannia_mod.quest;
 import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.network.payload.QuestTriggerResultS2CPayload;
+import com.seggellion.britannia_mod.quest.action.QuestAction;
+import com.seggellion.britannia_mod.quest.action.QuestActionDispatcher;
+import com.seggellion.britannia_mod.quest.action.QuestActionSubject;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
 import com.seggellion.britannia_mod.quest.network.QuestServerAPI;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.slf4j.Logger;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -91,6 +96,24 @@ public final class QuestObjectiveWatcher {
             if (!QuestItemMatcher.matches(stack, destroy.itemTag())) continue;
             fire(player, entry, destroy.triggerKey(), "destroy");
         }
+    }
+
+    /**
+     * Called after a farming mutation has actually succeeded on the server (Rowan questline M5,
+     * protocol section 2.1). The fourth kind of observer, and the same rule as the other three:
+     * the SERVER decides, from the SERVER's journal, whether anything is subscribed. Nothing here
+     * accepts a client assertion, and {@code QuestActionC2SPayload.TRIGGER} stays refused.
+     *
+     * <p>Unlike location, pickup and destroy -- whose trigger is a single legacy quest action --
+     * a farming action goes to the durable outbox of section 2.2 first, so an outage between the
+     * harvest and Rails costs a retry rather than the objective.
+     *
+     * @return the event uuids enqueued, one per matched subscription; empty when nothing subscribes
+     */
+    public static List<UUID> onQuestAction(ServerPlayer player, QuestAction action, ServerLevel level,
+                                           BlockPos position, QuestActionSubject subject) {
+        if (player == null || action == null || subject == null) return List.of();
+        return QuestActionDispatcher.publish(player, action, level, position, subject);
     }
 
     /** A server-decided trigger with no environmental source, such as an escort arriving. */

@@ -7,6 +7,7 @@ import com.seggellion.britannia_mod.block.entity.CommunityFarmBlockEntity;
 import com.seggellion.britannia_mod.block.entity.HouseFarmPlotBlockEntity;
 import com.seggellion.britannia_mod.farming.FarmingActionType;
 import com.seggellion.britannia_mod.farming.FarmingSkill;
+import com.seggellion.britannia_mod.quest.action.QuestActionEvents;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -97,7 +98,7 @@ public class FarmingHoeItem extends Item {
         }
 
         if (!level.isClientSide) {
-            level.setBlock(pos, BlockRegistry.COMMUNITY_HOED_FARM_BLOCK.get().defaultBlockState(), 3);
+            boolean hoed = level.setBlock(pos, BlockRegistry.COMMUNITY_HOED_FARM_BLOCK.get().defaultBlockState(), 3);
             if (level.getBlockEntity(pos) instanceof CommunityFarmBlockEntity communityBe) {
                 communityBe.markPrepared(level.getGameTime());
             }
@@ -110,6 +111,12 @@ public class FarmingHoeItem extends Item {
             }
             if (player instanceof ServerPlayer serverPlayer) {
                 FarmingSkill.award(serverPlayer, FarmingActionType.TOOL, 1, 1.0f);
+            }
+            // Rowan questline M5 (protocol section 2.1): reported only when the hoed block is
+            // really in the world. An already-hoed plot, a private plot and a house plot all
+            // returned long before this method, so none of them can report a hoeing.
+            if (hoed) {
+                QuestActionEvents.plotHoe(player, level, pos);
             }
         }
 

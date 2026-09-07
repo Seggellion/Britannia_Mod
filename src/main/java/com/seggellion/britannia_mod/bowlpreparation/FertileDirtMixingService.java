@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.bowlpreparation;
 
+import com.seggellion.britannia_mod.quest.action.QuestActionEvents;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import java.util.Objects;
 import java.util.Optional;
@@ -80,6 +81,8 @@ public final class FertileDirtMixingService {
 
         ItemStack fertilizedDirt = commit.fertilizedDirt();
         ItemStack returnedBowls = commit.returnedBowls();
+        // Read the identity before delivering it: giving a stack away can empty it.
+        String outputItemId = QuestActionEvents.itemId(fertilizedDirt);
         if (liveMainHand.isEmpty()) {
             player.setItemInHand(InteractionHand.MAIN_HAND, fertilizedDirt);
         } else {
@@ -91,6 +94,9 @@ public final class FertileDirtMixingService {
             BowlPreparationOutput.giveOrDrop(player, returnedBowls);
         }
         player.getInventory().setChanged();
+        // Rowan questline M5 (protocol section 2.1): both inputs are paid for and both outputs are
+        // delivered before the mix is reported; a stale plan returned above having changed nothing.
+        QuestActionEvents.fertileDirtMix(player, outputItemId);
         return ApplyResult.APPLIED;
     }
 

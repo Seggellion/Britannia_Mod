@@ -29,6 +29,7 @@ import com.seggellion.britannia_mod.item.GrapeSeedsItem;
 import com.seggellion.britannia_mod.item.WateringCanItem;
 import com.seggellion.britannia_mod.winery.GrapeColor;
 import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
+import com.seggellion.britannia_mod.quest.action.QuestActionEvents;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.core.BlockPos;
@@ -514,8 +515,13 @@ public class FarmingBlock extends Block implements EntityBlock {
                 }
             }
 
+            // Rowan questline M5: the planter is recorded with the crop, not with the plot. A
+            // public plot has no owner and still has a planter, and quest credit turns on the
+            // second (protocol section 2.1).
+            java.util.UUID planterUuid = player == null ? null : player.getUUID();
             if (tree != null) {
                 farmBe.plant(crop);
+                farmBe.attributeCurrentCycleTo(planterUuid);
                 level.setBlock(pos, state.setValue(HAS_SEEDS, true), 3);
                 level.setBlock(rootPos, tree.rootBlock().get().defaultBlockState(), 3);
                 BlockEntity newBlockEntity = level.getBlockEntity(rootPos);
@@ -524,6 +530,7 @@ public class FarmingBlock extends Block implements EntityBlock {
                 }
             } else {
                 farmBe.plant(crop);
+                farmBe.attributeCurrentCycleTo(planterUuid);
                 level.setBlock(pos, state.setValue(HAS_SEEDS, true), 3);
             }
 
@@ -535,6 +542,12 @@ public class FarmingBlock extends Block implements EntityBlock {
                 FarmingSkill.award(serverPlayer, FarmingActionType.PLANT, crop.tier(), crop.farmingSkillModifier());
             }
             logPlantingFlow(interactionSource, level, pos, stack, crop, true, true, "planted");
+            // The authoritative success point: the crop is in the block entity, the block says it
+            // has seeds, and the seed has been paid for. Every refusal above -- a locked plot, the
+            // cultivation gate, missing support, an occupied plot, a blocked tree -- returned
+            // before this line, so none of them reports a planting.
+            QuestActionEvents.cropPlant(player, level, pos, crop.id(), farmBe.cropCycleAtCurrentPlot(),
+                    planterUuid, farmBe.isCommunityPlot());
         }
         return ItemInteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -584,6 +597,11 @@ public class FarmingBlock extends Block implements EntityBlock {
 
         if (!level.isClientSide) {
             int rootAgeBefore = farmBe.getRootAgeDays();
+            // Rowan questline M5: read the cycle BEFORE the harvest resets or rotates it. What is
+            // reported is the cycle that produced this crop, not whatever stands here afterwards.
+            java.util.UUID harvestedCycle = farmBe.cropCycleAtCurrentPlot();
+            java.util.UUID harvestedPlanter = farmBe.getPlanterId();
+            boolean harvestedCommunityPlot = farmBe.isCommunityPlot();
             RandomSource random = level.getRandom();
             int yield = crop.minYield() + random.nextInt(Math.max(1, crop.maxYield() - crop.minYield() + 1));
             CropGrowthContext context = farmBe.createGrowthContext(level, pos, crop, player);
@@ -601,6 +619,11 @@ public class FarmingBlock extends Block implements EntityBlock {
                         .orElse("Britannia"));
             }
             popResource(level, pos, harvest);
+            // The authoritative success point (protocol section 2.1): the produce exists in the
+            // world. Everything that could refuse this harvest -- an immature crop, the wrong
+            // tool, a missing support, a tree crop, an incomplete tall crop -- returned above.
+            QuestActionEvents.cropHarvest(player, level, pos, crop.id(), harvestedCycle,
+                    harvestedPlanter, harvestedCommunityPlot, yield);
             if (crop.harvestTool() == CropHarvestTool.GRAIN_BLADE) {
                 popResource(level, pos, new ItemStack(ItemRegistry.STRAW.get()));
             }

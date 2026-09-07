@@ -24,7 +24,7 @@ were not switched, stashed, reset, or modified.
 | M2 Rails reward-delivery ledger and replay | **PASSED** | — | `78d640a` | 2026-09-07 |
 | M3 NeoForge reward reconciliation | **PASSED** | `71f1713b` | — | 2026-09-07 |
 | M4 Rails action-objective and progress contract | **PASSED** | — | `0fff0b3` | 2026-09-07 |
-| M5 NeoForge farming events, outbox, crop attribution | not started | | | |
+| M5 NeoForge farming events, outbox, crop attribution | **PASSED** | (this commit) | — | 2026-09-07 |
 | M6 Rowan archetype | not started | | | |
 | M7 Rails content, seed, admin | not started | | | |
 | M8 Dialogue and journal UX | not started | | | |
@@ -604,7 +604,119 @@ journal-row lock as the change it describes.
 No new defects. The client-metadata filter ships **off**, as §3.2 requires during the compatibility
 window; turning it on is an M8 rollout step and both states are covered by tests.
 
-### Next action
+### Next action (at M4 close)
 
 M5 — NeoForge farming events, outbox and crop attribution, which is the mod half of this contract
 and the last piece before Rowan's content can be authored.
+## M5 — NeoForge farming events, outbox and crop attribution (PASSED 2026-09-07, NeoForge only)
+
+Delegated to a NeoForge sub-agent; reviewed hunk by hunk and gated by the integrator, who also ran
+the cross-repository live gate below.
+
+### Changes (`src/main`, `src/test`; no lang, no resources, no Rails change)
+
+* `quest/action/` (12 new classes) — `QuestAction` (the eleven wire names and the subject fields
+  each requires), `QuestActionSubject` (ordered, typed, validated at construction so the encoder
+  never needs escaping), `QuestActionEvent`, `QuestActionEventProtocol` (byte-exact encoder for the
+  frozen fixture layout, strict parser for the five results), `QuestActionEventClient` (signed v2
+  transport mirroring the delivery client, splitting a contract 404 from a missing route),
+  `QuestActionOutboxEntry`/`Store`/`QuestActionOutbox` (the fsync'd SavedData, schema 1, quarantine,
+  overworld anchor, per-player cap 64 with an overflow log), `QuestActionBackoff`,
+  `QuestActionSubscriptions` (the journal filter), `QuestActionDispatcher`, `QuestActionEvents`
+  (the façade the farming code calls).
+* `quest/QuestObjectiveTriggers.java` and `QuestObjectiveWatcher.java` — the fourth observer,
+  matching `triggers.action` and `triggers.steps` from the server journal with the same in-flight
+  guard and cooldown discipline as the three legacy observers. `QuestEntryCodecs` is untouched:
+  `triggers` still never reaches the client, and no new client payload carries an objective.
+* `block/entity/FarmingBlockEntity.java` — the attribution model (below).
+* Twelve publish sites, each after the real mutation: the existing dung harvest event, dirt
+  gathering, water-container filling, the three bowl preparations, fertile-dirt mixing, plot hoeing,
+  plot fertilizing, planting, watering and harvesting. Two `setBlock` return values that were
+  previously discarded are now checked, so a failed placement reports nothing. No farming rule or
+  balance changed.
+* `event/QuestActionOutboxHandler.java` — the dung bridge plus the tick, login and server-start
+  schedule; `server/http/RailsApiUrlResolver.java` — one v2 endpoint.
+* Tests: 7 unit classes under `quest/action/` and 4 GameTest classes (16 new GameTests).
+
+### Attribution model
+
+`FarmingBlockEntity` persists, beside the existing plot owner and community flag: `PlanterUUID`
+(who planted the crop standing here), `CropCycleUUID` (the identity of this cycle) and
+`CropCyclePlotKey` (the `plot_key` the cycle was minted at). The planter is deliberately distinct
+from the owner: a public plot has no owner and still has a planter, and quest credit turns on the
+planter. The cycle uuid is minted on planting, **rotated** when a perennial regrows after a harvest
+(without which one plot would satisfy the same bound objective forever), and cleared when the crop
+is cleared, replanted or the block removed. Accessors gate on there being a crop, and the
+plot-key check refuses a cycle whose stored plot disagrees with where the block entity now is, so a
+pasted or moved block entity cannot credit the wrong plot. All three survive chunk unload, save and
+restart through the block entity's own NBT.
+
+At harvest the cycle and planter are read **before** the reset or rotation, so the event reports
+the cycle that produced the crop and the player who planted it, not whoever is holding the tool.
+That is what lets Rails refuse a harvest by anyone but the planter.
+
+### Integrator review findings (found and fixed by the agent during its own gate runs)
+
+* `Inventory#add` empties the stack it consumed, so four publish sites were reading an
+  already-empty output; item ids are now read before delivery.
+* An `irrelevant` answer was setting a cooldown, which would have suppressed the player's next
+  legitimate event; the cooldown now applies to `rejected` only.
+* Two architectural guard tests assert on literal source text, so planting keeps its two-statement
+  form to preserve the proof that the skill gate precedes the mutation.
+
+### Tests and gates
+
+| Run | Result |
+| --- | --- |
+| Full JUnit (integrator, final tree) | 3671 tests, 0 failures, 0 errors, 23 skipped (468 suites; baseline 3634/20) |
+| GameTests (integrator-verified log) | 1139 required tests passed, 0 failed (baseline 1123, +16) |
+| `git diff --check` | clean |
+
+### Cross-repository live gate
+
+Run by the integrator against an isolated Rails: a temporary detached worktree at the committed M4
+state `0fff0b3`, a disposable database, generated credentials, and a seeded quest bound to one plot
+and one crop cycle with `require_planter`. Torn down afterwards, secret shredded.
+
+The mod's own encoder and transport proved, end to end:
+
+1. A harvest of the bound crop by someone who did not plant it → `rejected` with reason
+   `not_planter`; nothing advanced.
+2. The planter's harvest of the bound cycle → `applied`, and the journal row moved from the working
+   node to the completion node.
+3. The same event identity again → `duplicate` naming `applied` as its original result, with no
+   second advance.
+4. A harvest naming a different cycle → `rejected` `wrong_cycle`.
+
+Server-side: three posted identities produced exactly three stored rows, and the retry produced
+none. The objective contract therefore agrees across both repositories, including the
+duplicate-resistance the outbox depends on.
+
+### Outbox behaviour
+
+Enqueued only when the mutation succeeded, the subject carries every field its action requires, the
+player's server journal actually subscribes to that action with matching `match`, `require_planter`
+and bound values, no cooldown is running, and no live row already covers the same subscription.
+`applied`, `duplicate`, `irrelevant`, `stale` and `rejected` are all terminal; `400` is terminal
+(an encoder or authoring defect must not retry forever); `404 player_not_found`, `429` and `5xx`
+retry on the 10 s → 30 s → 60 s → 2 min → 5 min schedule; a 404 without a contract code means old
+Rails and stops the outbox for the boot.
+
+### Playbook item 8 — tracked dung support
+
+The chosen correction is **no rule change**, documented in code and tested: an unsupported but
+tracked pile is worth exactly one event, an untracked one none. Revalidating support at harvest
+would deny a harvest that succeeds today, which is a farming rule change outside this milestone's
+scope.
+
+### Defect register update
+
+No new defects. D6 (community plot seed window and random-tick reclaim) and D11 (no retry when
+skill data is unavailable) remain open and are M9's work.
+
+### Next action
+
+M6 — Rowan archetype and quest-giver spawn integration (mod only), then M7 — the Rails questline
+content. Note for M6: `QuestGiverSpawnBlockEntity.SUPPORTED_ARCHETYPES` (added in M1 as the server
+authority) and the client screen's list are kept identical by a unit test, so Rowan must be added
+to both.

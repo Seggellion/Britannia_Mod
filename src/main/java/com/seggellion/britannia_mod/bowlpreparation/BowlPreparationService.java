@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.bowlpreparation;
 
+import com.seggellion.britannia_mod.quest.action.QuestActionEvents;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import java.util.Objects;
 import java.util.Optional;
@@ -84,12 +85,19 @@ public final class BowlPreparationService {
         }
 
         ItemStack output = commit.output();
+        // Read the identity before delivering it: giving a stack away can empty it.
+        String outputItemId = QuestActionEvents.itemId(output);
         if (liveMainHand.isEmpty()) {
             player.setItemInHand(InteractionHand.MAIN_HAND, output);
         } else {
             BowlPreparationOutput.giveOrDrop(player, output);
         }
         player.getInventory().setChanged();
+        // Rowan questline M5 (protocol section 2.1): both dry preparation steps report the same
+        // action and are told apart by the output they produced. A stale plan -- the hands changed
+        // between the packet and the commit -- returned above without consuming or producing
+        // anything, so it reports nothing.
+        QuestActionEvents.bowlPrepare(player, outputItemId);
         return ApplyResult.APPLIED;
     }
 

@@ -5,9 +5,11 @@ import com.seggellion.britannia_mod.block.FarmingBlock;
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
 import com.seggellion.britannia_mod.block.OrangeTreeRootBlock;
 import com.seggellion.britannia_mod.block.entity.OrangeTreeRootBlockEntity;
+import com.seggellion.britannia_mod.farming.CropDefinition;
 import com.seggellion.britannia_mod.farming.CropRegistry;
 import com.seggellion.britannia_mod.farming.FarmingActionType;
 import com.seggellion.britannia_mod.farming.FarmingSkill;
+import com.seggellion.britannia_mod.quest.action.QuestActionEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -122,9 +124,31 @@ public class WateringCanItem extends Item {
             if (player instanceof ServerPlayer serverPlayer) {
                 FarmingSkill.award(serverPlayer, FarmingActionType.TEND, farmBlockEntity.cropTier(), 1.0f);
             }
+            // Rowan questline M5 (protocol section 2.1): reported only when watering actually
+            // raised the hydration and a charge was spent. Already-full soil and an empty can both
+            // returned above. A plot with nothing growing in it has no cycle to report against, so
+            // it reports nothing -- the contract requires crop_id and crop_cycle_uuid here.
+            QuestActionEvents.cropWater(player, level, pos, farmBlockEntity.getPlantedCropId(),
+                    farmBlockEntity.cropCycleAtCurrentPlot(), farmBlockEntity.getHydration(),
+                    careState(farmBlockEntity));
         }
 
         return ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    /**
+     * How this plot's water level reads for the crop growing in it, in the four words protocol
+     * section 2.1 allows for {@code care_state}. It reports the crop's OWN definition -- the same
+     * thresholds {@code CropQualityCalculator.hydrationFit} scores against -- rather than a new
+     * rule: nothing here changes what watering does, it only names the result.
+     */
+    private static String careState(FarmingBlockEntity farmBlockEntity) {
+        CropDefinition crop = CropRegistry.byId(farmBlockEntity.getPlantedCropId()).orElse(null);
+        if (crop == null) return "";
+        float normalized = farmBlockEntity.getHydration() / (float) FarmingBlockEntity.MAX_HYDRATION;
+        if (normalized < crop.minHydrationToGrow()) return "dry";
+        if (normalized > crop.maxHydrationBeforeSeverePenalty()) return "over";
+        return Math.abs(normalized - crop.hydrationIdeal()) <= crop.hydrationTolerance() ? "ideal" : "ok";
     }
 
     public static ItemInteractionResult waterOrangeTreeRoot(Level level, BlockPos pos, Player player, ItemStack stack) {

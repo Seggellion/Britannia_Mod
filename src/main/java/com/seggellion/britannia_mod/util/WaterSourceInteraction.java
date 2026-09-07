@@ -1,10 +1,14 @@
 package com.seggellion.britannia_mod.util;
 
 import com.seggellion.britannia_mod.ModSounds;
+import com.seggellion.britannia_mod.block.WaterWellBlock;
 import com.seggellion.britannia_mod.bowlpreparation.BowlWaterFillingPlan;
 import com.seggellion.britannia_mod.bowlpreparation.BowlWaterFillingService;
 import com.seggellion.britannia_mod.item.PitcherItem;
 import com.seggellion.britannia_mod.item.WateringCanItem;
+import com.seggellion.britannia_mod.quest.action.QuestAction;
+import com.seggellion.britannia_mod.quest.action.QuestActionEvents;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -43,24 +47,38 @@ public final class WaterSourceInteraction {
             return ItemInteractionResult.sidedSuccess(false);
         }
 
+        // Rowan questline M5 (protocol section 2.1): the two sources the contract distinguishes.
+        // A Water Well is the only unlimited source an Adventure player can reach, so which one
+        // this was is part of the fact being reported, not a detail.
+        String source = level.getBlockState(pos).getBlock() instanceof WaterWellBlock
+                ? QuestAction.SOURCE_WELL
+                : QuestAction.SOURCE_BLOCK;
+
         boolean applied = true;
         boolean wateringCanFill = false;
+        String containerItemId = "";
         if (stack.getItem() instanceof WateringCanItem) {
             applied = WateringCanItem.getWaterCharges(stack) < WateringCanItem.MAX_WATER_CHARGES;
             if (applied) {
                 WateringCanItem.setWaterCharges(stack, WateringCanItem.MAX_WATER_CHARGES);
                 wateringCanFill = true;
+                containerItemId = QuestActionEvents.itemId(stack);
             }
         } else if (stack.getItem() instanceof PitcherItem pitcher) {
             pitcher.fillWithWater(stack);
+            containerItemId = QuestActionEvents.itemId(stack);
         } else if (stack.is(Items.BUCKET)) {
             player.setItemInHand(hand,
                     ItemUtils.createFilledResult(stack, player, new ItemStack(Items.WATER_BUCKET)));
+            containerItemId = QuestActionEvents.itemId(Items.WATER_BUCKET);
         } else if (player instanceof ServerPlayer serverPlayer) {
             Optional<BowlWaterFillingPlan> plan = BowlWaterFillingService.plan(stack);
             applied = plan.isPresent()
-                    && BowlWaterFillingService.apply(serverPlayer, hand, plan.orElseThrow())
+                    && BowlWaterFillingService.apply(serverPlayer, hand, plan.orElseThrow(), source)
                     == BowlWaterFillingService.ApplyResult.APPLIED;
+            if (applied) {
+                containerItemId = QuestActionEvents.itemId(ItemRegistry.BOWL_OF_WATER.get());
+            }
         } else {
             applied = false;
         }
@@ -69,6 +87,9 @@ public final class WaterSourceInteraction {
             level.playSound(null, pos,
                     wateringCanFill ? ModSounds.WATERING_CAN_FILL.get() : SoundEvents.BUCKET_FILL,
                     SoundSource.BLOCKS, 0.8F, 1.0F);
+            // Published only after the exchange itself succeeded: a full watering can, a refused
+            // permission check and an unsupported stack all leave without reporting anything.
+            QuestActionEvents.waterContainerFill(player, level, pos, containerItemId, source);
         }
         return ItemInteractionResult.sidedSuccess(false);
     }

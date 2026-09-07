@@ -40,6 +40,9 @@ public class FarmingBlockEntity extends BlockEntity {
     public static final int UNTRACKED_FERTILE_HARVESTS = -1;
     public static final long COMMUNITY_SEED_WINDOW_TICKS = 1200L;
     private static final String OWNER_ID_KEY = "OwnerUUID";
+    private static final String PLANTER_ID_KEY = "PlanterUUID";
+    private static final String CROP_CYCLE_ID_KEY = "CropCycleUUID";
+    private static final String CROP_CYCLE_PLOT_KEY = "CropCyclePlotKey";
     private static final String VISUAL_ROTATION_KEY = "VisualRotation";
     private static final String REMAINING_FERTILE_HARVESTS_KEY = "RemainingFertileHarvests";
     private static final int GROWTH_AGE_DATA_VERSION = 3;
@@ -72,6 +75,37 @@ public class FarmingBlockEntity extends BlockEntity {
      */
     @Nullable
     private UUID ownerId = null;
+
+    /**
+     * Who planted the crop growing here right now, or null when nobody did (an empty plot, a crop
+     * this plot grew without a planter, or a world that predates the field).
+     *
+     * <p>Distinct from {@link #ownerId} on purpose. Ownership says who may plant on a private plot
+     * and is a property of the PLOT; this says who put THIS crop in the ground and is a property of
+     * the CYCLE. A public plot has no owner at all and still has a planter, which is exactly the
+     * case quest credit turns on (Rowan questline M5, protocol section 2.1): produce another player
+     * planted must not complete your quest even though the plot let you harvest it.
+     */
+    @Nullable
+    private UUID planterId = null;
+
+    /**
+     * The identity of the crop cycle standing here: minted when a crop is planted, rotated when a
+     * perennial regrows after a harvest, and cleared when the crop is cleared, replanted or the
+     * block is removed (protocol section 2.1). It is what makes "the carrot you planted and
+     * harvested" different from "a carrot in the same hole", so a second cycle on the same plot
+     * cannot satisfy a quest bound to the first.
+     */
+    @Nullable
+    private UUID cropCycleId = null;
+
+    /**
+     * The {@code plot_key} the cycle was minted at, {@code "<dimension>:<x>:<y>:<z>"}. Persisted
+     * rather than recomputed so the row is self-describing: a block entity that arrives somewhere
+     * else (a structure paste, a moved save) carries a cycle that no longer describes where it is,
+     * and {@link #hasCropCycleAt} refuses it instead of crediting the wrong plot.
+     */
+    private String cropCyclePlotKey = "";
 
     /**
      * Quarter turns clockwise applied to the crop's model, as set with the interior decorator tool.
@@ -149,10 +183,23 @@ public class FarmingBlockEntity extends BlockEntity {
     }
 
     public void plant(CropDefinition crop) {
-        plant(crop, "");
+        plant(crop, "", null);
     }
 
     public void plant(CropDefinition crop, String cropVariant) {
+        plant(crop, cropVariant, null);
+    }
+
+    /**
+     * Plants a crop and opens a new attribution cycle for it (Rowan questline M5). The planter may
+     * be null -- a crop the world planted for itself, such as the grape auto-plant from a stored
+     * seed -- and the cycle uuid is minted either way, so a cycle is always identifiable even when
+     * nobody can claim it.
+     */
+    public void plant(CropDefinition crop, String cropVariant, @Nullable UUID planterUuid) {
+        this.planterId = planterUuid;
+        this.cropCycleId = UUID.randomUUID();
+        this.cropCyclePlotKey = currentPlotKey();
         this.plantedCropId = crop.id();
         this.storedSeedVariety = cropVariant == null ? "" : cropVariant;
         this.growthProgress = 0.0f;
@@ -175,6 +222,7 @@ public class FarmingBlockEntity extends BlockEntity {
         if (level != null && !level.isClientSide && oldCrop != null) {
             TallCropSupport.clear(level, worldPosition, oldCrop);
         }
+        clearCropCycle();
         this.plantedCropId = "";
         this.growthProgress = 0.0f;
         this.growthStage = 0;
@@ -191,7 +239,17 @@ public class FarmingBlockEntity extends BlockEntity {
      * arbitrary callers choose a stage would make the crop's progress ambiguous.
      */
     public void plantMigratedCrop(CropDefinition crop, String cropVariant, int migratedGrowthStage) {
-        plant(crop, cropVariant);
+        plantMigratedCrop(crop, cropVariant, migratedGrowthStage, null);
+    }
+
+    /**
+     * As above, for a migration that knows whose plant it was. The cycle uuid is minted fresh
+     * either way -- a migrated plant is a new cycle as far as any quest bound to one is concerned
+     * -- but the planter is carried over rather than lost.
+     */
+    public void plantMigratedCrop(CropDefinition crop, String cropVariant, int migratedGrowthStage,
+                                  @Nullable UUID planterUuid) {
+        plant(crop, cropVariant, planterUuid);
         int stage = Math.max(0, Math.min(crop.maxGrowthAge(), migratedGrowthStage));
         this.growthStage = stage;
         this.growthProgress = stage <= 0 ? 0.0f : Math.min(0.99f, stage / (float) crop.visualAgeCount());
@@ -205,7 +263,16 @@ public class FarmingBlockEntity extends BlockEntity {
         setChangedAndSync();
     }
 
+    /**
+     * A perennial's next cycle after a harvest. The planter carries over -- nobody replanted, so
+     * the crop is still theirs -- but the cycle uuid ROTATES, because the cycle a quest bound
+     * itself to ended when its produce was pulled (protocol section 2.1: "cleared or rotated when
+     * the crop cycle ends (harvest reset, ...)"). Without the rotation one plot could satisfy the
+     * same bound harvest objective again and again.
+     */
     public void regrowAfterHarvest(CropDefinition crop) {
+        this.cropCycleId = UUID.randomUUID();
+        this.cropCyclePlotKey = currentPlotKey();
         this.plantedCropId = crop.id();
         int regrowthAge = crop.clampedPostHarvestRegrowthAge();
         this.growthStage = regrowthAge;
@@ -353,6 +420,65 @@ public class FarmingBlockEntity extends BlockEntity {
         return getOwner() != null;
     }
 
+    /** Who planted the crop standing here, or null. Never inferred from who is holding the tool. */
+    @Nullable
+    public UUID getPlanterId() {
+        return hasCrop() ? planterId : null;
+    }
+
+    /** The identity of the cycle standing here, or null when nothing is planted. */
+    @Nullable
+    public UUID getCropCycleId() {
+        return hasCrop() ? cropCycleId : null;
+    }
+
+    /** The {@code plot_key} the cycle was minted at, or an empty string when there is no cycle. */
+    public String getCropCyclePlotKey() {
+        return hasCrop() ? cropCyclePlotKey : "";
+    }
+
+    /**
+     * The cycle standing here, but only when it still describes THIS plot. A block entity whose
+     * stored plot key disagrees with where it now is has been moved or pasted, and its cycle is
+     * not evidence about the plot the player is standing at.
+     */
+    @Nullable
+    public UUID cropCycleAtCurrentPlot() {
+        UUID cycle = getCropCycleId();
+        if (cycle == null) return null;
+        String here = currentPlotKey();
+        return here.isEmpty() || here.equals(cropCyclePlotKey) ? cycle : null;
+    }
+
+    public boolean hasCropCycleAt() {
+        return cropCycleAtCurrentPlot() != null;
+    }
+
+    /**
+     * Names whoever put the crop that is standing here into the ground. Separate from
+     * {@link #plant} so the planting transaction keeps its established shape -- the cultivation
+     * gate, the mutation, then the attribution -- and so a cycle the world planted for itself
+     * simply never gets one. Does nothing when no crop is planted.
+     */
+    public void attributeCurrentCycleTo(@Nullable UUID planterUuid) {
+        if (!hasCrop()) return;
+        this.planterId = planterUuid;
+        setChangedAndSync();
+    }
+
+    /** Ends the current attribution cycle. Called wherever the crop itself stops existing. */
+    public void clearCropCycle() {
+        this.planterId = null;
+        this.cropCycleId = null;
+        this.cropCyclePlotKey = "";
+    }
+
+    private String currentPlotKey() {
+        if (level == null) return "";
+        return level.dimension().location() + ":" + worldPosition.getX() + ":"
+                + worldPosition.getY() + ":" + worldPosition.getZ();
+    }
+
     /**
      * Community plots are open to everyone, and an unclaimed private plot stays open so that plots
      * placed before ownership existed do not silently lock their owners out. Administrators are
@@ -476,6 +602,7 @@ public class FarmingBlockEntity extends BlockEntity {
         communityPlot = false;
         seedableUntilGameTime = 0L;
         remainingFertileHarvests = soil.remainingFertileHarvests();
+        clearCropCycle();
         setChangedAndSync();
     }
 
@@ -502,6 +629,7 @@ public class FarmingBlockEntity extends BlockEntity {
         seedableUntilGameTime = soil.communitySeedableUntilGameTime();
         remainingFertileHarvests = soil.remainingFertileHarvests();
         ownerId = null;
+        clearCropCycle();
         setChangedAndSync();
     }
 
@@ -674,6 +802,17 @@ public class FarmingBlockEntity extends BlockEntity {
         if (ownerId != null) {
             tag.putUUID(OWNER_ID_KEY, ownerId);
         }
+        // Rowan questline M5: the cycle's attribution, saved beside the owner so it survives chunk
+        // unload, save and restart exactly as every other plot field does.
+        if (planterId != null) {
+            tag.putUUID(PLANTER_ID_KEY, planterId);
+        }
+        if (cropCycleId != null) {
+            tag.putUUID(CROP_CYCLE_ID_KEY, cropCycleId);
+        }
+        if (!cropCyclePlotKey.isEmpty()) {
+            tag.putString(CROP_CYCLE_PLOT_KEY, cropCyclePlotKey);
+        }
         tag.putInt(VISUAL_ROTATION_KEY, visualRotationQuarters);
     }
 
@@ -708,6 +847,9 @@ public class FarmingBlockEntity extends BlockEntity {
                 ? Math.max(0, Math.min(MAX_FERTILE_HARVESTS, tag.getInt(REMAINING_FERTILE_HARVESTS_KEY)))
                 : UNTRACKED_FERTILE_HARVESTS;
         this.ownerId = tag.hasUUID(OWNER_ID_KEY) ? tag.getUUID(OWNER_ID_KEY) : null;
+        this.planterId = tag.hasUUID(PLANTER_ID_KEY) ? tag.getUUID(PLANTER_ID_KEY) : null;
+        this.cropCycleId = tag.hasUUID(CROP_CYCLE_ID_KEY) ? tag.getUUID(CROP_CYCLE_ID_KEY) : null;
+        this.cropCyclePlotKey = tag.getString(CROP_CYCLE_PLOT_KEY);
         this.visualRotationQuarters = Math.floorMod(tag.getInt(VISUAL_ROTATION_KEY), 4);
         migrateLegacyGrowthStage(tag);
     }
