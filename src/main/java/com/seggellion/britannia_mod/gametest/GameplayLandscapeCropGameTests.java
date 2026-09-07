@@ -81,8 +81,13 @@ public final class GameplayLandscapeCropGameTests {
                     var fruit = melon ? Blocks.MELON : Blocks.PUMPKIN;
                     h.assertTrue(level.getBlockState(pos).is(stem) && seed.getCount() == 1, "native seed planting changed: result=" + planted + " mode=" + player.gameMode.getGameModeForPlayer() + " state=" + level.getBlockState(pos) + " soil=" + level.getBlockState(pos.below()) + " count=" + seed.getCount());
                     var meal = new ItemStack(Items.BONE_MEAL, 8);
-                    for (int i = 0; i < 4 && level.getBlockState(pos).getValue(StemBlock.AGE) < 7; i++) BoneMealItem.applyBonemeal(meal, level, pos, player);
-                    h.assertTrue(level.getBlockState(pos).getValue(StemBlock.AGE) == 7 && meal.getCount() < 8, "bonemeal no longer matures stem");
+                    for (int i = 0; i < 4 && level.getBlockState(pos).is(stem)
+                            && level.getBlockState(pos).getValue(StemBlock.AGE) < 7; i++) BoneMealItem.applyBonemeal(meal, level, pos, player);
+                    // Vanilla bonemeal may immediately run the mature stem's random tick and
+                    // produce fruit. An attached stem has no AGE property and already succeeded.
+                    var grown = level.getBlockState(pos);
+                    h.assertTrue((grown.is(stem) && grown.getValue(StemBlock.AGE) == 7
+                            || grown.getBlock() instanceof AttachedStemBlock) && meal.getCount() < 8, "bonemeal no longer matures stem");
                     var random = RandomSource.create(20260907L);
                     for (int i = 0; i < 64 && level.getBlockState(pos).is(stem); i++) level.getBlockState(pos).randomTick(level, pos, random);
                     int fruits = 0;

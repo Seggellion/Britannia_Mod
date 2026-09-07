@@ -258,3 +258,13 @@ M4 final:186focused JUnit total/180passes/6skips;1127required registered GameTes
 - [x] Native seed dispatch, bonemeal maturation, ordinary stem growth and attached-stem serialization pass for both pumpkin and melon.
 - [x] Full registered farming suite still passes custom and native-compatible gourd routes; final1134GameTests and176executed focused JUnit tests passed (6JUnit skips).
 - [ ] Non-flat known-seed new-chunk survey, actual chunk/restart preservation and resource-reload observation remain M11 checks. A flat GameTest world is not that evidence.
+
+## M7 implementation evidence addendum
+
+- [x] All36approved missing outputs and legacy controls map to exact produce identities; all67crop definitions are accounted for.
+- [x] All8excluded category probes and custom seeds refuse produce policy; quality/default/admin-style identity and exact-component refunds pass.
+- [x] Rails insert-only rollout and later ordinary seed preserve existing added rows/prices/stock/flags; all36comparables match current baseline prices.
+- [x] Real HTTP routing, live local Jhelom/Britannia-style assignment/policy checks, quote/sale parity, wrong vendor/NPC/shard/city, missing/disabled/cap/treasury/minimum and stale revision refusal.
+- [x] Actual mod→localRails quote/reservation/sale/currency/city inventory/treasury, real cap-refund, same-keyRails replay, and disconnect before reservation:1receipt,stock3,copper9,treasury491.
+- [ ] Response loss/crash/disconnect AFTER dispatch exactly once: OPEN concrete pre-existing recovery limitation. Do not infer this from preflight disconnect or ordinary replay.
+- [ ] Production Jhelom/Britannia policy/assignment/current rows and deployed behavior: PENDING read-only/live acceptance.

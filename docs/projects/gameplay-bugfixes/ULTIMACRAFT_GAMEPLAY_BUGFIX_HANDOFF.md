@@ -21,7 +21,7 @@ Verdict: IN PROGRESS. Base and workspace identity, frozen decisions, milestone c
 | BUG-15 | Implemented; exhaustive loaded-biome/native/structure server proof; normal-terrain/restart checks pending | M6 |
 | BUG-16 | Implemented; server hand/pigment matrices; client pending | M2 |
 | BUG-17 | Implemented; count/component/final merge server proof; client pending | M2 |
-| BUG-18 | Pending full produce mapping/catalog; Jhelom/Britannia live evidence | M7 |
+| BUG-18 | All36 additions/catalog/HTTP routing implemented; real local quote/sale/refund/replay proof; response-loss recovery acceptance OPEN; production pending | M7 |
 | BUG-19 | Implemented; server transaction/gesture matrix; two-client pending | M3 |
 
 Final delivery will include milestone SHAs in both repositories, exact automated/manual evidence, clean normal JAR SHA/size/embedded HEAD/dirty flag/dependencies, changed files/status, rollback and existing-world notes. No push, merge, deployment, production seed/migration/data/world change, server JAR replacement or Fabric work authorized or performed.
@@ -79,3 +79,15 @@ The biome modifier removes only minecraft:patch_pumpkin, minecraft:patch_melon a
 Final JUnit182total/176passes/6skips/0failures/errors; all1134registered required GameTests passed, BUILD SUCCESSFUL2m14s. The corrected fixture and exact commands are in the scratchpad. GameTestServer uses FLAT; these results do not claim a normal-terrain seed survey or physical restart. Those remain M11 checks.
 
 Existing blocks and chunks require no migration and are never scanned or deleted. Removing the new modifier later restores future landscape feature generation after the worldgen registries reload; it does not create/remove fruit in already generated chunks. Structure files, native stems, recipes, seed items, randomTickSpeed and the existing ore policy are unchanged.
+
+## M7 mapping, pricing and transaction evidence
+
+All36missing outputs now map through an explicit55-item/51-key manifest. It accounts for every67CropRegistry definition (50supported,17excluded), retains legacy produce/native controls, and refuses unrelated namespace aliases. Rails uses the byte-identical manifest for insert-only rollout and new-city seeding; existing prices/stock/flags/caps/curve parameters survive reruns. The complete table and comparator rationale are in [M7_PRODUCE_MAPPING_AND_PRICES.md](M7_PRODUCE_MAPPING_AND_PRICES.md). Actual prices continue to use the existing live Rails scarcity/form/denomination rules.
+
+The real HTTP test exposed and fixed Rails strong params dropping world_npc_public_id before the existing economic router. Both top-level and wrapped requests now reach authoritative assignment/policy/treasury settlement. No new sale formula, NPC activation or shard-policy widening was added. Catalog opens already fetch live rows and use the existing row-sensitive revision.
+
+Validation:111mod economy JUnit passes;1137registered GameTests pass including opt-in real Rails integration;205Rails economy/controller tests,1957assertions,0failures/errors,1existing skip. The final manifest's lifecycle/pricing refinement has a further normally processed111-test mod gate and the final205-test Rails gate. Earlier setup/fixture failures and their corrections are in scratchpad.
+
+Two independently created local Jhelom fixtures proved actual mod prepare/fetch, durable reservation of exact quality components/count, sale/copper delivery, same-key Rails replay, real stock-cap failure/exact refund and preflight disconnect. Read-only DB verification:1transaction/1line,broccoli stock3,treasury500→491,copper grant9,market price aftersale2.4. A test proxy paused forwarding only to inspect the reservation; all economic responses were real Rails. No production evidence is inferred.
+
+OPEN acceptance: existing post-dispatch response-loss/crash recovery knowingly refunds goods even if Rails may have committed; the callback also targets a captured player. This is a concrete pre-existing code limitation, not an unavailable external check. Preflight disconnect/replay tests do not prove that window safe. Further recovery work remains before an unqualified exactly-once verdict. Production Jhelom/Britannia assignment/override/catalog acceptance is separately pending.

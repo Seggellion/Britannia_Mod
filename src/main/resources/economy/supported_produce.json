@@ -1,0 +1,891 @@
+{
+  "schema_version": 1,
+  "description": "Canonical M7 produce identities. Rails mirrors this file; new prices are insert-only. Existing produce prices are not changed.",
+  "entries": [
+    {
+      "item_id": "britannia_mod:apple",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "apple",
+      "commodity_key": "produce|fruit|apple",
+      "display_name": "Apple",
+      "crop_ids": [
+        "apple"
+      ],
+      "added": false
+    },
+    {
+      "item_id": "minecraft:apple",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "apple",
+      "commodity_key": "produce|fruit|apple",
+      "display_name": "Apple",
+      "crop_ids": [],
+      "added": false
+    },
+    {
+      "item_id": "britannia_mod:banana",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "banana",
+      "commodity_key": "produce|fruit|banana",
+      "display_name": "Banana",
+      "crop_ids": [
+        "banana"
+      ],
+      "added": false
+    },
+    {
+      "item_id": "britannia_mod:concord_grapes",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "concord_grapes",
+      "commodity_key": "produce|fruit|concord_grapes",
+      "display_name": "Concord Grapes",
+      "crop_ids": [],
+      "added": false
+    },
+    {
+      "item_id": "britannia_mod:peaches",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "peaches",
+      "commodity_key": "produce|fruit|peaches",
+      "display_name": "Peaches",
+      "crop_ids": [
+        "peach"
+      ],
+      "added": false
+    },
+    {
+      "item_id": "britannia_mod:pears",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "pears",
+      "commodity_key": "produce|fruit|pears",
+      "display_name": "Pears",
+      "crop_ids": [
+        "pear"
+      ],
+      "added": false
+    },
+    {
+      "item_id": "britannia_mod:berries",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "berries",
+      "commodity_key": "produce|fruit|berries",
+      "display_name": "Berries",
+      "crop_ids": [],
+      "added": false
+    },
+    {
+      "item_id": "britannia_mod:squash",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "squash",
+      "commodity_key": "produce|vegetable|squash",
+      "display_name": "Squash",
+      "crop_ids": [
+        "squash"
+      ],
+      "added": false
+    },
+    {
+      "item_id": "britannia_mod:carrots",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "carrots",
+      "commodity_key": "produce|vegetable|carrots",
+      "display_name": "Carrots",
+      "crop_ids": [
+        "carrot"
+      ],
+      "added": false
+    },
+    {
+      "item_id": "minecraft:carrot",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "carrots",
+      "commodity_key": "produce|vegetable|carrots",
+      "display_name": "Carrots",
+      "crop_ids": [],
+      "added": false
+    },
+    {
+      "item_id": "britannia_mod:corn",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "corn",
+      "commodity_key": "produce|vegetable|corn",
+      "display_name": "Corn",
+      "crop_ids": [
+        "corn"
+      ],
+      "added": false
+    },
+    {
+      "item_id": "britannia_mod:cabbage",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "cabbage",
+      "commodity_key": "produce|vegetable|cabbage",
+      "display_name": "Cabbage",
+      "crop_ids": [
+        "cabbage"
+      ],
+      "added": false
+    },
+    {
+      "item_id": "britannia_mod:lettuce",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "lettuce",
+      "commodity_key": "produce|vegetable|lettuce",
+      "display_name": "Lettuce",
+      "crop_ids": [
+        "lettuce"
+      ],
+      "added": false
+    },
+    {
+      "item_id": "britannia_mod:onion",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "onion",
+      "commodity_key": "produce|vegetable|onion",
+      "display_name": "Onion",
+      "crop_ids": [],
+      "added": false
+    },
+    {
+      "item_id": "britannia_mod:pumpkin",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "pumpkin",
+      "commodity_key": "produce|vegetable|pumpkin",
+      "display_name": "Pumpkin",
+      "crop_ids": [
+        "pumpkin"
+      ],
+      "added": false
+    },
+    {
+      "item_id": "minecraft:pumpkin",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "pumpkin",
+      "commodity_key": "produce|vegetable|pumpkin",
+      "display_name": "Pumpkin",
+      "crop_ids": [
+        "vanilla_pumpkin"
+      ],
+      "added": false
+    },
+    {
+      "item_id": "britannia_mod:potato",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "potato",
+      "commodity_key": "produce|vegetable|potato",
+      "display_name": "Potato",
+      "crop_ids": [
+        "potato"
+      ],
+      "added": false
+    },
+    {
+      "item_id": "minecraft:potato",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "potato",
+      "commodity_key": "produce|vegetable|potato",
+      "display_name": "Potato",
+      "crop_ids": [
+        "vanilla_potato"
+      ],
+      "added": false
+    },
+    {
+      "item_id": "britannia_mod:tomato",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "tomato",
+      "commodity_key": "produce|vegetable|tomato",
+      "display_name": "Tomato",
+      "crop_ids": [
+        "tomato"
+      ],
+      "added": false
+    },
+    {
+      "item_id": "britannia_mod:yellow_onion",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "yellow_onion",
+      "commodity_key": "produce|vegetable|yellow_onion",
+      "display_name": "Yellow Onion",
+      "crop_ids": [
+        "yellow_onion"
+      ],
+      "added": true,
+      "base_price": 1.5,
+      "max_supply_cap": 3000,
+      "comparable": "onion",
+      "comparison": "Existing allium family price, below other tier-1 annual vegetables; legacy onion has no crop tier.",
+      "crop_tier": 1,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:green_onion",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "green_onion",
+      "commodity_key": "produce|vegetable|green_onion",
+      "display_name": "Green Onion",
+      "crop_ids": [
+        "green_onion"
+      ],
+      "added": true,
+      "base_price": 1.5,
+      "max_supply_cap": 3000,
+      "comparable": "onion",
+      "comparison": "Existing allium family price, below other tier-1 annual vegetables; legacy onion has no crop tier.",
+      "crop_tier": 1,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:watermelon",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "watermelon",
+      "commodity_key": "produce|fruit|watermelon",
+      "display_name": "Watermelon",
+      "crop_ids": [
+        "watermelon"
+      ],
+      "added": true,
+      "base_price": 2.2,
+      "max_supply_cap": 3000,
+      "comparable": "squash",
+      "comparison": "Tier-1 annual gourd; conservative below pumpkin 3.0.",
+      "crop_tier": 1,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:beans",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "beans",
+      "commodity_key": "produce|vegetable|beans",
+      "display_name": "Beans",
+      "crop_ids": [
+        "beans"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 3000,
+      "comparable": "corn",
+      "comparison": "Tier-2 annual produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "minecraft:melon_slice",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "melon_slice",
+      "commodity_key": "produce|fruit|melon_slice",
+      "display_name": "Melon",
+      "crop_ids": [
+        "vanilla_melon"
+      ],
+      "added": true,
+      "base_price": 2.2,
+      "max_supply_cap": 3000,
+      "comparable": "squash",
+      "comparison": "Tier-1 annual gourd; conservative below pumpkin 3.0.",
+      "crop_tier": 1,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:pineapple",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "pineapple",
+      "commodity_key": "produce|fruit|pineapple",
+      "display_name": "Pineapple",
+      "crop_ids": [
+        "pineapple"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 2000,
+      "comparable": "apple",
+      "comparison": "Tier-3 fruit baseline 2.0; no seeded tier-3 annual fruit exists, so use the lowest same-tier fruit price without a lifecycle premium.",
+      "crop_tier": 3,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:strawberry",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "strawberry",
+      "commodity_key": "produce|fruit|strawberry",
+      "display_name": "Strawberry",
+      "crop_ids": [
+        "strawberry"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 2000,
+      "comparable": "corn",
+      "comparison": "Tier-2 annual produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:blueberry",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "blueberry",
+      "commodity_key": "produce|fruit|blueberry",
+      "display_name": "Blueberry",
+      "crop_ids": [
+        "blueberry"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 2000,
+      "comparable": "corn",
+      "comparison": "Tier-2 annual produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:raspberry",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "raspberry",
+      "commodity_key": "produce|fruit|raspberry",
+      "display_name": "Raspberry",
+      "crop_ids": [
+        "raspberry"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 2000,
+      "comparable": "corn",
+      "comparison": "Tier-2 annual produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:cranberry",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "cranberry",
+      "commodity_key": "produce|fruit|cranberry",
+      "display_name": "Cranberry",
+      "crop_ids": [
+        "cranberry"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 2000,
+      "comparable": "corn",
+      "comparison": "Tier-2 annual produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:blackberry",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "blackberry",
+      "commodity_key": "produce|fruit|blackberry",
+      "display_name": "Blackberry",
+      "crop_ids": [
+        "blackberry"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 2000,
+      "comparable": "corn",
+      "comparison": "Tier-2 annual produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:huckleberry",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "huckleberry",
+      "commodity_key": "produce|fruit|huckleberry",
+      "display_name": "Huckleberry",
+      "crop_ids": [
+        "huckleberry"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 2000,
+      "comparable": "corn",
+      "comparison": "Tier-2 annual produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:mulberry",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "mulberry",
+      "commodity_key": "produce|fruit|mulberry",
+      "display_name": "Mulberry",
+      "crop_ids": [
+        "mulberry"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 2000,
+      "comparable": "corn",
+      "comparison": "Tier-2 annual produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:elderberry",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "elderberry",
+      "commodity_key": "produce|fruit|elderberry",
+      "display_name": "Elderberry",
+      "crop_ids": [
+        "elderberry"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 2000,
+      "comparable": "corn",
+      "comparison": "Tier-2 annual produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:cherries",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "cherries",
+      "commodity_key": "produce|fruit|cherries",
+      "display_name": "Cherries",
+      "crop_ids": [
+        "cherries"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 2000,
+      "comparable": "apple",
+      "comparison": "Tier-3 tree fruit comparator at the lowest existing tree price 2.0.",
+      "crop_tier": 3,
+      "crop_lifecycle": "TREE"
+    },
+    {
+      "item_id": "britannia_mod:snow_peas",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "snow_peas",
+      "commodity_key": "produce|vegetable|snow_peas",
+      "display_name": "Snow Peas",
+      "crop_ids": [
+        "snow_peas"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 3000,
+      "comparable": "corn",
+      "comparison": "Tier-2 annual produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:peas",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "peas",
+      "commodity_key": "produce|vegetable|peas",
+      "display_name": "Peas",
+      "crop_ids": [
+        "peas"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 3000,
+      "comparable": "corn",
+      "comparison": "Tier-2 annual produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:turnips",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "turnips",
+      "commodity_key": "produce|vegetable|turnips",
+      "display_name": "Turnips",
+      "crop_ids": [
+        "turnips"
+      ],
+      "added": true,
+      "base_price": 1.6,
+      "max_supply_cap": 3000,
+      "comparable": "potato",
+      "comparison": "Tier-1 annual root/tuber; conservative below carrots 1.8.",
+      "crop_tier": 1,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:lemon",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "lemon",
+      "commodity_key": "produce|fruit|lemon",
+      "display_name": "Lemon",
+      "crop_ids": [
+        "lemon"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 2000,
+      "comparable": "apple",
+      "comparison": "Tier-3 tree fruit comparator at the lowest existing tree price 2.0.",
+      "crop_tier": 3,
+      "crop_lifecycle": "TREE"
+    },
+    {
+      "item_id": "britannia_mod:lime",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "lime",
+      "commodity_key": "produce|fruit|lime",
+      "display_name": "Lime",
+      "crop_ids": [
+        "lime"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 2000,
+      "comparable": "apple",
+      "comparison": "Tier-3 tree fruit comparator at the lowest existing tree price 2.0.",
+      "crop_tier": 3,
+      "crop_lifecycle": "TREE"
+    },
+    {
+      "item_id": "britannia_mod:orange",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "orange",
+      "commodity_key": "produce|fruit|orange",
+      "display_name": "Orange",
+      "crop_ids": [
+        "orange"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 2000,
+      "comparable": "apple",
+      "comparison": "Tier-3 tree fruit comparator at the lowest existing tree price 2.0.",
+      "crop_tier": 3,
+      "crop_lifecycle": "TREE"
+    },
+    {
+      "item_id": "britannia_mod:olive",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "olive",
+      "commodity_key": "produce|fruit|olive",
+      "display_name": "Olive",
+      "crop_ids": [
+        "olive"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 2000,
+      "comparable": "apple",
+      "comparison": "Tier-3 tree fruit comparator at the lowest existing tree price 2.0.",
+      "crop_tier": 3,
+      "crop_lifecycle": "TREE"
+    },
+    {
+      "item_id": "britannia_mod:plum",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "plum",
+      "commodity_key": "produce|fruit|plum",
+      "display_name": "Plum",
+      "crop_ids": [
+        "plum"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 2000,
+      "comparable": "apple",
+      "comparison": "Tier-3 tree fruit comparator at the lowest existing tree price 2.0.",
+      "crop_tier": 3,
+      "crop_lifecycle": "TREE"
+    },
+    {
+      "item_id": "britannia_mod:bell_peppers",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "bell_peppers",
+      "commodity_key": "produce|vegetable|bell_peppers",
+      "display_name": "Bell Peppers",
+      "crop_ids": [
+        "bell_peppers"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 3000,
+      "comparable": "tomato",
+      "comparison": "Tier-2 regrowing trellis produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "TRELLIS"
+    },
+    {
+      "item_id": "britannia_mod:cucumbers",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "cucumbers",
+      "commodity_key": "produce|vegetable|cucumbers",
+      "display_name": "Cucumbers",
+      "crop_ids": [
+        "cucumbers"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 3000,
+      "comparable": "tomato",
+      "comparison": "Tier-2 regrowing trellis produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "TRELLIS"
+    },
+    {
+      "item_id": "britannia_mod:honeydew",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "honeydew",
+      "commodity_key": "produce|fruit|honeydew",
+      "display_name": "Honeydew",
+      "crop_ids": [
+        "honeydew"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 2000,
+      "comparable": "tomato",
+      "comparison": "Tier-2 regrowing trellis produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "TRELLIS"
+    },
+    {
+      "item_id": "britannia_mod:cantaloupe",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "cantaloupe",
+      "commodity_key": "produce|fruit|cantaloupe",
+      "display_name": "Cantaloupe",
+      "crop_ids": [
+        "cantaloupe"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 2000,
+      "comparable": "tomato",
+      "comparison": "Tier-2 regrowing trellis produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "TRELLIS"
+    },
+    {
+      "item_id": "britannia_mod:broccoli",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "broccoli",
+      "commodity_key": "produce|vegetable|broccoli",
+      "display_name": "Broccoli",
+      "crop_ids": [
+        "broccoli"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 3000,
+      "comparable": "corn",
+      "comparison": "Tier-2 annual produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:cauliflower",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "cauliflower",
+      "commodity_key": "produce|vegetable|cauliflower",
+      "display_name": "Cauliflower",
+      "crop_ids": [
+        "cauliflower"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 3000,
+      "comparable": "corn",
+      "comparison": "Tier-2 annual produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:rhubarb",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "rhubarb",
+      "commodity_key": "produce|vegetable|rhubarb",
+      "display_name": "Rhubarb",
+      "crop_ids": [
+        "rhubarb"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 3000,
+      "comparable": "corn",
+      "comparison": "Tier-2 annual produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:celery",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "celery",
+      "commodity_key": "produce|vegetable|celery",
+      "display_name": "Celery",
+      "crop_ids": [
+        "celery"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 3000,
+      "comparable": "corn",
+      "comparison": "Tier-2 annual produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:radish",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "radish",
+      "commodity_key": "produce|vegetable|radish",
+      "display_name": "Radish",
+      "crop_ids": [
+        "radish"
+      ],
+      "added": true,
+      "base_price": 1.6,
+      "max_supply_cap": 3000,
+      "comparable": "potato",
+      "comparison": "Tier-1 annual root/tuber; conservative below carrots 1.8.",
+      "crop_tier": 1,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:parsnip",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "parsnip",
+      "commodity_key": "produce|vegetable|parsnip",
+      "display_name": "Parsnip",
+      "crop_ids": [
+        "parsnip"
+      ],
+      "added": true,
+      "base_price": 1.6,
+      "max_supply_cap": 3000,
+      "comparable": "potato",
+      "comparison": "Tier-1 annual root/tuber; conservative below carrots 1.8.",
+      "crop_tier": 1,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:yam",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "yam",
+      "commodity_key": "produce|vegetable|yam",
+      "display_name": "Yam",
+      "crop_ids": [
+        "yam"
+      ],
+      "added": true,
+      "base_price": 2,
+      "max_supply_cap": 3000,
+      "comparable": "corn",
+      "comparison": "Tier-2 annual produce comparator at 2.0; no new skill or quality premium.",
+      "crop_tier": 2,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:rutabaga",
+      "category": "produce",
+      "subcategory": "vegetable",
+      "item_name": "rutabaga",
+      "commodity_key": "produce|vegetable|rutabaga",
+      "display_name": "Rutabaga",
+      "crop_ids": [
+        "rutabaga"
+      ],
+      "added": true,
+      "base_price": 1.6,
+      "max_supply_cap": 3000,
+      "comparable": "potato",
+      "comparison": "Tier-1 annual root/tuber; conservative below carrots 1.8.",
+      "crop_tier": 1,
+      "crop_lifecycle": "ANNUAL"
+    },
+    {
+      "item_id": "britannia_mod:grapes",
+      "category": "produce",
+      "subcategory": "fruit",
+      "item_name": "grapes",
+      "commodity_key": "produce|fruit|grapes",
+      "display_name": "Grapes",
+      "crop_ids": [
+        "grapes"
+      ],
+      "added": true,
+      "base_price": 2.5,
+      "max_supply_cap": 2000,
+      "comparable": "banana",
+      "comparison": "Tier-3 perennial fruit comparator at 2.5; below legacy concord_grapes 3.0; same persistent-root lifecycle.",
+      "crop_tier": 3,
+      "crop_lifecycle": "PERENNIAL"
+    }
+  ],
+  "excluded_crop_ids": {
+    "wheat": "Outside the approved fruit/vegetable contract (grain, seed, reagent, textile or tobacco).",
+    "rye": "Outside the approved fruit/vegetable contract (grain, seed, reagent, textile or tobacco).",
+    "barley": "Outside the approved fruit/vegetable contract (grain, seed, reagent, textile or tobacco).",
+    "oats": "Outside the approved fruit/vegetable contract (grain, seed, reagent, textile or tobacco).",
+    "mustard": "Outside the approved fruit/vegetable contract (grain, seed, reagent, textile or tobacco).",
+    "rice": "Outside the approved fruit/vegetable contract (grain, seed, reagent, textile or tobacco).",
+    "garlic": "Outside the approved fruit/vegetable contract (grain, seed, reagent, textile or tobacco).",
+    "ginseng": "Outside the approved fruit/vegetable contract (grain, seed, reagent, textile or tobacco).",
+    "mandrake": "Outside the approved fruit/vegetable contract (grain, seed, reagent, textile or tobacco).",
+    "nightshade": "Outside the approved fruit/vegetable contract (grain, seed, reagent, textile or tobacco).",
+    "brown_mushroom": "Outside the approved fruit/vegetable contract (grain, seed, reagent, textile or tobacco).",
+    "red_mushroom": "Outside the approved fruit/vegetable contract (grain, seed, reagent, textile or tobacco).",
+    "cotton": "Outside the approved fruit/vegetable contract (grain, seed, reagent, textile or tobacco).",
+    "flax": "Outside the approved fruit/vegetable contract (grain, seed, reagent, textile or tobacco).",
+    "hemp": "Outside the approved fruit/vegetable contract (grain, seed, reagent, textile or tobacco).",
+    "hops": "Outside the approved fruit/vegetable contract (grain, seed, reagent, textile or tobacco).",
+    "tobacco": "Outside the approved fruit/vegetable contract (grain, seed, reagent, textile or tobacco)."
+  }
+}
