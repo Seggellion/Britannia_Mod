@@ -24,8 +24,8 @@ were not switched, stashed, reset, or modified.
 | M2 Rails reward-delivery ledger and replay | **PASSED** | — | `78d640a` | 2026-09-07 |
 | M3 NeoForge reward reconciliation | **PASSED** | `71f1713b` | — | 2026-09-07 |
 | M4 Rails action-objective and progress contract | **PASSED** | — | `0fff0b3` | 2026-09-07 |
-| M5 NeoForge farming events, outbox, crop attribution | **PASSED** | (this commit) | — | 2026-09-07 |
-| M6 Rowan archetype | not started | | | |
+| M5 NeoForge farming events, outbox, crop attribution | **PASSED** | `473917c0` | — | 2026-09-07 |
+| M6 Rowan archetype | **PASSED** | (this commit) | — | 2026-09-07 |
 | M7 Rails content, seed, admin | not started | | | |
 | M8 Dialogue and journal UX | not started | | | |
 | M9 Timing, skill, recovery | not started | | | |
@@ -714,9 +714,84 @@ scope.
 No new defects. D6 (community plot seed window and random-tick reclaim) and D11 (no retry when
 skill data is unavailable) remain open and are M9's work.
 
-### Next action
+### Next action (at M5 close)
 
 M6 — Rowan archetype and quest-giver spawn integration (mod only), then M7 — the Rails questline
 content. Note for M6: `QuestGiverSpawnBlockEntity.SUPPORTED_ARCHETYPES` (added in M1 as the server
 authority) and the client screen's list are kept identical by a unit test, so Rowan must be added
 to both.
+## M6 — Rowan archetype and quest-giver spawn integration (PASSED 2026-09-07, NeoForge only)
+
+Delegated to a NeoForge sub-agent; reviewed hunk by hunk and gated by the integrator.
+
+### Changes (`src/main`, `src/test`; no new art, no lang, no Rails change)
+
+* `block/entity/QuestGiverSpawnBlockEntity.java` — `Rowan` added to the server-authoritative
+  `SUPPORTED_ARCHETYPES`, an archetype-to-outfit map applied only on a plain archetype's fresh
+  spawn (so no existing archetype's appearance changes), and the per-spawner `directions` hint with
+  its NBT key, a 128-character bound and a sanitiser.
+* `client/gui/QuestGiverSpawnScreen.java` — `Rowan` in the pick list and a Local Directions box.
+* `entity/QuestGiverEntity.java` — a synched, saved `localDirections`, and a role title derived
+  from the resolved quest API identity (`Rowan` → Farmer, everything else → Wanderer) so the
+  profession cannot drift from the quest and needs no extra persistence.
+* `client/renderer/CitizenClothingLayer.java` — one outfit entry, `farmer` = boots + half apron,
+  reusing the two textures the wood trader already wears, present for both genders. **No new
+  texture asset was added**; a test asserts both files exist and that the mapping reuses them.
+* `network/QuestGiverSpawnConfigC2SPayload.java` — the seventh field and its validation;
+  `network/NetworkHandler.java` — one line passing it through, with M1's four gates byte-identical.
+* Tests: 5 unit tests (`entity/RowanFarmerArchetypeTest`), 7 GameTests
+  (`gametest/RowanQuestGiverSpawnGameTests`), and M1's spawn-config GameTests updated because they
+  used `Rowan` as their canonical *unsupported* archetype, which it no longer is.
+
+### Wire format change and its compatibility
+
+`directions` is appended after the six existing fields and encoded **only when non-empty**; the
+decoder reads it only if bytes remain. So a pre-M6 client produces a byte-for-byte pre-M6 packet,
+which decodes to an empty hint, and an empty hint means "leave the stored hint alone" — an old
+client can still configure a spawner without destroying its hint. Server-side validation refuses a
+hint longer than 128 characters or carrying control characters, whatever the client believed it
+sent; the sanitiser additionally guards the NBT-load path.
+
+### Identity
+
+Every Rowan resolves the Rails `origin_npc` identity `Rowan` exactly: the first configured spawn,
+one rebuilt from NBT after a chunk reload, one respawned from the block after the entity was lost,
+and two spawners differing in city, gender, radius and hint. A hint shaped like the legacy
+`Name:api_id` form reaches neither the identity nor the nameplate, and the archetype is accepted
+under exactly one spelling (`rowan`, `ROWAN`, `Rowan `, `Rowan the Farmer` are all refused).
+
+### Tests and gates
+
+| Run | Result |
+| --- | --- |
+| Full JUnit (integrator, final tree) | 3681 tests, 0 failures, 0 errors, 23 skipped (469 suites; baseline 3671) |
+| GameTests (integrator-verified log) | 1146 required tests passed, 0 failed (baseline 1139, +7) |
+| M1's gates | verbatim unchanged: permission, reach, block entity, payload shape |
+| `git diff --check` | clean |
+
+### Known limitation, carried into M11
+
+The spawn screen cannot be told a spawner's **current** hint, because the screen-opening payload
+and its sender are outside this milestone's file boundary. The box therefore opens empty and blank
+means "keep the stored hint", which is labelled in the UI but means a hint can be replaced and not
+cleared from the screen. The fix is one field on the screen payload and its sender; **M11 owns it.**
+
+### External asset the owner must supply (M12)
+
+`Rowan.png`, uploaded to the portrait bucket under whichever gender is placed. Nothing was
+uploaded. Until it exists the generic peasant portrait renders. Note the pre-existing client
+behaviour that a single missing-portrait response pins the fallback for the rest of that client
+session.
+
+### Defect found in passing (pre-existing, NOT fixed here, outside this project)
+
+`QuestGiverSpawnBlockEntity.customApiId` is never written to or read from NBT, so a Generic Combat
+spawner's Rails api id does not survive a chunk reload. The standing NPC is unaffected because it
+respawns from the saved snapshot, but a respawn after a reload would lose the id. Recorded for the
+owner rather than fixed, because it belongs to no milestone here and changing it would alter an
+existing archetype's behaviour.
+
+### Next action
+
+M7 — the Rails questline content: five linked non-repeatable quests keyed to `origin_npc = "Rowan"`
+with an idempotent seed, authored against the M4 action-objective and journal contract.

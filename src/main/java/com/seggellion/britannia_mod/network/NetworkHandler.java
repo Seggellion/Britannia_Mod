@@ -119,8 +119,10 @@ public class NetworkHandler {
             return false;
         }
         if (level.getBlockEntity(payload.pos()) instanceof QuestGiverSpawnBlockEntity spawner) {
+            // The directions hint is carried through untouched: it is presentation for this one
+            // spawner and reaches neither the archetype nor the Rails identity.
             spawner.applyConfig(payload.npcName(), payload.cityName(), payload.customApiId(),
-                payload.gender(), payload.spawnRadius());
+                payload.gender(), payload.spawnRadius(), payload.directions());
             return true;
         }
         return false;

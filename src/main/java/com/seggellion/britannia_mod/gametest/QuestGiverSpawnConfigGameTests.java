@@ -94,8 +94,14 @@ public final class QuestGiverSpawnConfigGameTests {
         BlockPos at = helper.absolutePos(SPAWNER);
 
         check(!NetworkHandler.applyQuestGiverSpawnConfig(admin,
-                new QuestGiverSpawnConfigC2SPayload(at, "Rowan", "Britain", "", "male", 7)),
+                new QuestGiverSpawnConfigC2SPayload(at, "Blackthorn", "Britain", "", "male", 7)),
             "an archetype the spawner does not support was applied");
+        check(!NetworkHandler.applyQuestGiverSpawnConfig(admin,
+                new QuestGiverSpawnConfigC2SPayload(at, "Iolo", "Britain", "", "male", 7, "north\nthen east")),
+            "a directions hint carrying control characters was applied");
+        check(!NetworkHandler.applyQuestGiverSpawnConfig(admin,
+                new QuestGiverSpawnConfigC2SPayload(at, "Iolo", "Britain", "", "male", 7, "x".repeat(400))),
+            "a directions hint past the server's bound was applied");
         check(!NetworkHandler.applyQuestGiverSpawnConfig(admin,
                 new QuestGiverSpawnConfigC2SPayload(at, "Iolo", "Britain", "", "male", -1)),
             "a negative wander radius was applied");
@@ -159,6 +165,8 @@ public final class QuestGiverSpawnConfigGameTests {
             "the spawner's city changed: " + spawner.getCityName());
         check("female".equals(spawner.getGender()), "the spawner's gender changed: " + spawner.getGender());
         check(spawner.getSpawnRadius() == 5, "the spawner's radius changed: " + spawner.getSpawnRadius());
+        check(spawner.getDirections() != null && spawner.getDirections().isEmpty(),
+            "the spawner's directions hint changed: " + spawner.getDirections());
     }
 
     /** Throws {@link GameTestAssertException} only; anything else would crash the GameTest server. */

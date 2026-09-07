@@ -22,10 +22,13 @@ public class QuestGiverSpawnScreen extends Screen {
     private EditBox cityNameBox;
     private EditBox customApiIdBox;
     private EditBox spawnRadiusBox;
+    private EditBox directionsBox;
     private Button npcNameButton;
     private Button genderButton;
 
-    private final List<String> availableNpcs = List.of("Zorathiel", "Lord British", "Iolo", "Dupre", "Shamino", "Generic Escort", "Generic Combat");
+    // Mirrored by QuestGiverSpawnBlockEntity.SUPPORTED_ARCHETYPES, which is the server's authority:
+    // this list is client-only code and a unit test fails if the two ever drift apart.
+    private final List<String> availableNpcs = List.of("Zorathiel", "Lord British", "Iolo", "Dupre", "Shamino", "Rowan", "Generic Escort", "Generic Combat");
     private int npcIdx = 0;
 
     public QuestGiverSpawnScreen(BlockPos pos, String npcName, String cityName, String customApiId, String gender, int spawnRadius) {
@@ -78,12 +81,22 @@ public class QuestGiverSpawnScreen extends Screen {
         spawnRadiusBox.setValue(String.valueOf(this.spawnRadius));
         addRenderableWidget(spawnRadiusBox);
 
-        // Shifted down to accommodate the new input box
+        // Per-spawner directions hint. It opens empty on purpose: the block's current hint is not
+        // in the payload that opens this screen, so a blank box means "keep whatever is stored"
+        // rather than "erase it". Typing a hint replaces it. The server bounds this too -- the
+        // limit here only stops the box from producing a save the server would refuse.
+        directionsBox = new EditBox(this.font, cx - 110, cy + 90, 220, 20, Component.literal("Local Directions"));
+        directionsBox.setMaxLength(
+                com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity.MAX_DIRECTIONS_LENGTH);
+        directionsBox.setValue("");
+        addRenderableWidget(directionsBox);
+
+        // Shifted down to accommodate the new input boxes
         addRenderableWidget(Button.builder(Component.literal("Save"), b -> saveAndClose())
-                .bounds(cx - 110, cy + 90, 100, 20).build());
+                .bounds(cx - 110, cy + 120, 100, 20).build());
 
         addRenderableWidget(Button.builder(Component.literal("Close"), b -> onClose())
-                .bounds(cx + 10, cy + 90, 100, 20).build());
+                .bounds(cx + 10, cy + 120, 100, 20).build());
     }
 
     private void saveAndClose() {
@@ -98,7 +111,9 @@ public class QuestGiverSpawnScreen extends Screen {
                 // If the user types text instead of a number, we gracefully fallback to 5
             }
 
-            NetworkHandler.sendToServer(new QuestGiverSpawnConfigC2SPayload(pos, availableNpcs.get(npcIdx), newCity, newCustomId, gender, newRadius));
+            String newDirections = directionsBox.getValue().trim();
+
+            NetworkHandler.sendToServer(new QuestGiverSpawnConfigC2SPayload(pos, availableNpcs.get(npcIdx), newCity, newCustomId, gender, newRadius, newDirections));
         } catch (Exception ignored) {
         } finally {
             onClose();
@@ -122,6 +137,7 @@ public class QuestGiverSpawnScreen extends Screen {
         
         gg.drawString(this.font, "Assigned City (Economy)", cx - 110, cy - 12, 0xFFFFFF);
         gg.drawString(this.font, "Wander Radius (Blocks)", cx - 110, cy + 48, 0xFFFFFF);
+        gg.drawString(this.font, "Local Directions (blank keeps current)", cx - 110, cy + 78, 0xFFFFFF);
     }
 
     @Override
