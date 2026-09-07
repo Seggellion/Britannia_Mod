@@ -1,0 +1,71 @@
+{
+  "success": true,
+  "quest_state_id": "9001",
+  "quest_id": 41,
+  "granted_items": [
+    {"id": "britannia_mod:britannia_shovel", "count": 1}
+  ],
+  "client_actions": [],
+  "reward_delivery": {
+    "protocol_version": 1,
+    "delivery_uuid": "6f1d0c8e-3c2f-4d0a-9a9b-2b0f6f5a8e01",
+    "quest_id": 41,
+    "quest_state_id": "9001",
+    "transition_key": "1757200000:1201:choice:accept",
+    "items": [
+      {"id": "britannia_mod:britannia_shovel", "count": 1, "temporary": false}
+    ],
+    "state": "pending",
+    "created_at": "2026-09-06T21:10:00Z"
+  },
+  "node": {
+    "id": 1202,
+    "title": "Dung Duty",
+    "text": "Take this shovel. The cattle field north of the barn is thick with dung; bring me one shovelful and we shall talk fertiliser.",
+    "type": "dialogue",
+    "metadata": {
+      "journal_objective": "Collect dung from the cattle field with your shovel.",
+      "progress_steps": [],
+      "rewards_preview": {
+        "on_accept": [{"id": "britannia_mod:britannia_shovel", "count": 1}],
+        "on_complete": [{"id": "britannia_mod:gold_coin", "count": 2}]
+      },
+      "keep_items": []
+    }
+  },
+  "choices": [
+    {"id": "later", "text": "I will return with the dung.", "is_locked": false},
+    {"id": "help", "text": "Where do I find dung?", "is_locked": false, "presentation": "help"}
+  ],
+  "player_state": {"flags": {}, "counters": {}},
+  "accepted_quest": {
+    "id": "9001",
+    "quest_state_id": "9001",
+    "quest_id": "41",
+    "quest_key": "rowan_farming_1",
+    "name": "From Soil to Supper (1 of 5): Dung Duty",
+    "brief_description": "Collect a shovelful of dung from the cattle field for Rowan.",
+    "accepted_at": "2026-09-06T21:10:00Z",
+    "status": "accepted",
+    "stage": {"questline_key": "rowan_farming", "index": 1, "count": 5, "label": "Quest 1 of 5"},
+    "quest_giver": {"name": "Rowan", "profession": "Farmer"},
+    "objective": "Collect dung from the cattle field with your shovel.",
+    "progress": [
+      {"key": "dung_collected", "label": "Collect dung", "done": false}
+    ],
+    "rewards_preview": {
+      "on_accept": [{"id": "britannia_mod:britannia_shovel", "count": 1}],
+      "on_complete": [{"id": "britannia_mod:gold_coin", "count": 2}]
+    },
+    "keep_items": [],
+    "claim_pending": false,
+    "triggers": {
+      "action": {
+        "trigger_key": "dung_collected",
+        "label": "Collect dung",
+        "action": "wild_resource_harvest",
+        "match": {"resource_id": "britannia_mod:dung"}
+      }
+    }
+  }
+}
