@@ -487,7 +487,7 @@ public final class CrateStackFoundationGameTests {
         player.getAbilities().mayBuild = true;
         player.getAbilities().instabuild = true;
         player.onUpdateAbilities();
-        player.absMoveTo(floor.getX() + 0.5D, floor.getY() + 1.0D, floor.getZ() + 0.5D);
+        player.absMoveTo(floor.getX() + 2.5D, floor.getY() + 1.0D, floor.getZ() + 2.5D);
         // The item takes its orientation from where the player is looking.
         player.setYRot(facing.getOpposite().toYRot());
         player.setYHeadRot(facing.getOpposite().toYRot());

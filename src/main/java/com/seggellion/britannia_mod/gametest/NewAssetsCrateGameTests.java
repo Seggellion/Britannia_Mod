@@ -290,7 +290,9 @@ public final class NewAssetsCrateGameTests {
     public static void onlyACrateTopEscapesTheSturdySupportRule(GameTestHelper helper) {
         BlockPos stone = new BlockPos(2, 1, 2);
         BlockPos slab = new BlockPos(3, 1, 2);
-        ServerPlayer player = builder(helper, stone);
+        ServerPlayer player = ManagedResourceTestPlayers.survival(helper.getLevel(), "M9Crate");
+        BlockPos stand = helper.absolutePos(stone.offset(2, 1, 2));
+        player.setPos(stand.getX() + 0.5D, stand.getY(), stand.getZ() + 0.5D);
         helper.setBlock(stone, Blocks.STONE);
         helper.setBlock(slab, Blocks.SMOOTH_STONE_SLAB);
 

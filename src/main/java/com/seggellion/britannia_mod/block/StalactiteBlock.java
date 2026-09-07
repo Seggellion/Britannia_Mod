@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.block;
 
+import com.seggellion.britannia_mod.placement.CreativeDecorationPolicy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
@@ -21,11 +22,25 @@ public final class StalactiteBlock extends TallDecorativeBlock {
 
     public StalactiteBlock(BlockBehaviour.Properties properties) {
         super(properties);
+        registerDefaultState(defaultBlockState().setValue(CreativeDecorationPolicy.ORIGIN, false));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(net.minecraft.world.level.block.state.StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(CreativeDecorationPolicy.ORIGIN);
+    }
+
+    @Override
+    public BlockState getStateForPlacement(net.minecraft.world.item.context.BlockPlaceContext context) {
+        // This one-cell anchor occupies the cell below it visually and physically too.
+        if (!CreativeDecorationPolicy.canOccupy(context, context.getClickedPos().below(), Blocks.AIR.defaultBlockState())) return null;
+        return CreativeDecorationPolicy.remember(super.getStateForPlacement(context), context);
     }
 
     @Override
     public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
-        return Block.canSupportCenter(level, pos.above(), Direction.DOWN);
+        return CreativeDecorationPolicy.placedInCreative(state) || Block.canSupportCenter(level, pos.above(), Direction.DOWN);
     }
 
     @Override

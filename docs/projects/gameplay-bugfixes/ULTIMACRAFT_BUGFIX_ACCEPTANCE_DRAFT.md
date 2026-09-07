@@ -277,3 +277,6 @@ M4 final:186focused JUnit total/180passes/6skips;1127required registered GameTes
 M7b update: dedicated-server response-loss recovery is now implemented and verified against real local Rails. All1,142GameTests +27focusedJUnit passed; two local receipts grant9/5copper,stock5,treasury486. Full details, persistence boundaries and operator-pending cases: M7_SALE_RECOVERY.md and scratchpad. M8–M11 remain; no final release verdict yet.
 
 BUG-11/12/13 M8 local automated gate PASSED: deterministic topology across1,044layouts; collision1.5; vanilla-shovel path survives customfence and queuedticks; oakcontrol preserved. All1,147GameTests +5JUnit. Client visual/restart and keyboardmovement observations remain M11 runtime checks.
+
+
+M9 automated acceptance: all1,154 registered GameTests and7focused JUnit passed. See M9_CREATIVE_DECORATION_EVIDENCE.md for seven new family/mode/footprint/component cases, legacy-state behavior, earlier corrected failures and the separate client/restart gate.

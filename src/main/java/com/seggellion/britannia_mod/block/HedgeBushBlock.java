@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.block;
 
+import com.seggellion.britannia_mod.placement.CreativeDecorationPolicy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -22,25 +23,25 @@ public final class HedgeBushBlock extends DecorativePropBlock {
 
     public HedgeBushBlock(Properties properties, VoxelShape outlineShape) {
         super(properties, outlineShape, true);
-        registerDefaultState(defaultBlockState().setValue(SEGMENT, BOTTOM));
+        registerDefaultState(defaultBlockState().setValue(SEGMENT, BOTTOM).setValue(CreativeDecorationPolicy.ORIGIN, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
-        builder.add(SEGMENT);
+        builder.add(SEGMENT, CreativeDecorationPolicy.ORIGIN);
     }
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return super.getStateForPlacement(context).setValue(
+        return CreativeDecorationPolicy.remember(super.getStateForPlacement(context), context).setValue(
                 SEGMENT, segmentAt(context.getLevel(), context.getClickedPos()));
     }
 
     @Override
     public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         BlockState below = level.getBlockState(pos.below());
-        return below.is(this)
+        return CreativeDecorationPolicy.placedInCreative(state) || below.is(this)
                 || below.is(BlockTags.DIRT)
                 || below.is(Blocks.FARMLAND)
                 || below.is(Blocks.MOSS_BLOCK);

@@ -1,6 +1,6 @@
 # Gameplay bugfix implementation scratchpad
 
-Current: M7 mapping/catalog/HTTP routing and local integration implemented and verified; local M7a commits next. Response-loss/after-dispatch recovery acceptance remains open before final M11 verdict. Authorized execution: M0–M11, local commits, no push/merge/deploy/production writes or Fabric work. Playbook and kickoff supersede historical discovery recommendations. All five authoritative documents read in full before code edits.
+Current: M0–M8 implemented, verified and locally committed. M9 Creative placement is in full regression; M10 client baseline preparation is local and isolated; M11 remains. Authorized M0–M11 execution includes local commits, no push/merge/deploy/production writes or Fabric work. All five authoritative documents were read in full before edits.
 
 ## Workspace and frozen contract
 
@@ -21,9 +21,9 @@ Decisions: 1200 online game ticks, exact hoed restoration, unused fertilizer for
 | M4 harvest gates/outcomes | PASS (client checks pending) | c6496588042b8109266d55443c3b1fe68ee062e7 / cabc1050dba8d3d9865623fe9beacc2f7f89033d |
 | M5 feedback/can state | PASS (client pending; full art PENDING_USER_ASSET) | cabc1050dba8d3d9865623fe9beacc2f7f89033d / b8101aed6c2bb6a14835fbb8abf4ddd2510fa041 |
 | M6 landscape features | PASS (non-flat terrain/restart checks pending) | b8101aed6c2bb6a14835fbb8abf4ddd2510fa041 / 2ec14a9722a6c3dee24428e13fed1afb3055627b |
-| M7 produce mod + Rails | IN PROGRESS | mod start2ec14a9722a6c3dee24428e13fed1afb3055627b; Rails starta9425ca41afa9b4ba7539426044e7b50e70a3966; paired SHAs pending |
-| M8 fence joins/collision/path | PENDING | |
-| M9 Creative decoration | PENDING | |
+| M7 produce mod + Rails | PASS local; production backfill pending | mod 5c195339a33f8e79fcdd1d4589ceec45c23a4ae4 + 934790ec7ec45b193cdff299a876dceb2b611603; Rails 6cc948f9a814add4f4a7b8a4f122514d9ed45bf8 + a506d67d1b478789c2a68094b5d081a4e9afb924 |
+| M8 fence joins/collision/path | PASS automated; client pending | 934790ec7ec45b193cdff299a876dceb2b611603 / ea8499f764fcd059edf4d4b0a0cfc98c0d9db8ea |
+| M9 Creative decoration | PASS automated; actual reload/client pending | start ea8499f764fcd059edf4d4b0a0cfc98c0d9db8ea |
 | M10 shader reproduction/correction | PENDING | |
 | M11 final gates/build/handoff | PENDING | |
 
@@ -251,3 +251,14 @@ Implemented topology-based loaded-run facing, fixed cross tie-breaker, preserved
 m8-1 compile failed because the new Mixin initially requested unavailable obfuscation mappings; corrected to the existing NeoForge remap=false convention. m8-2 processed normal resources and completed all1,147GameTests (2.151min) with exactly one failure: the player movement probe did not clear the fence above1.5. All topology, path, collision-shape, loaded-state checks and existing tests passed. The movement fixture now clears nearby geometry, explicitly distinguishes grounded/airborne state, and reports mode/block/actual coordinates. m8-3 is running the corrected test plus full suite, reusing the already processed unchanged resources. Do not claim M8 complete until this check passes or the precise defect is resolved. No M8 commit yet.
 
 M8 final gate: m8-3.log BUILD SUCCESSFUL6m27s; all1,147requiredGameTests passed in2.303min and5WoodenFenceContractTest JUnit tests passed/0skips. The sole prior movement-fixture failure is resolved by explicitly clearing the collision corridor and setting grounded/airborne state before each probe; no production collision relaxation was made. All1,044placement layouts, direct/history L variants,64shape states,path/oak controls,loaded-state repair and Survival/Adventure movement-envelope probes passed. Interactive keyboard/client visual and full restart observations remain named M11 runtime checks; headless evidence is not presented as those observations. No authored fence models/textures changed. Diff check clean for M8.
+
+
+## M9 implementation and regression
+
+CreativeDecorationPolicy centralizes the mode/substrate decision. Shared DecorativeMultiblockItem bypasses only its base sturdy-UP check, preserving CrateBlockItem's structural foundation override and AdventureScarecrowItem's community boundary. All occupied cells retain bounds, border, loaded-space, replaceability, block entity, permission and now actual entity collision checks. Five recurring families persist creative_origin with explicit false legacy defaults: fern, hedge, blood, stalactite and iron_fence_gate (TripleMetalDoorBlock; the ordinary metal door is a separate item). Generic structures and wine bottles do not recheck substrate and need no origin field. Stalactite is one saved anchor with a two-cell downward shape; the extra cell is validated. The triple door item validates and writes all three parts before consumption and preserves part teardown.
+
+m9-compile.log: production draft compiled successfully in1m6s. m9-1.log: all1,152 GameTests executed,36 failures; focused JUnit passed. Failures exposed an overly broad bypass skipping crate foundation rules, true defaults inherited from BooleanProperty's state enumeration, mock players overriding isCreative despite Survival/Adventure flags, and historical actors standing inside their proposed large-crate/market-stall footprints. Corrected bypass location and all five defaults; moved fixture actors outside actual geometry; changed only mode-sensitive fixtures to real named ServerPlayers. No production collision exemption was added to make these fixtures pass. m9-2.log is the full revised run, now seven new M9 GameTests (first run had five). Coverage includes seven scarecrow surfaces, all recurring family free placement/support removal/blockstate serialization/legacy defaults, real Survival costs, community Adventure boundary, occupied BE footprint refusal and exact wine components/BE NBT. Actual chunk unload/restart/client observations remain distinct from serialization tests.
+
+Computer-use skill read at C:/Users/dusti/.codex/plugins/cache/openai-bundled/computer-use/26.901.41600/skills/computer-use/SKILL.md plus guidance/api/confirmations. The prescribed @oai/sky entrypoint initialized. First list_apps timed out; one retry succeeded and showed no Minecraft window. Existing installed NeoForge21.1.72 launch metadata,90 cached libraries,eight native DLLs and asset index17 permit a separate offline client in ignored tmp/gameplay-bugfixes/client. No original profiles/configs/worlds/servers/credentials copied or changed. This is capability preparation, not a rendered shader acceptance claim.
+
+M9 final server gate m9-2.log: all1,154 required GameTests passed in2.544min;7focused JUnit passed,0failures/errors/skips. Review and diff check passed; details in M9_CREATIVE_DECORATION_EVIDENCE.md. Actual client/restart observations remain pending.

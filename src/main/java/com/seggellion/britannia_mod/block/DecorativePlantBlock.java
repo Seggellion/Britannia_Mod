@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.block;
 
+import com.seggellion.britannia_mod.placement.CreativeDecorationPolicy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -15,12 +16,24 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public final class DecorativePlantBlock extends DecorativePropBlock {
     public DecorativePlantBlock(Properties properties, VoxelShape outlineShape) {
         super(properties, outlineShape, false);
+        registerDefaultState(defaultBlockState().setValue(CreativeDecorationPolicy.ORIGIN, false));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(net.minecraft.world.level.block.state.StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(CreativeDecorationPolicy.ORIGIN);
+    }
+
+    @Override
+    public BlockState getStateForPlacement(net.minecraft.world.item.context.BlockPlaceContext context) {
+        return CreativeDecorationPolicy.remember(super.getStateForPlacement(context), context);
     }
 
     @Override
     public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         BlockState below = level.getBlockState(pos.below());
-        return below.is(BlockTags.DIRT) || below.is(Blocks.FARMLAND) || below.is(Blocks.MOSS_BLOCK);
+        return CreativeDecorationPolicy.placedInCreative(state) || below.is(BlockTags.DIRT) || below.is(Blocks.FARMLAND) || below.is(Blocks.MOSS_BLOCK);
     }
 
     @Override
