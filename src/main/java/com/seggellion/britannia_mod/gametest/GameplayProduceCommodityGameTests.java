@@ -60,10 +60,12 @@ public final class GameplayProduceCommodityGameTests {
         h.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(template = TEMPLATE, timeoutTicks = 1200)
     public static void harvestDefaultAndAdminComponentsRetainOneIdentityAndRefundExactly(GameTestHelper h) {
         var policy = new AcceptedCommodityPolicy(List.of(new AcceptedCommodityPolicy.Entry("produce", null, null)));
         var player = ManagedResourceTestPlayers.survival(h.getLevel(), "M7Components");
+        var sequence = h.startSequence();
+        var store = TraderSaleReservationStore.get(h.getLevel());
         for (var crop : CropRegistry.all()) {
             if (!Set.of("broccoli", "orange", "carrot", "apple").contains(crop.id())) continue;
             for (int variant = 0; variant < 3; variant++) {
@@ -80,15 +82,30 @@ public final class GameplayProduceCommodityGameTests {
                         described.get("subcategory").getAsString(), described.get("item_name").getAsString()), "components filtered " + crop.id());
                 h.assertTrue(described.get("item_name").getAsString().equals(mapping.itemName()), "serializer identity changed");
                 h.assertTrue(ItemStack.matches(snapshot, stack), "classification mutated stack");
-                player.getInventory().clearContent();
                 String key = "sale:m7-components:" + UUID.randomUUID();
-                var store = TraderSaleReservationStore.get(h.getLevel());
-                store.record(new TraderSaleReservationReceipt(key, player.getUUID(),
-                        List.of(BankItemCodec.serialize(stack, h.getLevel().registryAccess())),
-                        TraderSaleReservationReceipt.Status.ITEMS_REMOVED, System.currentTimeMillis()));
-                h.assertTrue(TraderSaleReservationRecovery.refundStrandedReservations(h.getLevel(), player) == 1, "refund missing");
-                h.assertTrue(ItemStack.matches(snapshot, player.getInventory().getItem(0)), "refund changed count/components");
-                h.assertTrue(TraderSaleReservationRecovery.refundStrandedReservations(h.getLevel(), player) == 0, "refund replay minted items");
+                sequence.thenExecute(() -> {
+                    player.getInventory().clearContent();
+                    store.record(new TraderSaleReservationReceipt(key, player.getUUID(),
+                            List.of(BankItemCodec.serialize(snapshot, h.getLevel().registryAccess())),
+                            TraderSaleReservationReceipt.Status.ITEMS_REMOVED, System.currentTimeMillis()));
+                });
+                sequence.thenWaitUntil(() -> {
+                    // A checked Windows atomic replacement can temporarily refuse. Recovery is
+                    // intentionally durable/pending in that case, not promised to finish in one call.
+                    TraderSaleReservationRecovery.refundStrandedReservations(h.getLevel(), player);
+                    int held = player.getInventory().items.stream().filter(s -> !s.isEmpty()).mapToInt(ItemStack::getCount).sum();
+                    h.assertTrue(held == 0 || held == snapshot.getCount(), "partial or duplicate refund");
+                    if (held == 0) {
+                        h.assertTrue(store.find(key) != null, "undelivered refund lost its durable reservation");
+                        throw new GameTestAssertException("refund remains safely pending for " + key);
+                    }
+                    h.assertTrue(ItemStack.matches(snapshot, player.getInventory().getItem(0)), "refund changed count/components");
+                    if (store.find(key) != null) throw new GameTestAssertException("delivered refund awaits journal resolution");
+                    TraderSaleReservationRecovery.refundStrandedReservations(h.getLevel(), player);
+                    h.assertTrue(ItemStack.matches(snapshot, player.getInventory().getItem(0))
+                            && player.getInventory().items.stream().filter(s -> !s.isEmpty()).count() == 1,
+                            "refund replay minted or changed items");
+                });
             }
         }
         for (var id : List.of("minecraft:wheat", "britannia_mod:broccoli_seeds", "britannia_mod:garlic",
@@ -98,8 +115,7 @@ public final class GameplayProduceCommodityGameTests {
             var row = ServerEconomyService.describeSaleItem(stack);
             h.assertTrue(!row.has("category") || !row.get("category").getAsString().equals("produce"), "excluded goods offered " + id);
         }
-        h.getLevel().getServer().getPlayerList().remove(player);
-        h.succeed();
+        sequence.thenExecute(() -> h.getLevel().getServer().getPlayerList().remove(player)).thenSucceed();
     }
 }
 

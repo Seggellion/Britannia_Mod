@@ -25,14 +25,14 @@ import net.neoforged.neoforge.gametest.*;
 /**
  * Opt-in real Rails integration, never a fake passing test when Rails is absent.
  * Normal source sets; excluded from release JAR with the other GameTests.
- * BRITANNIA_M7_INTEGRATION_CONFIG must point at the guarded Rails fixture output.
+ * The britannia.m7.integrationConfig JVM property points at the guarded Rails fixture output.
  */
 @GameTestHolder(BritanniaMod.MODID)
 @PrefixGameTestTemplate(false)
 public final class GameplayProduceRailsIntegrationGameTests {
     @GameTestGenerator
     public static Collection<TestFunction> localRails() {
-        String config = System.getenv("BRITANNIA_M7_INTEGRATION_CONFIG");
+        String config = System.getProperty("britannia.m7.integrationConfig");
         if (config == null || config.isBlank()) return List.of();
         return List.of(new TestFunction("m7_live_rails", "britannia_mod.m7_live_produce",
                 "britannia_mod:service_npc_spawn_test_empty", 20000, 0, true, h -> {
