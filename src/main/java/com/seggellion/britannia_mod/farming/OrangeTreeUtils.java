@@ -32,6 +32,7 @@ public final class OrangeTreeUtils {
         for (BlockPos candidate : BlockPos.betweenClosed(
                 pos.offset(-radius, -height, -radius),
                 pos.offset(radius, 0, radius))) {
+            if (!level.hasChunkAt(candidate)) continue;
             BlockEntity blockEntity = level.getBlockEntity(candidate);
             if (blockEntity instanceof OrangeTreeRootBlockEntity root) {
                 OrangeTreeStructurePlanner.Plan plan = OrangeTreeStructurePlanner.plan(root.definition(), root.getTreeSeed(), root.definition().maxGrowthStep(), candidate);

@@ -232,7 +232,7 @@ public final class TallCropSupport {
     public static BlockPos findAnchor(Level level, BlockPos pos) {
         for (int offset = 1; offset <= 3; offset++) {
             BlockPos candidate = pos.below(offset);
-            if (level.getBlockEntity(candidate) instanceof FarmingBlockEntity farmBe) {
+            if (level.hasChunkAt(candidate) && level.getBlockEntity(candidate) instanceof FarmingBlockEntity farmBe) {
                 CropDefinition crop = CropRegistry.byId(farmBe.getPlantedCropId()).orElse(null);
                 if (crop != null && crop.tallCrop()) {
                     return candidate;

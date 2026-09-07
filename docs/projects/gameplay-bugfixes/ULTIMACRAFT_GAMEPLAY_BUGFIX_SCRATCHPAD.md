@@ -1,6 +1,6 @@
 # Gameplay bugfix implementation scratchpad
 
-Current: M4 complete; next M5. Authorized execution: M0–M11, local commits, no push/merge/deploy/production writes or Fabric work. Playbook and kickoff supersede historical discovery recommendations. All five authoritative documents read in full before code edits.
+Current: M5 complete; next M6. Authorized execution: M0–M11, local commits, no push/merge/deploy/production writes or Fabric work. Playbook and kickoff supersede historical discovery recommendations. All five authoritative documents read in full before code edits.
 
 ## Workspace and frozen contract
 
@@ -18,8 +18,8 @@ Decisions: 1200 online game ticks, exact hoed restoration, unused fertilizer for
 | M1 soil, expiry, bowls | PASS (client checks pending) | a95538d862a6c9316d7f45077fbc620e3241d097 / f31550eefb215e198afc60a35dec355661a5f173 |
 | M2 hand recipes/output | PASS (client checks pending) | f31550eefb215e198afc60a35dec355661a5f173 / 558b5236ef3d4db55e282e3c3b5193f7cd50ea4d |
 | M3 display-case transactions | PASS (two-client checks pending) | 558b5236ef3d4db55e282e3c3b5193f7cd50ea4d / c6496588042b8109266d55443c3b1fe68ee062e7 |
-| M4 harvest gates/outcomes | PASS (client checks pending) | c6496588042b8109266d55443c3b1fe68ee062e7 / pending |
-| M5 feedback/can state | PENDING | |
+| M4 harvest gates/outcomes | PASS (client checks pending) | c6496588042b8109266d55443c3b1fe68ee062e7 / cabc1050dba8d3d9865623fe9beacc2f7f89033d |
+| M5 feedback/can state | PASS (client pending; full art PENDING_USER_ASSET) | cabc1050dba8d3d9865623fe9beacc2f7f89033d / pending |
 | M6 landscape features | PENDING | |
 | M7 produce mod + Rails | PENDING | paired SHAs required |
 | M8 fence joins/collision/path | PENDING | |
@@ -127,3 +127,28 @@ Review then exposed Creative Inventory.add force-clear for full fruit/flower inv
 Final command: `./gradlew.bat test --tests 'com.seggellion.britannia_mod.farming.*' --tests 'com.seggellion.britannia_mod.patch18.*' --tests 'com.seggellion.britannia_mod.bowlpreparation.*' --tests 'com.seggellion.britannia_mod.sound.InteractionSoundContractTest' runGameTestServer -x processResources --no-configuration-cache --console=plain`. m4-release-review.log BUILD SUCCESSFUL2m15s; all1127required GameTests passed. Fresh XML186total/180executed passes/6skips/0failures/errors/31suites, m4-junit-summary.json. Full-inventory ordinary fruit and Creative flower yields are conserved through the unchanged M2 insertion algorithm. All9new registered harvest tests pass. Existing five-use/reload/house, native/legacy grape, bowl, display-case and Adventure wood/mining regressions remain passing. No further source changes after this run.
 
 Reviewed all production diffs, new three service/event files, new probability test and9server cases, and existing fixture/contract changes; diff --check clean. No user artwork, resources, configuration/source sets, prices, quest seeds, production data or other worktrees changed. Existing finite-use NBT is reused; -1 legacy untracked fertility remains unlimited, so no world migration is required. Restoring the prior code would restore grape exemptions, deterministic ordinary harvest yield, and old flower/tree cost gaps; already harvested items are ordinary unchanged registry stacks. Final manual farming journey/physical inputs, server skill reconnect, two-client synchronization and actual save/restart remain named M11 checks. Next: commit M4 locally and implement M5 feedback/HUD/charge state, preserving missing-full-artwork status if no supplied asset exists.
+
+## M5 work in progress
+
+Preserved BUG-02/14 discovery: existing planting sound lacked localized success text; uninitialized client soil can look empty before NBT. Full can art absent from repository and filename search of Downloads and attachments. Implementing verified live planting commit + shared feedback, canonical translated 74-species names, packet-readiness-aware root HUD and an entity-independent full predicate. No asset edits or broken model override. User artwork remains PENDING_USER_ASSET; physical client presentation is not yet observed.
+
+### M5 implementation and review
+
+FarmingPlantingTransaction owns the crop/grape root lock, validates actual hand/component snapshot, canonical seed/species, live soil identity, occupancy, rights and tree placement, and rolls back a failed placement before costs/feedback. FlowerPlantingService shares the lock, rechecks after callbacks and synchronization, and refuses to overwrite a replacement during rollback. Committed feedback is shared: one CROP_PLANTED sound, one localized actionbar message with a translatable canonical species name, and one existing Farming PLANT practice call for paid planting. Flower planting now has the missing practice opportunity; Creative/admin do not practice. No new success reward or economy transaction is introduced.
+
+FarmingPlotStatus resolves soil/flower, trellis, tall/grape parts and fruit-tree parts to live root data. Its client view waits for PlotStatusVersion=1 from an update packet; a newly constructed BE or disk-only reload is not authoritative empty soil. Unknown/corrupt occupancy shows loading without a remembered crop name; absence clears the display. The overlay reads current data below the crosshair on the HOTBAR render event, separate from the existing bottom mana/actionbar display. Tree readiness uses ripe fruit rather than maximum wood growth. Root searches skip unloaded candidates. Private soil owner UUID is removed from update tags as documented by the existing server-only ownership contract; disk persistence remains intact.
+
+All67 crop and7flower names plus status/confirmation strings were added to en_us.json without changing crop artwork. WateringCanItem.fullModelState is entity-independent and registered as britannia_mod:full:12=1,0..11=0,missing legacy charges=12. Existing count clamping, unrelated custom data and current base model remain. No full asset was found by filename search in repo, Downloads or attachments. Expected later integration: a user-supplied full item model/texture and a base-model override with predicate {"britannia_mod:full":1}; add it only when the real referenced asset exists. Current resource references are valid. Final full-can artwork/display gate is PENDING_USER_ASSET.
+
+New tests: PlantingPresentationTest covers74name keys/exact sentence and can0/1/11/12/extreme clamps/unrelated data/legacy state; FlowerLifecycleTest adds a post-selector occupancy-change refusal. Four GameplayPlantingPresentationGameTests cover148species/hand commits through ServerPlayerGameMode, last seed and repeated/stale/other-hand/second-player attempts, counting actual overlay packets and PlayLevelSoundEvent and existing practice records; rejected out-of-height tree placement/root replacement/reentry; empty/germinating/growing/ready six-root/tall/trellis data, packet readiness and disk/packet round trips/removal; both-hand actual refill/dispense and can serialization. Headless packet/BE tests do not certify graphical HUD or physical client display.
+
+Commands (JDK21 as M0), normal source sets:
+- compileJava --no-configuration-cache --console=plain: m5-compile.log,19s, failed private setChangedAndSync access; replaced with existing public setChanged + sendBlockUpdated.
+- test --tests 'com.seggellion.britannia_mod.farming.*' --tests 'com.seggellion.britannia_mod.patch18.*' --no-configuration-cache --console=plain: m5-focused.log,2m4s,166total/159passes/1new test-path failure/6skips. Fixed to existing britannia.projectDir property. This run processed the changed language resources normally.
+- same two test filters + runGameTestServer -x processResources --no-configuration-cache --console=plain: m5-server.log,26s, new fixture used TRELLIS instead of registered TRELLIS_BLOCK; compile correction only.
+- same combined command: m5-server-2.log, BUILD SUCCESSFUL2m15s/all1131required GameTests passed. Final review then tightened canonical identity/live permissions/rollback replacement handling, skipped unloaded root candidates and added explicit packet-loading assertions.
+- final adds --tests 'com.seggellion.britannia_mod.sound.InteractionSoundContractTest' before runGameTestServer, same flags: m5-final.log; focused XML172total/166passes/6skips/0failures/errors/28suites. Final server outcome: all1131required GameTests passed; BUILD SUCCESSFUL2m12s. Java-only followups reuse already normally processed unchanged resources; none are release artifacts.
+
+Remaining named client evidence: actual HUD position/readability and targeting through invisible/tall/trellis/tree phases, graphical reconnect/chunk load/removal, user-supplied full-can inventory/main/offhand/dropped/pickup/resource-reload display. No physical client observation or user asset was fabricated. No production or Fabric action performed.
+
+M5 final review: tracked diff and all six new Java files reviewed; diff --check clean. Final M5 head to be recorded in M6 after the local commit.

@@ -152,7 +152,7 @@ class FarmingSkillProgressionCloseoutTest {
         String farmingBlock = source("block/FarmingBlock.java");
         int cropGate = farmingBlock.indexOf("FarmingCultivationGate.evaluate(player, stack.getItem())");
         assertTrue(cropGate >= 0);
-        assertTrue(cropGate < farmingBlock.indexOf("farmBe.plant(crop)", cropGate));
+        assertTrue(cropGate < farmingBlock.indexOf("FarmingPlantingTransaction.plant(", cropGate));
 
         String flowerPlanting = source("farming/FlowerPlantingService.java");
         int flowerGate = flowerPlanting.indexOf("FarmingCultivationGate.evaluateResolved(");

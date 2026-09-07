@@ -236,3 +236,15 @@ Final M3 evidence:9focused JUnit passes and1118registered required GameTests pas
 - [ ] Physical client farming, two-client synchronization, server skill reconnect and actual world save/restart still require observation.
 
 M4 final:186focused JUnit total/180passes/6skips;1127required registered GameTests passed. No manual/live Rails claim is inferred from these results.
+
+
+## M5 implementation evidence addendum
+
+- [x] 74canonical species names and the exact localized planting sentence have automated language coverage.
+- [x] 148species/hand server dispatches show one seed/sound/overlay-message/paid-practice set; duplicate/stale/other-hand/second-player attempts do not duplicate it.
+- [x] Rejected tree placement and replaced/reentrant roots do not charge or acknowledge success.
+- [x] Server status and packet round trips cover empty, germinating, growing, ready, tall/trellis parts and removal; default client occupancy requires an authoritative packet marker.
+- [x] Watering-can0/1/11/12, legacy/default/clamps/unrelated components and actual both-hand fill/dispense serialization are tested.
+- [ ]Actual graphical HUD targeting/layout/reconnect/chunk-load behavior: M11 client acceptance pending.
+- [ ]Full watering-can visual gate: PENDING_USER_ASSET. No full texture/model supplied in searched locations; no broken resource reference committed.
+- [ ]Actual inventory/mainhand/offhand/dropped item/pickup/resource-reload agreement: client acceptance pending, dependent on supplied full art for the full-state distinction.

@@ -52,6 +52,10 @@ public class OrangeTreeRootBlockEntity extends BlockEntity {
     private static final float STRUCTURAL_FLOOR_MIN_HYDRATION_FIT = 0.35f;
 
     private String treeTypeId = FruitTreeRegistry.DEFAULT_TREE_ID;
+    private boolean synchronizedPlotStatus;
+
+    public boolean hasSynchronizedPlotStatus() { return synchronizedPlotStatus; }
+
     private long treeSeed = 0L;
     private int growthStep = 1;
     private float growthProgress = 0.0f;
@@ -1184,6 +1188,7 @@ public class OrangeTreeRootBlockEntity extends BlockEntity {
     @Override
     public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        synchronizedPlotStatus = tag.getInt("PlotStatusVersion") == 1;
         treeTypeId = tag.contains("TreeTypeId") ? tag.getString("TreeTypeId") : FruitTreeRegistry.DEFAULT_TREE_ID;
         treeTypeId = FruitTreeRegistry.byIdOrDefault(treeTypeId).id();
         treeSeed = tag.getLong("TreeSeed");
@@ -1234,6 +1239,7 @@ public class OrangeTreeRootBlockEntity extends BlockEntity {
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);
         saveAdditional(tag, registries);
+        tag.putInt("PlotStatusVersion", 1);
         return tag;
     }
 

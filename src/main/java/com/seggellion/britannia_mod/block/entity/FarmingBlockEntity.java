@@ -35,6 +35,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 public class FarmingBlockEntity extends BlockEntity {
+    private boolean synchronizedPlotStatus;
+
+    public boolean hasSynchronizedPlotStatus() { return synchronizedPlotStatus; }
+
     public static final int MAX_HYDRATION = 5;
     public static final int MAX_FERTILE_HARVESTS = 5;
     public static final int UNTRACKED_FERTILE_HARVESTS = -1;
@@ -732,6 +736,7 @@ public class FarmingBlockEntity extends BlockEntity {
     @Override
     public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        synchronizedPlotStatus = tag.getInt("PlotStatusVersion") == 1;
         this.nitrogen = tag.getFloat("Nitrogen");
         this.phosphorus = tag.getFloat("Phosphorus");
         this.potassium = tag.getFloat("Potassium");
@@ -869,6 +874,8 @@ public class FarmingBlockEntity extends BlockEntity {
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);
         saveAdditional(tag, registries);
+        tag.putInt("PlotStatusVersion", 1);
+        tag.remove(OWNER_ID_KEY);
         return tag;
     }
 

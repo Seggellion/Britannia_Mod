@@ -191,6 +191,11 @@ public class WateringCanItem extends Item {
         return Math.max(0, Math.min(MAX_WATER_CHARGES, tag.getInt(WATER_CHARGES_TAG)));
     }
 
+    /** Entity-independent predicate used by inventory, both hands and dropped item models. */
+    public static float fullModelState(ItemStack stack) {
+        return getWaterCharges(stack) == MAX_WATER_CHARGES ? 1f : 0f;
+    }
+
     public static void setWaterCharges(ItemStack stack, int charges) {
         CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag())).copyTag();
         tag.putInt(WATER_CHARGES_TAG, Math.max(0, Math.min(MAX_WATER_CHARGES, charges)));

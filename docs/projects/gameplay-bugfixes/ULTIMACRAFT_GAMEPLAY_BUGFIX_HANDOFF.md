@@ -5,7 +5,7 @@ Verdict: IN PROGRESS. Base and workspace identity, frozen decisions, milestone c
 | Issue | Status | Milestone |
 |---|---|---|
 | BUG-01 | Pending shader reproduction | M10 |
-| BUG-02 | Pending planting feedback/HUD | M5 |
+| BUG-02 | Implemented; packet/commit/status server proof; graphical HUD pending | M5 |
 | BUG-03 | Implemented; server proof; physical timing/reload pending | M1 |
 | BUG-04 | EXCLUDED user lettuce artwork | — |
 | BUG-05 | Implemented; both-hand server/conservation proof; client pending | M1 |
@@ -17,7 +17,7 @@ Verdict: IN PROGRESS. Base and workspace identity, frozen decisions, milestone c
 | BUG-11 | Pending fence convergence | M8 |
 | BUG-12 | Pending fence collision | M8 |
 | BUG-13 | Pending path retention | M8 |
-| BUG-14 | Pending charge state; user asset required | M5 |
+| BUG-14 | State selection implemented/tested; PENDING_USER_ASSET for full artwork/display | M5 |
 | BUG-15 | Pending landscape suppression | M6 |
 | BUG-16 | Implemented; server hand/pigment matrices; client pending | M2 |
 | BUG-17 | Implemented; count/component/final merge server proof; client pending | M2 |
@@ -61,3 +61,12 @@ Fruit/tree and flower harvests now share finite-use accounting. Economic tree fe
 Final command in scratchpad:180focused JUnit passes/6skips (186total), all1127registered required GameTests passed, BUILD SUCCESSFUL2m15s. New tests cover74species probability/refusal/bypass policy,58soil species success/failure,7flowers,9fruit species×3routes×2outcomes, below/unripe rejection, full inventories, actual grape entrypoints, ordinary tall/trellis two-player dispatch, Adventure tree BreakEvent, stale/reentrant root, finite-use reload and last-flower-use/Creative conservation. Earlier assertion/fixture failures and the quality boundary fix are recorded explicitly in scratchpad.
 
 No world migration or backend change is needed; existing finite-use/legacy-1 fields are reused. Manual ordinary farming/physical inputs, two-client sync, reconnect/readiness and actual save/restart remain pending. Revert restores previous grape/harvest behavior; generated harvest items require no conversion.
+
+
+## M5 evidence
+
+Verified planting now precedes a shared localized actionbar confirmation, one sound and the existing paid practice opportunity. Flower, grape, ordinary and tree planting use canonical species names. Failed placement, stale/replaced soil, duplicate hand input and a second player cannot produce an extra success set. HUD state resolves live soil and supported parts, distinguishes packet readiness from default empty data, and discards removed/unknown occupancy. Tree ready means ripe fruit exists. No optimistic or persistent client crop-name cache is used.
+
+The can predicate is britannia_mod:full, derived solely from charges:12full,0..11base,missing legacy data12. State and refill/dispense tests preserve unrelated components. Full artwork is absent from the supplied/repository locations; no invented artwork or broken override was added. PENDING_USER_ASSET applies to the final full-can visual gate. No item/save migration is needed; PlotStatusVersion is packet-only and does not change disk crop data.
+
+Final focused JUnit172total/166passes/6skips/0failures/errors and all1131registered required GameTests passed, BUILD SUCCESSFUL2m12s. Commands and earlier corrections are recorded in the scratchpad. Actual GUI placement, client hands/inventory/dropped-item appearance, reconnect/resource reload and physical aiming remain separate M11 acceptance checks. Reverting M5 removes the message/HUD/predicate and restores the former planting boundary; it does not require changing already planted crop or watering-can save data.

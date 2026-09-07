@@ -87,6 +87,19 @@ class FlowerLifecycleTest {
     }
 
     @Test
+    void aCallbackThatChangesLiveOccupancyBeforeReplacementCannotEmitSuccess() {
+        var definition = registry.byId(FlowerRegistry.POPPY).orElseThrow();
+        var access = new FakeAccess(definition.seedItemId());
+        var result = FlowerPlantingService.execute(access, registry, (flower, context, random, reason) -> {
+            access.occupied = true;
+            return registry.color(definition.fallbackColorId()).orElseThrow().color();
+        });
+        assertEquals(FlowerPlantingService.Outcome.REJECTED, result);
+        assertFalse(access.mutated());
+        assertEquals(0, access.feedbackCalls);
+    }
+
+    @Test
     void cultivationDenialPrecedesColorSelectionAndEveryMutation() {
         for (FlowerDefinition definition : registry.definitions().values()) {
             FakeAccess access = new FakeAccess(definition.seedItemId());

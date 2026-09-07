@@ -497,26 +497,10 @@ public class FarmingBlock extends Block implements EntityBlock {
                 }
             }
 
-            if (tree != null) {
-                farmBe.plant(crop);
-                level.setBlock(pos, state.setValue(HAS_SEEDS, true), 3);
-                level.setBlock(rootPos, tree.rootBlock().get().defaultBlockState(), 3);
-                BlockEntity newBlockEntity = level.getBlockEntity(rootPos);
-                if (newBlockEntity instanceof OrangeTreeRootBlockEntity orangeRoot) {
-                    orangeRoot.initializeFromFarm(farmBe, level.getRandom(), tree.id());
-                }
-            } else {
-                farmBe.plant(crop);
-                level.setBlock(pos, state.setValue(HAS_SEEDS, true), 3);
-            }
-
-            level.playSound(null, pos, SoundEvents.CROP_PLANTED, SoundSource.BLOCKS, 1.0f, 1.0f);
-            if (player == null || !player.getAbilities().instabuild) {
-                stack.shrink(1);
-            }
-            if (player instanceof ServerPlayer serverPlayer) {
-                FarmingSkill.award(serverPlayer, FarmingActionType.PLANT, crop.tier(), crop.farmingSkillModifier());
-            }
+            if (!(player instanceof ServerPlayer serverPlayer)
+                    || !com.seggellion.britannia_mod.farming.FarmingPlantingTransaction.plant(
+                            (net.minecraft.server.level.ServerLevel) level, pos, state, farmBe,
+                            serverPlayer, stack, crop, "", tree)) return ItemInteractionResult.FAIL;
             logPlantingFlow(interactionSource, level, pos, stack, crop, true, true, "planted");
         }
         return ItemInteractionResult.sidedSuccess(level.isClientSide);
@@ -537,12 +521,10 @@ public class FarmingBlock extends Block implements EntityBlock {
                 return ItemInteractionResult.SUCCESS;
             }
             if (!level.getBlockState(pos).equals(state) || player.getMainHandItem() != stack && player.getOffhandItem() != stack) return ItemInteractionResult.FAIL;
-            farmBe.plant(crop, GrapeSeedsItem.getVariety(stack));
-            level.setBlock(pos, state.setValue(HAS_SEEDS, true), 3);
-            level.playSound(null, pos, SoundEvents.CROP_PLANTED, SoundSource.BLOCKS, 1.0f, 1.0f);
-            if (!player.getAbilities().instabuild) stack.shrink(1);
-            if (player instanceof ServerPlayer serverPlayer && eligibility.type() != FarmingCultivationGate.ResultType.APPROVED_BYPASS)
-                FarmingSkill.award(serverPlayer, FarmingActionType.PLANT, crop.tier(), crop.farmingSkillModifier());
+            if (!(player instanceof ServerPlayer serverPlayer)
+                    || !com.seggellion.britannia_mod.farming.FarmingPlantingTransaction.plant(
+                            (net.minecraft.server.level.ServerLevel) level, pos, state, farmBe,
+                            serverPlayer, stack, crop, GrapeSeedsItem.getVariety(stack), null)) return ItemInteractionResult.FAIL;
         }
         return ItemInteractionResult.sidedSuccess(level.isClientSide);
     }

@@ -193,7 +193,7 @@ class FarmingCultivationGateTest {
         assertTrue(cropGate < plantingMethod.indexOf("not_trellis_crop"));
         assertTrue(cropGate < plantingMethod.indexOf("missing_support"));
         assertTrue(cropGate < plantingMethod.indexOf("tree_space_blocked"));
-        assertTrue(cropGate < plantingMethod.indexOf("farmBe.plant(crop)"));
+        assertTrue(cropGate < plantingMethod.indexOf("FarmingPlantingTransaction.plant("));
 
         String flowerPlanting = source("farming/FlowerPlantingService.java");
         int flowerGate = flowerPlanting.indexOf("FarmingCultivationGate.evaluateResolved(");
