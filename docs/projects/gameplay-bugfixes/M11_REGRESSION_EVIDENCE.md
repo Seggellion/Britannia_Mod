@@ -1,5 +1,11 @@
 # M11 regression evidence
 
+## Current failed-QA follow-up
+
+2026-09-07 failed-QA follow-up: the display-case empty-packet fix and moongate entity-material correction are implemented. The clean release passed **3,498 JUnit tests reported: 3,481 passed, 17 inherited skips, zero failures/errors; all 1,156 required GameTests passed**. Candidate `britannia_mod-0.1.8a-all-6414f54c.jar` embeds clean source `6414f54cb6c31094f61314276c2bb2590f0574a9`. **No new visual gate was personally completed**: Windows was locked during the controlled client attempt. Display-case visual synchronization and all three moongate configurations remain **PENDING_MANUAL_RETEST**; full-can art remains **PENDING_USER_ASSET**. See [current three-issue report](QA_FINAL_REPORT.md), [root-cause evidence](QA_FOLLOWUP_2026-09-07.md), and [release identity](M11_RELEASE_IDENTITY.md). Only the isolated mod worktree was used; Rails was not modified or rerun. No merge, push, deployment or production operation occurred.
+
+The material below is the preserved historical M0–M11 checkpoint. In particular, earlier statements that the moongate renderer was unchanged describe the old candidate and no longer describe this correction. The original failed manual checks are retained in the current evidence.
+
 Test operator: Codex, 2026-09-07. All commands ran in the two isolated worktrees recorded in the handoff. Earlier discovery and failed-run logs remain preserved. No skipped test is counted as a pass.
 
 ## Final automated gates

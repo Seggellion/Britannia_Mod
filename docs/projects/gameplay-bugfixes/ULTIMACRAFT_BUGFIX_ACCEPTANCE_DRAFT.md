@@ -1,5 +1,11 @@
 # UltimaCraft bug-fix acceptance draft
 
+## Current failed-QA follow-up
+
+2026-09-07 failed-QA follow-up: the display-case empty-packet fix and moongate entity-material correction are implemented. The clean release passed **3,498 JUnit tests reported: 3,481 passed, 17 inherited skips, zero failures/errors; all 1,156 required GameTests passed**. Candidate `britannia_mod-0.1.8a-all-6414f54c.jar` embeds clean source `6414f54cb6c31094f61314276c2bb2590f0574a9`. **No new visual gate was personally completed**: Windows was locked during the controlled client attempt. Display-case visual synchronization and all three moongate configurations remain **PENDING_MANUAL_RETEST**; full-can art remains **PENDING_USER_ASSET**. See [current three-issue report](QA_FINAL_REPORT.md), [root-cause evidence](QA_FOLLOWUP_2026-09-07.md), and [release identity](M11_RELEASE_IDENTITY.md). Only the isolated mod worktree was used; Rails was not modified or rerun. No merge, push, deployment or production operation occurred.
+
+The material below is the preserved historical M0–M11 checkpoint. In particular, earlier statements that the moongate renderer was unchanged describe the old candidate and no longer describe this correction. The original failed manual checks are retained in the current evidence.
+
 The original checklist remains a set of proposed acceptance cases. Evidence-backed implementation results appear in the milestone addenda below; discovery tests alone do not prove fixes. Target: Minecraft1.21.1, NeoForge21.1.72, source baseline `421e27853dde4099d1d794568e33e6709507a53b`, checkout `C:/projects/britannia/mod/Britannia_Mod`. See [discovery](C:/projects/britannia/mod/Britannia_Mod/docs/projects/gameplay-bugfixes/ULTIMACRAFT_BUGFIX_DISCOVERY.md) for actual executed evidence and [planning inputs](C:/projects/britannia/mod/Britannia_Mod/docs/projects/gameplay-bugfixes/ULTIMACRAFT_BUGFIX_PLANNING_INPUTS.md) for adopted D1–D6 and residual Q1–Q5. Supplemental discovery records the new evidence.
 
 **Scope:**19 tracked reports,16 in-scope functional issues. BUG-04/06/07 artwork is excluded; historical inspection does not create an acceptance gate. Full watering-can art is user-supplied; state selection/sync remains code acceptance. Mixed automated/manual cases remain unchecked until both forms of evidence exist.

@@ -1,8 +1,8 @@
-# Three failed manual checks — follow-up evidence
+# Three failed manual checks â€” follow-up evidence
 
 ## Scope and starting checkpoint
 
-The user reports the previous candidate failed manual acceptance: the display case ejects its stack but keeps drawing it; full and empty cans look identical; a placed city moongate is invisible with Photon while its selection outline and held item remain visible. These failures supersede any inferred visual acceptance in M0–M11. The original evidence remains historical. The user subsequently supplied `C:/Users/dusti/AppData/Local/Temp/codex-clipboard-f61f9789-652a-42da-bd3b-1f6001b106af.png`: it shows the selection outline with no visible portal surface inside or above it. A copy is retained at `tmp/gameplay-bugfixes/qa-followup/user-photon-failure.png`. It does not independently identify the JAR, shader settings or held-item appearance.
+The user reports the previous candidate failed manual acceptance: the display case ejects its stack but keeps drawing it; full and empty cans look identical; a placed city moongate is invisible with Photon while its selection outline and held item remain visible. These failures supersede any inferred visual acceptance in M0â€“M11. The original evidence remains historical. The user subsequently supplied `C:/Users/dusti/AppData/Local/Temp/codex-clipboard-f61f9789-652a-42da-bd3b-1f6001b106af.png`: it shows the selection outline with no visible portal surface inside or above it. A copy is retained at `tmp/gameplay-bugfixes/qa-followup/user-photon-failure.png`. It does not independently identify the JAR, shader settings or held-item appearance.
 
 Work is confined to `C:/projects/britannia/mod/Britannia_Mod/.claude/worktrees/patch18-gameplay-bugfixes`, branch `codex/patch18-gameplay-bugfixes`. Starting HEAD: `12ebe40ccc1f33981b852e1f2aa36791b42c2518`. Initial `git status --short` was empty: no pre-existing tracked or untracked user changes. Recent commits: `12ebe40c`, `4ee0f5d9`, `991fb1f3`, `65bc1a6a`, `ea8499f7`. The playbook, acceptance draft, scratchpad, M11 regression evidence, M10 shader notes, release identity and archived final handoff were reviewed before editing.
 
@@ -18,7 +18,7 @@ The correction sends an explicit empty `DisplayedItem` compound in live update t
 
 ## Watering-can asset finding
 
-Status: **PENDING_USER_ASSET**. No distinct full model/texture was found in the repository or the checked Downloads/attachment locations. The previous JAR contains only the base model and texture. The existing `britannia_mod:full` client property already returns 1 only at 12 charges, including missing legacy data; 0–11 return 0. There are no model overrides, hence no competing override ordering.
+Status: **PENDING_USER_ASSET**. No distinct full model/texture was found in the repository or the checked Downloads/attachment locations. The previous JAR contains only the base model and texture. The existing `britannia_mod:full` client property already returns 1 only at 12 charges, including missing legacy data; 0â€“11 return 0. There are no model overrides, hence no competing override ordering.
 
 | Existing resource under `src/main/resources/` | SHA-256 |
 | --- | --- |
@@ -54,3 +54,14 @@ The first command reproduced the ghost before the production fix: 8 tests, 1 exp
 Read-only inspection found the old candidate in `C:/Users/dusti/curseforge/minecraft/Instances/UltimaCraft - Britannia/mods/britannia_mod-0.1.8a-all-4ee0f5d9.jar`, with the exact expected `e25d2596...` hash and size 34,690,262 bytes. The same instance contains the specified Iris/Sodium/Photon input hashes recorded in M10; `config/iris.properties` selects `photon_v1.1.zip` with `enableShaders=true`. This establishes the available installation, not the capture time or complete settings of the user's screenshot.
 
 The isolated test client launched the exact old JAR to its title screen according to its log. Native capture showed the Windows PIN screen, so UI input stopped and an unlock request was sent. The owned title-screen client was closed. No new client visual gate was personally completed. The can artwork remains **PENDING_USER_ASSET**; display immediate blank/two-client/restart visuals and all three moongate configurations remain **PENDING_MANUAL_RETEST**. Full regression, final release identity and the three-issue checklist will be appended after the clean release run.
+
+
+## Complete regression and release result
+
+Normal command: `.\gradlew.bat clean build artifactIdentity runGameTestServer --no-configuration-cache --console=plain` with the JDK/worktree above. **3,498 JUnit tests total, 3,481 passed, 17 inherited skips, zero failures/errors, 455 suites; all 1,156 required GameTests passed.** Both baselines were rerun by the normal clean release path. The existing skipped tests remain skips, not passes. No new skip was introduced.
+
+Candidate `britannia_mod-0.1.8a-all-6414f54c.jar`: 34,690,293 bytes, SHA-256 `ec28f6afc371b7639b0007a9db264ff64e7ff83925c9c70dc6dc3bd841622641`, embedded source `6414f54cb6c31094f61314276c2bb2590f0574a9`, branch `codex/patch18-gameplay-bugfixes`, dirty `false`, timestamp `2026-09-07T18:10:36.382371100Z`. Archive: `C:\projects\britannia\mod\Britannia_Mod\.claude\worktrees\patch18-gameplay-bugfixes\tmp\gameplay-bugfixes\release\britannia_mod-0.1.8a-all-6414f54c.jar`.
+
+Final-JAR inspection found exactly the two corrected production classes and build properties changed; all 7,372 packaged assets/data resources remain byte-identical, with no added/removed entries or diagnostic/test resource leak. Full art is absent; base asset hashes match the table above. See `QA_FINAL_REPORT.md` for the self-contained handoff and only-three-issues retest checklist.
+
+The corrected candidate's isolated no-Iris/Sodium startup completed atlas/model resource and entity-animation loading according to its log and remained running. The installed JAR hash matched the archived candidate. Only the owned process was closed afterward. This startup smoke check does not certify a placed gate, shader scene, resource-reload screen or any other visual acceptance.
