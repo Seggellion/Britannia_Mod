@@ -226,3 +226,13 @@ The playbook and kickoff close the historical Q1–Q5 recommendations. Original 
 - [ ] Physical client hand input, two-client display synchronization/no ghost display, actual save/restart acceptance remain to be observed.
 
 Final M3 evidence:9focused JUnit passes and1118registered required GameTests passed in m3-final.log. No visual/manual acceptance inferred.
+
+## M4 observed server addendum
+
+- [x] All74species use matching planting/harvest thresholds; grape80 both entrypoints; exact75%/surplus/95%cap and one outcome draw; below/unavailable/nonfinite/automation refuse before drawing; Creative/admin free outcome.
+- [x] All58soil crop definitions and7flower species: refusal, success, destructive failure, normal lifecycle/use/tool costs and no failed yield/byproducts.
+- [x] All9fruit species across scissors, axe fruit and tree felling: below/unripe refusal, success/failure, one use/tool cost, full inventory output; Adventure completed tree break uses the same gate.
+- [x] Ordinary corn/banana/grape/tomato/hops part dispatch, two-player repeat, persisted finite-use state, stale/reentrant root, final flower use and Creative full-inventory output pass.
+- [ ] Physical client farming, two-client synchronization, server skill reconnect and actual world save/restart still require observation.
+
+M4 final:186focused JUnit total/180passes/6skips;1127required registered GameTests passed. No manual/live Rails claim is inferred from these results.

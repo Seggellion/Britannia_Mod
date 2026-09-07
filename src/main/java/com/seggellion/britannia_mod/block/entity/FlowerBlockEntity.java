@@ -153,11 +153,19 @@ public class FlowerBlockEntity extends FarmingBlockEntity {
         return true;
     }
 
-    public boolean harvestAndReset(int quality) {
+    public boolean canCommitHarvest(FlowerPersistentState expected) {
+        return flowerState == expected && level != null && !level.isClientSide
+                && interactionTransactionGate.canCommit(level.getGameTime());
+    }
+
+    public boolean harvestAndReset(int quality) { return harvestAndReset(quality, false); }
+
+    public boolean harvestAndReset(int quality, boolean consumeFertility) {
         if (flowerState == null || level == null || level.isClientSide) {
             return false;
         }
         FlowerPersistentState updated = flowerState
+                .withSoil(consumeFertility ? flowerState.soil().consumeHarvestUse() : flowerState.soil())
                 .withQuality(new FlowerQuality(quality))
                 .withGrowth(1, FlowerGrowthState.newlyPlanted());
         if (!mayCommitInteraction(updated)) {

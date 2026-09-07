@@ -284,7 +284,7 @@ public class FarmingBlockEntity extends BlockEntity {
     }
 
     /**
-     * Records exactly one already-confirmed server harvest. Untracked legacy plots remain unlimited,
+     * Records one committed eligible harvest attempt, including destructive failure. Untracked legacy plots remain unlimited,
      * and an exhausted plot can never underflow even if a stale interaction reaches this method.
      *
      * @return the remaining count, or {@link #UNTRACKED_FERTILE_HARVESTS} for a legacy plot

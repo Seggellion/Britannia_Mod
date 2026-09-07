@@ -87,6 +87,7 @@ public final class GrapeArborGameTests {
         // is a FlowerProtectionService administrator - allowed into anyone's plot by design.
         // Refusal can only be exercised by a player whose survival mode is real.
         ServerPlayer stranger = makeSurvivalMockServerPlayer(helper);
+        com.seggellion.britannia_mod.skill.SkillManager.applyConfirmedValue(stranger,"farming",80);
         farmBe.setOwner(UUID.randomUUID());
         check(farmBe.hasOwner(), "a private plot did not record an owner");
         check(!farmBe.mayPlant(stranger), "a private plot accepted a stranger");

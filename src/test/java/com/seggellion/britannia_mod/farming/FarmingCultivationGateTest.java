@@ -30,17 +30,12 @@ class FarmingCultivationGateTest {
     }
 
     @Test
-    void everyApprovedSpeciesUsesInclusiveThresholdAndGrapeRemainsExempt() {
+    void everyApprovedSpeciesIncludingGrapesUsesInclusiveThreshold() {
         List<FarmingSkillRequirementResolver.ResolvedRequirement> requirements = requirements();
         assertEquals(74, requirements.size());
 
         for (FarmingSkillRequirementResolver.ResolvedRequirement requirement : requirements) {
             float required = requirement.minimumFarmingSkill();
-            if (requirement.speciesId().equals(FarmingCultivationGate.GRAPE_SPECIES_ID)) {
-                assertEquals(FarmingCultivationGate.ResultType.NOT_APPLICABLE,
-                        evaluate(requirement, -1.0F).type());
-                continue;
-            }
 
             FarmingCultivationGate.Evaluation exact = evaluate(requirement, required);
             assertEquals(FarmingCultivationGate.ResultType.ELIGIBLE,
@@ -190,7 +185,7 @@ class FarmingCultivationGateTest {
     }
 
     @Test
-    void gatesAreAtSharedServerTransactionsBeforeMutationAndGrapeAndNativeRoutesStayUntouched() throws IOException {
+    void gatesAreAtSharedServerTransactionsBeforeMutationIncludingGrapesAndNativeOutsideIsUntouched() throws IOException {
         String farmingBlock = source("block/FarmingBlock.java");
         String plantingMethod = farmingBlock.substring(farmingBlock.indexOf("public static ItemInteractionResult tryPlantSeed"));
         int cropGate = plantingMethod.indexOf("FarmingCultivationGate.evaluate(player, stack.getItem())");
@@ -209,7 +204,7 @@ class FarmingCultivationGateTest {
         String trellis = source("block/TrellisBlock.java");
         assertTrue(trellis.contains("FarmingBlock.tryPlantSeed("));
         String grapes = source("item/GrapeSeedsItem.java");
-        assertFalse(grapes.contains("FarmingCultivationGate"));
+        assertTrue(grapes.contains("FarmingBlock.tryPlantGrapes"));
         assertFalse(grapes.contains("minimumFarmingSkill"));
         assertFalse(source("block/GrapeVineBlock.java").contains("FarmingCultivationGate"));
         assertFalse(source("block/entity/GrapeVineBlockEntity.java").contains("FarmingCultivationGate"));

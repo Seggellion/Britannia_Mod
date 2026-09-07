@@ -71,6 +71,7 @@ public final class Patch18FullLoopGameTests {
         ServerLevel level = helper.getLevel();
         ServerPlayer player = ManagedResourceTestPlayers.survival(level, "patch18-full-loop");
         player.setGameMode(GameType.SURVIVAL);
+        SkillManager.applyConfirmedValue(player,"farming",100);
         player.getInventory().clearContent();
         player.getPersistentData().remove(NEXT_GATHER_TICK_TAG);
 

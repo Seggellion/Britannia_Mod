@@ -31,6 +31,12 @@ public record FlowerSoilSnapshot(
                 communityRestoration, communitySeedableUntilGameTime, remainingFertileHarvests, Optional.empty());
     }
 
+    public FlowerSoilSnapshot consumeHarvestUse() {
+        return new FlowerSoilSnapshot(hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
+                origin, communityRestoration, communitySeedableUntilGameTime,
+                remainingFertileHarvests > 0 ? remainingFertileHarvests - 1 : remainingFertileHarvests, ownerUuid);
+    }
+
     public FlowerSoilSnapshot withOwner(java.util.UUID owner) {
         return new FlowerSoilSnapshot(hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
                 origin, communityRestoration, communitySeedableUntilGameTime, remainingFertileHarvests,

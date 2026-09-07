@@ -11,7 +11,7 @@ Verdict: IN PROGRESS. Base and workspace identity, frozen decisions, milestone c
 | BUG-05 | Implemented; both-hand server/conservation proof; client pending | M1 |
 | BUG-06 | EXCLUDED user green-onion artwork | — |
 | BUG-07 | EXCLUDED user green-onion artwork | — |
-| BUG-08 | Pending harvest gates/outcomes | M4 |
+| BUG-08 | Implemented;74-species policy/server routes; client pending | M4 |
 | BUG-09 | Implemented; owner/target server matrix; client pending | M1 |
 | BUG-10 | Pending Creative substrates | M9 |
 | BUG-11 | Pending fence convergence | M8 |
@@ -51,3 +51,13 @@ No item NBT migration is needed. Reverting M2 restores restricted drivers and fi
 Case-specific MAIN-phase dispatch now owns decorator use on either cell. Offhand-only ejects the exact stored stack to a collision-free world position after confirmed insertion; mainhand/both tools rotate the complete pair with rollback. Root locking and live identity/content checks prevent reentrant duplication and stale clearing. Existing world permissions and case-neighbor policy remain in force. No NBT or artwork change.
 
 Final focused JUnit9passes; all1118 registered required GameTests passed, BUILD SUCCESSFUL1m56s. New320gesture matrix includes all16neighborhood patterns, both cells, sneaking, air/stick/food/placeable/decorator main items, full inventory and exact legacy count/components. Rejected spawn with second-player reentry, two-player repeat, malformed/denied cases, rejected/throwing upper rotation and success/failure disk serialization pass. An old connection-teardown regression was caught and corrected before the final suite. Detailed command/log evidence and commit ledger are in scratchpad. Physical hand input and two-client ghost-display/synchronization acceptance remain pending.
+
+## M4 evidence
+
+All67crop and7flower definitions now use the same planting/harvest requirement, including Farming80 for both grape entrypoints. One server outcome draw after live root/maturity/tool/rights/readiness checks implements75% at threshold, +1% per extra point, capped95%. Failed eligible attempts destroy yield/byproducts, pay one normal use/tool cost, run existing practice, and follow annual/perennial/fruit/tree lifecycle. Creative/operator-level2 has free deterministic success and no outcome draw/practice. Native crops outside custom soil are unchanged. Poppy's separate knife/Farming100 advancement remains.
+
+Fruit/tree and flower harvests now share finite-use accounting. Economic tree felling requires ripe fruit and still removes the tree on eligible failure with no byproducts. Environmental/support cleanup remains separate. Flower quality is bounded to its persisted1..100 domain. Success is exposed through one post-commit FarmingHarvestCommittedEvent, with administrative provenance; no quest listener, reward or backend seed was introduced. Ordinary and Creative inventory delivery uses the existing compatible insertion helper and retains excess as a world drop.
+
+Final command in scratchpad:180focused JUnit passes/6skips (186total), all1127registered required GameTests passed, BUILD SUCCESSFUL2m15s. New tests cover74species probability/refusal/bypass policy,58soil species success/failure,7flowers,9fruit species×3routes×2outcomes, below/unripe rejection, full inventories, actual grape entrypoints, ordinary tall/trellis two-player dispatch, Adventure tree BreakEvent, stale/reentrant root, finite-use reload and last-flower-use/Creative conservation. Earlier assertion/fixture failures and the quality boundary fix are recorded explicitly in scratchpad.
+
+No world migration or backend change is needed; existing finite-use/legacy-1 fields are reused. Manual ordinary farming/physical inputs, two-client sync, reconnect/readiness and actual save/restart remain pending. Revert restores previous grape/harvest behavior; generated harvest items require no conversion.

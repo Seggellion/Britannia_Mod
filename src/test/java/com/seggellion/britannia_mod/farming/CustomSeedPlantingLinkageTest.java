@@ -188,8 +188,9 @@ class CustomSeedPlantingLinkageTest {
                 "the ordinary planting path no longer excludes grapes");
 
         String gate = source("farming/FarmingCultivationGate.java");
-        assertTrue(gate.contains("GRAPE_SPECIES_ID.equals(resolved.speciesId())"),
-                "the cultivation gate no longer treats grapes as not-applicable");
+        assertFalse(gate.contains("GRAPE_SPECIES_ID.equals(resolved.speciesId())"),
+                "grapes must share the species threshold");
+        assertTrue(grapeItem.contains("FarmingBlock.tryPlantGrapes"));
     }
 
     @Test

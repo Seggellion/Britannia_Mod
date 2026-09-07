@@ -44,7 +44,7 @@ public final class FertileDirtLifecycleGameTests {
     public static void canonicalApplicationCountsFiveSuccessfulHarvestsThenReturnsToDirt(
             GameTestHelper helper
     ) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = paidPlayer(helper);
         applyCanonicalFertilizedDirt(helper, player, PLOT);
         assertRemaining(helper, PLOT, 5);
 
@@ -68,7 +68,7 @@ public final class FertileDirtLifecycleGameTests {
     public static void plantingFailedHarvestAndUnrelatedInteractionDoNotSpendFertility(
             GameTestHelper helper
     ) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = paidPlayer(helper);
         applyCanonicalFertilizedDirt(helper, player, PLOT);
         CropDefinition annual = handHarvestAnnual();
         FarmingBlockEntity soil = farm(helper, PLOT);
@@ -96,8 +96,8 @@ public final class FertileDirtLifecycleGameTests {
     public static void persistedReloadAndSecondPlayerCannotDoubleSpendOneHarvest(
             GameTestHelper helper
     ) {
-        ServerPlayer first = helper.makeMockServerPlayerInLevel();
-        ServerPlayer second = helper.makeMockServerPlayerInLevel();
+        ServerPlayer first = paidPlayer(helper);
+        ServerPlayer second = paidPlayer(helper);
         applyCanonicalFertilizedDirt(helper, first, PLOT);
         mature(helper, PLOT, handHarvestAnnual());
 
@@ -121,7 +121,7 @@ public final class FertileDirtLifecycleGameTests {
 
     @GameTest(template = TEMPLATE, timeoutTicks = 80)
     public static void perennialRegrowthAndCommunityReuseRemainIntact(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = paidPlayer(helper);
 
         applyCanonicalFertilizedDirt(helper, player, PLOT);
         helper.setBlock(PLOT.above(), BlockRegistry.TRELLIS_BLOCK.get().defaultBlockState());
@@ -158,7 +158,7 @@ public final class FertileDirtLifecycleGameTests {
 
     @GameTest(template = TEMPLATE, timeoutTicks = 80)
     public static void eachRipeFruitClickSpendsOneUseAndFifthCleansUpTheTree(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = paidPlayer(helper);
         applyCanonicalFertilizedDirt(helper, player, PLOT);
         FarmingBlockEntity soil = farm(helper, PLOT);
         CropDefinition crop = CropRegistry.byId("orange").orElseThrow();
@@ -198,6 +198,12 @@ public final class FertileDirtLifecycleGameTests {
             }
         }
         helper.succeed();
+    }
+
+    private static ServerPlayer paidPlayer(GameTestHelper helper) {
+        var player=ManagedResourceTestPlayers.survival(helper.getLevel(),"PaidFertility");
+        com.seggellion.britannia_mod.skill.SkillManager.applyConfirmedValue(player,"farming",100);
+        return player;
     }
 
     private static void applyCanonicalFertilizedDirt(

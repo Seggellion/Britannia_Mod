@@ -85,3 +85,9 @@ Local crop/flower thresholds remain mod data; player skill readiness comes from 
 Historical unchanged-HEAD baseline:3462 executed JUnit passes/17skips,1102 existing GameTests,5 original temporary probes. Supplemental existing tests:83passes/0failures/0skips. New6-test probe:5passes,1failed assumption exposing case dismantling. Follow-up initially1pass/1fixture failure; corrected active-area follow-up2passes including16case gestures and native stems/resources. See supplemental ledger for exact commands/limits; no Rails or client acceptance claimed. Do not recycle historical totals as new tests.
 
 Stop at completed discovery. Next task is a playbook, with implementation/release work still separate. No production fix, clean release build or deployment exists from this task.
+
+## Implementation addendum (M0–M4)
+
+The playbook/kickoff now authorize implementation M0–M11 and close Q1–Q5 above; the historical discovery stop/proposals are preserved as evidence, not active blockers. The accepted1200online-tick prior-state restoration forfeits unused fertility; authorized fertilizer targets are prepared community and actor-owned-house farmland; landscape removal is limited to three random features; native crops outside custom soil stay native; harvest outcomes and conservative produce pricing are specified by the playbook. Vendor context is Jhelom/Britannia, with named live acceptance allowed to remain pending.
+
+M0–M4 have focused local commits or are completing the M4 commit recorded in scratchpad. Soil/bowls, both-hand recipes/compatible output, case transactions and74-species harvest policy have new server evidence. Latest required server suite1127passes; focused M4JUnit180passes/6skips. M5–M11, the supplied full-can artwork, actual clients and live catalog acceptance are not yet certified. No production action is authorized by a local test pass. The scratchpad and handoff are the current execution ledger.

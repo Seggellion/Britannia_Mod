@@ -67,35 +67,9 @@ public class GrapeSeedsItem extends ItemNameBlockItem {
         ItemStack stack = context.getItemInHand();
 
         if (clickedState.getBlock() instanceof FarmingBlock && context.getClickedFace() == Direction.UP) {
-            BlockEntity be = level.getBlockEntity(clickedPos);
-            CropDefinition crop = CropRegistry.byId("grapes").orElse(null);
-            if (!(be instanceof FarmingBlockEntity farmBe) || crop == null) {
-                return InteractionResult.FAIL;
-            }
-            if (!FarmingBlock.mayPlantHere(level, farmBe, context.getPlayer())) {
-                return InteractionResult.SUCCESS;
-            }
-            if (farmBe.hasCrop() || clickedState.getValue(FarmingBlock.HAS_SEEDS)) {
-                if (!level.isClientSide && context.getPlayer() != null) {
-                    context.getPlayer().displayClientMessage(Component.literal("A crop is already planted here.").withStyle(ChatFormatting.YELLOW), true);
-                }
-                return InteractionResult.SUCCESS;
-            }
-
-            if (!level.isClientSide) {
-                String varietyId = getVariety(stack);
-                farmBe.plant(crop, varietyId);
-                level.setBlock(clickedPos, clickedState.setValue(FarmingBlock.HAS_SEEDS, true), 3);
-                debugSeedPlacement(stack, clickedPos, varietyId);
-                level.playSound(null, clickedPos, SoundEvents.CROP_PLANTED, SoundSource.BLOCKS, 1.0f, 1.0f);
-                if (context.getPlayer() != null && !context.getPlayer().getAbilities().instabuild) {
-                    stack.shrink(1);
-                }
-                if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
-                    FarmingSkill.award(serverPlayer, FarmingActionType.PLANT, crop.tier(), crop.farmingSkillModifier());
-                }
-            }
-            return InteractionResult.sidedSuccess(level.isClientSide);
+            var result = FarmingBlock.tryPlantGrapes(level, clickedPos, clickedState, context.getPlayer(), stack);
+            return result == net.minecraft.world.ItemInteractionResult.FAIL ? InteractionResult.FAIL
+                    : InteractionResult.sidedSuccess(level.isClientSide);
         }
 
         // Deliberately no super.useOn: that fallback used to place the retired standalone grape vine

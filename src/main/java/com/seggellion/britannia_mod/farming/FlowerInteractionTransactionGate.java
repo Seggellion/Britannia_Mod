@@ -17,6 +17,8 @@ public final class FlowerInteractionTransactionGate {
 
     private long nextAllowedGameTime = Long.MIN_VALUE;
 
+    public boolean canCommit(long gameTime) { return gameTime >= nextAllowedGameTime; }
+
     public boolean tryCommit(long gameTime) {
         if (gameTime < nextAllowedGameTime) {
             return false;

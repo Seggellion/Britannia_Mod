@@ -1,6 +1,6 @@
 # Gameplay bugfix implementation scratchpad
 
-Current: M3 complete; next M4. Authorized execution: M0–M11, local commits, no push/merge/deploy/production writes or Fabric work. Playbook and kickoff supersede historical discovery recommendations. All five authoritative documents read in full before code edits.
+Current: M4 complete; next M5. Authorized execution: M0–M11, local commits, no push/merge/deploy/production writes or Fabric work. Playbook and kickoff supersede historical discovery recommendations. All five authoritative documents read in full before code edits.
 
 ## Workspace and frozen contract
 
@@ -17,8 +17,8 @@ Decisions: 1200 online game ticks, exact hoed restoration, unused fertilizer for
 | M0 workspace, baseline, contract | PASS | 421e27853dde4099d1d794568e33e6709507a53b / a95538d862a6c9316d7f45077fbc620e3241d097 |
 | M1 soil, expiry, bowls | PASS (client checks pending) | a95538d862a6c9316d7f45077fbc620e3241d097 / f31550eefb215e198afc60a35dec355661a5f173 |
 | M2 hand recipes/output | PASS (client checks pending) | f31550eefb215e198afc60a35dec355661a5f173 / 558b5236ef3d4db55e282e3c3b5193f7cd50ea4d |
-| M3 display-case transactions | PASS (two-client checks pending) | 558b5236ef3d4db55e282e3c3b5193f7cd50ea4d / pending |
-| M4 harvest gates/outcomes | PENDING | |
+| M3 display-case transactions | PASS (two-client checks pending) | 558b5236ef3d4db55e282e3c3b5193f7cd50ea4d / c6496588042b8109266d55443c3b1fe68ee062e7 |
+| M4 harvest gates/outcomes | PASS (client checks pending) | c6496588042b8109266d55443c3b1fe68ee062e7 / pending |
 | M5 feedback/can state | PENDING | |
 | M6 landscape features | PENDING | |
 | M7 produce mod + Rails | PENDING | paired SHAs required |
@@ -96,3 +96,34 @@ Command (JDK21): `./gradlew.bat test --tests 'com.seggellion.britannia_mod.struc
 New server matrix:16neighborhoods×2cells×2sneak×5main items=320gestures, actual ServerPlayerGameMode dispatch OFF→MAIN→OFF, full inventory, named/damaged/quality/owner/origin legacy count3, repeated empty clicks; both-tool whole rotation with preserved neighboring flags. EntityJoinLevelEvent rejection plus second-player reentry retains exact storage; sequential two-player success produces one entity; success and failure BE disk round trips. Upper-write rejection and exception restore both facings/content; Adventure/spectator denial and malformed pair remain unchanged. Focused JUnit additionally covers throwing insertion, stale replacement, reentrant take/store/eject, exact components and disk state. Review includes all new files and complete diff; diff --check clean.
 
 Pending actual clients: physical main/offhand inputs, two-client display/inventory sync and absence of ghost display, actual world save/restart. Headless dispatch and BE serialization are not those observations. Original corrected discovery evidence remains preserved. No new persistence format or migration; rollback restores the old unsafe gesture path but stored item format is unchanged. Next: M4 shared harvest gate/outcome transaction, all crop/flower/tree routes, then remaining milestones.
+
+## M4 in progress
+
+Preserved BUG-08 discovery route inventory and threshold evidence; baseline has both grape exemptions and independent soil/fruit/axe/flower economic paths. Implementing shared species eligibility, one injected outcome roll after live preconditions, root serialization, lifecycle-aware destructive failure, costs/practice and post-commit-only future harvest event. Existing native crops outside custom soil and environmental cleanup remain outside this player harvest boundary.
+
+### M4 implementation and interim evidence
+
+New FarmingHarvestService serializes the live soil/root key, evaluates the same planting-item species mapping and readiness used by cultivation, draws exactly one injected outcome value only when eligible, revalidates the live predicate before commit, and runs existing practice once after a paid committed success/failure. Creative/operator-level2 bypass skips outcome RNG, costs and practice; ordinary yield randomness is preserved. New non-cancellable FarmingHarvestCommittedEvent reports only committed success and explicitly marks administrative tests; no quest listener/backend seed/reward was added. Crop/flower definitions and thresholds remain unchanged. Removed grape NOT_APPLICABLE exception, blocked nonfinite loaded skill, and routed both grape item/block entrypoints through tryPlantGrapes with actual held-stack and owner checks.
+
+FarmingBlock covers ordinary/tall/trellis/native-compatible soil crops, repairs permitted tall visuals only after eligibility, retains private/house rights and finite uses, builds success outputs before lifecycle mutation and emits after it. Failure produces no produce/seeds/straw and follows the same annual/perennial/house lifecycle and cost. Existing tool/support feedback and harvest logging retained. Flower reset and soil-use debit share one existing flower contention commit; final paid use restores dirt/community base, administrative use is free, and unsupported growing-condition quality0 is bounded to the persisted flower minimum1 instead of throwing. Poppy knife/Farming100 advancement rule remains separate. FruitTreeHarvestService handles scissors, axe fruit and whole-tree paths with the same soil budget, live fruit maturity/root/tool/rights. Whole-tree economic harvest requires ripe fruit; eligible failure still removes the tree with no fruit/wood byproducts. Environmental/support cleanup stays outside the player outcome gate. Cleanup captures outputs before any root-onRemove recursion, removes structure, then emits; the guard prevents nested cleanup consuming the canopy first.
+
+Two new probability JUnit cases cover all74species×6surplus values (444 probability boundaries), threshold75%, strict draw comparison and95%cap, below/unavailable/nonfinite/fake/nonplayer refusal without draws, and Creative/admin free outcome. Updated six existing source/threshold assertion files to the adopted grape gate/new transaction call sites. Paid finite-use fixtures now use ordinary Survival entities and confirmed local skill values; grape owner fixture loads80. Existing physical/identity presentation policies and native crops outside custom soil remain unchanged.
+
+Nine new registered GameplayHarvestGameTests cover: all58non-tree crops below threshold and success/failure with exact finite-use/tool costs and no failed byproducts; shared injected callback counts, unavailable/stale/reentrant/root lock and free outcome; wrong tool/foreign owner/Creative soil cost; both actual grape planting entrypoints at79/80 with variety/cost; all7flowers below/exact gates and failure/success reset/use; corn/banana/grape/tomato/hops ordinary part dispatch with sequential two players and persisted BE state; all9fruit species×3routes×2outcomes with unripe/below-threshold refusal and full-inventory scissors fallback; actual completed Adventure tree BreakEvent on failure; last-use flower failure and Creative preservation/full-inventory yield.
+
+Commands use JDK21 and ordinary namespace/source sets, with unchanged normal resources reused through -x processResources. Logs under tmp/gameplay-bugfixes:
+- m4-compile.log: compileJava passed27s.
+- m4-first.log: focused farming/patch18/sound test command,43s,169tests/6failures/6skips from old exemption/source assertions; corrected to new contract.
+- m4-second.log:20s compile failure in new fixture (TRELLIS and shovel registry names); corrected actual registrations.
+- m4-third.log:2m8s, focused169total/163passes/6skips;1123required GameTests,2failures (old grape-owner skill not loaded, flower quality0 record exception). Corrected fixture readiness and bounded flower quality.
+- m4-fourth.log:BUILD SUCCESSFUL2m2s, all1124required GameTests passed; focused169total/163passes/6skips/0failures/errors.
+- m4-final-cases.log:2m2s,1127required tests with one new full-inventory fixture failure: player was outside the tree-centered drop observer. Corrected player position, kept insertion behavior and added explicit unripe refusal.
+- m4-final.log:BUILD SUCCESSFUL2m9s, all1127required GameTests passed; focused169total/163passes/6skips/0failures/errors.
+
+Review then exposed Creative Inventory.add force-clear for full fruit/flower inventories. Promoted the existing M2 BowlPreparationOutput public entrypoint for those two adapters; no change to its insertion algorithm or bowl behavior. Added full-inventory Creative flower world-yield assertion. Final release-review rerun in progress with bowl regressions included. No assets, resource definitions, economic prices, backend state or build inputs changed. Manual packet/physical interaction, two-client/reconnect and actual world restart checks remain M11 pending. New server fixtures are not client or live Rails proof.
+
+### M4 final gate
+
+Final command: `./gradlew.bat test --tests 'com.seggellion.britannia_mod.farming.*' --tests 'com.seggellion.britannia_mod.patch18.*' --tests 'com.seggellion.britannia_mod.bowlpreparation.*' --tests 'com.seggellion.britannia_mod.sound.InteractionSoundContractTest' runGameTestServer -x processResources --no-configuration-cache --console=plain`. m4-release-review.log BUILD SUCCESSFUL2m15s; all1127required GameTests passed. Fresh XML186total/180executed passes/6skips/0failures/errors/31suites, m4-junit-summary.json. Full-inventory ordinary fruit and Creative flower yields are conserved through the unchanged M2 insertion algorithm. All9new registered harvest tests pass. Existing five-use/reload/house, native/legacy grape, bowl, display-case and Adventure wood/mining regressions remain passing. No further source changes after this run.
+
+Reviewed all production diffs, new three service/event files, new probability test and9server cases, and existing fixture/contract changes; diff --check clean. No user artwork, resources, configuration/source sets, prices, quest seeds, production data or other worktrees changed. Existing finite-use NBT is reused; -1 legacy untracked fertility remains unlimited, so no world migration is required. Restoring the prior code would restore grape exemptions, deterministic ordinary harvest yield, and old flower/tree cost gaps; already harvested items are ordinary unchanged registry stacks. Final manual farming journey/physical inputs, server skill reconnect, two-client synchronization and actual save/restart remain named M11 checks. Next: commit M4 locally and implement M5 feedback/HUD/charge state, preserving missing-full-artwork status if no supplied asset exists.

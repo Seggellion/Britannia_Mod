@@ -139,10 +139,6 @@ public final class FarmingCultivationGate {
         float required = resolved.minimumFarmingSkill();
         Optional<FarmingSkillRequirementResolver.ResolvedRequirement> resolution = Optional.of(resolved);
 
-        if (GRAPE_SPECIES_ID.equals(resolved.speciesId())) {
-            return new Evaluation(ResultType.NOT_APPLICABLE, resolution, material,
-                    subject.farmingSkill(), required);
-        }
         if (subject.actorType() != ActorType.PLAYER) {
             return new Evaluation(ResultType.NON_PLAYER_POLICY, resolution, material,
                     subject.farmingSkill(), required);
@@ -151,7 +147,7 @@ public final class FarmingCultivationGate {
             return new Evaluation(ResultType.APPROVED_BYPASS, resolution, material,
                     subject.farmingSkill(), required);
         }
-        if (subject.skillDataState() != SkillManager.SkillDataState.AVAILABLE) {
+        if (subject.skillDataState() != SkillManager.SkillDataState.AVAILABLE || !Float.isFinite(subject.farmingSkill())) {
             return new Evaluation(ResultType.SKILL_DATA_UNAVAILABLE, resolution, material,
                     Float.NaN, required);
         }

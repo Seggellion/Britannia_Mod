@@ -5,11 +5,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 /** Capacity-aware output delivery that does not use Creative's force-clear insertion fallback. */
-final class BowlPreparationOutput {
+public final class BowlPreparationOutput {
     private BowlPreparationOutput() {
     }
 
-    static void giveOrDrop(ServerPlayer player, ItemStack output) {
+    public static void giveOrDrop(ServerPlayer player, ItemStack output) {
         giveOrDrop(player, output, net.minecraft.world.InteractionHand.MAIN_HAND);
     }
 
