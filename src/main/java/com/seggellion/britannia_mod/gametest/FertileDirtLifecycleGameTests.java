@@ -203,16 +203,20 @@ public final class FertileDirtLifecycleGameTests {
     private static void applyCanonicalFertilizedDirt(
             GameTestHelper helper, ServerPlayer player, BlockPos relativePos
     ) {
+        com.seggellion.britannia_mod.structure.StructureRecord house = null;
         if (!helper.getBlockState(relativePos).is(BlockRegistry.COMMUNITY_HOED_FARM_BLOCK.get())) {
-            helper.setBlock(relativePos, Blocks.DIRT.defaultBlockState());
+            house = GameplaySoilGameTests.registerOwnedFarmland(helper, player, relativePos);
         }
         ItemStack stack = new ItemStack(ItemRegistry.FERTILIZED_DIRT.get());
         player.setItemInHand(InteractionHand.MAIN_HAND, stack);
         BlockPos absolute = helper.absolutePos(relativePos);
         BlockHitResult hit = new BlockHitResult(
                 Vec3.atCenterOf(absolute), Direction.UP, absolute, false);
-        ItemRegistry.FERTILIZED_DIRT.get().useOn(
-                new UseOnContext(player, InteractionHand.MAIN_HAND, hit));
+        try {
+            ItemRegistry.FERTILIZED_DIRT.get().useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, hit));
+        } finally {
+            if (house != null) com.seggellion.britannia_mod.structure.StructureRegionManager.unregisterStructure(house);
+        }
         check(helper.getBlockState(relativePos).is(BlockRegistry.FARMING_BLOCK.get()),
                 "canonical fertilized dirt did not create farming soil");
         player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);

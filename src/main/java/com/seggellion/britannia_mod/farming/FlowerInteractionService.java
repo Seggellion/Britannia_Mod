@@ -123,6 +123,7 @@ public final class FlowerInteractionService {
     public static boolean isCareItem(ItemStack stack) {
         return stack.is(ItemRegistry.WATERING_CAN.get())
                 || stack.is(Items.WATER_BUCKET)
+                || stack.is(ItemRegistry.BOWL_OF_WATER.get())
                 || FarmingSoilCare.fertilizerFor(stack).isPresent();
     }
 
@@ -130,7 +131,9 @@ public final class FlowerInteractionService {
             Level level, BlockPos pos, BlockState blockState, Player player, InteractionHand hand,
             ItemStack stack, FlowerBlockEntity flower, FlowerPersistentState persistent
     ) {
-        if (!FlowerProtectionService.mayMutate(persistent, player, FlowerMutationReason.CARE)) {
+        if (player == null || player.isSpectator() || !level.mayInteract(player, pos)
+                || player.getItemInHand(hand) != stack
+                || !FlowerProtectionService.mayMutate(persistent, player, FlowerMutationReason.CARE)) {
             deny(player, level, PROTECTED_MESSAGE_KEY);
             return ItemInteractionResult.SUCCESS;
         }
@@ -139,6 +142,14 @@ public final class FlowerInteractionService {
         }
 
         FlowerSoilSnapshot soil = persistent.soil();
+        if (stack.is(ItemRegistry.BOWL_OF_WATER.get())) {
+            if (soil.hydration() < FarmingBlockEntity.MAX_HYDRATION
+                    && flower.replaceSoil(soil.withHydration(soil.hydration() + 1))) {
+                BowlWateringService.finish(level, pos, player, hand, stack);
+                awardTending(player, 1.0f);
+            }
+            return ItemInteractionResult.CONSUME;
+        }
         if (stack.is(ItemRegistry.WATERING_CAN.get())) {
             int charges = WateringCanItem.getWaterCharges(stack);
             if (soil.hydration() >= FarmingBlockEntity.MAX_HYDRATION || charges <= 0) {
@@ -328,7 +339,7 @@ public final class FlowerInteractionService {
     }
 
     private static void deny(Player player, Level level, String messageKey) {
-        if (!level.isClientSide) {
+        if (!level.isClientSide && player != null) {
             player.displayClientMessage(Component.translatable(messageKey).withStyle(ChatFormatting.RED), true);
         }
     }

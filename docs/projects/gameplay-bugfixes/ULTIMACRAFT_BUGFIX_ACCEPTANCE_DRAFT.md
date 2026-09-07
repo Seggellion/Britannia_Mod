@@ -1,8 +1,8 @@
 # UltimaCraft bug-fix acceptance draft
 
-All boxes are intentionally unchecked. These are proposed acceptance cases for future fixes, not claims that discovery tests prove fixes. Target: Minecraft1.21.1, NeoForge21.1.72, source baseline `421e27853dde4099d1d794568e33e6709507a53b`, checkout `C:/projects/britannia/mod/Britannia_Mod`. See [discovery](C:/projects/britannia/mod/Britannia_Mod/docs/projects/gameplay-bugfixes/ULTIMACRAFT_BUGFIX_DISCOVERY.md) for actual executed evidence and [planning inputs](C:/projects/britannia/mod/Britannia_Mod/docs/projects/gameplay-bugfixes/ULTIMACRAFT_BUGFIX_PLANNING_INPUTS.md) for adopted D1–D6 and residual Q1–Q5. Supplemental discovery records the new evidence.
+The original checklist remains a set of proposed acceptance cases. Evidence-backed implementation results appear in the milestone addenda below; discovery tests alone do not prove fixes. Target: Minecraft1.21.1, NeoForge21.1.72, source baseline `421e27853dde4099d1d794568e33e6709507a53b`, checkout `C:/projects/britannia/mod/Britannia_Mod`. See [discovery](C:/projects/britannia/mod/Britannia_Mod/docs/projects/gameplay-bugfixes/ULTIMACRAFT_BUGFIX_DISCOVERY.md) for actual executed evidence and [planning inputs](C:/projects/britannia/mod/Britannia_Mod/docs/projects/gameplay-bugfixes/ULTIMACRAFT_BUGFIX_PLANNING_INPUTS.md) for adopted D1–D6 and residual Q1–Q5. Supplemental discovery records the new evidence.
 
-**Scope:**19 tracked reports,16 in-scope functional issues. BUG-04/06/07 artwork is excluded; historical inspection does not create an acceptance gate. Full watering-can art is user-supplied; state selection/sync remains code acceptance. All boxes stay unchecked.
+**Scope:**19 tracked reports,16 in-scope functional issues. BUG-04/06/07 artwork is excluded; historical inspection does not create an acceptance gate. Full watering-can art is user-supplied; state selection/sync remains code acceptance. Mixed automated/manual cases remain unchecked until both forms of evidence exist.
 
 **A** = automated candidate (pure logic, GameTest or server integration). **M** = manual client/player/visual acceptance. S/A/C = Survival/Adventure/Creative. Adventure tests use ordinarily authorized farms/areas and normal item gestures; mode permissions must not be bypassed by a diagnostic command during the actual action. Diagnostics may set initial skill/weather, prepare a disposable fixture or observe NBT, but players perform the planting, watering, cutting, placing, jumping and filling themselves.
 
@@ -192,3 +192,17 @@ All boxes are intentionally unchecked. These are proposed acceptance cases for f
 ## Material changes from original draft
 
 D1–D6 are adopted, not pending reconfirmation. Expiry now restores prior hoed soil; eligibility is owner-contained vanilla farmland plus prepared community; bowl hydration and unchanged initial moisture/rain are explicit; grape/flower gates and lifecycle-aware produce destruction replace exemptions/universal uproot; existing path preservation replaces ambiguous shovel outcomes. Excluded artwork rows and aesthetic checklist were removed. All other original functional coverage remains, with new BUG-15–19 cases and residual Q1–Q5 identified. No box was checked by discovery.
+
+
+## Implementation evidence addendum — M1
+
+The playbook and kickoff close the historical Q1–Q5 recommendations. Original mixed A/M boxes remain unchecked where physical client evidence is still owed. M1 checks below describe server evidence precisely; final run identity lives in scratchpad/handoff.
+
+- [x] **A:**1199/1200/1201 boundaries across all8prior farmland moisture states; exact restoration removes fertilizer BE and residual entitlement.
+- [x] **A:**saved community preparation budget pauses/resumes and re-fertilization cannot grant fresh preparation time.
+- [x] **A:**registered loaded BE ticker reconciles an overdue saved deadline independently of randomTick dispatch. Actual chunk unload/restart is still pending.
+- [x] **A:**crop planting cancels private timer; flower forward snapshot clears it; rollback restores original timer/origin/uses; uproot never revives it. Private owner survives snapshot/care/NBT/rollback/uproot.
+- [x] **A:**target/mode whitelist and registered owner/dimension/full-box/basement/missing authority checks; invalid fertilizer leaves count/target unchanged.
+- [x] **A:**MAIN phase uses actual MAIN/OFF bowl, redundant OFF callback cannot spend again; full/foreign soil and protected flowers refuse free; one full-inventory remainder world drop.
+- [x] **A:**legacy untimed private soil remains untracked(-1) with no invented deadline.
+- [ ] **M:**physical input, normal/low-TPS timing, two clients, actual chunk unload and server restart, ordinary watering and rain/dry progression observations.

@@ -99,7 +99,9 @@ public record FlowerPersistentState(
         }
         tag.put("RegionProvenance", regionProvenance.toTag());
         tag.putInt("Quality", quality.value());
-        tag.put("Soil", soil.toTag());
+        CompoundTag soilTag = soil.toTag();
+        if (!includePlanterUuid) soilTag.remove("SoilOwnerUUID");
+        tag.put("Soil", soilTag);
         tag.put("GrowthState", growthState.toTag());
         return tag;
     }

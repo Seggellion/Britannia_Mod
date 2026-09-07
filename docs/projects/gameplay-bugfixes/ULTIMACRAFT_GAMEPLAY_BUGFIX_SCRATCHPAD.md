@@ -1,6 +1,6 @@
 # Gameplay bugfix implementation scratchpad
 
-Current: M0 complete; next M1. Authorized execution: M0–M11, local commits, no push/merge/deploy/production writes or Fabric work. Playbook and kickoff supersede historical discovery recommendations. All five authoritative documents read in full before code edits.
+Current: M1 implementation/server validation complete; next M2. Authorized execution: M0–M11, local commits, no push/merge/deploy/production writes or Fabric work. Playbook and kickoff supersede historical discovery recommendations. All five authoritative documents read in full before code edits.
 
 ## Workspace and frozen contract
 
@@ -14,8 +14,8 @@ Decisions: 1200 online game ticks, exact hoed restoration, unused fertilizer for
 
 | Milestone | Status | Start / end |
 |---|---|---|
-| M0 workspace, baseline, contract | PASS | 421e27853dde4099d1d794568e33e6709507a53b / pending |
-| M1 soil, expiry, bowls | PENDING | |
+| M0 workspace, baseline, contract | PASS | 421e27853dde4099d1d794568e33e6709507a53b / a95538d862a6c9316d7f45077fbc620e3241d097 |
+| M1 soil, expiry, bowls | PASS (client checks pending) | a95538d862a6c9316d7f45077fbc620e3241d097 / pending |
 | M2 hand recipes/output | PENDING | |
 | M3 display-case transactions | PENDING | |
 | M4 harvest gates/outcomes | PENDING | |
@@ -39,3 +39,25 @@ M10 available local files freshly hashed: Iris1.8.0+mc1.21.1 SHA256 0e8ae2864f2b
 
 No client, physical input, multiplayer, natural world distribution or live Rails acceptance claimed. Next: finish focused baseline, commit M0 docs, implement M1 and meaningful registered server tests. Keep manual pending entries specific throughout.
 
+## M1 work in progress
+
+Preserved evidence: original discovery BUG-03/05/09 and supplemental deadline/ownership/bowl dispatch probes in original ignored tmp/gameplay-bugfixes. Implementing shared fertilizer eligibility/commit, saved prior state + paused budget, deterministic server tick/load reconciliation, canceled flower deadlines and actual-hand bowl care. New legacy policy: no invented deadline for old private/untracked soil; old timed community soil restores hoed with zero saved budget (normal subsequent preparation expiry), never receives five uses. Missing prepared metadata captures one tick, not a refreshed3600. Source changes and focused tests reviewed; results below.
+
+### M1 review and evidence
+
+Files: fertilizer item/community block delegate to FertilizedSoilService; FarmingBlock/BE add deterministic loaded ticks, live expiry checks and persisted PreviousHoedState/PausedPreparationTicks; CommunityFarm BE resumes saved budget; BowlWateringService + NORMAL interaction listener (after existing protection listeners) own the main phase and use the actual bowl-bearing hand; flower care recognizes bowls. Flower soil snapshots cancel forward deadlines, preserve rollback deadlines/origin, private owner and remaining uses. Owner data stays server-side; owner checks preserve environmental mutation rules. Paid house plots are excluded from expiry. Existing lifecycle/full-loop fixtures now register owned farmland temporarily instead of using prohibited ordinary dirt. No assets/resources/recipes/build source sets changed.
+
+New registered GameplaySoilGameTests (9): all eight farmland moisture states ×1199/1200/1201, exact restoration/no BE entitlement; paused preparation budget and repeated fertilizer; registered loaded ticker with overdue saved state; flower forward/rollback/uproot and owner NBT; whitelist/modes/dimension/full-box/basement/missing authority; both-hand bowl event dispatch including redundant OFF callback/full/foreign soil; both-hand flower bowls/protected admin flower; full-inventory remainder world conservation; legacy private -1 fertility/no invented clock.
+
+Commands from this worktree, JAVA_HOME=JDK21 as M0:
+- `./gradlew.bat test --tests 'com.seggellion.britannia_mod.farming.*' --tests 'com.seggellion.britannia_mod.patch18.*' --tests 'com.seggellion.britannia_mod.bowlpreparation.*' --no-configuration-cache --console=plain`: m1-junit.log, passed in1m56s before final review.
+- First combined invocation put `--tests` after runGameTestServer: rejected unsupported option before tests; m1-server.log preserved.
+- Retry compile found FlowerColorDefinition versus FlowerColor in new fixture; corrected `.color()` accessor. m1-server-retry.log preserved.
+- Combined correct command `test <same three filters> runGameTestServer --no-configuration-cache --console=plain`: m1-server-2.log, 1109/1110 server passes; one new negative failed because stock Minecraft mock overrides isCreative=true irrespective of selected mode. Replaced new fixtures with existing ManagedResourceTestPlayers.survival; no gameplay permission weakened.
+- Same command m1-server-3.log: BUILD SUCCESSFUL2m40s, all1111 required GameTests pass; focused JUnit175 total,169 executed passes,6 skips,0failures/errors,28suites.
+- Final review additionally rejects corrupt/uninitialized non-farm bowl targets and hoed-state PREPARED=false; private flower ownership does not change existing explosion/fluid rules. Final rerun m1-final.log uses same command with `-x processResources` (resources unchanged and already built normally; all Java recompiled, normal namespace only). Final result: BUILD SUCCESSFUL1m55s;1111 required GameTests pass and focused JUnit175total/169passes/6skips/0failures/errors.
+
+Historical mock-login missing-auth/shard exceptions remain expected harness noise, not paid/live economy proof. No production credentials/config copied. BE serialization/recreation and an overdue saved deadline are not actual chunk unload/server restart. Simulation clock source cannot advance while server is stopped; no wall-clock arithmetic exists. Real normal/low-TPS timing, ordinary player preparation→planting/hydration, two-client inventory sync, actual chunk unload/reload and save/restart remain named M11 client checks. No client visual pass claimed. Review includes complete tracked diff and all four new Java files; diff --check clean.
+
+
+Next: commit M1 locally, record its SHA in M2 entry, then implement three bowl recipes + seven pigments in both hands and compatible-first output. No client or live Rails evidence has been fabricated.

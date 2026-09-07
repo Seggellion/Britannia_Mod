@@ -20,8 +20,23 @@ public record FlowerSoilSnapshot(
         FlowerSoilOrigin origin,
         Optional<FlowerCommunityRestoration> communityRestoration,
         long communitySeedableUntilGameTime,
-        int remainingFertileHarvests
+        int remainingFertileHarvests,
+        Optional<java.util.UUID> ownerUuid
 ) {
+    public FlowerSoilSnapshot(int hydration, int fertilizerLevel, float nitrogen, float phosphorus,
+            float potassium, float organicMatter, FlowerSoilOrigin origin,
+            Optional<FlowerCommunityRestoration> communityRestoration, long communitySeedableUntilGameTime,
+            int remainingFertileHarvests) {
+        this(hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter, origin,
+                communityRestoration, communitySeedableUntilGameTime, remainingFertileHarvests, Optional.empty());
+    }
+
+    public FlowerSoilSnapshot withOwner(java.util.UUID owner) {
+        return new FlowerSoilSnapshot(hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
+                origin, communityRestoration, communitySeedableUntilGameTime, remainingFertileHarvests,
+                origin == FlowerSoilOrigin.COMMUNITY_PLOT ? Optional.empty() : Optional.ofNullable(owner));
+    }
+
     /** Source-compatible constructor for legacy/untracked flower soil. */
     public FlowerSoilSnapshot(
             int hydration,
@@ -40,6 +55,7 @@ public record FlowerSoilSnapshot(
     }
 
     public FlowerSoilSnapshot {
+        Objects.requireNonNull(ownerUuid, "Soil owner optional is required");
         if (hydration < 0 || hydration > FarmingBlockEntity.MAX_HYDRATION) {
             throw new IllegalArgumentException("Flower soil hydration must use the FarmingBlock scale 0..5: " + hydration);
         }
@@ -153,6 +169,7 @@ public record FlowerSoilSnapshot(
         tag.putFloat("Potassium", potassium);
         tag.putFloat("OrganicMatter", organicMatter);
         tag.putString("Origin", origin.name());
+        ownerUuid.ifPresent(owner -> tag.putUUID("SoilOwnerUUID", owner));
         communityRestoration.ifPresent(restoration -> tag.put("CommunityRestoration", restoration.toTag()));
         tag.putLong("CommunitySeedableUntilGameTime", communitySeedableUntilGameTime);
         if (remainingFertileHarvests >= 0) {
@@ -172,7 +189,7 @@ public record FlowerSoilSnapshot(
                 origin,
                 communityRestoration,
                 communitySeedableUntilGameTime,
-                remainingFertileHarvests
+                remainingFertileHarvests, ownerUuid
         );
     }
 
@@ -180,7 +197,7 @@ public record FlowerSoilSnapshot(
         return new FlowerSoilSnapshot(
                 hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
                 origin, communityRestoration, communitySeedableUntilGameTime,
-                remainingFertileHarvests
+                remainingFertileHarvests, ownerUuid
         );
     }
 
@@ -188,7 +205,7 @@ public record FlowerSoilSnapshot(
         return new FlowerSoilSnapshot(
                 hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
                 origin, communityRestoration, communitySeedableUntilGameTime,
-                remainingFertileHarvests
+                remainingFertileHarvests, ownerUuid
         );
     }
 
@@ -215,7 +232,8 @@ public record FlowerSoilSnapshot(
                 tag.contains("RemainingFertileHarvests")
                         ? Math.max(0, Math.min(FarmingBlockEntity.MAX_FERTILE_HARVESTS,
                                 tag.getInt("RemainingFertileHarvests")))
-                        : FarmingBlockEntity.UNTRACKED_FERTILE_HARVESTS
+                        : FarmingBlockEntity.UNTRACKED_FERTILE_HARVESTS,
+                tag.hasUUID("SoilOwnerUUID") ? Optional.of(tag.getUUID("SoilOwnerUUID")) : Optional.empty()
         );
     }
 

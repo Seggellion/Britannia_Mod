@@ -105,12 +105,23 @@ public class FarmingBlock extends Block implements EntityBlock {
         return new FarmingBlockEntity(pos, state);
     }
 
+    @Nullable
+    @Override
+    public <T extends BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T> getTicker(
+            Level level, BlockState state, net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
+        if (level.isClientSide) return null;
+        return (tickLevel, pos, live, be) -> {
+            if (be instanceof FarmingBlockEntity soil) FarmingBlockEntity.serverTick(tickLevel, pos, live, soil);
+        };
+    }
+
     // --- Block Interactions ---
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         
         BlockEntity be = level.getBlockEntity(pos);
+        if (be instanceof FarmingBlockEntity soil && soil.expireEmptySoil(level)) return ItemInteractionResult.FAIL;
 
         // The interior decorator turns the planted crop's model a quarter turn clockwise. Handled
         // here rather than in the tool because the block sees the interaction first, and a mature
@@ -219,6 +230,9 @@ public class FarmingBlock extends Block implements EntityBlock {
             return WateringCanItem.waterFarmingBlock(level, pos, state, player, stack);
         }
 
+        if (stack.is(ItemRegistry.BOWL_OF_WATER.get())) {
+            return com.seggellion.britannia_mod.farming.BowlWateringService.waterFarm(level, pos, player, hand, stack);
+        }
         if (stack.is(Items.WATER_BUCKET)) {
             return waterWithBucket(level, pos, state, player, hand, stack);
         }
@@ -349,8 +363,7 @@ public class FarmingBlock extends Block implements EntityBlock {
     @Override
     public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         BlockEntity be = level.getBlockEntity(pos);
-        if (be instanceof FarmingBlockEntity farmBe && farmBe.shouldReclaimCommunityPlot(level)) {
-            level.setBlock(pos, BlockRegistry.COMMUNITY_FARM_BLOCK.get().defaultBlockState(), 3);
+        if (be instanceof FarmingBlockEntity farmBe && farmBe.expireEmptySoil(level)) {
             return;
         }
 
@@ -434,6 +447,7 @@ public class FarmingBlock extends Block implements EntityBlock {
     }
 
     public static boolean mayPlantHere(Level level, FarmingBlockEntity farmBe, @Nullable Player player) {
+        if (!level.isClientSide && (level.getBlockEntity(farmBe.getBlockPos()) != farmBe || farmBe.expireEmptySoil(level))) return false;
         if (farmBe.mayPlant(player)) {
             return true;
         }
@@ -756,6 +770,7 @@ public class FarmingBlock extends Block implements EntityBlock {
             return;
         }
         if (state.getBlock() instanceof FarmingBlock) {
+            farmBe.restartEmptySeedWindow(level.getGameTime());
             level.setBlock(pos, state.setValue(HAS_SEEDS, false), 3);
         }
     }

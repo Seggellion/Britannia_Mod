@@ -146,12 +146,15 @@ public final class Patch18FullLoopGameTests {
                 "full chain created a vanilla bowl");
 
         BlockPos farmPos = helper.absolutePos(FARM);
-        helper.setBlock(FARM, Blocks.DIRT);
+        var farmHouse = GameplaySoilGameTests.registerOwnedFarmland(helper, player, FARM);
         moveNear(player, farmPos);
         BlockHitResult farmHit = new BlockHitResult(
                 Vec3.atCenterOf(farmPos), Direction.UP, farmPos, false);
-        player.getMainHandItem().getItem().useOn(
-                new UseOnContext(player, InteractionHand.MAIN_HAND, farmHit));
+        try {
+            player.getMainHandItem().getItem().useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, farmHit));
+        } finally {
+            com.seggellion.britannia_mod.structure.StructureRegionManager.unregisterStructure(farmHouse);
+        }
         check(level.getBlockState(farmPos).is(BlockRegistry.FARMING_BLOCK.get()),
                 "canonical fertilized dirt did not create farm soil");
         assertRemaining(level, farmPos, 5);

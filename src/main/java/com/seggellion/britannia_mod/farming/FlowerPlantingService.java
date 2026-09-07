@@ -269,7 +269,8 @@ public final class FlowerPlantingService {
                     || originalState.getBlock() instanceof HouseFarmPlotBlock;
             return supportedSurface
                     && level.getBlockState(pos).getBlock() == originalState.getBlock()
-                    && level.getBlockEntity(pos) instanceof FarmingBlockEntity;
+                    && level.getBlockEntity(pos) instanceof FarmingBlockEntity farming
+                    && FarmingBlock.mayPlantHere(level, farming, player);
         }
 
         @Override

@@ -24,6 +24,16 @@ public class CommunityFarmBlockEntity extends BlockEntity {
         setChanged();
     }
 
+    /** Missing legacy preparation metadata earns no fresh three-minute budget. */
+    public long remainingPreparationTicks(long gameTime) {
+        return preparedExpiresAt == 0 ? 1 : Math.max(0, preparedExpiresAt - gameTime);
+    }
+
+    public void resumePreparation(long gameTime, long remainingTicks) {
+        this.preparedExpiresAt = gameTime + Math.max(0, Math.min(PREPARED_EXPIRY_TICKS, remainingTicks));
+        setChanged();
+    }
+
     public void clearPreparedExpiry() {
         this.preparedExpiresAt = 0L;
         setChanged();

@@ -31,6 +31,11 @@ public final class FlowerProtectionService {
         if (flower == null || reason == null) {
             return false;
         }
+        if (!reason.isSystemAuthorized() && reason != FlowerMutationReason.EXPLOSION
+                && reason != FlowerMutationReason.FLUID && reason != FlowerMutationReason.PISTON
+                && flower.soil().ownerUuid().isPresent()
+                && (actor == null || !flower.soil().ownerUuid().get().equals(actor.getUUID()))
+                && !isAdministrator(actor)) return false;
         return mayMutate(
                 flower.protectedFlower(),
                 actor != null && actor.isCreative(),
