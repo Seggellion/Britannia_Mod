@@ -25,8 +25,8 @@ were not switched, stashed, reset, or modified.
 | M3 NeoForge reward reconciliation | **PASSED** | `71f1713b` | — | 2026-09-07 |
 | M4 Rails action-objective and progress contract | **PASSED** | — | `0fff0b3` | 2026-09-07 |
 | M5 NeoForge farming events, outbox, crop attribution | **PASSED** | `473917c0` | — | 2026-09-07 |
-| M6 Rowan archetype | **PASSED** | (this commit) | — | 2026-09-07 |
-| M7 Rails content, seed, admin | not started | | | |
+| M6 Rowan archetype | **PASSED** | `6b783003` | — | 2026-09-07 |
+| M7 Rails content, seed, admin | **PASSED** | — | `abea5ff` | 2026-09-07 |
 | M8 Dialogue and journal UX | not started | | | |
 | M9 Timing, skill, recovery | not started | | | |
 | M10 Achievement and advancement | not started | | | |
@@ -791,7 +791,126 @@ respawns from the saved snapshot, but a respawn after a reload would lose the id
 owner rather than fixed, because it belongs to no milestone here and changing it would alter an
 existing archetype's behaviour.
 
-### Next action
+### Next action (at M6 close)
 
 M7 — the Rails questline content: five linked non-repeatable quests keyed to `origin_npc = "Rowan"`
 with an idempotent seed, authored against the M4 action-objective and journal contract.
+## M7 — Rails Rowan content, admin support and rewards (PASSED 2026-09-07, Rails only)
+
+Delegated to a Rails sub-agent; reviewed hunk by hunk and gated by the integrator, who also found
+and fixed the engine defect below.
+
+### Changes
+
+* `app/services/quest_content/` (new) — the questline as data (`rowan_farming_questline.rb`), the
+  seed pool and its eligibility rule (`crop_seed_pool.rb`), seed-time validation
+  (`definition_validator.rb`), the metadata shape checks shared with the admin form
+  (`authoring.rb`), and the idempotent two-pass upsert (`installer.rb`).
+* `db/seeds/rowan_farming_questline.rb` + `lib/tasks/seed_rowan_farming_questline.rake` — a narrow
+  `db:seed:rowan_farming_questline` task in the repository's existing seed-task shape, resolving
+  the shard from an environment variable and validating before installing.
+* `app/models/quest.rb` — `#authoring_errors`, deliberately not an ActiveRecord validation because
+  existing tests author deliberately-loose metadata that a validation would make unsavable.
+* `app/controllers/admin/quests_controller.rb` and three `app/views/admin/quests/` partials — the
+  smallest admin support the milestone asks for: description, active flag, quest key, journal
+  metadata, the node objective and observer fields, reward previews, keep-for-later items, and a
+  choice's `presentation` selector. The controller parses the JSON textareas into objects and
+  refuses a save that will not parse or that fails authoring validation. Two defects this closes:
+  a string assigned to a jsonb column is stored as a JSON string that every reader treats as
+  absent, so editing a Rowan quest through the form would have silently stripped its objectives;
+  and without the `presentation` selector a save turned the Help button into a destination-less
+  choice that answers an error.
+
+### The five quests
+
+Keys `rowan_farming_1..5`, `origin_npc "Rowan"`, non-repeatable, priorities 50 down to 10 so the
+interact path reaches the earliest open stage first. Each has the same five node titles in the same
+creation order, with Offer first because interact starts a player on the lowest-id node. Choice
+keys are fixed per stage (`accept`, `decline`, `help`, the stage's trigger choice, `later`,
+`claim`). Quest 5's working node matches the frozen authoring fixture exactly, including its
+ordered steps with bindings and deadlines and the harvest trigger with `require_planter`.
+
+Rewards are the playbook's provisional constants, centralised in one table: 2 gold, 50 copper,
+20 silver, 3 gold, 5 gold. **No newer economy authority for quest coin rewards exists in the
+repository** (the currency table fixes only the comparative ladder; the escort seeds derive silver
+from distance). Two of the five are independently pinned by the M0-frozen fixtures, which agree.
+
+### The seed pool
+
+Rails holds no crop-definition table, so eligibility is resolved against the Farmer vendor's
+starter seed rack, with a test that parses that seed file so the transcription cannot drift.
+Three clauses, each able to reject alone: beginner skill requirement, growable on Rowan's community
+plot, and harvestable with equipment the questline has already issued. Carrot is the only crop that
+passes; lettuce and green onion need scissors, potato needs a higher skill. The selection is a real
+random roll over the resolved pool so widening it is a data edit rather than a code change, and the
+validator re-checks every authored entry at seed time.
+
+### The "Not now" and Escape problem
+
+The interact path creates the journal row on the first click, before acceptance, and the serializer
+has no notion of "offered" — changing that is controller work outside this milestone. Solved by
+authoring instead: both refusal paths route to an ending node carrying a `rejected` flag, which
+removes the row from the active journal immediately and lets the quest be offered again, and
+neither grants anything. While the offer is open the entry reads as an offer rather than as
+progress: no observers, no progress entries, and a preview naming what accepting would grant.
+
+### Integrator fix: an ungated quest start (found in review)
+
+`POST /api/quests/:id/start` created a journal row **without ever consulting
+`start_conditions.prerequisite_quest_id`**, which the interact path has always enforced. That
+endpoint is reachable: the Minecraft server forwards a client's START action for an arbitrary quest
+id, and only TRIGGER is refused as non-authoritative. A modified client could therefore have opened
+a later stage of a chained questline directly and claimed its reward — for this questline, quests 2
+through 4's coins, bowls, bucket, watering can, seed and hoe, none of whose objectives depend on an
+inherited flag. Quest 5 was already protected in depth, because its harvest matches against a crop
+flag that only quest 3's roll sets.
+
+The fix applies the same check the interact path uses, at the point the completed and repeatable
+rules are already evaluated: refused with a conflict, no journal row, one warning line. This is an
+**engine** rule, not a questline rule, so it is tested with a plain two-quest chain in
+`test/controllers/api/quest_start_prerequisite_test.rb` (4 tests). Negative control: with the fix
+reverted, two of those four fail; with it, all pass.
+
+One M4 test changed as a consequence. It asserted that starting a quest with an unfinished
+prerequisite succeeds and inherits nothing; that start is now refused outright, which is strictly
+stronger, so the assertion was updated to expect the refusal and the absence of a row rather than
+the endpoint being loosened to keep the old expectation.
+
+### Tests and gates
+
+| Run | Result |
+| --- | --- |
+| The agent's new tests | 103 runs, 1181 assertions, 0 failures |
+| Quest selection (integrator, fresh database) | 773 runs, 4337 assertions, 0 failures, 0 errors |
+| Full suite (integrator, fresh database) | 3472 runs (3365 baseline + 103 + the 4 fix tests), 53984 assertions, 10 failures, 0 errors, 1 skip |
+| Admin family on a fresh database (control) | 51 runs, 0 failures |
+| Idempotency (through the real rake task) | seeded twice; row snapshots including microsecond timestamps byte-identical; unchanged content does not even touch `updated_at`; a player's current node and choice keys survive a re-seed; a hand-edited quest is rewritten without changing ids |
+| `git diff --check` | clean |
+
+The ten failures are the permitted family: eight admin tests asserting an unscoped audit-row count
+plus the stable food-supply failure and the query-budget test, which fails *worse* in isolation on
+a fresh database and mentions no quest code. No quest, questline, delivery or action-event test
+fails.
+
+### Line endings
+
+Five modified files were uniformly CRLF at HEAD and were left that way, because normalising them
+would have surfaced fourteen pre-existing trailing-whitespace lines as newly added and failed the
+whitespace gate. All thirteen new files are LF, and no added line in the two known mixed-ending
+files carries a carriage return.
+
+### Deviations and open items
+
+* No deviation from the frozen protocol; no fixture, digest or manifest touched.
+* One reconciliation: the frozen stage-1 response example shows an empty keep-for-later list while
+  the product contract says quest 1 retains the shovel and the dung. The product contract wins; the
+  fixtures are shape examples and their digests are unchanged.
+* The watering can is granted as the single registry item the mod ships, since "full" is a state
+  rather than a separate item.
+* An admin-form save is equivalent rather than byte-identical to the seed's output (it adds two
+  inert empty observer blocks the node form has always posted). Asserted as equivalence.
+
+### Next action
+
+M8 — dialogue and quest-journal UX in the mod, which is the first milestone a player would notice,
+followed by M9 timing and recovery, M10 the achievement, and M11 hardening.
