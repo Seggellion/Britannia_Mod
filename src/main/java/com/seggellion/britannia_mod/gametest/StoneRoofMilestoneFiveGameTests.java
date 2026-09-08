@@ -116,14 +116,14 @@ public final class StoneRoofMilestoneFiveGameTests {
                 blockEntity.setBottomTexture(STONE_TEXTURE);
 
                 ItemStack decorator = new ItemStack(ItemRegistry.INTERIOR_DECORATOR_TOOL.get());
-                player.setItemInHand(InteractionHand.MAIN_HAND, decorator);
+                player.setItemInHand(InteractionHand.OFF_HAND, decorator);
                 for (int cycle = 1; cycle <= 6; cycle++) {
                     BlockState before = helper.getBlockState(relative);
                     ItemInteractionResult result = before.useItemOn(
                             decorator,
                             helper.getLevel(),
                             player,
-                            InteractionHand.MAIN_HAND,
+                            InteractionHand.OFF_HAND,
                             hit);
                     BlockState after = helper.getBlockState(relative);
                     check(result.consumesAction(),

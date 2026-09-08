@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.google.gson.JsonParser;
 import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
 import com.seggellion.britannia_mod.block.TopOnlySlabBlock;
 import java.nio.file.Files;
@@ -120,6 +121,46 @@ class AdaptiveRoofModelRenderingTest {
             assertEquals(List.of(texture), resolvedTextures);
             assertSame(first, second);
             assertSame(testSprite.sprite(), first.getSprite());
+        }
+    }
+
+    @Test
+    void sandstoneBrickUsesExistingModelAssetsAndClearingRemovesEveryAcquiredFace() throws Exception {
+        Path assets = PROJECT.resolve("src/main/resources/assets/britannia_mod");
+        String canonical = "britannia_mod:block/structure/sandstone/custom_sandstone_brick_0";
+        try (var reader = Files.newBufferedReader(assets.resolve("models/item/custom_sandstone_brick.json"))) {
+            assertEquals(canonical, JsonParser.parseReader(reader).getAsJsonObject().get("parent").getAsString());
+        }
+        // The base item chooses variant zero; the existing alternate/top-row family must
+        // continue to resolve too. Load real PNG pixels rather than a dummy fallback sprite.
+        for (String row : List.of("", "top_")) {
+            for (int variant = 0; variant < 4; variant++) {
+                String path = "block/structure/sandstone/custom_sandstone_brick_" + row + variant;
+                ResourceLocation texture = ResourceLocation.fromNamespaceAndPath("britannia_mod", path);
+                try (var reader = Files.newBufferedReader(assets.resolve("models/" + path + ".json"))) {
+                    assertEquals(texture.toString(), JsonParser.parseReader(reader).getAsJsonObject()
+                            .getAsJsonObject("textures").get("all").getAsString());
+                }
+                try (var input = Files.newInputStream(assets.resolve("textures/" + path + ".png"));
+                     TestSprite sprite = new TestSprite(texture, NativeImage.read(input))) {
+                    List<ResourceLocation> resolved = new ArrayList<>();
+                    List<BakedQuad> original = List.of();
+                    AdaptiveRoofBakedModel model = new AdaptiveRoofBakedModel(stubModel(original), id -> {
+                        resolved.add(id);
+                        assertEquals(texture, id);
+                        return sprite.sprite();
+                    });
+                    ModelData applied = ModelData.of(AdaptiveRoofBlockEntity.BOTTOM_TEXTURE_MODEL_PROPERTY, texture);
+                    for (Direction face : AdaptiveRoofBakedModel.ACQUIRED_FACES) {
+                        List<BakedQuad> quads = model.getQuads(null, face, RandomSource.create(1), applied, null);
+                        assertEquals(1, quads.size());
+                        assertSame(sprite.sprite(), quads.getFirst().getSprite());
+                        assertEquals(texture, quads.getFirst().getSprite().contents().name());
+                        assertSame(original, model.getQuads(null, face, RandomSource.create(1), ModelData.EMPTY, null));
+                    }
+                    assertEquals(List.of(texture), resolved);
+                }
+            }
         }
     }
 
@@ -273,14 +314,17 @@ class AdaptiveRoofModelRenderingTest {
         private final TextureAtlasSprite sprite;
 
         private TestSprite() {
-            NativeImage image = new NativeImage(16, 16, true);
+            this(ResourceLocation.withDefaultNamespace("block/test"), new NativeImage(16, 16, true));
+        }
+
+        private TestSprite(ResourceLocation texture, NativeImage image) {
             contents = new SpriteContents(
-                    ResourceLocation.withDefaultNamespace("block/test"),
-                    new FrameSize(16, 16),
+                    texture,
+                    new FrameSize(image.getWidth(), image.getHeight()),
                     image,
                     ResourceMetadata.EMPTY);
             sprite = new TextureAtlasSprite(
-                    TextureAtlas.LOCATION_BLOCKS, contents, 16, 16, 0, 0) { };
+                    TextureAtlas.LOCATION_BLOCKS, contents, image.getWidth(), image.getHeight(), 0, 0) { };
         }
 
         private TextureAtlasSprite sprite() {

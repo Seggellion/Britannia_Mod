@@ -6,6 +6,9 @@ import com.seggellion.britannia_mod.block.ThinWall;
 import com.seggellion.britannia_mod.block.CarpetDummyBlock;
 import com.seggellion.britannia_mod.block.CarpetTeleporterBlock;
 import com.seggellion.britannia_mod.block.MirrorableWallBlock;
+import com.seggellion.britannia_mod.block.TopOnlySlabBlock;
+import com.seggellion.britannia_mod.block.VariantCyclable;
+import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
 import com.seggellion.britannia_mod.banner.block.BannerBlock;
 import com.seggellion.britannia_mod.banner.block.BannerPartBlock;
 import com.seggellion.britannia_mod.banner.interaction.BannerMountCycleService;
@@ -79,6 +82,26 @@ public class InteriorDecoratorToolItem extends Item {
             BannerMountCycleService.Result result = BannerMountCycleService.cycle(
                     serverLevel, serverPlayer, inHand, pos, state);
             return result.handled() ? InteractionResult.sidedSuccess(false) : InteractionResult.FAIL;
+        }
+
+        // Roofs own the whole gesture: main hand restores the original bottom clear,
+        // offhand cycles only the independent top variation. This item path also handles
+        // sneaking, which bypasses the block's useItemOn callback.
+        if (state.getBlock() instanceof TopOnlySlabBlock) {
+            if (player.isSpectator()) return InteractionResult.PASS;
+            if (ctx.getHand() == InteractionHand.OFF_HAND) {
+                return state.getBlock() instanceof VariantCyclable cyclable
+                        ? cyclable.cycleVariation(inHand, state, level, pos, player).result()
+                        : InteractionResult.sidedSuccess(level.isClientSide());
+            }
+            if (level.isClientSide()) return InteractionResult.SUCCESS;
+            if (!(level.getBlockEntity(pos) instanceof AdaptiveRoofBlockEntity roof)) {
+                return InteractionResult.PASS;
+            }
+            if (roof.getBottomTexture() != null || state.getValue(TopOnlySlabBlock.SUPPORTS_LANTERN)) {
+                roof.setBottomTexture(null);
+            }
+            return InteractionResult.CONSUME;
         }
 
         // Nudge logic: only if offhand also holds InteriorDecoratorTool

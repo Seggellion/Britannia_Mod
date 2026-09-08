@@ -176,6 +176,133 @@ worktree for review. Relevant change groups are:
 
 Pre-existing unrelated user changes listed in `PROJECT.md` were preserved.
 
+## Roof-bottom repair follow-up (2026-09-08)
+
+Worktree/repository: `C:/projects/britannia/mod/Britannia_Mod` (NeoForge 21.1.72, Minecraft
+1.21.1), branch `patch-18`, starting HEAD `9111a8ac0f1776f22d5fa2636c79fb8ac08022ed`.
+Initial status was ahead 119/behind 19, with four unrelated untracked root planning documents
+and `docs/projects/gameplay-bugfixes/`. No applicable `AGENTS.md` was found in the worktree or
+its parent directories. The existing README, build workflow, roof playbooks/handoff, and
+testing records were inspected; unrelated project work and the Fabric sibling were preserved.
+
+This follow-up supersedes the original report's unspecified-hand decorator cycling behavior.
+The owner selected **main-hand right-click to clear the bottom** and **offhand right-click to
+cycle the top**. No sneak modifier is required. Offhand use on a roof without top variations
+is a consumed no-op. The existing wooden-axe bottom clear remains available.
+
+The regression came from `5a9b7469`: it removed the decorator's original acquired-bottom clear
+mapping while adding unconditional decorator top cycling. The item itself had no roof dispatch.
+Sandstone Brick was separately absent from `TopOnlySlabBlock.getTextureFromItem` and therefore
+fell through to ordinary block-item placement.
+
+The repair dispatches every registered `TopOnlySlabBlock` through the decorator item before
+generic rotation or nudging. Main-hand use calls the existing `setBottomTexture(null)` only
+when a bottom or stale derived support flag exists. Client prediction returns success without
+writing data; the server returns `CONSUME`, including for an already-clear roof, so the gesture
+does not fall through to offhand cycling. Clearing makes no sound and consumes no durability
+or items, matching the original clear action. Offhand cycling reuses `VariantCyclable` and its
+existing sound, update flags, and six-state cycle. Its item fallback also handles sneak bypass.
+
+`AdaptiveRoofBlockEntity` remains the single storage and synchronization path. The setter marks
+the entity/chunk dirty, clears the derived `supports_lantern` flag, requests model data, and
+updates clients/neighbors. Disk data omits `BottomTexture`; update packets contain the existing
+`minecraft:block/air` clear sentinel, decoded to `null` and empty model data. The block, entity,
+slab type, waterlogging, top variation, and unrelated persistent entity data remain intact.
+These slabs have no facing, slope, corner, or connection properties. Historical stair roofs
+have those properties but do not support acquired bottoms and retain their existing behavior.
+The unregistered `AdaptiveRoofBlock` is not another live implementation path.
+
+`britannia_mod:custom_sandstone_brick` now maps to
+`britannia_mod:block/structure/sandstone/custom_sandstone_brick_0`, exactly matching its registered
+item model. Existing `custom_sandstone_brick_0..3` and `custom_sandstone_brick_top_0..3` artwork is
+unchanged. The item has no selected placed-block variation; applying it uses canonical variant
+zero, as other bottom materials use their canonical item mapping. There is no material enum,
+ordinal codec, tag, UI palette, or roof datagen path to update. Existing translation, item,
+blockstate, model, texture atlas, and terrain-model wrapping resources already supply this ID.
+
+Automated coverage adds real `ServerPlayerGameMode.useItemOn` dispatch for all eight roofs and
+all 138 combinations of slab type, waterlogging, and top variation without a bottom. It covers
+stone and sandstone application, mutation counts, repeated free clears, both tools held,
+sneak bypass, offhand cycling, spectators, non-roof cycling/rotation, no drops, entity identity,
+NBT byte serialization, dirty state, update packets, and stale observing-client model data.
+The renderer test decodes all eight existing sandstone PNGs, checks their model references,
+and bakes the requested sprites onto the five lower faces; clearing removes those faces even
+when their quads were cached. This does not substitute for real-client visual acceptance.
+
+Verification commands and results for this follow-up:
+
+```powershell
+.\gradlew.bat test --tests com.seggellion.britannia_mod.block.VariantTopOnlySlabBlockTest --tests com.seggellion.britannia_mod.block.TopOnlySlabBlockTest --tests com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntityDataTest --tests com.seggellion.britannia_mod.client.model.AdaptiveRoofModelRenderingTest --tests com.seggellion.britannia_mod.structure.interaction.InteriorDecoratorMilestoneFiveScopeTest --no-configuration-cache --console=plain
+```
+
+Before edits: `BUILD SUCCESSFUL in 1m 28s`; 23 tests, no skips/failures/errors.
+
+```powershell
+.\gradlew.bat runGameTestServer --no-configuration-cache --console=plain *> build/roof-bottom-red.log
+```
+
+After adding regression tests, before production edits: 1,176 GameTests, exactly three new
+required failures (main-hand clear, sandstone application, and offhand control), all 1,172
+existing tests and the new non-roof/spectator test passed. `BUILD FAILED in 3m 56s`. The sandstone
+case returned ordinary block-placement `CONSUME` instead of the texture handler's `SUCCESS`.
+
+```powershell
+.\gradlew.bat test --tests com.seggellion.britannia_mod.block.VariantTopOnlySlabBlockTest --tests com.seggellion.britannia_mod.block.TopOnlySlabBlockTest --tests com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntityDataTest --tests com.seggellion.britannia_mod.client.model.AdaptiveRoofModelRenderingTest --tests com.seggellion.britannia_mod.structure.interaction.InteriorDecoratorMilestoneFiveScopeTest runGameTestServer --no-configuration-cache --console=plain *> build/roof-bottom-green.log
+```
+
+After repair: `BUILD SUCCESSFUL in 3m 56s`; 25 focused JUnit/resource tests, no
+skips/failures/errors, and `All 1176 required tests passed :)` (1.716 minutes of GameTests).
+No roof datagen task/source exists; the authored resource graph is checked by JUnit and normal
+resource processing.
+
+```powershell
+.\gradlew.bat build --no-configuration-cache --console=plain *> build/roof-bottom-build.log
+```
+
+Complete build gate: `BUILD SUCCESSFUL in 2m 19s`; 488 JUnit suites, 3,916 tests,
+3,893 passed, 23 skipped, zero failures/errors. `jar` and `jarJar` both ran. ZIP inspection
+confirmed both built JARs contain the canonical sandstone-brick model/PNG and exclude all
+GameTest classes. `git diff --check` passed. Generated outputs/JARs/logs are ignored and are
+not included in the fix commit. No unexplained or order-dependent test failures occurred.
+
+Two initial attempts at `test --tests '*Roof*' --tests '*TopOnlySlab*' --tests '*InteriorDecorator*'
+with the same wrapper and `--no-configuration-cache --console=plain` stopped before tests:
+the sandbox denied Gradle's network/cache access, then Windows expanded a wildcard into the
+roof playbook filename. Explicit fully qualified test names and approved Gradle access resolved
+those execution issues. Existing compiler deprecation warnings and GameTest background
+backend/authentication warnings appeared in both red and green runs; they did not fail tests.
+
+Manual acceptance (pending a real client and observing client):
+
+1. Obtain materials with `/give @s britannia_mod:interior_decorator_tool`,
+   `/give @s britannia_mod:tile_roof_flat`, `/give @s minecraft:stone 8`, and
+   `/give @s britannia_mod:custom_sandstone_brick 8`.
+2. Place the tile roof and record its position, top-half shape, and dry/waterlogged state using
+   F3. Right-click it with stone in the main hand; its lower half should acquire stone.
+3. Hold the decorator in the main hand and right-click once. The lower half must disappear
+   immediately for both clients, leaving the roof intact and its top unchanged. Click again:
+   there must be no rotation, top cycle, drop, tool break, or inventory charge.
+4. Repeat application/clear with Sandstone Brick. Before clearing, inspect the underside and
+   lower side faces for the existing sandstone-brick art, with no missing or unrelated texture.
+   An operator can confirm the applied identifier with `/data get block X Y Z BottomTexture`;
+   after clearing that key should be absent.
+5. Repeat dry and waterlogged placements with `/give @s britannia_mod:cedar_roof_flat`,
+   `thatch_roof_flat`, `slate_roof_1_flat`, `slate_roof_2_flat`, `slate_roof_flat`,
+   `sandstone_roof`, and `limestone_roof` (use the `britannia_mod:` prefix for each).
+   The last three have independent top variations. Empty the main hand, put the decorator in
+   the offhand (default swap key F), and right-click six times: the top must cycle and wrap,
+   while its applied bottom remains unchanged. Swap back to the main hand to clear the bottom.
+6. Repeat once while sneaking to check the item fallback. Save both an applied specimen and a
+   cleared specimen, leave beyond server view/simulation distance with no player or chunk
+   ticket keeping them loaded, and return. Verify both states and their top/waterlogged values.
+7. Relog both clients, then cleanly stop/restart the test server. Recheck the applied identifier,
+   absent cleared key, geometry, and appearance. Repeat the visual check with the usual shader
+   setup; a second observing client must see application and removal without a resource reload.
+
+Only the NeoForge worktree was changed. The Fabric sibling at
+`C:/projects/atrevion/Britannia_Mod` was inspected read-only and contains no corresponding
+adaptive-roof implementation; adding that feature remains separate loader-parity work.
+
 ## Release recommendation
 
 Technical implementation: **GO**. The final M10 command completed green.
