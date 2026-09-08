@@ -70,7 +70,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.sounds.SoundEvents;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
@@ -418,43 +417,16 @@ private static void showQuietObjectiveNotice(Minecraft mc, QuestModels.QuestResp
             line.copy().withStyle(UO_STYLE)));
 }
 
+/**
+ * Rowan farming questline M10: the rendering moved to
+ * {@link com.seggellion.britannia_mod.client.quest.QuestClientActions}, so the turn-in path --
+ * which comes back through {@code QuestClient}, not through this payload -- shows the same
+ * achievement toast and plays the same sound as an objective result. Whether an achievement is
+ * announced at all is the server's decision, already made and applied to this response.
+ */
 private static void handleQuestClientActions(QuestModels.QuestResponse response, long questId, String triggerKey) {
-    Minecraft mc = Minecraft.getInstance();
-    if (response.client_actions == null || response.client_actions.isEmpty()) {
-        return;
-    }
-
-    for (QuestModels.ClientAction action : response.client_actions) {
-        String actionType = action.type != null && !action.type.isBlank() ? action.type : action.action;
-        if ("achievement".equals(actionType)) {
-            mc.getToasts().addToast(
-                    SystemToast.multiline(
-                            mc,
-                            SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
-                            uoMessage("Achievement Unlocked!").withStyle(UO_STYLE.withColor(TextColor.fromRgb(0xFFAA00))),
-                            uoMessage(action.name != null ? action.name : "Quest Completed")
-                    )
-            );
-            if (mc.player != null) {
-                mc.player.playSound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0F, 1.0F);
-            }
-        } else if ("stat_gain".equals(actionType)) {
-            if (mc.player != null) {
-                if (action.karma > 0 && action.fame > 0) {
-                    mc.player.sendSystemMessage(uoMessage("+" + action.karma + " Karma, +" + action.fame + " Fame"));
-                } else if (action.karma > 0) {
-                    mc.player.sendSystemMessage(uoMessage("+" + action.karma + " Karma"));
-                } else if (action.fame > 0) {
-                    mc.player.sendSystemMessage(uoMessage("+" + action.fame + " Fame"));
-                }
-            }
-        } else if ("spawn_escort".equals(actionType)) {
-            // Server-triggered environmental results do not spawn client-side escorts.
-        } else {
-            LOGGER.warn("Quest client action unknown quest_id={} trigger_key={} type={} action={} name={}",
-                    questId, triggerKey, action.type, action.action, action.name);
-        }
-    }
+    com.seggellion.britannia_mod.client.quest.QuestClientActions.present(
+            response.client_actions, questId, triggerKey);
 }
 
 private static MutableComponent uoMessage(String text) {

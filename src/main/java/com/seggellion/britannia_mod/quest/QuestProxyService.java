@@ -12,6 +12,7 @@ import com.seggellion.britannia_mod.network.QuestPayloadHandler;
 import com.seggellion.britannia_mod.network.payload.ClientboundSyncQuestsPayload;
 import com.seggellion.britannia_mod.network.payload.QuestActionC2SPayload;
 import com.seggellion.britannia_mod.network.payload.QuestActionResultS2CPayload;
+import com.seggellion.britannia_mod.quest.achievement.QuestAchievementAward;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
 import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
 import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
@@ -160,10 +161,10 @@ public final class QuestProxyService {
                             "{\"success\":false,\"error\":\"quest_service_unavailable\"}");
                         return;
                     }
-                    applyAuthoritativeResult(player, request, intent, result);
+                    String body = applyAuthoritativeResult(player, request, intent, result);
                     QuestActionTelemetry.result(player, request, result.statusCode,
                         succeeded(result), grantedItemCount(result));
-                    send(player, request.requestId(), result.statusCode, result.body);
+                    send(player, request.requestId(), result.statusCode, body);
                 }));
         } catch (RejectedExecutionException rejected) {
             QuestActionTelemetry.rejected(player, request, QuestActionTelemetry.Stage.DISPATCH,
@@ -286,14 +287,24 @@ public final class QuestProxyService {
         }
     }
 
-    private static void applyAuthoritativeResult(ServerPlayer player, QuestActionC2SPayload request,
-                                                 ResolvedIntent intent, Result result) {
+    /**
+     * The mod-side authoritative boundary for a quest action: Rails has committed the node advance,
+     * the reward delivery and (M10) the website achievement in one transaction under the journal
+     * row lock, and this applies that decision to the game.
+     *
+     * <p>Returns the body to forward to the client -- {@code result.body} unchanged in every case
+     * but one: an achievement whose advancement this player had already earned is removed, so a
+     * replayed answer does not raise the toast a second time (M10; see
+     * {@link QuestAchievementAward}).
+     */
+    private static String applyAuthoritativeResult(ServerPlayer player, QuestActionC2SPayload request,
+                                                   ResolvedIntent intent, Result result) {
         if (result.statusCode < 200 || result.statusCode >= 300) {
             LOGGER.warn("event=quest_journal_not_updated request_uuid={} action={} player_uuid={} "
                     + "quest_id={} reason=rails_rejected rails_status={}",
                 request.requestUuid(), request.action(), player.getStringUUID(), request.questId(),
                 result.statusCode);
-            return;
+            return result.body;
         }
         try {
             JsonObject root = JsonParser.parseString(result.body).getAsJsonObject();
@@ -302,7 +313,7 @@ public final class QuestProxyService {
                         + "quest_id={} reason=rails_reported_failure rails_error={}",
                     request.requestUuid(), request.action(), player.getStringUUID(), request.questId(),
                     string(root, "error"));
-                return;
+                return result.body;
             }
 
             List<ClientQuestEntry> accepted = QuestEntryParser.parseRailsAcceptSuccess(root, intent.questGiverName());
@@ -344,12 +355,20 @@ public final class QuestProxyService {
                 com.seggellion.britannia_mod.quest.equipment.QuestEquipmentReissueService
                         .offerRecovery(player);
             }
+
+            // M10 item 3. The persistent advancement is granted HERE, beside the delivery and from
+            // the same committed Rails answer -- never on a client signal -- and the announcement
+            // the client is given is filtered by whether it was actually new to this player.
+            JsonObject forwarded = QuestAchievementAward.grantAndFilter(player, root,
+                request.requestUuid(), "turn_in");
+            return forwarded == root ? result.body : GSON.toJson(forwarded);
         } catch (RuntimeException invalid) {
             LOGGER.warn("event=quest_journal_not_updated request_uuid={} action={} player_uuid={} "
                     + "quest_id={} reason=unreadable_response detail={}",
                 request.requestUuid(), request.action(), player.getStringUUID(), request.questId(),
                 invalid.toString());
         }
+        return result.body;
     }
 
     /** Callers must have validated the shape first; {@code handle} does. */

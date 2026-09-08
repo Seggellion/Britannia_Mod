@@ -1769,5 +1769,12 @@
   "message.britannia_mod.quest.equipment.already_carried": "You are carrying that already.",
   "message.britannia_mod.quest.equipment.limit_reached": "Rowan has no more of those to spare.",
   "message.britannia_mod.quest.equipment.storage_caveat": "Rowan can only see what you carry. Anything left in a chest or the bank does not count.",
-  "message.britannia_mod.quest.equipment.unavailable": "Rowan cannot reach his stores just now. Try again in a moment."
+  "message.britannia_mod.quest.equipment.unavailable": "Rowan cannot reach his stores just now. Try again in a moment.",
+  "message.britannia_mod.quest.achievement.title": "Achievement Unlocked!",
+  "message.britannia_mod.quest.achievement.unnamed": "Quest completed",
+  "message.britannia_mod.quest.stat.karma": "+%s Karma",
+  "message.britannia_mod.quest.stat.fame": "+%s Fame",
+  "message.britannia_mod.quest.stat.karma_and_fame": "+%1$s Karma, +%2$s Fame",
+  "advancements.britannia_mod.quest.first_harvest.title": "First Harvest",
+  "advancements.britannia_mod.quest.first_harvest.description": "Finish Rowan's apprenticeship: work a public plot from bare grass and pull your own crop out of it."
 }

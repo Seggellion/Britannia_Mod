@@ -174,6 +174,20 @@ public final class QuestScreenText {
     public static final String EQUIPMENT_UNAVAILABLE = MESSAGE + "equipment.unavailable";
 
     /**
+     * M10: the challenge-style achievement toast an authoritative completion raises. The
+     * achievement is NAMED by its advancement title (see {@code QuestAchievementAward.display}),
+     * so the toast and the advancements screen call the same milestone the same thing; this is
+     * only the banner over it, and the placeholder for an achievement nothing has named at all.
+     */
+    public static final String ACHIEVEMENT_TOAST_TITLE = MESSAGE + "achievement.title";
+    public static final String ACHIEVEMENT_UNNAMED = MESSAGE + "achievement.unnamed";
+
+    /** M10: the karma and fame a completion paid, moved out of hardcoded English. */
+    public static final String STAT_KARMA = MESSAGE + "stat.karma";
+    public static final String STAT_FAME = MESSAGE + "stat.fame";
+    public static final String STAT_KARMA_AND_FAME = MESSAGE + "stat.karma_and_fame";
+
+    /**
      * Every key above. The localization test walks this, so a key added to the class without a
      * line in {@code en_us.json} fails the build rather than reaching a player as its own name.
      */
@@ -197,7 +211,9 @@ public final class QuestScreenText {
             WATER_STATE_DRY, WATER_STATE_OK, WATER_STATE_IDEAL, WATER_STATE_OVER,
             WATER_FULL, WATER_CAN_EMPTY,
             EQUIPMENT_REISSUED, EQUIPMENT_ALREADY_CARRIED, EQUIPMENT_LIMIT_REACHED,
-            EQUIPMENT_STORAGE_CAVEAT, EQUIPMENT_UNAVAILABLE
+            EQUIPMENT_STORAGE_CAVEAT, EQUIPMENT_UNAVAILABLE,
+            ACHIEVEMENT_TOAST_TITLE, ACHIEVEMENT_UNNAMED,
+            STAT_KARMA, STAT_FAME, STAT_KARMA_AND_FAME
     );
 
     /** The heading key for one reward section. */

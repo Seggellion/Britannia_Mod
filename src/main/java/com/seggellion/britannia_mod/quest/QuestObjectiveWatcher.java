@@ -1,11 +1,13 @@
 package com.seggellion.britannia_mod.quest;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.network.payload.QuestTriggerResultS2CPayload;
 import com.seggellion.britannia_mod.quest.action.QuestAction;
 import com.seggellion.britannia_mod.quest.action.QuestActionDispatcher;
 import com.seggellion.britannia_mod.quest.action.QuestActionSubject;
+import com.seggellion.britannia_mod.quest.achievement.QuestAchievementAward;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
 import com.seggellion.britannia_mod.quest.network.QuestServerAPI;
 import net.minecraft.core.BlockPos;
@@ -177,8 +179,15 @@ public final class QuestObjectiveWatcher {
             ServerQuestTable.updateTriggers(player, questStateId, updated);
         }
 
+        // M10 item 3. The legacy observer is the third and last path an authoritative answer can
+        // reach the game by (it serves a Rails without /api/v2/quest_action_events). An
+        // achievement announced here gets the same advancement, and the same suppression when the
+        // player already has it, as one announced by a turn-in or an action event.
+        JsonObject forwarded = QuestAchievementAward.grantAndFilter(
+            player, GSON.toJsonTree(response).getAsJsonObject(), "", "objective_watcher");
+
         PacketDistributor.sendToPlayer(player,
-            new QuestTriggerResultS2CPayload(GSON.toJson(response), questId, triggerKey));
+            new QuestTriggerResultS2CPayload(GSON.toJson(forwarded), questId, triggerKey));
 
         LOGGER.info("event=quest_objective_applied player_uuid={} quest_id={} quest_state_id={} "
                 + "trigger_key={} completed={}",

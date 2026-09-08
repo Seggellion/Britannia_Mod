@@ -28,8 +28,8 @@ were not switched, stashed, reset, or modified.
 | M6 Rowan archetype | **PASSED** | `6b783003` | — | 2026-09-07 |
 | M7 Rails content, seed, admin | **PASSED** | — | `abea5ff` | 2026-09-07 |
 | M8 Dialogue and journal UX | **PASSED** | `75bdb1c5` | — | 2026-09-07 |
-| M9 Timing, skill, recovery | **PASSED** | (this commit) | `39d14b3` | 2026-09-08 |
-| M10 Achievement and advancement | not started | | | |
+| M9 Timing, skill, recovery | **PASSED** | `6fe3f1e9` | `39d14b3` | 2026-09-08 |
+| M10 Achievement and advancement | **PASSED** | (this commit) | `0aed9dd` | 2026-09-08 |
 | M11 Hardening and automated acceptance | not started | | | |
 | M12 Live acceptance and release handoff | not started | | | |
 
@@ -1139,7 +1139,7 @@ findable pile in populated terrain, since caps and substrate rules may still ref
 reissue round trip over signed HTTP with real credentials; and whether 600 and 300 seconds are the
 right *feel* rather than merely the right *numbers*.
 
-### Next action
+### Next action (at M9 close)
 
 M10 — the First Harvest achievement, its in-game toast and the persistent advancement, all
 idempotent under replay and repeated claims.
@@ -1162,3 +1162,103 @@ Conclusion: order- and state-dependent, pre-existing in kind, not caused by M9. 
 the base commit was attempted in a detached worktree and produced an unrelated missing-asset error,
 so that probe proved nothing and is not counted as evidence either way. M11 investigates the whole
 family properly.
+## M10 — Achievement and completion experience (PASSED 2026-09-08, both repositories)
+
+### Two real defects closed, not just new work
+
+* **The website achievement was granted outside the effects transaction.** It ran after
+  `EffectApplier`'s own transaction had closed, so a caller without an outer transaction could pay a
+  player their items and record no achievement. It now runs inside the same transaction as the
+  items, the flags, the node advance and the reward delivery, under the journal-row lock: all of it
+  commits together or none of it does.
+* **The final claim's announcement had nothing rendering it.** A turn-in response returns on a
+  different payload than an objective result, so quest 5's achievement announcement reached the
+  client and was dropped. Now presented through the same shared renderer as every other client
+  action.
+
+### Changes
+
+**NeoForge.** `data/britannia_mod/advancement/quest/first_harvest.json` in the established shape of
+the existing challenge advancement, with its title and description as translation keys rather than
+literals. `quest/achievement/QuestAchievementAward` reads the achievement client actions out of an
+authoritative Rails body, grants `britannia_mod:quest/<key>`, and returns the body to forward with
+already-earned announcements removed — so a replayed response cannot toast twice. It is called at
+the same server-side boundary that already applies the reward delivery, on all three authoritative
+paths (turn-in, action event, and the legacy observer fallback), and **never on a client signal**.
+`client/quest/QuestClientActions` becomes the single rendering of every client-action type.
+
+**Rails.** The achievement grant moved inside the effects transaction and gained a stable `key`
+alongside its display name, additively, so the mod resolves the advancement by key rather than by
+parsing a title. Quest 5's closing dialogue was rewritten to acknowledge the harvest and settle what
+the player keeps.
+
+### Idempotency
+
+The per-player advancement record is the token that makes the toast idempotent, because Rails
+legitimately replays a stored response including its client actions, so nothing on the Rails side
+could suppress the repeat. All four cases are proven, each against all three results:
+
+| | Rails achievement | client toast | advancement |
+| --- | --- | --- | --- |
+| Same request replayed | stored replay returns before the grant runs | announcement filtered out | already earned |
+| Fresh request, transition already made | refused | no client actions at all | nothing granted |
+| Repeated claim click | as above | as above | as above |
+| Duplicate action event | duplicate answer returns before any effect | announcement filtered out | already earned |
+
+### Attribution and policy
+
+Wrong player, wrong shard and unresolved identity all fail before anything is awarded, on both the
+turn-in and action-event paths. A harvest that fails the planter check is rejected with no
+achievement for anybody, no delivery and no node advance. The advancement is per player, so one
+player's completion neither grants nor silences another's. `require_planter` and the crop-cycle
+checks are untouched.
+
+### Tests and gates
+
+| Run | Result |
+| --- | --- |
+| Mod full JUnit (integrator) | 3863 tests, 0 failures, 0 errors, 23 skipped (485 suites; baseline 3841) |
+| Mod GameTests (integrator) | 1160 required tests passed, 0 failed, no "Failed to start" (baseline 1154, +6) |
+| Rails quest selection (integrator, fresh database) | 838 runs, 4661 assertions, 0 failures |
+| Rails full suite | 3517 runs (3502 baseline + exactly the 15 new), 54113 assertions, 13 failures, 1 error, 1 skip — every name in the known order-dependent set |
+| Rails admin control (fresh database) | all four admin classes together: 51 runs, 208 assertions, 0 failures |
+| Frozen fixtures | both manifests verify 12 of 12 unchanged in the mod and its Rails mirror |
+| `git diff --check` | clean in both repositories |
+
+The closing dialogue was safe to rewrite because the frozen fixtures pin the *working* and *done*
+nodes of quest 5, not its ending, and the transition fixture pins an empty client-action list, so
+nothing constrained the achievement action's shape either. That was checked before authoring.
+
+### One regression the agent caused and caught
+
+Adding the stable `key` broke an M9 test that compared the achievement client action by exact hash.
+Fixed by naming the new field in that assertion, and the name did not recur. Recorded because it
+appeared as a new failure name in a full run and was **not** waved through as pre-existing.
+
+### Owner decisions, recorded rather than made
+
+* **Completing the questline announces shard-wide.** That matches the existing challenge
+  achievement's behaviour, but it is a policy choice worth confirming before launch.
+* **Players who finish quest 5 before this ships** will hold the website achievement without the
+  in-game advancement, and there is no authoritative response left to grant one retroactively. A
+  backfill would be a separate deliberate task.
+* An achievement with no advancement resource keeps its announcement rather than silently losing
+  it, since there is no token to decide with. Logged by name.
+
+### Deliberate deviations
+
+The advancement suppresses its own vanilla toast, because the challenge frame plays the toast and
+its sound itself and leaving both on would show two toasts and play the sound twice in one tick.
+Chat announcement is kept.
+
+### Not covered by tests
+
+The turn-in boundary needs a live Rails and is not driven end to end; it is covered by tests on the
+grant-and-filter function itself plus a source-level assertion that all three server paths call it
+and no client path does. The action-event boundary **is** driven end to end. The toast and its sound
+have no automated coverage and never had — only a live client shows them.
+
+### Next action
+
+M11 — cross-repository hardening and automated acceptance, including a proper investigation of the
+pre-existing Rails failure family rather than a restatement of its label.

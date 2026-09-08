@@ -10,6 +10,7 @@ import com.seggellion.britannia_mod.quest.QuestJournalRefresh;
 import com.seggellion.britannia_mod.quest.QuestObjectiveTriggers;
 import com.seggellion.britannia_mod.quest.QuestRewardService;
 import com.seggellion.britannia_mod.quest.ServerQuestTable;
+import com.seggellion.britannia_mod.quest.achievement.QuestAchievementAward;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
@@ -275,8 +276,14 @@ public final class QuestActionDispatcher {
                 advanced == null ? null : advanced.detail());
         }
 
+        // M10 item 3, the second authoritative boundary. `duplicate` reaches this method with the
+        // stored answer of the event that was already applied -- client actions and all -- so the
+        // advancement is what decides whether the achievement is announced again: it never is.
+        JsonObject forwarded = QuestAchievementAward.grantAndFilter(player, root,
+            requestUuid.toString(), "action_event");
+
         PacketDistributor.sendToPlayer(player,
-            new QuestTriggerResultS2CPayload(GSON.toJson(root), parsed.quest_id, entry.triggerKey()));
+            new QuestTriggerResultS2CPayload(GSON.toJson(forwarded), parsed.quest_id, entry.triggerKey()));
     }
 
     /**

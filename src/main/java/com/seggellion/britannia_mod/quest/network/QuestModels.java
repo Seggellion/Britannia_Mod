@@ -60,6 +60,15 @@ public static class ClientAction {
         public String entity_type;
         public int karma;
         public int fame;
+
+        /**
+         * Rowan farming questline M10: the achievement slug behind an {@code achievement} action,
+         * as Rails granted it -- {@code first_harvest}, not the titleized {@code name}. It names
+         * the {@code britannia_mod:quest/&lt;key&gt;} advancement the same completion grants, and the
+         * lang key that titles it. Absent from an older Rails, in which case the key is recovered
+         * from {@code name} (see {@code QuestAchievementAward.keyOf}).
+         */
+        public String key;
     }
 
 public static class ItemData {

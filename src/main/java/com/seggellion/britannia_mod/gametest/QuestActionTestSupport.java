@@ -45,6 +45,11 @@ final class QuestActionTestSupport {
         IRRELEVANT,
         /** {@code 200 applied} with the stage-5 journal entry, so the state-install path runs. */
         APPLIED,
+        /**
+         * {@code 200 applied} carrying the {@code first_harvest} achievement client action -- what
+         * Rails answers when the advance it made ran a {@code grant_achievement} effect (M10).
+         */
+        APPLIED_WITH_ACHIEVEMENT,
         /** A retryable transport failure: the outage the outbox exists for. */
         OUTAGE,
         /** A 404 with no contract code: an older Rails without the route at all. */
@@ -110,6 +115,8 @@ final class QuestActionTestSupport {
             return CompletableFuture.completedFuture(switch (answer) {
                 case IRRELEVANT -> answered(irrelevant(request.get("event_uuid").getAsString()));
                 case APPLIED -> answered(applied(request.get("event_uuid").getAsString()));
+                case APPLIED_WITH_ACHIEVEMENT -> answered(appliedWithAchievement(
+                    request.get("event_uuid").getAsString()));
                 case OUTAGE -> new QuestActionEventClient.Failure("service_unavailable");
                 case ENDPOINT_MISSING -> new QuestActionEventClient.EndpointUnsupported();
             });
@@ -135,7 +142,22 @@ final class QuestActionTestSupport {
                 + " \"quest_key\": \"rowan_farming_5\", \"name\": \"From Soil to Supper\","
                 + " \"quest_giver_name\": \"Rowan\", \"status\": \"accepted\", \"triggers\": {}}}";
         }
+
+        /**
+         * {@link #applied} with the achievement announcement Rails adds for grant_achievement.
+         * The base body carries no {@code client_actions} at all, so this splices one in beside
+         * the (empty) grant rather than replacing an existing array.
+         */
+        private static String appliedWithAchievement(String eventUuid) {
+            return applied(eventUuid).replace("\"granted_items\": []",
+                "\"granted_items\": [], " + ACHIEVEMENT_CLIENT_ACTIONS);
+        }
     }
+
+    /** The exact shape QuestEngine::EffectApplier pushes for {@code grant_achievement}. */
+    static final String ACHIEVEMENT_CLIENT_ACTIONS =
+        "\"client_actions\": [{\"type\": \"achievement\", \"key\": \"first_harvest\","
+            + " \"name\": \"First Harvest\", \"sound\": \"ui.toast.challenge_complete\"}]";
 
     /** Installs the recorder and returns it. Always restore with {@link #uninstall}. */
     static RecordingRails install(MinecraftServer server, Answer answer) {

@@ -237,13 +237,26 @@ class QuestNodePresentationTest {
     void theExposureIsStillReal() {
         // A guard on the correction: if somebody hardens the payloads, these docs stop being true
         // in the other direction and this test says so rather than leaving stale prose behind.
+        //
+        // M10 renamed the argument on both paths from the body itself to `forwarded`, which is that
+        // same body with ONE thing possibly removed: an achievement announcement this player had
+        // already earned. Everything the corrected javadocs are about -- accepted_quest.triggers,
+        // the resolved bound values, node.metadata -- still ships whole, so both halves are
+        // asserted: the payload is still built from a whole body, and the only subtraction is the
+        // announcement filter.
         String dispatcher = read(JavaSource.MOD.resolve("quest/action/QuestActionDispatcher.java"));
-        assertTrue(dispatcher.contains("new QuestTriggerResultS2CPayload(GSON.toJson(root)"),
+        assertTrue(dispatcher.contains("new QuestTriggerResultS2CPayload(GSON.toJson(forwarded)"),
                 "the dispatcher no longer ships the raw body; the corrected javadocs are now stale");
+        assertTrue(dispatcher.contains("QuestAchievementAward.grantAndFilter(player, root,"),
+                "`forwarded` is no longer the raw Rails body minus only the achievement "
+                        + "announcement; the corrected javadocs may now be stale");
 
         String watcher = read(JavaSource.MOD.resolve("quest/QuestObjectiveWatcher.java"));
-        assertTrue(watcher.contains("new QuestTriggerResultS2CPayload(GSON.toJson(response)"),
+        assertTrue(watcher.contains("new QuestTriggerResultS2CPayload(GSON.toJson(forwarded)"),
                 "the watcher no longer ships the parsed response; the corrected javadocs are stale");
+        assertTrue(watcher.contains("GSON.toJsonTree(response).getAsJsonObject()"),
+                "`forwarded` is no longer the whole parsed response minus only the achievement "
+                        + "announcement; the corrected javadocs may now be stale");
     }
 
     private static final java.nio.file.Path CODECS =
