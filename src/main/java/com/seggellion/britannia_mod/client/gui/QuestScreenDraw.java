@@ -76,7 +76,7 @@ public final class QuestScreenDraw {
      * {@code font.lineHeight} directly would reserve two thirds of the room it needs, and the last
      * line of every node would be cut in half.
      */
-    public static final float TEXT_SCALE = 1.5f;
+    public static final float TEXT_SCALE = 1.25f;
 
     /** The line height a layout must reserve per line of dialogue text. */
     public static int lineHeight(Font font) {
@@ -97,7 +97,7 @@ public final class QuestScreenDraw {
      * One line of text at {@link #TEXT_SCALE}.
      *
      * <p>Translates first and scales second, so glyphs land exactly on {@code (x, y)} rather than on
-     * a rounded {@code (x / 1.5, y / 1.5)}, which would drift by up to a pixel per call and read as
+     * a rounded {@code (x / 1.25, y / 1.25)}, which would drift by up to a pixel per call and read as
      * a ragged left edge down a wrapped paragraph.
      */
     private static void drawScaled(GuiGraphics graphics, Font font, Component component,

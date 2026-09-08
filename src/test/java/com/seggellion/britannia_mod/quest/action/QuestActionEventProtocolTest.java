@@ -47,13 +47,31 @@ class QuestActionEventProtocolTest {
     }
 
     @Test
-    void aTargetWithoutANodeIdOmitsTheFieldRatherThanNamingANodeTheModIsUnsureOf() {
+    void aTargetWithoutANodeIdIsNotSentAtAllRatherThanSentInPieces() {
+        // This test used to assert the opposite, and that is how the defect shipped: it pinned a
+        // target carrying quest_state_id and trigger_key but no node_id as correct. Rails refuses
+        // exactly that shape with 400 invalid_action_event on target.node_id, so in a live game
+        // every objective the questline raised was rejected at the door and nothing ever advanced.
+        // Verified against a running Rails: partial target 400, no target 200 "applied".
         String body = new String(QuestActionEventProtocol.encode(event(
             QuestActionEvent.Target.of("9005", "crop_harvested")), UUID.randomUUID()), StandardCharsets.UTF_8);
 
-        assertTrue(body.contains("\"target\": {\"quest_state_id\": \"9005\", \"trigger_key\": \"crop_harvested\"}"),
-            () -> "an unknown node id must leave the field out entirely, got:\n" + body);
+        assertFalse(body.contains("\"target\""),
+            () -> "an unknown node id must drop the whole target, not part of it, got:" + body);
         assertFalse(body.contains("node_id"), "an unknown node id must never be published as a number");
+        assertTrue(body.endsWith("  }\n}\n"),
+            () -> "dropping the target must still close the subject cleanly, got:" + body);
+    }
+
+    @Test
+    void aTargetWithANodeIdIsSentWithAllThreeFields() {
+        String body = new String(QuestActionEventProtocol.encode(event(
+            new QuestActionEvent.Target("9005", 1305L, "crop_harvested")), UUID.randomUUID()),
+            StandardCharsets.UTF_8);
+
+        assertTrue(body.contains("\"quest_state_id\""), "a sent target names its state");
+        assertTrue(body.contains("\"node_id\": 1305"), "a sent target must carry the node id Rails requires");
+        assertTrue(body.contains("\"trigger_key\""), "a sent target names the trigger it matched");
     }
 
     @Test

@@ -39,11 +39,17 @@ public record QuestActionEvent(
     /**
      * What the mod matched locally (section 2.3). Rails uses it only to answer {@code stale}.
      *
-     * <p>{@code nodeId} is optional and is {@code 0} whenever the server does not know it. The
-     * journal entry the watcher subscribes from carries no node id, so in production this is the
-     * normal case: naming a node the mod is not sure of would invite a {@code stale} answer that
-     * discards a legitimate event, while omitting it makes Rails evaluate against its own current
-     * node -- strictly the safer half of the same contract.
+     * <p>{@code nodeId} is {@code 0} whenever the server does not know it, which in production is
+     * the normal case: the journal entry the watcher subscribes from carries no node id.
+     *
+     * <p>What follows from that is stricter than it once said here. Rails treats {@code target} as
+     * optional, but a target that is present must carry {@code node_id} -- it is the key the
+     * staleness check compares against -- and a partial one is refused outright with 400
+     * {@code invalid_action_event}. So an unknown node id means the serializer omits the target
+     * object entirely rather than sending two of its three fields. Rails then evaluates the event
+     * against its own current node, which is the safer half of the contract this comment always
+     * meant to describe; the earlier wording claimed dropping the field alone achieved that, and
+     * it did not -- it rejected every objective the questline raised.
      */
     public record Target(String questStateId, long nodeId, String triggerKey) {
         public Target {

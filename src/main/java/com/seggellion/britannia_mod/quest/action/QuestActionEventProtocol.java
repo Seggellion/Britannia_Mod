@@ -113,12 +113,16 @@ public final class QuestActionEventProtocol {
         body.append("  \"position\": {\"x\": ").append(event.x())
             .append(", \"y\": ").append(event.y())
             .append(", \"z\": ").append(event.z()).append("},\n");
-        appendSubject(body, event.subject(), event.target() != null);
-        if (event.target() != null) {
+        // A target is sent whole or not at all. Rails treats target as optional -- protocol
+        // section 2.3 -- but a target that IS present must carry node_id, and Rails rejects the
+        // whole event with 400 invalid_action_event when it does not. Emitting the two fields the
+        // server knows and dropping the third produced exactly that: every objective in the
+        // questline was refused at the door, and the player saw a gesture that did nothing.
+        boolean sendTarget = event.target() != null && event.target().hasNodeId();
+        appendSubject(body, event.subject(), sendTarget);
+        if (sendTarget) {
             body.append("  \"target\": {\"quest_state_id\": \"").append(event.target().questStateId()).append("\"");
-            if (event.target().hasNodeId()) {
-                body.append(", \"node_id\": ").append(event.target().nodeId());
-            }
+            body.append(", \"node_id\": ").append(event.target().nodeId());
             body.append(", \"trigger_key\": \"").append(event.target().triggerKey()).append("\"}\n");
         }
         body.append("}\n");
