@@ -1,6 +1,9 @@
 package com.seggellion.britannia_mod.bowlpreparation;
 
+import com.seggellion.britannia_mod.client.gui.QuestScreenText;
 import com.seggellion.britannia_mod.util.WaterSourceInteraction;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import java.util.Optional;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.server.level.ServerLevel;
@@ -40,6 +43,20 @@ public final class BowlPreparationItem extends Item {
                             player.getItemInHand(hand), level.isClientSide());
                 }
             }
+            // M8 item 8: a bowl aimed at water that is not a source filled nothing and said
+            // nothing, which reads as a broken bowl rather than as flowing water. Message only --
+            // the SOURCE_ONLY clip above still decides, and the fall-through below is unchanged.
+            if (!level.isClientSide) {
+                BlockHitResult anyWater = getPlayerPOVHitResult(level, player, ClipContext.Fluid.ANY);
+                if (anyWater.getType() == HitResult.Type.BLOCK) {
+                    var anyFluid = level.getFluidState(anyWater.getBlockPos());
+                    if (anyFluid.is(FluidTags.WATER) && !anyFluid.isSource()) {
+                        player.displayClientMessage(
+                                Component.translatable(QuestScreenText.WATER_FLOWING)
+                                        .withStyle(ChatFormatting.YELLOW), true);
+                    }
+                }
+            }
         }
 
         if (hand != InteractionHand.MAIN_HAND) {
@@ -49,6 +66,12 @@ public final class BowlPreparationItem extends Item {
         Optional<BowlPreparationPlan> candidate =
                 BowlPreparationService.plan(held, player.getOffhandItem());
         if (candidate.isEmpty()) {
+            // M8 item 8: name the failure instead of passing in silence. The return value is
+            // unchanged, so what does and does not count as a preparation is untouched.
+            if (!level.isClientSide) {
+                BowlMixingMessages.send(player, held,
+                        BowlPreparationService.diagnose(held, player.getOffhandItem()));
+            }
             return InteractionResultHolder.pass(held);
         }
         if (level.isClientSide()) {

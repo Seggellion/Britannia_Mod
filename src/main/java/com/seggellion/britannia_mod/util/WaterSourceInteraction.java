@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.util;
 
 import com.seggellion.britannia_mod.ModSounds;
+import com.seggellion.britannia_mod.client.gui.QuestScreenText;
 import com.seggellion.britannia_mod.block.WaterWellBlock;
 import com.seggellion.britannia_mod.bowlpreparation.BowlWaterFillingPlan;
 import com.seggellion.britannia_mod.bowlpreparation.BowlWaterFillingService;
@@ -10,7 +11,9 @@ import com.seggellion.britannia_mod.quest.action.QuestAction;
 import com.seggellion.britannia_mod.quest.action.QuestActionEvents;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import java.util.Optional;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -44,6 +47,22 @@ public final class WaterSourceInteraction {
         }
         if (WaterSourceAccessPolicy.evaluate(level, pos, player)
                 != WaterSourceAccessPolicy.Decision.ALLOWED) {
+            // Rowan farming questline M8 item 8. This refusal returned success-with-nothing and
+            // said nothing at all, so a protected pond and a broken container looked identical.
+            // Message only: the policy still decides and the return value is unchanged.
+            //
+            // One reason, one message. WaterSourceAccessPolicy is level.mayInteract and nothing
+            // else -- a single DENIED_WORLD with no notion of buckets or wells -- so a message
+            // that named a reason was inventing it from the item in hand, and inventing it wrong
+            // both ways round: a bucket refused by spawn protection was told it "only fills at the
+            // Water Well" when a well inside the same protection refuses too and outside it a
+            // bucket fills anywhere, and a player refused standing on a Water Well was told to use
+            // the public Water Well. The Adventure-mode rule that really does confine a bucket to
+            // the well is vanilla's, enforced in BucketItem's own use-permission check, and is not
+            // this refusal.
+            player.displayClientMessage(
+                    Component.translatable(QuestScreenText.WATER_PROTECTED)
+                            .withStyle(ChatFormatting.YELLOW), true);
             return ItemInteractionResult.sidedSuccess(false);
         }
 

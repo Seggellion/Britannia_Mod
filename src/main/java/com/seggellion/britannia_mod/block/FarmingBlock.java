@@ -352,6 +352,12 @@ public class FarmingBlock extends Block implements EntityBlock {
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof FarmingBlockEntity farmBe && farmBe.shouldReclaimCommunityPlot(level)) {
             level.setBlock(pos, BlockRegistry.COMMUNITY_FARM_BLOCK.get().defaultBlockState(), 3);
+            // M8 item 8: the plot going back to grass was completely silent, so a player who
+            // stepped away came back to an empty plot with no idea why. Message only -- the
+            // reclaim above already happened and its timing is untouched. Told to whoever is
+            // close enough to have been working it; nobody nearby means nobody to tell.
+            announceLoss(level, pos,
+                    com.seggellion.britannia_mod.client.gui.QuestScreenText.CROP_LOST);
             return;
         }
 
@@ -434,13 +440,32 @@ public class FarmingBlock extends Block implements EntityBlock {
         return ItemInteractionResult.sidedSuccess(level.isClientSide);
     }
 
+    /**
+     * Tells the nearest player that a plot they were working has gone (M8 item 8).
+     *
+     * <p>Read-only apart from the message: it looks up a player and sends text. Eight blocks is
+     * close enough to have been tending the plot and far enough that stepping back to the barn
+     * still reaches them. A plot that reverts with nobody near tells nobody, which is correct --
+     * there is no one it would be news to.
+     */
+    private static void announceLoss(ServerLevel level, BlockPos pos, String translationKey) {
+        Player nearby = level.getNearestPlayer(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                8.0D, false);
+        if (nearby != null) {
+            nearby.displayClientMessage(
+                    Component.translatable(translationKey).withStyle(ChatFormatting.YELLOW), true);
+        }
+    }
+
     public static boolean mayPlantHere(Level level, FarmingBlockEntity farmBe, @Nullable Player player) {
         if (farmBe.mayPlant(player)) {
             return true;
         }
         if (!level.isClientSide && player != null) {
+            // M8 items 8 and 10: the same refusal, now translatable and saying what to do next.
             player.displayClientMessage(
-                Component.literal("This farm plot belongs to someone else.").withStyle(ChatFormatting.YELLOW), true);
+                Component.translatable(com.seggellion.britannia_mod.client.gui.QuestScreenText.PLOT_OCCUPIED)
+                        .withStyle(ChatFormatting.YELLOW), true);
         }
         return false;
     }

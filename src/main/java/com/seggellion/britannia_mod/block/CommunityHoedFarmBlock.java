@@ -54,7 +54,12 @@ public class CommunityHoedFarmBlock extends CommunityFarmBlock {
             }
             level.playSound(null, pos, SoundEvents.GRAVEL_PLACE, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (player != null) {
-                player.displayClientMessage(Component.literal("Public plot fertilized. Plant seeds within 60 seconds.").withStyle(ChatFormatting.GREEN), true);
+                // M8 items 8 and 10: translatable, with the countdown read from the window the
+                // block entity enforces instead of a number written into the sentence.
+                player.displayClientMessage(Component.translatable(
+                                "message.britannia_mod.quest.plot.fertilized_countdown",
+                                FarmingBlockEntity.COMMUNITY_SEED_WINDOW_TICKS / 20L)
+                        .withStyle(ChatFormatting.GREEN), true);
                 if (!player.getAbilities().instabuild) {
                     stack.shrink(1);
                 }

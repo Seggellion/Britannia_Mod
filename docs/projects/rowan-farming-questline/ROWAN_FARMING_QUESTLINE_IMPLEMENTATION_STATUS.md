@@ -27,7 +27,7 @@ were not switched, stashed, reset, or modified.
 | M5 NeoForge farming events, outbox, crop attribution | **PASSED** | `473917c0` | — | 2026-09-07 |
 | M6 Rowan archetype | **PASSED** | `6b783003` | — | 2026-09-07 |
 | M7 Rails content, seed, admin | **PASSED** | — | `abea5ff` | 2026-09-07 |
-| M8 Dialogue and journal UX | not started | | | |
+| M8 Dialogue and journal UX | **PASSED** | (this commit) | — | 2026-09-07 |
 | M9 Timing, skill, recovery | not started | | | |
 | M10 Achievement and advancement | not started | | | |
 | M11 Hardening and automated acceptance | not started | | | |
@@ -910,7 +910,120 @@ files carries a carriage return.
 * An admin-form save is equivalent rather than byte-identical to the seed's output (it adds two
   inert empty observer blocks the node form has always posted). Asserted as equivalence.
 
-### Next action
+### Next action (at M7 close)
 
 M8 — dialogue and quest-journal UX in the mod, which is the first milestone a player would notice,
 followed by M9 timing and recovery, M10 the achievement, and M11 hardening.
+## M8 — Dialogue and quest-journal UX (PASSED 2026-09-07, NeoForge only)
+
+Three sub-agents: an implementer, an **independent UX auditor** who did not write the code, and a
+remediation pass. The auditor found two blocking defects that green unit tests and the integrator's
+own inspection of the renderings had both missed, which is the case for auditing interface work
+separately rather than trusting a milestone's own report.
+
+### Architecture
+
+Built on this repository's existing precedent (`client/screen/bank/BankDialogueLayout`): all layout
+arithmetic lives in classes with no `Font`, no `GuiGraphics` and no client, because a `Screen`
+cannot be instantiated by either test harness here, and the drawing classes only draw at the
+computed numbers. New pure classes: `ScreenRect`, `QuestDialogueLayout`, `QuestJournalLayout`,
+`QuestMixingGuideLayout`, `QuestScreenText` (the translation-key registry), `QuestKeyPrompt`,
+`QuestNodePresentation`, `QuestTriggerResultPresentation`; drawing in `QuestScreenDraw`;
+`QuestDecisionScreen` and `QuestJournalScreen` rewritten against them.
+
+### The acceptance matrix, derived rather than assumed
+
+Minecraft's own scale rule was extracted from the decompiled client. Two findings:
+
+* **The playbook's "1024×768 at GUI scale 4" does not exist.** The scale loop refuses to go past
+  the 320×240 floor and clamps to scale 3, giving 342×256 units.
+* **But the vanilla Force Unicode Font option bumps an odd scale up *after* that check**, walking
+  through the floor. So 1024×768 really can reach 256×192, and the true worst case is **160×120**
+  (a 320×240 window with Force Unicode), which is the arithmetic floor.
+
+Eighteen rows result, from 160×120 to 1920×1080. **Eight of the eighteen give the legacy
+`screenWidth - 343` a non-positive wrap width** (−183 at 160, −87 at 256, −23 at 320, −1 at 342),
+so that defect is live rather than theoretical. The quest path now computes its own geometry.
+`dialogue/DialogueLayout.java` is untouched and **`ServiceDialogueScreen` remains exposed** — it
+both measures and draws at a negative width below 343 units. Out of this milestone's boundary;
+**carried to M11**.
+
+### Evidence
+
+32 layout renderings in the M8 evidence directory — computed rectangles and real authored strings
+drawn offline, **labelled as layout renderings, not screenshots**, since nothing here launches a
+client. One per acceptance-matrix row plus the offer, working, done, help/mixing-guide and journal
+states, each at normal and worst-case sizes. The integrator opened them; two of the three concerns
+they raised became audit findings.
+
+### What the audit found (all fixed)
+
+* **F1, blocking — the help and mixing-guide view was painted over by its own background.** It drew
+  its content and then called the parent render, which begins by re-entering this screen's
+  background override and filling the screen with an 80%-opaque black quad. Only the Back button,
+  drawn later as a widget, survived. A player opening "How do I farm a public plot?" would have
+  seen a near-black screen. The same shape affected the journal panel and quit confirmation.
+  Fixed by painting surfaces in the background pass and content after the widgets, matching the
+  dialogue path that was already correct, and pinned by `QuestScreenDrawOrderTest`.
+* **F2, blocking — the quiet notice and the journal read state that never refreshed.** Replacing
+  the objective popup was correct, but nothing updated the client journal when an objective
+  completed, so the same line would print after hoeing, fertilizing, planting and watering, and
+  "Return to Rowan to claim your reward" would never fire at the one moment it exists for. Fixed on
+  both sides: the server can now update journal detail from the authoritative response, and the
+  client refreshes from the trigger result **before** the notice is composed.
+* **F4 — hidden choices were unreachable.** Below about 192 units only one choice button was added,
+  with no affordance and no keyboard route at all. Now has a scroll hint and page-key routing,
+  matching what the journal already did.
+* **F5 — the mixing guide drew zero of four steps at the smallest size, silently**, while claiming
+  to be scrollable. It now sheds introduction lines until a row fits, and says so when it genuinely
+  cannot. **Its guard test could not have failed**: the helper hardcoded a three-line body, which
+  fits by seven units, while the screen computes four, which does not. The test is now parameterised
+  from the real body.
+* **F6 — two water messages invented a reason.** The access policy is a single world-interaction
+  check with no notion of buckets or wells, but the message told a bucket holder to use the well
+  (false: a well inside the same protection also refuses) and told a player standing on a well to
+  use the well. Both now carry the protection message. The Adventure bucket rule is enforced by
+  vanilla with no mod hook, so that message was **retired rather than relocated**.
+* **F7 — the fertile-dirt mixer refused every right-click with the wrong advice**, telling a player
+  holding a filled bowl that their bowl was not ready, and never naming the actual requirement.
+  Now silent on an empty off hand and names the Bowl of Water otherwise.
+* **F3 — two javadocs asserted something false.** The codec is clean, but three pre-existing paths
+  ship the raw Rails body or node metadata to the client, including resolved bound values. The
+  prose is corrected; **the payloads are deliberately unchanged** and carried to M11 with their own
+  gate. A test now fails if someone hardens the payloads and leaves the prose stale.
+* **F8 — the renderer overstated the screen.** It painted a background behind the reward panel that
+  the screen did not paint, concealing roughly 1.6:1 contrast; drew item names that appear only in
+  tooltips; and printed journal text at the origin where the screen draws nothing. The screen gained
+  a real reward-panel ground; the renderer gained the screen's own empty-rect guard, honest
+  captions, and a **"synthetic" label** on the one sample that is not fixture data.
+* **F10** — a key prompt described a route it did not take; reworded, with a test that fails if the
+  sentence and the route drift apart.
+
+### Deferred to M9–M11 (recorded, not silently dropped)
+
+Reward panel is fixed-height rather than fitted, so dead space grows with the screen (F9); journal
+rows drop their progress and their hidden-step count at the smallest size (F11); result and returned
+icons in the guide are distinguished only by position (F13); a stale flowing-water warning can
+persist after a successful preparation (F14); `ServiceDialogueScreen`'s negative wrap width; the
+raw-payload trigger-data exposure (F3). A pre-existing package/path mismatch on
+`QuestDecisionScreen` was noted and left alone.
+
+### Tests and gates
+
+| Run | Result |
+| --- | --- |
+| Full JUnit (integrator, final tree) | 3804 tests, 0 failures, 0 errors, 23 skipped (479 suites; baseline 3681) |
+| GameTests (integrator, final tree) | 1146 required tests passed, 0 failed, no "Failed to start" |
+| `git diff --check` | clean |
+
+### Not evidenced, stated plainly
+
+Actual in-game rendering of parchment art, portraits and item sprites; real glyph metrics; mouse and
+keyboard navigation as behaviour rather than as geometry and widget order; the shipped stage-4
+mixing-guide content, which lives in Rails and is only transcribed here; and a long-localized-string
+render, which is the one visual-acceptance row with no artifact. All need a running client or the
+Rails content, and all belong to M12's live acceptance.
+
+### Next action
+
+M9 — timing, skill recovery and player recovery.

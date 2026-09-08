@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 /** Pure planning followed by a live-stack, server-authoritative preparation commit. */
 public final class BowlPreparationService {
@@ -47,6 +48,69 @@ public final class BowlPreparationService {
                     recipes.bowlOfFertileDirt()));
         }
         return Optional.empty();
+    }
+
+    /**
+     * Why a pair of hands did not produce a plan, for the message the player gets.
+     *
+     * <p>Rowan farming questline M8 item 8. Both dry preparation steps used to fail in complete
+     * silence: {@link #plan} returned empty and the item returned {@code pass}, so a player holding
+     * the right two items in the wrong two hands got no feedback and no way to find out why. This
+     * names the failure. It is diagnosis only -- {@link #plan} is untouched and the caller's return
+     * value is unchanged -- so nothing about what is or is not a valid preparation moves.
+     */
+    public enum Diagnosis {
+        /** Not an attempted preparation. Stays silent, as before. */
+        NONE,
+        /** The right two items, in the wrong two hands. */
+        SWAP_HANDS,
+        /** A bowl that cannot take this ingredient. */
+        WRONG_BOWL,
+        /** Something dirt-like that is not this mod's Dirt. */
+        WRONG_DIRT
+    }
+
+    public static Diagnosis diagnose(ItemStack mainHand, ItemStack offhand) {
+        return diagnose(mainHand, offhand, new RecipeSet(
+                ItemRegistry.EMPTY_BOWL.get(),
+                ItemRegistry.DIRT.get(),
+                ItemRegistry.BOWL_OF_DIRT.get(),
+                ItemRegistry.DUNG.get(),
+                ItemRegistry.BOWL_OF_FERTILE_DIRT.get()));
+    }
+
+    public static Diagnosis diagnose(ItemStack mainHand, ItemStack offhand, RecipeSet recipes) {
+        Objects.requireNonNull(mainHand, "mainHand");
+        Objects.requireNonNull(offhand, "offhand");
+        Objects.requireNonNull(recipes, "recipes");
+
+        if (plan(mainHand, offhand, recipes).isPresent()) {
+            return Diagnosis.NONE;
+        }
+        // The two recipes, reversed.
+        if ((mainHand.is(recipes.dirt()) && offhand.is(recipes.emptyBowl()))
+                || (mainHand.is(recipes.dung()) && offhand.is(recipes.bowlOfDirt()))) {
+            return Diagnosis.SWAP_HANDS;
+        }
+        // This mod's Dirt against a bowl that is already full, or Dung against an empty one.
+        if ((mainHand.is(recipes.bowlOfFertileDirt()) || mainHand.is(recipes.bowlOfDirt()))
+                && offhand.is(recipes.dirt())) {
+            return Diagnosis.WRONG_BOWL;
+        }
+        if (mainHand.is(recipes.emptyBowl()) && offhand.is(recipes.dung())) {
+            return Diagnosis.WRONG_BOWL;
+        }
+        // An empty bowl against vanilla dirt: the commonest way to get nothing at all, because the
+        // recipe wants this mod's Dirt and the two look alike in the hand.
+        if (mainHand.is(recipes.emptyBowl()) && isVanillaDirt(offhand)) {
+            return Diagnosis.WRONG_DIRT;
+        }
+        return Diagnosis.NONE;
+    }
+
+    private static boolean isVanillaDirt(ItemStack stack) {
+        return stack.is(Items.DIRT) || stack.is(Items.COARSE_DIRT) || stack.is(Items.ROOTED_DIRT)
+                || stack.is(Items.GRASS_BLOCK) || stack.is(Items.PODZOL);
     }
 
     /**

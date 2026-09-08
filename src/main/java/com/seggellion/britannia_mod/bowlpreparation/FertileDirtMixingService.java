@@ -44,6 +44,70 @@ public final class FertileDirtMixingService {
     }
 
     /**
+     * Why a pair of hands did not produce a final mix, for the message the player gets.
+     *
+     * <p>Rowan farming questline M8 item 8. The final mix failed silently for the same reason the
+     * dry steps did, and it is the step most likely to be attempted the wrong way round because
+     * both hands hold a bowl. Diagnosis only: {@link #plan} is untouched.
+     */
+    public enum Diagnosis {
+        /** Not an attempted mix. Stays silent, as before. */
+        NONE,
+        /** Both bowls, in the wrong two hands. */
+        SWAP_HANDS,
+        /**
+         * The main hand holds the bowl the mix needs and the off hand holds the wrong thing. The
+         * message names what belongs there.
+         */
+        MISSING_OFF_HAND,
+        /** One half of the mix is in hand and the other half is not. */
+        WRONG_BOWL
+    }
+
+    public static Diagnosis diagnose(ItemStack mainHand, ItemStack offhand) {
+        return diagnose(mainHand, offhand, new RecipeSet(
+                ItemRegistry.BOWL_OF_FERTILE_DIRT.get(),
+                ItemRegistry.BOWL_OF_WATER.get(),
+                ItemRegistry.FERTILIZED_DIRT.get(),
+                ItemRegistry.EMPTY_BOWL.get()));
+    }
+
+    public static Diagnosis diagnose(ItemStack mainHand, ItemStack offhand, RecipeSet recipes) {
+        Objects.requireNonNull(mainHand, "mainHand");
+        Objects.requireNonNull(offhand, "offhand");
+        Objects.requireNonNull(recipes, "recipes");
+
+        if (plan(mainHand, offhand, recipes).isPresent()) {
+            return Diagnosis.NONE;
+        }
+        if (mainHand.is(recipes.bowlOfWater()) && offhand.is(recipes.bowlOfFertileDirt())) {
+            return Diagnosis.SWAP_HANDS;
+        }
+        // An empty off hand is not an attempted mix. FertileDirtMixingItem is registered on the
+        // Bowl of Fertile Dirt and nothing else, so its use() runs on every right-click while that
+        // bowl is held -- and the old test "main hand holds half the mix" was therefore true every
+        // single time. The player got "That bowl is not ready for this. Use an Empty Bowl to
+        // gather, and a filled bowl to mix." while holding a filled bowl, on every click, and it
+        // never named what was missing. BOWL_OF_DIRT against an empty off hand is silent in
+        // BowlPreparationService for exactly this reason; this now matches it.
+        if (offhand.isEmpty()) {
+            return Diagnosis.NONE;
+        }
+        // The bowl in hand is the right one and the other half is wrong: name what belongs in the
+        // off hand rather than telling the player the bowl they are holding is not ready.
+        if (mainHand.is(recipes.bowlOfFertileDirt())) {
+            return Diagnosis.MISSING_OFF_HAND;
+        }
+        // One half of the mix is in hand and the other is not: the player is trying, and the
+        // silence is what makes it unsolvable.
+        if (offhand.is(recipes.bowlOfWater())
+                || mainHand.is(recipes.bowlOfWater()) || offhand.is(recipes.bowlOfFertileDirt())) {
+            return Diagnosis.WRONG_BOWL;
+        }
+        return Diagnosis.NONE;
+    }
+
+    /**
      * Revalidates both live stacks and consumes one of each in every game mode. On success the
      * commit contains the canonical fertile dirt and both conserved custom bowls.
      */

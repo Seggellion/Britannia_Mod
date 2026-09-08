@@ -2,9 +2,13 @@ package com.seggellion.britannia_mod.block.entity;
 
 import com.seggellion.britannia_mod.block.CommunityFarmBlock;
 import com.seggellion.britannia_mod.block.CommunityHoedFarmBlock;
+import com.seggellion.britannia_mod.client.gui.QuestScreenText;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
@@ -52,6 +56,17 @@ public class CommunityFarmBlockEntity extends BlockEntity {
             blockEntity.preparedExpiresAt = 0L;
             blockEntity.setChanged();
             level.setBlock(pos, BlockRegistry.COMMUNITY_FARM_BLOCK.get().defaultBlockState(), 3);
+            // M8 item 8: the countdown was announced when it started and never when it ran out, so
+            // a hoed plot silently became grass again while the player was fetching dirt. Message
+            // only -- the expiry above is unchanged in timing and effect -- and only to somebody
+            // close enough for it to be news.
+            Player nearby = level.getNearestPlayer(
+                    pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 8.0D, false);
+            if (nearby != null) {
+                nearby.displayClientMessage(
+                        Component.translatable(QuestScreenText.PLOT_EXPIRED)
+                                .withStyle(ChatFormatting.YELLOW), true);
+            }
         }
     }
 

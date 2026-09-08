@@ -28,6 +28,12 @@ public final class FertileDirtMixingItem extends Item {
         Optional<FertileDirtMixingPlan> candidate =
                 FertileDirtMixingService.plan(held, player.getOffhandItem());
         if (candidate.isEmpty()) {
+            // M8 item 8: name the failure instead of passing in silence. Message only -- the
+            // return value, and therefore what counts as a valid mix, is unchanged.
+            if (!level.isClientSide) {
+                BowlMixingMessages.send(player,
+                        FertileDirtMixingService.diagnose(held, player.getOffhandItem()));
+            }
             return InteractionResultHolder.pass(held);
         }
         if (level.isClientSide()) {

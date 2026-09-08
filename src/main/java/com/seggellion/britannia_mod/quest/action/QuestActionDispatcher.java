@@ -265,11 +265,27 @@ public final class QuestActionDispatcher {
                 ServerQuestTable.removeAfterRailsCompletionSuccessByQuestId(player, parsed.quest_id);
             }
         } else {
-            ServerQuestTable.updateTriggers(player, questStateId, updatedTriggers(root, parsed));
+            // One parse, both halves. The objectives are what stop the trigger firing again; the
+            // journal detail is what anything reading the mirror between this advance and the next
+            // full sync -- the quiet objective notice, the journal screen, a sync raised by
+            // something else -- would otherwise show from before it.
+            ClientQuestEntry advanced = advancedJournalEntry(root);
+            ServerQuestTable.updateJournal(player, questStateId,
+                updatedTriggers(advanced, parsed),
+                advanced == null ? null : advanced.detail());
         }
 
         PacketDistributor.sendToPlayer(player,
             new QuestTriggerResultS2CPayload(GSON.toJson(root), parsed.quest_id, entry.triggerKey()));
+    }
+
+    /**
+     * The journal entry Rails published with this advance, or {@code null} when the response
+     * carried none. Both the objectives and the journal detail come from it, so it is parsed once.
+     */
+    private static ClientQuestEntry advancedJournalEntry(JsonObject root) {
+        List<ClientQuestEntry> refreshed = QuestEntryParser.parseAcceptedQuests(root);
+        return refreshed.isEmpty() ? null : refreshed.get(0);
     }
 
     /**
@@ -278,9 +294,9 @@ public final class QuestActionDispatcher {
      * {@code done}); the node's raw metadata is the fallback for a response that carries no
      * journal entry.
      */
-    private static QuestObjectiveTriggers updatedTriggers(JsonObject root, QuestModels.QuestResponse parsed) {
-        List<ClientQuestEntry> refreshed = QuestEntryParser.parseAcceptedQuests(root);
-        if (!refreshed.isEmpty()) return refreshed.get(0).triggers();
+    private static QuestObjectiveTriggers updatedTriggers(ClientQuestEntry advanced,
+                                                          QuestModels.QuestResponse parsed) {
+        if (advanced != null) return advanced.triggers();
         return parsed.currentNode == null
             ? QuestObjectiveTriggers.NONE
             : QuestObjectiveTriggers.fromNodeMetadata(parsed.currentNode.metadata);
