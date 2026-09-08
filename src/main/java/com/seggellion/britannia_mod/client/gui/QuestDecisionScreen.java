@@ -5,6 +5,7 @@ import com.seggellion.britannia_mod.client.gui.QuestDialogueLayout;
 import com.seggellion.britannia_mod.client.gui.QuestKeyPrompt;
 import com.seggellion.britannia_mod.client.gui.QuestMixingGuideLayout;
 import com.seggellion.britannia_mod.client.gui.QuestNodePresentation;
+import com.seggellion.britannia_mod.client.gui.QuestChoiceButton;
 import com.seggellion.britannia_mod.client.gui.QuestDialogueTransition;
 import com.seggellion.britannia_mod.client.gui.QuestScreenDraw;
 import com.seggellion.britannia_mod.client.gui.QuestScreenText;
@@ -136,10 +137,8 @@ public class QuestDecisionScreen extends Screen {
         QuestDialogueLayout.ChoiceBlock block = layout.choices();
         if (choices.isEmpty()) {
             ScreenRect at = block.item(0);
-            addRenderableWidget(Button.builder(QuestScreenDraw.text(QuestScreenText.FAREWELL),
-                            btn -> this.onClose())
-                    .bounds(at.x(), at.y(), at.width(), at.height())
-                    .build());
+            addRenderableWidget(new QuestChoiceButton(at.x(), at.y(), at.width(), at.height(),
+                    QuestScreenDraw.text(QuestScreenText.FAREWELL), btn -> this.onClose()));
             return;
         }
 
@@ -154,9 +153,8 @@ public class QuestDecisionScreen extends Screen {
                     ? QuestScreenDraw.text(QuestScreenText.NEXT)
                     : QuestScreenDraw.literal(choice.text);
 
-            Button button = Button.builder(label, ignored -> onChoicePressed(choice))
-                    .bounds(at.x(), at.y(), at.width(), at.height())
-                    .build();
+            Button button = new QuestChoiceButton(at.x(), at.y(), at.width(), at.height(),
+                    label, ignored -> onChoicePressed(choice));
             button.active = !lockedAt(index);
             addRenderableWidget(button);
             if (slot == 0) {
@@ -216,12 +214,11 @@ public class QuestDecisionScreen extends Screen {
         this.guideScroll = clamp(this.guideScroll, 0, guideLayout.scrollMax());
 
         ScreenRect back = guideLayout.backButton();
-        Button button = Button.builder(QuestScreenDraw.text(QuestScreenText.HELP_BACK), btn -> {
+        Button button = new QuestChoiceButton(back.x(), back.y(), back.width(), back.height(),
+                QuestScreenDraw.text(QuestScreenText.HELP_BACK), btn -> {
                     this.view = View.DIALOGUE;
                     rebuild();
-                })
-                .bounds(back.x(), back.y(), back.width(), back.height())
-                .build();
+                });
         addRenderableWidget(button);
         setInitialFocus(button);
     }
@@ -439,9 +436,15 @@ public class QuestDecisionScreen extends Screen {
         }
         if (y + QuestScreenDraw.lineHeight(this.font) <= this.height) {
             String boundKey = Keybinds.OPEN_SKILL_SCREEN.getKey().getName();
+            // The key's own display name, not Component.translatable(its identifier). The screen
+            // was printing "key.keyboard.o" at the player: a raw identifier is exactly the defect
+            // the acceptance list calls out, and getDisplayName is the accessor vanilla itself uses
+            // for bindings, so it also covers mouse buttons and unnamed scancodes.
+            Component keyLabel = QuestKeyPrompt.isUnbound(boundKey)
+                    ? Component.translatable(QuestKeyPrompt.OPEN_JOURNAL_BINDING)
+                    : Keybinds.OPEN_SKILL_SCREEN.getKey().getDisplayName();
             QuestScreenDraw.drawLine(graphics, this.font, QuestScreenDraw.fit(this.font,
-                            QuestScreenDraw.text(QuestKeyPrompt.openJournalMessageKey(boundKey),
-                                    Component.translatable(QuestKeyPrompt.openJournalArgumentKey(boundKey))),
+                            QuestScreenDraw.text(QuestKeyPrompt.openJournalMessageKey(boundKey), keyLabel),
                             maxWidth),
                     x, y, QuestScreenDraw.MUTED_COLOR);
         }
