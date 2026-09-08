@@ -18,14 +18,17 @@ package com.seggellion.britannia_mod.client.screen.bank;
  * {@code BankDialogueLayoutTest} name the real window/scale combinations they stand for.
  *
  * <h2>The invariant</h2>
- * <b>The body text never overlaps the button column, at any width.</b> The existing
- * {@code DialogueLayout} does not hold that line -- its {@code maxTextWidth} is
+ * <b>The body text never overlaps the button column, at any width.</b> {@code DialogueLayout} did
+ * not hold that line when this class was written -- its {@code maxTextWidth} was
  * {@code screenWidth - 343}, which goes negative below 343 units and hands a negative wrap width
  * to {@code drawWordWrap}. A 1024-wide window at GUI scale 4 is 256 units. This class drops the
  * portrait column before it lets that happen, and clamps to a positive width even then.
  *
- * <p>{@code DialogueLayout} is deliberately left alone rather than fixed: it is shared with the
- * quest and service dialogue screens, and changing their geometry is not this epic's business.
+ * <p>{@code DialogueLayout} was deliberately left alone rather than fixed <i>here</i>: it is shared
+ * with the quest and service dialogue screens, and changing their geometry was not this epic's
+ * business. The Rowan farming questline fixed it in its own milestones -- the quest path in M8 with
+ * {@code QuestDialogueLayout}, the shared class itself in M11 -- by these same two rules. Nothing
+ * about this class changed as a result; it still owns banking's numbers.
  */
 public record BankDialogueLayout(
         boolean portraitVisible,

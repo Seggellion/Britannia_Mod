@@ -1,16 +1,24 @@
 package com.seggellion.britannia_mod.quest;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.network.payload.QuestTriggerResultS2CPayload;
+import com.seggellion.britannia_mod.quest.action.QuestAction;
+import com.seggellion.britannia_mod.quest.action.QuestActionDispatcher;
+import com.seggellion.britannia_mod.quest.action.QuestActionSubject;
+import com.seggellion.britannia_mod.quest.achievement.QuestAchievementAward;
+import com.seggellion.britannia_mod.quest.network.QuestClientPayload;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
 import com.seggellion.britannia_mod.quest.network.QuestServerAPI;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.slf4j.Logger;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -93,6 +101,24 @@ public final class QuestObjectiveWatcher {
         }
     }
 
+    /**
+     * Called after a farming mutation has actually succeeded on the server (Rowan questline M5,
+     * protocol section 2.1). The fourth kind of observer, and the same rule as the other three:
+     * the SERVER decides, from the SERVER's journal, whether anything is subscribed. Nothing here
+     * accepts a client assertion, and {@code QuestActionC2SPayload.TRIGGER} stays refused.
+     *
+     * <p>Unlike location, pickup and destroy -- whose trigger is a single legacy quest action --
+     * a farming action goes to the durable outbox of section 2.2 first, so an outage between the
+     * harvest and Rails costs a retry rather than the objective.
+     *
+     * @return the event uuids enqueued, one per matched subscription; empty when nothing subscribes
+     */
+    public static List<UUID> onQuestAction(ServerPlayer player, QuestAction action, ServerLevel level,
+                                           BlockPos position, QuestActionSubject subject) {
+        if (player == null || action == null || subject == null) return List.of();
+        return QuestActionDispatcher.publish(player, action, level, position, subject);
+    }
+
     /** A server-decided trigger with no environmental source, such as an escort arriving. */
     public static void fireDirect(ServerPlayer player, long questId, String questStateId,
                                   String triggerKey, String source) {
@@ -154,8 +180,19 @@ public final class QuestObjectiveWatcher {
             ServerQuestTable.updateTriggers(player, questStateId, updated);
         }
 
+        // M10 item 3. The legacy observer is the third and last path an authoritative answer can
+        // reach the game by (it serves a Rails without /api/v2/quest_action_events). An
+        // achievement announced here gets the same advancement, and the same suppression when the
+        // player already has it, as one announced by a turn-in or an action event.
+        JsonObject forwarded = QuestAchievementAward.grantAndFilter(
+            player, GSON.toJsonTree(response).getAsJsonObject(), "", "objective_watcher");
+
+        // M11 deferred defect 2. The journal and the triggers above are installed from `response`
+        // before this line; what leaves for the client is the same answer with `node.metadata`'s
+        // objective machinery -- `action_trigger`, `action_steps` and the three legacy observers --
+        // stripped. Nothing the client reads from this body is in that set.
         PacketDistributor.sendToPlayer(player,
-            new QuestTriggerResultS2CPayload(GSON.toJson(response), questId, triggerKey));
+            new QuestTriggerResultS2CPayload(QuestClientPayload.toJson(forwarded), questId, triggerKey));
 
         LOGGER.info("event=quest_objective_applied player_uuid={} quest_id={} quest_state_id={} "
                 + "trigger_key={} completed={}",

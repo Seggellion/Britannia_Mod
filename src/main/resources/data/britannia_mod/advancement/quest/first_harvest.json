@@ -1,0 +1,22 @@
+{
+  "display": {
+    "icon": {
+      "id": "britannia_mod:farming_hoe"
+    },
+    "title": {
+      "translate": "advancements.britannia_mod.quest.first_harvest.title"
+    },
+    "description": {
+      "translate": "advancements.britannia_mod.quest.first_harvest.description"
+    },
+    "frame": "challenge",
+    "show_toast": false,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

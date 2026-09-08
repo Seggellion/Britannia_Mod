@@ -1,0 +1,66 @@
+{
+  "protocol_version": 1,
+  "event_uuid": "3d2a0f8b-6b6c-4d2c-9d5a-0e7b8f1c2d3e",
+  "result": "duplicate",
+  "original_result": "applied",
+  "quest_id": 45,
+  "quest_state_id": "9005",
+  "completed": false,
+  "node": {
+    "id": 1306,
+    "title": "A Full Basket",
+    "text": "Carrots pulled by your own hand. Bring them back to me and we shall call you a farmer.",
+    "type": "dialogue",
+    "metadata": {
+      "journal_objective": "Return to Rowan with your harvest.",
+      "progress_steps": [],
+      "rewards_preview": {
+        "on_accept": [],
+        "on_complete": [{"id": "britannia_mod:gold_coin", "count": 5}],
+        "achievements": [{"key": "first_harvest", "title": "First Harvest"}]
+      },
+      "keep_items": []
+    }
+  },
+  "choices": [
+    {"id": "claim", "text": "Here is my harvest, Rowan.", "is_locked": false}
+  ],
+  "granted_items": [],
+  "reward_delivery": null,
+  "client_actions": [],
+  "accepted_quest": {
+    "id": "9005",
+    "quest_state_id": "9005",
+    "quest_id": "45",
+    "quest_key": "rowan_farming_5",
+    "name": "From Soil to Supper (5 of 5): Plant and Harvest",
+    "brief_description": "Hoe a public plot, fertilize it, plant your seed, water it, and harvest your crop.",
+    "accepted_at": "2026-09-06T21:30:00Z",
+    "status": "accepted",
+    "stage": {"questline_key": "rowan_farming", "index": 5, "count": 5, "label": "Quest 5 of 5"},
+    "quest_giver": {"name": "Rowan", "profession": "Farmer"},
+    "objective": "Return to Rowan with your harvest.",
+    "progress": [
+      {"key": "plot_hoed", "label": "Prepare a public plot", "done": true},
+      {"key": "plot_fertilized", "label": "Fertilize it", "done": true},
+      {"key": "crop_planted", "label": "Plant your seed", "done": true},
+      {"key": "crop_watered", "label": "Water it", "done": true},
+      {"key": "crop_harvested", "label": "Harvest your crop", "done": true}
+    ],
+    "rewards_preview": {
+      "on_accept": [],
+      "on_complete": [{"id": "britannia_mod:gold_coin", "count": 5}],
+      "achievements": [{"key": "first_harvest", "title": "First Harvest"}]
+    },
+    "keep_items": [],
+    "claim_pending": true,
+    "triggers": {}
+  },
+  "progress": [
+    {"key": "plot_hoed", "label": "Prepare a public plot", "done": true},
+    {"key": "plot_fertilized", "label": "Fertilize it", "done": true},
+    {"key": "crop_planted", "label": "Plant your seed", "done": true},
+    {"key": "crop_watered", "label": "Water it", "done": true},
+    {"key": "crop_harvested", "label": "Harvest your crop", "done": true}
+  ]
+}

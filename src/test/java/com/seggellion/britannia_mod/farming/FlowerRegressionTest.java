@@ -90,8 +90,12 @@ class FlowerRegressionTest {
     @Test
     void soilWeatherCommunityAndCareConstantsRemainTheExistingFarmingAuthority() {
         assertEquals(5, FarmingBlockEntity.MAX_HYDRATION);
-        assertEquals(1_200L, FarmingBlockEntity.COMMUNITY_SEED_WINDOW_TICKS);
-        assertEquals(3_600L, CommunityFarmBlockEntity.PREPARED_EXPIRY_TICKS);
+        // M9 item 2 retuned both public-plot windows to the numbers Rails enforces on the same two
+        // stage-5 steps: 600 s hoe->fertilize (was 180 s) and 300 s fertilize->plant (was 60 s).
+        // Asserted here in ticks and in CommunityPlotWindowTest in seconds, so changing either has
+        // to be meant twice.
+        assertEquals(6_000L, FarmingBlockEntity.COMMUNITY_SEED_WINDOW_TICKS);
+        assertEquals(12_000L, CommunityFarmBlockEntity.PREPARED_EXPIRY_TICKS);
         assertEquals(0.10F, FarmingBlock.HYDRATION_DECAY_CHANCE, 0.0001F);
         assertEquals(0, FarmingBlock.hydrationAfterRain(0, false));
         assertEquals(2, FarmingBlock.hydrationAfterRain(0, true));

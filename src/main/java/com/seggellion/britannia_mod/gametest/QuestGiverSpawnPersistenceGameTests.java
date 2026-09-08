@@ -120,6 +120,58 @@ public final class QuestGiverSpawnPersistenceGameTests {
         helper.succeed();
     }
 
+    /**
+     * The integration case neither side owned on its own: this file's fix and the Rowan questline
+     * both added a key to the same two NBT methods, three lines apart, and each side's tests only
+     * ever asserted its own key. A merge that dropped either would still have passed both suites.
+     *
+     * <p>So this asserts them together — the Rails identity an operator typed in, and the local
+     * directions hint the questline added — surviving one reload into a fresh block entity, with
+     * the rest of the configuration intact beside them.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void theCustomApiIdAndTheDirectionsHintBothSurviveTheSameReload(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos pos = placeConfiguredSpawner(helper);
+        String hint = "Ask at the well, east of the barn";
+        spawnerAt(level, pos).applyConfig("Generic Combat", "Britain", API_ID, "male", RADIUS, hint);
+
+        QuestGiverSpawnBlockEntity reloaded = reload(level, pos, saveTag(level, pos));
+
+        check(API_ID.equals(reloaded.getCustomApiId()),
+            "the custom api id did not survive alongside the hint, got '" + reloaded.getCustomApiId() + "'");
+        check(hint.equals(reloaded.getDirections()),
+            "the directions hint did not survive alongside the api id, got '" + reloaded.getDirections() + "'");
+        check("Generic Combat".equals(reloaded.getNpcName()) && reloaded.getSpawnRadius() == RADIUS,
+            "the rest of the configuration must survive with both of them");
+
+        helper.setBlock(SPAWNER, Blocks.AIR);
+        helper.succeed();
+    }
+
+    /**
+     * And the reverse of the compatibility case above: a save written before the questline existed
+     * carries the api id but no hint, and must still load with the hint simply empty.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void aSaveWithoutTheDirectionsKeyStillLoadsTheApiId(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos pos = placeConfiguredSpawner(helper);
+
+        CompoundTag beforeTheQuestline = saveTag(level, pos);
+        beforeTheQuestline.remove("Directions");
+
+        QuestGiverSpawnBlockEntity reloaded = reload(level, pos, beforeTheQuestline);
+
+        check(API_ID.equals(reloaded.getCustomApiId()),
+            "the api id must load from a save that predates the hint, got '" + reloaded.getCustomApiId() + "'");
+        check(reloaded.getDirections().isEmpty(),
+            "a save with no hint must load an empty one, got '" + reloaded.getDirections() + "'");
+
+        helper.setBlock(SPAWNER, Blocks.AIR);
+        helper.succeed();
+    }
+
     // --- helpers ---------------------------------------------------------------------------
 
     /**
@@ -135,7 +187,9 @@ public final class QuestGiverSpawnPersistenceGameTests {
         helper.setBlock(SPAWNER, BlockRegistry.QUEST_GIVER_SPAWN_BLOCK.get());
 
         BlockPos pos = helper.absolutePos(SPAWNER);
-        spawnerAt(helper.getLevel(), pos).applyConfig("Generic Combat", "Britain", API_ID, "male", RADIUS);
+        // The Rowan questline added a sixth argument, a per-spawner directions hint. An empty hint
+        // means "leave the stored hint alone", so this fixture configures exactly what it did before.
+        spawnerAt(helper.getLevel(), pos).applyConfig("Generic Combat", "Britain", API_ID, "male", RADIUS, "");
         return pos;
     }
 

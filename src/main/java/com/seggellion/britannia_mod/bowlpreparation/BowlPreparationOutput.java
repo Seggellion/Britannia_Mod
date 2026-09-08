@@ -1,5 +1,8 @@
 package com.seggellion.britannia_mod.bowlpreparation;
 
+import com.seggellion.britannia_mod.client.gui.QuestScreenText;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -14,6 +17,10 @@ final class BowlPreparationOutput {
             return;
         }
         if (!hasSufficientCapacity(player.getInventory(), output)) {
+            // M8 item 8: the drop itself is unchanged; it just no longer happens in silence. The
+            // quest reward path already had a "waiting for room in your pack" line and this had
+            // nothing, so a full pack looked like the recipe had eaten the output.
+            announceDrop(player, output);
             player.drop(output.copy(), false);
             return;
         }
@@ -23,8 +30,16 @@ final class BowlPreparationOutput {
         if (!remainder.isEmpty()) {
             // Structurally unreachable after the capacity check on the server thread, but this
             // preserves the exact output if a later Inventory implementation changes its rules.
+            announceDrop(player, remainder);
             player.drop(remainder, false);
         }
+    }
+
+    /** Names the item that fell, because "your pack is full" alone does not say what was lost. */
+    private static void announceDrop(ServerPlayer player, ItemStack output) {
+        player.displayClientMessage(
+                Component.translatable(QuestScreenText.INVENTORY_FULL_DROPPED, output.getHoverName())
+                        .withStyle(ChatFormatting.YELLOW), true);
     }
 
     static boolean hasSufficientCapacity(Inventory inventory, ItemStack stack) {

@@ -99,8 +99,13 @@ public final class QuestEntryParser {
             questKey = questId;
         }
 
+        // Milestone 8: the journal fields the entry has carried since M4 -- stage, objective,
+        // progress, rewards_preview, keep_items, claim_pending -- are read here alongside the
+        // objectives. Two separate readers on purpose: triggers stays server-only, and detail is
+        // the only half QuestEntryCodecs writes to a client.
         return new ClientQuestEntry(questStateId, questId, questKey, questGiverName, name, brief,
-                acceptedAt, status, QuestObjectiveTriggers.fromJournalEntry(entry));
+                acceptedAt, status, QuestObjectiveTriggers.fromJournalEntry(entry))
+                .withDetail(ClientQuestEntry.JournalDetail.fromJournalEntry(entry));
     }
 
     private static void addEntry(List<ClientQuestEntry> entries, JsonObject quest, String fallbackQuestGiverName, String source) {

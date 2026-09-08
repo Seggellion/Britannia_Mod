@@ -1,0 +1,31 @@
+{
+  "journal_objective": "Hoe a public plot with your Farming Hoe, fertilize it, plant your seed, water it, then harvest your crop.",
+  "keep_items": [{"id": "britannia_mod:fertilized_dirt", "count": 1}],
+  "help": {
+    "title": "Rowan's planting guide",
+    "body": "Public plots lie along the lane past the barn. Work them in this order, and be quick between hoeing and planting or the grass takes the plot back.",
+    "guide": [
+      {"main_hand": "britannia_mod:farming_hoe", "off_hand": null, "gesture": "Use on the grass of a public plot", "result": "Hoed plot", "returned": null},
+      {"main_hand": "britannia_mod:fertilized_dirt", "off_hand": null, "gesture": "Use on the hoed plot", "result": "Fertilized plot", "returned": null},
+      {"main_hand": "britannia_mod:carrot_seeds", "off_hand": null, "gesture": "Use on the fertilized plot", "result": "Planted carrot", "returned": null},
+      {"main_hand": "britannia_mod:watering_can", "off_hand": null, "gesture": "Use on the planted crop", "result": "Watered crop", "returned": "britannia_mod:watering_can"}
+    ]
+  },
+  "action_steps": [
+    {"key": "plot_hoed", "label": "Prepare a public plot", "action": "plot_hoe", "match": {"community_plot": true}, "bind": ["plot_key"]},
+    {"key": "plot_fertilized", "label": "Fertilize it", "action": "plot_fertilize", "require_bound": ["plot_key"], "deadline": {"after": "plot_hoed", "seconds": 600}},
+    {"key": "crop_planted", "label": "Plant your seed", "action": "crop_plant", "match": {"crop_id": "$flag:awarded_crop"}, "require_bound": ["plot_key"], "bind": ["crop_cycle_uuid"], "deadline": {"after": "plot_fertilized", "seconds": 300}},
+    {"key": "crop_watered", "label": "Water it", "action": "crop_water", "require_bound": ["plot_key", "crop_cycle_uuid"]}
+  ],
+  "action_trigger": {
+    "trigger_key": "crop_harvested",
+    "label": "Harvest your crop",
+    "action": "crop_harvest",
+    "match": {"crop_id": "$flag:awarded_crop", "require_planter": true},
+    "require_bound": ["plot_key", "crop_cycle_uuid"]
+  },
+  "choices": {
+    "harvested": {"text": "(harvested)", "destination_node_title": "A Full Basket", "conditions": {"trigger_key": "crop_harvested"}},
+    "help": {"text": "How do I farm a public plot?", "presentation": "help"}
+  }
+}

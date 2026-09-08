@@ -1,49 +1,90 @@
 package com.seggellion.britannia_mod.client.screen;
 
+import com.seggellion.britannia_mod.client.Keybinds;
+import com.seggellion.britannia_mod.client.gui.QuestDialogueLayout;
+import com.seggellion.britannia_mod.client.gui.QuestKeyPrompt;
+import com.seggellion.britannia_mod.client.gui.QuestMixingGuideLayout;
+import com.seggellion.britannia_mod.client.gui.QuestNodePresentation;
+import com.seggellion.britannia_mod.client.gui.QuestScreenDraw;
+import com.seggellion.britannia_mod.client.gui.QuestScreenText;
+import com.seggellion.britannia_mod.client.gui.QuestTriggerResultPresentation;
+import com.seggellion.britannia_mod.client.gui.ScreenRect;
+import com.seggellion.britannia_mod.entity.QuestGiverEntity;
 import com.seggellion.britannia_mod.quest.network.QuestClient;
 import com.seggellion.britannia_mod.quest.ClientQuestEntry;
 import com.seggellion.britannia_mod.quest.ClientQuestTable;
 import com.seggellion.britannia_mod.quest.QuestManager;
-import com.seggellion.britannia_mod.dialogue.DialogueLayout;
 import com.seggellion.britannia_mod.dialogue.DialogueOptionViewModel;
 import com.seggellion.britannia_mod.dialogue.DialogueViewModel;
 import com.seggellion.britannia_mod.dialogue.QuestDialogueAdapter;
 import com.seggellion.britannia_mod.quest.network.QuestModels.QuestResponse;
 import com.seggellion.britannia_mod.quest.network.QuestModels.QuestChoice;
-import com.mojang.logging.LogUtils;
 import com.google.gson.JsonObject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
 import org.lwjgl.glfw.GLFW;
-import org.slf4j.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+/**
+ * The quest dialogue.
+ *
+ * <h2>Milestone 8</h2>
+ * The geometry moved to {@link QuestDialogueLayout} and the drawing to {@link QuestScreenDraw}, for
+ * the reason Decision 0 gives: a {@code Screen} cannot be instantiated by either test harness this
+ * project has, so nothing worth asserting can live in this file. What is left is state and events.
+ *
+ * <p>The screen used {@code DialogueLayout}, whose {@code maxTextWidth} is
+ * {@code screenWidth - 343} and goes negative below 343 scaled units -- reachable on a 1280x1024
+ * window at GUI scale 4, and on any window with Force Unicode Font on. The quest path now computes
+ * its own numbers; {@code DialogueLayout} is untouched because the service dialogue still uses it.
+ *
+ * <p>New here: the quest number, a reward panel with the three labelled sections, a help view
+ * carrying the mixing guide, scrolling for long body text and long choice lists, and keyboard
+ * focus. The choice buttons are added in the layout's focus order, so vanilla's own Tab handling
+ * walks them in the order {@code QuestDialogueLayoutTest} asserts.
+ */
 public class QuestDecisionScreen extends Screen {
-    private static final Logger LOGGER = LogUtils.getLogger();
+
+    /** Which of the screen's two views is showing. Help is presentation only; it sends nothing. */
+    private enum View { DIALOGUE, HELP }
 
     private final String npcName;
     private final String npcGender;
     private final QuestResponse questState;
     private final DialogueViewModel dialogueView;
-
-    private boolean choiceMade = false;
-
-    private Component bodyComponent;
-    private DialogueLayout dialogueLayout;
     private final UUID npcUuid;
 
+    private boolean choiceMade = false;
+    /** A transition has been sent and no reply has come back yet (M8 item 8). */
+    private boolean awaitingServer = false;
+
+    private Component bodyComponent;
+    private QuestDialogueLayout layout;
+    private QuestMixingGuideLayout guideLayout;
+    private QuestNodePresentation node = QuestNodePresentation.NONE;
+    private ClientQuestEntry journalEntry;
+    private String localDirections = "";
+
+    private View view = View.DIALOGUE;
+    private int bodyScroll;
+    private int choiceScroll;
+    private int guideScroll;
+
     // 1. OLD Constructor (Used by QuestEventHandlers for Environmental Popups)
-public QuestDecisionScreen(QuestResponse questState, String npcName, String npcGender) {
-        this(questState, npcName, npcGender, null); 
+    public QuestDecisionScreen(QuestResponse questState, String npcName, String npcGender) {
+        this(questState, npcName, npcGender, null);
     }
 
     // 2. NEW Constructor (Portrait argument removed!)
-public QuestDecisionScreen(QuestResponse questState, String npcName, String npcGender, java.util.UUID npcUuid) {
-        super(Component.literal("Quest Interface"));
+    public QuestDecisionScreen(QuestResponse questState, String npcName, String npcGender, java.util.UUID npcUuid) {
+        super(Component.translatable(QuestScreenText.TITLE_FALLBACK));
         this.questState = questState;
         this.npcName = npcName;
         this.npcGender = npcGender; // Store it
@@ -56,75 +97,475 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
         super.init();
         this.clearWidgets();
 
-        this.bodyComponent = DialoguePresentation.text(dialogueView.body());
-        boolean hasChoices = !dialogueView.completed() && !dialogueView.options().isEmpty();
-        DialogueLayout initialLayout = DialogueLayout.calculate(
-                this.width,
-                1,
-                hasChoices ? dialogueView.options().size() : 0,
-                this.font.lineHeight,
-                false
-        );
-        int textLineCount = this.font.split(this.bodyComponent, initialLayout.maxTextWidth()).size();
-        this.dialogueLayout = DialogueLayout.calculate(
-                this.width,
-                textLineCount,
-                hasChoices ? dialogueView.options().size() : 0,
-                this.font.lineHeight,
-                false
-        );
+        this.node = questState != null && questState.currentNode != null
+                ? QuestNodePresentation.fromNodeMetadata(questState.currentNode.metadata)
+                : QuestNodePresentation.NONE;
+        this.journalEntry = findJournalEntry();
+        this.localDirections = readLocalDirections();
 
-        if (hasChoices) {
-            boolean isInfoNode = "info".equals(dialogueView.nodeType());
-
-            if (isInfoNode && questState.choices.size() == 1) {
-                QuestChoice choice = questState.choices.get(0);
-                DialogueOptionViewModel optionView = dialogueView.options().get(0);
-                Component btnText = DialoguePresentation.text("Next ->");
-                
-                Button nextBtn = Button.builder(btnText, btn -> handleChoice(choice))
-                    .bounds(dialogueLayout.buttonStartX(), dialogueLayout.buttonStartY(), dialogueLayout.buttonWidth(), 20)
-                    .build();
-                
-                nextBtn.active = !optionView.locked();
-                this.addRenderableWidget(nextBtn);
-                
-            } else {
-                for (int i = 0; i < questState.choices.size(); i++) {
-                    QuestChoice choice = questState.choices.get(i);
-                    DialogueOptionViewModel optionView = dialogueView.options().get(i);
-                    Button choiceBtn = DialoguePresentation.optionButton(optionView, i, dialogueLayout, ignored -> {
-                        // NEW: Intercept choices with no destination and just close the UI!
-                        if (choice.id == null || choice.id.trim().isEmpty() || "close".equalsIgnoreCase(choice.id)) {
-                            this.choiceMade = true;
-                            clearPendingOfferStateIfUnaccepted();
-                            this.onClose();
-                        } else if (isRejectChoice(choice) && !hasAcceptedQuestState(questState)) {
-                            this.choiceMade = true;
-                            clearPendingOfferStateIfUnaccepted();
-                            this.onClose();
-                        } else {
-                            handleChoice(choice);
-                        }
-                    });
-                    this.addRenderableWidget(choiceBtn);
-                }
-            }
+        if (view == View.HELP) {
+            initHelp();
         } else {
-            Component farewellText = DialoguePresentation.text("Farewell.");
-            this.addRenderableWidget(Button.builder(farewellText, btn -> this.onClose())
-                .bounds(dialogueLayout.buttonStartX(), dialogueLayout.buttonStartY(), dialogueLayout.buttonWidth(), 20)
-                .build());
+            initDialogue();
         }
     }
 
+    // ------------------------------------------------------------ dialogue view
+
+    private void initDialogue() {
+        this.bodyComponent = QuestScreenDraw.literal(dialogueView.body());
+        List<QuestChoice> choices = visibleChoices();
+        boolean hasPortrait = !dialogueView.npcName().isEmpty();
+        boolean hasProfession = !professionLabel().isBlank();
+
+        // Two passes, as before: the wrap width depends only on the width, and the line count
+        // depends on the wrap width, so one probe and one calculate is exact.
+        int wrapWidth = QuestDialogueLayout.probeWrapWidth(
+                this.width, this.height, this.font.lineHeight, hasPortrait, choices.size());
+        int bodyLines = this.font.split(this.bodyComponent, Math.max(1, wrapWidth)).size();
+
+        this.layout = QuestDialogueLayout.calculate(
+                this.width, this.height, this.font.lineHeight, hasPortrait, hasProfession,
+                stage().known(), choices.size(), bodyLines,
+                rewardsOnAccept().size(), rewardsOnComplete().size(), keepItems().size());
+
+        this.bodyScroll = clamp(this.bodyScroll, 0, layout.body().scrollMax());
+        this.choiceScroll = clamp(this.choiceScroll, 0, layout.choices().scrollMax());
+
+        QuestDialogueLayout.ChoiceBlock block = layout.choices();
+        if (choices.isEmpty()) {
+            ScreenRect at = block.item(0);
+            addRenderableWidget(Button.builder(QuestScreenDraw.text(QuestScreenText.FAREWELL),
+                            btn -> this.onClose())
+                    .bounds(at.x(), at.y(), at.width(), at.height())
+                    .build());
+            return;
+        }
+
+        boolean isInfoNode = "info".equals(dialogueView.nodeType());
+        for (int slot = 0; slot < block.visibleCount(); slot++) {
+            int index = choiceScroll + slot;
+            if (index >= choices.size()) break;
+            QuestChoice choice = choices.get(index);
+            ScreenRect at = block.item(slot);
+
+            Component label = isInfoNode && choices.size() == 1
+                    ? QuestScreenDraw.text(QuestScreenText.NEXT)
+                    : QuestScreenDraw.literal(choice.text);
+
+            Button button = Button.builder(label, ignored -> onChoicePressed(choice))
+                    .bounds(at.x(), at.y(), at.width(), at.height())
+                    .build();
+            button.active = !lockedAt(index);
+            addRenderableWidget(button);
+            if (slot == 0) {
+                // Deterministic keyboard entry point: the first drawn choice, every time.
+                setInitialFocus(button);
+            }
+        }
+    }
+
+    /**
+     * A choice button.
+     *
+     * <p>A presentation choice opens its view here and returns. Nothing is sent, so the node that
+     * owns the live objective stays current -- reading the guide cannot cost the player a step.
+     */
+    private void onChoicePressed(QuestChoice choice) {
+        String presentation = node.presentationFor(choice == null ? "" : choice.id);
+        if (!presentation.isBlank()) {
+            this.view = View.HELP;
+            this.guideScroll = 0;
+            rebuild();
+            return;
+        }
+
+        if (choice == null || choice.id == null || choice.id.trim().isEmpty()
+                || "close".equalsIgnoreCase(choice.id)) {
+            this.choiceMade = true;
+            clearPendingOfferStateIfUnaccepted();
+            this.onClose();
+        } else if (isRejectChoice(choice) && !hasAcceptedQuestState(questState)) {
+            this.choiceMade = true;
+            clearPendingOfferStateIfUnaccepted();
+            this.onClose();
+        } else {
+            handleChoice(choice);
+        }
+    }
+
+    // ------------------------------------------------------------ help view
+
+    private void initHelp() {
+        QuestNodePresentation.Help help = node.help();
+        List<Boolean> offHand = new ArrayList<>();
+        List<Integer> returned = new ArrayList<>();
+        for (QuestNodePresentation.GuideStep step : help.guide()) {
+            offHand.add(step.usesOffHand());
+            returned.add(step.returned().size());
+        }
+
+        // Measured against the panel's content width, not the screen's: the guide body wraps
+        // inside the panel, and measuring against the screen counts far too few lines.
+        int probeWrap = QuestMixingGuideLayout.probeBodyWrapWidth(
+                this.width, this.height, this.font.lineHeight);
+        int bodyLines = this.font.split(QuestScreenDraw.literal(help.body()), probeWrap).size();
+        this.guideLayout = QuestMixingGuideLayout.calculate(this.width, this.height,
+                this.font.lineHeight, bodyLines, offHand, returned, this.guideScroll);
+        this.guideScroll = clamp(this.guideScroll, 0, guideLayout.scrollMax());
+
+        ScreenRect back = guideLayout.backButton();
+        Button button = Button.builder(QuestScreenDraw.text(QuestScreenText.HELP_BACK), btn -> {
+                    this.view = View.DIALOGUE;
+                    rebuild();
+                })
+                .bounds(back.x(), back.y(), back.width(), back.height())
+                .build();
+        addRenderableWidget(button);
+        setInitialFocus(button);
+    }
+
+    private void rebuild() {
+        this.clearWidgets();
+        init();
+    }
+
+    // ------------------------------------------------------------ rendering
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (view == View.HELP) {
+            renderHelp(graphics, mouseX, mouseY, partialTick);
+            return;
+        }
+
+        super.render(graphics, mouseX, mouseY, partialTick);
+        if (layout == null) return;
+
+        QuestScreenDraw.drawPortrait(graphics, this.font, layout,
+                dialogueView.npcName(), dialogueView.npcGender(), professionLabel());
+        QuestScreenDraw.drawStageLine(graphics, this.font, layout, stage());
+
+        // When the body scrolls, the last line of the box belongs to the hint rather than to the
+        // text. Drawing both in it puts one on top of the other, which is what a bare
+        // "draw the hint at the bottom" does on a short screen.
+        ScreenRect bodyBounds = layout.body().bounds();
+        ScreenRect textArea = layout.body().scrolls()
+                ? new ScreenRect(bodyBounds.x(), bodyBounds.y(), bodyBounds.width(),
+                        Math.max(this.font.lineHeight, bodyBounds.height() - this.font.lineHeight))
+                : bodyBounds;
+        QuestScreenDraw.drawWrapped(graphics, this.font, bodyComponent, textArea,
+                layout.body().wrapWidth(), bodyScroll, QuestScreenDraw.TEXT_COLOR);
+
+        if (layout.body().scrolls()) {
+            drawScrollHint(graphics, bodyBounds);
+        }
+
+        // The choice column scrolls too, and used to do it with nothing on screen to say so: below
+        // about 192 units the second and third choices were reachable only by a mouse wheel over an
+        // unmarked strip, and not at all from the keyboard. Same words and same colour as the
+        // body's, so one affordance means one thing on this screen.
+        if (layout.choices().scrolls()) {
+            drawChoiceScrollHint(graphics, layout.choices().scrollHint());
+        }
+
+        // M8 item 8: a choice that has been sent but not answered used to leave the screen looking
+        // exactly as it did before the click, so players clicked again. The buttons are already
+        // gone by then; this says why.
+        if (awaitingServer) {
+            ScreenRect body = layout.body().bounds();
+            graphics.drawString(this.font, QuestScreenDraw.fit(this.font,
+                            QuestScreenDraw.text(QuestScreenText.PENDING_CONFIRMATION), body.width()),
+                    body.x(), Math.max(body.y(), body.bottom() - this.font.lineHeight),
+                    QuestScreenDraw.CLAIM_COLOR, false);
+        }
+
+        drawDirections(graphics);
+
+        QuestScreenDraw.drawRewardPanel(graphics, this.font, layout,
+                rewardsOnAccept(), rewardsOnComplete(), keepItems());
+        QuestScreenDraw.drawRewardTooltip(graphics, this.font, layout,
+                rewardsOnAccept(), rewardsOnComplete(), keepItems(), mouseX, mouseY);
+    }
+
+    /**
+     * The help view.
+     *
+     * <p><b>{@code super.render} first, then draw on top</b> -- the same shape the dialogue path
+     * uses, and the reason is {@code Screen#render}: it begins with
+     * {@code this.renderBackground(...)} and only then draws the widgets. Painting the panel and its
+     * contents and <i>then</i> calling {@code super.render} re-entered this class's
+     * {@link #renderBackground} override, which fills the whole screen with {@code 0xCC000000} for
+     * any view but the dialogue -- an 80%-opaque quad over everything just drawn. Only the Back
+     * button survived, because a widget is drawn after the background. The panel fill and its
+     * outline therefore live in the background override now, where they belong, and everything
+     * below is drawn after the widgets rather than before them.
+     */
+    private void renderHelp(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
+        if (guideLayout == null) return;
+
+        QuestNodePresentation.Help help = node.help();
+        Component title = help.title().isBlank()
+                ? QuestScreenDraw.text(QuestScreenText.HELP_TITLE_FALLBACK)
+                : QuestScreenDraw.literal(help.title());
+        graphics.drawString(this.font, QuestScreenDraw.fit(this.font, title, guideLayout.title().width()),
+                guideLayout.title().x(), guideLayout.title().y(), QuestScreenDraw.HEADING_COLOR, false);
+
+        if (!guideLayout.body().isEmpty()) {
+            QuestScreenDraw.drawWrapped(graphics, this.font, QuestScreenDraw.literal(help.body()),
+                    guideLayout.body(), guideLayout.bodyWrapWidth(), 0, QuestScreenDraw.TEXT_COLOR);
+        }
+
+        List<QuestNodePresentation.GuideStep> guide = help.guide();
+        // Two ways to end up with nothing to show, and both must say so. The node may carry no
+        // guide at all, or the panel may be too short to place a single row -- which used to be
+        // silent, because the message was tied to the content being empty rather than to the
+        // layout having produced no rows.
+        if (guide.isEmpty()
+                || (guideLayout.rows().isEmpty() && guideLayout.totalRowCount() > 0)) {
+            graphics.drawString(this.font, QuestScreenDraw.text(QuestScreenText.GUIDE_EMPTY),
+                    guideLayout.list().x(), guideLayout.list().y(), QuestScreenDraw.MUTED_COLOR, false);
+        }
+        for (QuestMixingGuideLayout.Row row : guideLayout.rows()) {
+            if (row.stepIndex() >= guide.size()) continue;
+            QuestNodePresentation.GuideStep step = guide.get(row.stepIndex());
+            QuestScreenDraw.drawItemIcon(graphics, this.font, row.mainHandIcon(), step.mainHand(), 1);
+            if (step.usesOffHand()) {
+                QuestScreenDraw.drawItemIcon(graphics, this.font, row.offHandIcon(), step.offHand(), 1);
+            }
+            // M11 F13. The "produces" marker was a one-pixel rule and the returned items had no
+            // marker at all, so the only thing telling the two icon groups apart on screen was
+            // which side of the row they were on -- with the difference stated in a tooltip. Both
+            // are now translated symbols, drawn in their own reserved rectangles.
+            if (!row.arrow().isEmpty()) {
+                drawMarker(graphics, row.arrow(), QuestScreenText.GUIDE_PRODUCES_MARKER);
+            }
+            if (!row.resultIcon().isEmpty() && !step.result().isBlank()) {
+                QuestScreenDraw.drawItemIcon(graphics, this.font, row.resultIcon(), step.result(), 1);
+            }
+            if (!row.returnedMarker().isEmpty()) {
+                drawMarker(graphics, row.returnedMarker(), QuestScreenText.GUIDE_RETURNED_MARKER);
+            }
+            for (int i = 0; i < row.returnedIcons().size() && i < step.returned().size(); i++) {
+                QuestScreenDraw.drawItemIcon(graphics, this.font, row.returnedIcons().get(i),
+                        step.returned().get(i), 1);
+            }
+            QuestScreenDraw.drawWrapped(graphics, this.font,
+                    QuestScreenDraw.text(QuestScreenText.GUIDE_STEP, row.stepIndex() + 1,
+                            QuestScreenDraw.literal(step.gesture())),
+                    row.gesture(), row.gestureWrapWidth(), 0, QuestScreenDraw.TEXT_COLOR);
+        }
+
+        renderGuideTooltip(graphics, mouseX, mouseY);
+    }
+
+    /** Item tooltips in the guide, so every icon can be identified by its real name. */
+    private void renderGuideTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+        List<QuestNodePresentation.GuideStep> guide = node.help().guide();
+        for (QuestMixingGuideLayout.Row row : guideLayout.rows()) {
+            if (row.stepIndex() >= guide.size()) continue;
+            QuestNodePresentation.GuideStep step = guide.get(row.stepIndex());
+            if (hovered(row.mainHandIcon(), mouseX, mouseY)) {
+                tooltip(graphics, QuestScreenText.GUIDE_MAIN_HAND, step.mainHand(), mouseX, mouseY);
+                return;
+            }
+            if (step.usesOffHand() && hovered(row.offHandIcon(), mouseX, mouseY)) {
+                tooltip(graphics, QuestScreenText.GUIDE_OFF_HAND, step.offHand(), mouseX, mouseY);
+                return;
+            }
+            if (hovered(row.resultIcon(), mouseX, mouseY) && !step.result().isBlank()) {
+                tooltip(graphics, QuestScreenText.GUIDE_RESULT, step.result(), mouseX, mouseY);
+                return;
+            }
+            for (int i = 0; i < row.returnedIcons().size() && i < step.returned().size(); i++) {
+                if (hovered(row.returnedIcons().get(i), mouseX, mouseY)) {
+                    tooltip(graphics, QuestScreenText.GUIDE_RETURNED, step.returned().get(i), mouseX, mouseY);
+                    return;
+                }
+            }
+            // The marker answers for the group it labels, so hovering the symbol says what it means.
+            if (hovered(row.returnedMarker(), mouseX, mouseY) && !step.returned().isEmpty()) {
+                tooltip(graphics, QuestScreenText.GUIDE_RETURNED, step.returned().get(0), mouseX, mouseY);
+                return;
+            }
+            if (hovered(row.arrow(), mouseX, mouseY) && !step.result().isBlank()) {
+                tooltip(graphics, QuestScreenText.GUIDE_RESULT, step.result(), mouseX, mouseY);
+                return;
+            }
+        }
+    }
+
+    /** One guide marker, centred in the rectangle the layout reserved for it. */
+    private void drawMarker(GuiGraphics graphics, ScreenRect at, String key) {
+        Component marker = QuestScreenDraw.text(key);
+        int x = at.x() + Math.max(0, (at.width() - this.font.width(marker)) / 2);
+        graphics.drawString(this.font, QuestScreenDraw.fit(this.font, marker, at.width()),
+                x, at.y(), QuestScreenDraw.MUTED_COLOR, false);
+    }
+
+    private void tooltip(GuiGraphics graphics, String roleKey, String itemId, int mouseX, int mouseY) {
+        graphics.renderTooltip(this.font, List.of(
+                        QuestScreenDraw.itemName(itemId).getVisualOrderText(),
+                        QuestScreenDraw.text(roleKey).getVisualOrderText()),
+                mouseX, mouseY);
+    }
+
+    private static boolean hovered(ScreenRect at, int mouseX, int mouseY) {
+        return !at.isEmpty() && mouseX >= at.x() && mouseX < at.right()
+                && mouseY >= at.y() && mouseY < at.bottom();
+    }
+
+    /**
+     * The per-spawner directions hint (M6), and the journal key the player actually has bound.
+     *
+     * <p>The key name comes from the live {@code KeyMapping}, never from a letter in this file, so
+     * rebinding the control rebinds the instruction.
+     */
+    private void drawDirections(GuiGraphics graphics) {
+        QuestDialogueLayout.RewardBlock rewards = layout.rewards();
+        int y = rewards.visible() ? rewards.panel().bottom() + 2 : layout.parchment().bottom() + 4;
+        if (y + this.font.lineHeight > this.height) return;
+
+        int x = QuestDialogueLayout.margin(this.width);
+        int maxWidth = Math.max(1, this.width - (x * 2));
+        if (!localDirections.isBlank()) {
+            graphics.drawString(this.font, QuestScreenDraw.fit(this.font,
+                            QuestScreenDraw.text(QuestScreenText.DIRECTIONS,
+                                    QuestScreenDraw.literal(localDirections)), maxWidth),
+                    x, y, QuestScreenDraw.MUTED_COLOR, false);
+            y += this.font.lineHeight + 1;
+        }
+        if (y + this.font.lineHeight <= this.height) {
+            String boundKey = Keybinds.OPEN_SKILL_SCREEN.getKey().getName();
+            graphics.drawString(this.font, QuestScreenDraw.fit(this.font,
+                            QuestScreenDraw.text(QuestKeyPrompt.openJournalMessageKey(boundKey),
+                                    Component.translatable(QuestKeyPrompt.openJournalArgumentKey(boundKey))),
+                            maxWidth),
+                    x, y, QuestScreenDraw.MUTED_COLOR, false);
+        }
+    }
+
+    private void drawScrollHint(GuiGraphics graphics, ScreenRect body) {
+        int y = body.bottom() - this.font.lineHeight;
+        if (y < body.y()) return;
+        Component hint = QuestScreenDraw.text(QuestScreenText.SCROLL_HINT);
+        graphics.drawString(this.font, QuestScreenDraw.fit(this.font, hint, body.width()),
+                body.x(), y, QuestScreenDraw.MUTED_COLOR, false);
+    }
+
+    /** The choice column's affordance, in the line the layout reserved under the last button. */
+    private void drawChoiceScrollHint(GuiGraphics graphics, ScreenRect at) {
+        if (at.isEmpty()) return;
+        Component hint = QuestScreenDraw.text(QuestScreenText.SCROLL_HINT);
+        graphics.drawString(this.font, QuestScreenDraw.fit(this.font, hint, at.width()),
+                at.x(), at.y(), QuestScreenDraw.MUTED_COLOR, false);
+    }
+
+    /**
+     * Everything that belongs <i>under</i> the widgets.
+     *
+     * <p>{@code Screen#render} calls this before it draws the renderables, so the parchment, the
+     * dim and the help panel all go here rather than being painted by {@code render} and then
+     * covered by a second pass through this method.
+     */
+    @Override
+    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.renderBackground(graphics, mouseX, mouseY, partialTick);
+        if (view == View.DIALOGUE && layout != null) {
+            QuestScreenDraw.drawParchment(graphics, layout);
+            return;
+        }
+        graphics.fill(0, 0, this.width, this.height, 0xCC000000);
+        if (view == View.HELP && guideLayout != null) {
+            ScreenRect panel = guideLayout.panel();
+            graphics.fill(panel.x(), panel.y(), panel.right(), panel.bottom(), 0xF2E8DCC8);
+            graphics.renderOutline(panel.x(), panel.y(), panel.width(), panel.height(), 0xFF8B6A45);
+        }
+    }
+
+    // ------------------------------------------------------------ input
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        int delta = (int) -Math.signum(scrollY);
+        if (delta == 0) return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+
+        if (view == View.HELP && guideLayout != null && guideLayout.scrolls()) {
+            guideScroll = clamp(guideScroll + delta, 0, guideLayout.scrollMax());
+            rebuild();
+            return true;
+        }
+        if (view == View.DIALOGUE && layout != null) {
+            if (layout.choices().scrolls() && hovered(layout.choices().bounds(), (int) mouseX, (int) mouseY)) {
+                choiceScroll = clamp(choiceScroll + delta, 0, layout.choices().scrollMax());
+                rebuild();
+                return true;
+            }
+            if (layout.body().scrolls()) {
+                bodyScroll = clamp(bodyScroll + delta, 0, layout.body().scrollMax());
+                return true;
+            }
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public boolean isPauseScreen() { return false; }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+            // Escape backs out of help rather than out of the conversation: the player opened a
+            // panel, and closing a panel should not abandon a quest.
+            if (view == View.HELP) {
+                view = View.DIALOGUE;
+                rebuild();
+                return true;
+            }
+            this.onClose();
+            return true;
+        }
+        if (view == View.DIALOGUE && layout != null) {
+            // Hidden choices come first. Vanilla's Tab walks the widgets that were added, and only
+            // the visible choices are added, so below about 192 units the second and third choices
+            // had no keyboard path at all -- while the body, which can be read by scrolling with a
+            // mouse over it, owned both page keys. The journal routes its page keys to the thing
+            // that scrolls; this now does the same.
+            if (layout.choices().scrolls()) {
+                if (keyCode == GLFW.GLFW_KEY_PAGE_DOWN) {
+                    choiceScroll = clamp(choiceScroll + 1, 0, layout.choices().scrollMax());
+                    rebuild();
+                    return true;
+                }
+                if (keyCode == GLFW.GLFW_KEY_PAGE_UP) {
+                    choiceScroll = clamp(choiceScroll - 1, 0, layout.choices().scrollMax());
+                    rebuild();
+                    return true;
+                }
+            } else if (layout.body().scrolls()) {
+                if (keyCode == GLFW.GLFW_KEY_PAGE_DOWN) {
+                    bodyScroll = clamp(bodyScroll + 1, 0, layout.body().scrollMax());
+                    return true;
+                }
+                if (keyCode == GLFW.GLFW_KEY_PAGE_UP) {
+                    bodyScroll = clamp(bodyScroll - 1, 0, layout.body().scrollMax());
+                    return true;
+                }
+            }
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    // ------------------------------------------------------------ quest plumbing
+
     private void handleChoice(QuestChoice choice) {
         this.choiceMade = true;
+        this.awaitingServer = true;
         QuestClient.sendTransition(questState.quest_id, choice.id, questGiverContext(), newResponse -> {
             if (newResponse != null && newResponse.error == null) {
-                String questStateId = resolveQuestStateId(newResponse);
-                // Refresh the screen with 3 arguments
-                Minecraft.getInstance().setScreen(new QuestDecisionScreen(newResponse, this.npcName,this.npcGender, this.npcUuid));
+                Minecraft.getInstance().setScreen(
+                        new QuestDecisionScreen(newResponse, this.npcName, this.npcGender, this.npcUuid));
             } else {
                 this.onClose();
             }
@@ -133,7 +574,7 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
 
     private JsonObject questGiverContext() {
         JsonObject context = new JsonObject();
-        String displayName = displayQuestGiverName(this.npcName);
+        String displayName = QuestTriggerResultPresentation.displayName(this.npcName);
         if (!displayName.isBlank()) {
             context.addProperty("quest_giver_name", displayName);
         }
@@ -143,23 +584,83 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
         return context;
     }
 
-    private static String displayQuestGiverName(String rawName) {
-        if (rawName == null) return "";
-        String cleaned = rawName.trim();
-        if (cleaned.isBlank()) return "";
-        if (!cleaned.contains(":")) return cleaned;
-        return cleaned.split(":", 2)[0].trim();
+    private List<QuestChoice> visibleChoices() {
+        if (dialogueView.completed() || questState == null || questState.choices == null) return List.of();
+        List<QuestChoice> choices = new ArrayList<>();
+        for (QuestChoice choice : questState.choices) {
+            if (choice != null) choices.add(choice);
+        }
+        return choices;
     }
 
-    private static String resolveQuestStateId(QuestResponse response) {
-        if (response == null) return "";
-        if (response.questStateId != null && !response.questStateId.isBlank()) {
-            return response.questStateId.trim();
-        }
-        if (response.quest_id <= 0) return "";
+    private boolean lockedAt(int index) {
+        List<DialogueOptionViewModel> options = dialogueView.options();
+        return index >= 0 && index < options.size() && options.get(index).locked();
+    }
 
-        ClientQuestEntry entry = ClientQuestTable.findByQuestId(Long.toString(response.quest_id));
-        return entry != null ? entry.questStateId() : "";
+    private String professionLabel() {
+        String fromView = dialogueView.professionLabel();
+        if (fromView != null && !fromView.isBlank()) return fromView;
+        return journalEntry == null ? "" : journalEntry.detail().questGiverProfession();
+    }
+
+    private ClientQuestEntry.Stage stage() {
+        if (node.stage().known()) {
+            QuestNodePresentation.Stage from = node.stage();
+            return new ClientQuestEntry.Stage(from.questlineKey(), from.index(), from.count(), from.label());
+        }
+        return journalEntry == null ? ClientQuestEntry.Stage.NONE : journalEntry.detail().stage();
+    }
+
+    private List<ClientQuestEntry.RewardItem> rewardsOnAccept() {
+        return preview(node.onAccept(),
+                journalEntry == null ? List.of() : journalEntry.detail().rewardsOnAccept());
+    }
+
+    private List<ClientQuestEntry.RewardItem> rewardsOnComplete() {
+        return preview(node.onComplete(),
+                journalEntry == null ? List.of() : journalEntry.detail().rewardsOnComplete());
+    }
+
+    private List<ClientQuestEntry.RewardItem> keepItems() {
+        return preview(node.keepItems(),
+                journalEntry == null ? List.of() : journalEntry.detail().keepItems());
+    }
+
+    /** The node's own preview wins; the journal entry is the fallback for a node that carries none. */
+    private static List<ClientQuestEntry.RewardItem> preview(
+            List<QuestNodePresentation.ItemPreview> fromNode,
+            List<ClientQuestEntry.RewardItem> fromJournal) {
+        if (fromNode == null || fromNode.isEmpty()) return fromJournal;
+        List<ClientQuestEntry.RewardItem> items = new ArrayList<>(fromNode.size());
+        for (QuestNodePresentation.ItemPreview item : fromNode) {
+            items.add(new ClientQuestEntry.RewardItem(item.id(), item.count()));
+        }
+        return items;
+    }
+
+    private ClientQuestEntry findJournalEntry() {
+        if (questState == null) return null;
+        if (questState.questStateId != null && !questState.questStateId.isBlank()) {
+            String wanted = questState.questStateId.trim();
+            for (ClientQuestEntry entry : ClientQuestTable.snapshot()) {
+                if (entry.questStateId().equals(wanted)) return entry;
+            }
+        }
+        if (questState.quest_id <= 0) return null;
+        return ClientQuestTable.findByQuestId(Long.toString(questState.quest_id));
+    }
+
+    /** Rowan's per-spawner directions hint (M6), read off the quest giver the player is talking to. */
+    private String readLocalDirections() {
+        Minecraft mc = Minecraft.getInstance();
+        if (npcUuid == null || mc.level == null) return "";
+        for (Entity entity : mc.level.entitiesForRendering()) {
+            if (npcUuid.equals(entity.getUUID()) && entity instanceof QuestGiverEntity giver) {
+                return giver.getLocalDirections();
+            }
+        }
+        return "";
     }
 
     private static boolean hasAcceptedQuestState(QuestResponse response) {
@@ -185,47 +686,17 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
         }
     }
 
-@Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        // 1. This automatically calls your custom renderBackground() below, THEN draws the buttons
-        super.render(graphics, mouseX, mouseY, partialTick);
-        DialoguePresentation.renderDialogue(
-                graphics,
-                this.font,
-                dialogueView,
-                dialogueLayout,
-                bodyComponent,
-                "Quest Update"
-        );
+    private static int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
     }
 
     @Override
-    public boolean isPauseScreen() { return false; }
-
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-            this.onClose();
-            return true;
-        }
-        return super.keyPressed(keyCode, scanCode, modifiers);
-    }
-
-    @Override
-    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        // 1. Renders the default Minecraft dark/blurred background first
-        super.renderBackground(graphics, mouseX, mouseY, partialTick);
-        DialoguePresentation.renderPaperBackground(graphics, this.width, this.height);
-    }
-
-@Override
     public void onClose() {
         if (!this.choiceMade && questState != null && !questState.completed && hasAcceptedQuestState(questState)) {
             QuestClient.abandonQuest(questState.quest_id);
         }
         clearPendingOfferStateIfUnaccepted();
-        
+
         Minecraft.getInstance().setScreen(null);
     }
-
 }

@@ -4,14 +4,13 @@ import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity;
 import com.seggellion.britannia_mod.entity.QuestGiverEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.phys.AABB;
 import org.slf4j.Logger;
 
@@ -21,6 +20,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Takes back what a quest lent the player once the quest is over: its escort, and its temporary
+ * items.
+ *
+ * <p>Rowan farming questline M1 (discovery D1, protocol section 1.5): only a stack carrying a
+ * TEMPORARY stamp -- one with a {@code quest_trigger_key}, see {@link QuestItemStamp} -- is ever
+ * deleted, and only when its quest is no longer active for this player. A stack with the pre-M1
+ * blanket stamp (no trigger key) was a permanent reward all along: instead of deleting it, the pass
+ * that would have deleted it strips the stamp and keeps the item. A stack without any stamp is never
+ * touched.
+ */
 public final class QuestCleanupService {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final int ESCORT_SEARCH_RADIUS = 160;
@@ -34,11 +44,13 @@ public final class QuestCleanupService {
 
         ServerLevel level = player.serverLevel();
         int removedEscorts = cleanupEscortNpc(player, level, quest);
-        int removedItems = removeQuestItems(player, quest);
+        Sweep items = sweepForQuitQuest(carriedSlots(player), player.getStringUUID(), quest);
+        if (items.changed()) player.inventoryMenu.broadcastChanges();
 
-        if (removedEscorts > 0 || removedItems > 0) {
-            LOGGER.info("Cleaned abandoned quest side effects player={} quest_state_id={} quest_id={} escorts={} items={}",
-                    player.getStringUUID(), quest.questStateId(), quest.questId(), removedEscorts, removedItems);
+        if (removedEscorts > 0 || items.changed()) {
+            LOGGER.info("Cleaned abandoned quest side effects player={} quest_state_id={} quest_id={} escorts={} items={} stripped_legacy_stamps={}",
+                    player.getStringUUID(), quest.questStateId(), quest.questId(), removedEscorts,
+                    items.removed(), items.stripped());
         }
     }
 
@@ -47,12 +59,48 @@ public final class QuestCleanupService {
 
         ActiveQuestIds active = ActiveQuestIds.from(activeQuests);
         int removedEscorts = cleanupStaleEscorts(player, active);
-        int removedItems = removeStaleQuestItems(player, active);
+        Sweep items = sweepForStaleQuests(carriedSlots(player), player.getStringUUID(), active);
+        if (items.changed()) player.inventoryMenu.broadcastChanges();
 
-        if (removedEscorts > 0 || removedItems > 0) {
-            LOGGER.info("Cleaned stale local quest side effects player={} escorts={} items={}",
-                    player.getStringUUID(), removedEscorts, removedItems);
+        if (removedEscorts > 0 || items.changed()) {
+            LOGGER.info("Cleaned stale local quest side effects player={} escorts={} items={} stripped_legacy_stamps={}",
+                    player.getStringUUID(), removedEscorts, items.removed(), items.stripped());
         }
+    }
+
+    /**
+     * The quit pass over one player's carried stacks: a TEMPORARY stamp of the quit quest owned by
+     * this player is deleted; a LEGACY stamp of the quit quest is stripped and kept. Package-private
+     * so the decision table can be unit-tested without a server player.
+     */
+    static Sweep sweepForQuitQuest(Iterable<NonNullList<ItemStack>> slotLists, String ownerUuid, ClientQuestEntry quest) {
+        return sweepItems(slotLists,
+            tag -> ownedBy(tag, ownerUuid) && matchesQuestItem(tag, quest),
+            tag -> matchesQuestItem(tag, quest));
+    }
+
+    /**
+     * The login/bootstrap pass: a TEMPORARY stamp owned by this player whose quest is no longer in
+     * the active journal is deleted (only when the stamp names a quest at all); a LEGACY stamp whose
+     * quest is no longer active, or that names no quest, is stripped and kept. Stamps of quests still
+     * in the journal are left exactly as they are.
+     */
+    static Sweep sweepForStaleQuests(Iterable<NonNullList<ItemStack>> slotLists, String ownerUuid,
+                                     Collection<ClientQuestEntry> activeQuests) {
+        return sweepForStaleQuests(slotLists, ownerUuid, ActiveQuestIds.from(activeQuests));
+    }
+
+    private static Sweep sweepForStaleQuests(Iterable<NonNullList<ItemStack>> slotLists, String ownerUuid,
+                                             ActiveQuestIds active) {
+        return sweepItems(slotLists,
+            tag -> ownedBy(tag, ownerUuid) && hasReliableQuestItemMetadata(tag) && !active.matches(tag),
+            tag -> !hasReliableQuestItemMetadata(tag) || !active.matches(tag));
+    }
+
+    /** Every slot a player carries: main inventory (hotbar included), armour, off hand. */
+    private static List<NonNullList<ItemStack>> carriedSlots(ServerPlayer player) {
+        Inventory inventory = player.getInventory();
+        return List.of(inventory.items, inventory.armor, inventory.offhand);
     }
 
     public static void clearSpawnerForRemovedQuestGiver(ServerLevel level, UUID npcId, String npcApiId, int cooldownTicks) {
@@ -132,40 +180,42 @@ public final class QuestCleanupService {
         return removed;
     }
 
-    private static int removeQuestItems(ServerPlayer player, ClientQuestEntry quest) {
-        return removeMatchingItems(player, tag -> ownedByPlayer(tag, player) && matchesQuestItem(tag, quest));
-    }
-
-    private static int removeStaleQuestItems(ServerPlayer player, ActiveQuestIds active) {
-        return removeMatchingItems(player, tag -> ownedByPlayer(tag, player) && hasReliableQuestItemMetadata(tag) && !active.matches(tag));
-    }
-
-    private static int removeMatchingItems(ServerPlayer player, TagPredicate predicate) {
-        Inventory inventory = player.getInventory();
-        int removed = 0;
-        removed += removeMatchingItems(inventory.items, predicate);
-        removed += removeMatchingItems(inventory.armor, predicate);
-        removed += removeMatchingItems(inventory.offhand, predicate);
-        if (removed > 0) {
-            player.inventoryMenu.broadcastChanges();
+    /** Items deleted and legacy stamps stripped by one pass over the inventory, armour and off hand. */
+    record Sweep(int removed, int stripped) {
+        boolean changed() {
+            return removed > 0 || stripped > 0;
         }
-        return removed;
     }
 
-    private static int removeMatchingItems(net.minecraft.core.NonNullList<ItemStack> items, TagPredicate predicate) {
+    /**
+     * One pass over the given slots. A TEMPORARY stamp inside {@code deleteScope} is deleted; a
+     * LEGACY stamp inside {@code stripScope} is stripped and the item kept; anything else -- an
+     * unstamped stack, or a stamp whose quest is still running -- is left exactly as it was.
+     * Nothing is ever deleted without a trigger key, and nothing legacy is ever deleted.
+     */
+    private static Sweep sweepItems(Iterable<NonNullList<ItemStack>> slotLists, TagPredicate deleteScope,
+                                    TagPredicate stripScope) {
         int removed = 0;
-        for (int i = 0; i < items.size(); i++) {
-            ItemStack stack = items.get(i);
-            if (stack.isEmpty()) continue;
+        int stripped = 0;
+        for (NonNullList<ItemStack> slots : slotLists) {
+            for (int i = 0; i < slots.size(); i++) {
+                ItemStack stack = slots.get(i);
+                if (stack.isEmpty()) continue;
 
-            CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-            CompoundTag tag = customData.copyTag();
-            if (predicate.test(tag)) {
-                removed += stack.getCount();
-                items.set(i, ItemStack.EMPTY);
+                CompoundTag tag = QuestItemStamp.read(stack);
+                if (!QuestItemStamp.isStamped(tag)) continue;
+
+                if (QuestItemStamp.isTemporary(tag)) {
+                    if (deleteScope.test(tag)) {
+                        removed += stack.getCount();
+                        slots.set(i, ItemStack.EMPTY);
+                    }
+                } else if (stripScope.test(tag) && QuestItemStamp.strip(stack)) {
+                    stripped += stack.getCount();
+                }
             }
         }
-        return removed;
+        return new Sweep(removed, stripped);
     }
 
     private static void clearNearbySpawners(ServerLevel level, BlockPos center, UUID npcId, String npcApiId, int cooldownTicks) {
@@ -214,25 +264,26 @@ public final class QuestCleanupService {
     }
 
     private static boolean matchesQuestItem(CompoundTag tag, ClientQuestEntry quest) {
-        if (!quest.questStateId().isBlank() && quest.questStateId().equals(tag.getString("quest_state_id"))) {
+        if (!quest.questStateId().isBlank() && quest.questStateId().equals(tag.getString(QuestItemStamp.QUEST_STATE_ID))) {
             return true;
         }
-        if (!quest.questId().isBlank() && quest.questId().equals(Long.toString(tag.getLong("quest_id")))) {
+        if (!quest.questId().isBlank() && quest.questId().equals(Long.toString(tag.getLong(QuestItemStamp.QUEST_ID)))) {
             return true;
         }
-        if (!quest.questKey().isBlank() && quest.questKey().equals(tag.getString("quest_key"))) {
+        if (!quest.questKey().isBlank() && quest.questKey().equals(tag.getString(QuestItemStamp.QUEST_KEY))) {
             return true;
         }
         return false;
     }
 
-    private static boolean ownedByPlayer(CompoundTag tag, ServerPlayer player) {
-        String ownerUuid = tag.getString("quest_owner_uuid");
-        return !ownerUuid.isBlank() && ownerUuid.equals(player.getStringUUID());
+    private static boolean ownedBy(CompoundTag tag, String ownerUuid) {
+        String stampedOwner = tag.getString(QuestItemStamp.OWNER_UUID);
+        return !stampedOwner.isBlank() && stampedOwner.equals(ownerUuid);
     }
 
     private static boolean hasReliableQuestItemMetadata(CompoundTag tag) {
-        return tag.contains("quest_state_id") || tag.contains("quest_id") || tag.contains("quest_key");
+        return tag.contains(QuestItemStamp.QUEST_STATE_ID) || tag.contains(QuestItemStamp.QUEST_ID)
+                || tag.contains(QuestItemStamp.QUEST_KEY);
     }
 
     private static boolean hasReliableQuestMetadata(QuestGiverEntity entity) {
@@ -320,14 +371,14 @@ public final class QuestCleanupService {
         }
 
         boolean matches(CompoundTag tag) {
-            String stateId = tag.getString("quest_state_id");
+            String stateId = tag.getString(QuestItemStamp.QUEST_STATE_ID);
             if (!stateId.isBlank()) return questStateIds.contains(stateId);
 
-            if (tag.contains("quest_id")) {
-                return questIds.contains(Long.toString(tag.getLong("quest_id")));
+            if (tag.contains(QuestItemStamp.QUEST_ID)) {
+                return questIds.contains(Long.toString(tag.getLong(QuestItemStamp.QUEST_ID)));
             }
 
-            String questKey = tag.getString("quest_key");
+            String questKey = tag.getString(QuestItemStamp.QUEST_KEY);
             return !questKey.isBlank() && questKeys.contains(questKey);
         }
 

@@ -1,0 +1,19 @@
+{
+  "protocol_version": 1,
+  "event_uuid": "3d2a0f8b-6b6c-4d2c-9d5a-0e7b8f1c2d3e",
+  "request_uuid": "8d1f2c3a-4b5e-4f60-9a71-2c3d4e5f6a7b",
+  "player_uuid": "069a79f4-44e9-4726-a5be-fca90e38aaf5",
+  "action": "crop_harvest",
+  "occurred_at": "2026-09-06T21:40:00Z",
+  "dimension_key": "minecraft:overworld",
+  "position": {"x": 1203, "y": 64, "z": -488},
+  "subject": {
+    "plot_key": "minecraft:overworld:1203:64:-488",
+    "crop_id": "carrot",
+    "crop_cycle_uuid": "b1b3d4a0-1f7e-4c0d-8f4c-6a2e9c1f0a11",
+    "planter_uuid": "069a79f4-44e9-4726-a5be-fca90e38aaf5",
+    "community_plot": true,
+    "yield": 3
+  },
+  "target": {"quest_state_id": "9005", "node_id": 1305, "trigger_key": "crop_harvested"}
+}

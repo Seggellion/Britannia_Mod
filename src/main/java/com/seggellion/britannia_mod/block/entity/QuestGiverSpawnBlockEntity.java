@@ -32,10 +32,83 @@ public class QuestGiverSpawnBlockEntity extends BlockEntity {
     private String gender = "female";
     private int spawnRadius = 5;
 
+    /**
+     * A per-spawner, per-instance hint saying where this particular quest giver's landmarks are
+     * ("the well is behind the mill"). Discovery 6.5: nothing in the configuration could express
+     * that, because the city name is a routing key for escorts and node bodies are global text.
+     *
+     * <p>It is presentation only. It never reaches Rails and never touches the identity: two Rowans
+     * with different hints are still the same {@code origin_npc}.
+     */
+    private String directions = "";
+
     // For Escorts
     private String escortDestination = "";
     private static final List<String> ESCORT_DESTINATIONS = List.of("Jhelom", "Vesper", "Ocllo", "Buccaneer's Den", "Cove", "Britain", "Minoc", "Moonglow", "Trinsic", "Yew", "Skara Brae", "New Magincia", "Serpent's Hold", "Nujel'm");
     private static final Random RANDOM = new Random();
+
+    /**
+     * The farming quest giver's archetype, and -- character for character -- the identity Rails
+     * joins on in {@code quests.origin_npc}. Every Rowan the block places resolves to this string
+     * whatever else is configured on the spawner, which is what lets two of them offer one
+     * questline (Rowan farming questline M6).
+     */
+    public static final String ROWAN_ARCHETYPE = "Rowan";
+
+    /**
+     * The archetypes the configuration screen offers, mirrored here so the SERVER can refuse a
+     * crafted packet naming anything else (Rowan farming questline M1, discovery D3). The screen's
+     * list is client-only code; this one is the authority, and a unit test keeps the two identical.
+     */
+    public static final List<String> SUPPORTED_ARCHETYPES = List.of(
+            "Zorathiel", "Lord British", "Iolo", "Dupre", "Shamino", ROWAN_ARCHETYPE,
+            "Generic Escort", "Generic Combat");
+
+    /**
+     * The outfit an archetype is dressed in when it is first spawned, keyed by the entries
+     * {@code CitizenClothingLayer.OUTFIT_TEXTURES} already knows. Only archetypes listed here get
+     * an outfit at all: everyone else keeps the empty key they have always had, which renders each
+     * slot's default texture. No new texture ships for this -- {@code farmer} is boots and a half
+     * apron, both of which exist for both genders.
+     */
+    private static final java.util.Map<String, String> ARCHETYPE_OUTFITS =
+            java.util.Map.of(ROWAN_ARCHETYPE, "farmer");
+
+    /**
+     * Longest per-spawner directions hint the server stores. A hint is one line of "the well is
+     * behind the mill" guidance shown next to a quest giver, not prose: 128 characters is twice the
+     * bound already applied to the city and the Rails api id ({@code MAX_TEXT_LENGTH}), still fits a
+     * single chat line, and bounds both the block entity's NBT and anything that echoes it.
+     */
+    public static final int MAX_DIRECTIONS_LENGTH = 128;
+
+    public static boolean supportsArchetype(String npcName) {
+        return npcName != null && SUPPORTED_ARCHETYPES.contains(npcName);
+    }
+
+    /**
+     * A directions hint reduced to something safe to store, display and log: one line, with every
+     * control character turned into a space rather than deleted (deleting them runs the words
+     * together), runs of whitespace collapsed, the ends trimmed, and the result cut to
+     * {@link #MAX_DIRECTIONS_LENGTH} without splitting a surrogate pair.
+     *
+     * <p>The packet path never needs this -- {@code QuestGiverSpawnConfigC2SPayload.shapeViolation}
+     * refuses a hint that is too long or carries control characters outright, so an administrator is
+     * told rather than silently edited. It exists for every other way a value can reach this field:
+     * hand-edited NBT, a world carried across versions, or a future caller.
+     */
+    public static String sanitizeDirections(String raw) {
+        if (raw == null) return "";
+        StringBuilder kept = new StringBuilder(raw.length());
+        raw.codePoints().forEach(codePoint ->
+                kept.appendCodePoint(Character.isISOControl(codePoint) ? ' ' : codePoint));
+        String cleaned = kept.toString().replaceAll("\\s+", " ").trim();
+        if (cleaned.length() <= MAX_DIRECTIONS_LENGTH) return cleaned;
+
+        int end = MAX_DIRECTIONS_LENGTH;
+        if (Character.isHighSurrogate(cleaned.charAt(end - 1))) end--;
+        return cleaned.substring(0, end).trim();
+    }
 
     private UUID spawnedNpcId = null;
     private CompoundTag savedNpcData = null;
@@ -52,6 +125,7 @@ public class QuestGiverSpawnBlockEntity extends BlockEntity {
     public String getCustomApiId() { return customApiId; }
     public SpawnerMode getMode() { return mode; }
     public int getSpawnRadius() { return spawnRadius; }
+    public String getDirections() { return directions; }
 
     public void serverTick() {
         if (level == null || level.isClientSide) return;
@@ -175,8 +249,17 @@ enforceBoundary(sl, (QuestGiverEntity) currentNpc); // Active leash
                 npc.setQuestGiverApiId(npcName == null ? "" : npcName.trim());
                 npc.setCityName(cityName);
                 npc.setGender(this.gender != null && !this.gender.isEmpty() ? this.gender : "female");
+
+                // Only archetypes that ask for one; every other giver keeps the empty key it has
+                // always had, so its appearance is untouched.
+                String outfitKey = ARCHETYPE_OUTFITS.get(npcName);
+                if (outfitKey != null) npc.setOutfitKey(outfitKey);
             }
         }
+
+        // The block is the authority on its own hint, on every path: a fresh spawn, a respawn
+        // after the NPC was lost, and an NPC rebuilt from the snapshot alike.
+        npc.setLocalDirections(this.directions);
 
         sl.addFreshEntity(npc);
         spawnedNpcId = npc.getUUID();
@@ -225,16 +308,27 @@ enforceBoundary(sl, (QuestGiverEntity) currentNpc); // Active leash
         setChanged();
     }
 
-    // Now accepts spawnRadius
-    public void applyConfig(String npcName, String cityName, String customApiId, String gender, int spawnRadius) {
+    /**
+     * Applies a configuration and restarts the NPC.
+     *
+     * <p>A blank {@code directions} leaves the stored hint alone rather than clearing it. That is
+     * what makes the field safe to append to the configuration packet: a client that never sends it
+     * -- an older jar, or any save from a screen whose hint box was left empty -- still configures
+     * everything else without destroying a hint someone typed. Replacing a hint means typing the
+     * new one; the screen's own label says so.
+     */
+    public void applyConfig(String npcName, String cityName, String customApiId, String gender,
+                            int spawnRadius, String directions) {
         if (!(level instanceof ServerLevel sl)) return;
 
         this.npcName = npcName;
         this.cityName = cityName;
         this.customApiId = customApiId;
-        this.gender = gender; 
+        this.gender = gender;
         this.spawnRadius = spawnRadius;
-        this.savedNpcData = null; 
+        String cleanedDirections = sanitizeDirections(directions);
+        if (!cleanedDirections.isEmpty()) this.directions = cleanedDirections;
+        this.savedNpcData = null;
 
         onDestroyed(sl); 
         spawnCooldown = 0; 
@@ -331,6 +425,7 @@ enforceBoundary(sl, (QuestGiverEntity) currentNpc); // Active leash
         tag.putString("EscortDestination", escortDestination);
         tag.putString("Gender", gender);
         tag.putInt("SpawnRadius", spawnRadius); // Save radius
+        tag.putString("Directions", directions);
         if (spawnedNpcId != null) tag.putUUID("SpawnedNpcId", spawnedNpcId);
         if (savedNpcData != null) tag.put("SavedNpcData", savedNpcData);
     }
@@ -346,6 +441,9 @@ enforceBoundary(sl, (QuestGiverEntity) currentNpc); // Active leash
         escortDestination = tag.getString("EscortDestination");
         if (tag.contains("Gender")) gender = tag.getString("Gender"); 
         if (tag.contains("SpawnRadius")) spawnRadius = tag.getInt("SpawnRadius"); // Load radius
+        // Absent on every spawner saved before M6, and sanitized rather than trusted: this is the
+        // one path that can hand the field a value no packet gate ever looked at.
+        directions = sanitizeDirections(tag.getString("Directions"));
         if (tag.hasUUID("SpawnedNpcId")) spawnedNpcId = tag.getUUID("SpawnedNpcId");
         if (tag.contains("SavedNpcData")) savedNpcData = tag.getCompound("SavedNpcData");
     }

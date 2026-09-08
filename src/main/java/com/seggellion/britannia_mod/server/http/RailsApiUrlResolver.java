@@ -259,6 +259,29 @@ public final class RailsApiUrlResolver {
         RESOURCE_DEPOSIT_REMOVAL_PREVIEW_RESULT("v2/resource_deposit_removal_previews/:preview_uuid/result"),
         RESOURCE_DEPOSIT_REMOVALS_PENDING("v2/resource_deposit_removals/pending"),
         RESOURCE_DEPOSIT_REMOVAL_RESULT("v2/resource_deposit_removals/:operation_uuid/result"),
+        /**
+         * Rowan farming questline M3 (protocol sections 1.6, 1.7): the v2 reward-delivery tier.
+         * The pending listing serves on-demand reconciliation (the world bootstrap carries the
+         * same array at login); the result callback is where this server reports {@code applied}
+         * or {@code queued} once its own durable ledger and player marker exist.
+         */
+        QUEST_REWARD_DELIVERIES_PENDING("v2/quest_reward_deliveries/pending", "player_uuid"),
+        QUEST_REWARD_DELIVERY_RESULT("v2/quest_reward_deliveries/:delivery_uuid/result"),
+        /**
+         * Rowan farming questline M5 (protocol section 2.3): where this server reports a farming
+         * mutation it observed at an authoritative success point. Same v2 tier as the delivery
+         * endpoints; the body carries a server-minted {@code event_uuid} that is Rails'
+         * idempotency key, so a retry after a lost response advances nothing twice.
+         */
+        QUEST_ACTION_EVENTS("v2/quest_action_events"),
+        /**
+         * Rowan farming questline M9 item 7: where this server asks for one bounded replacement of
+         * a piece of mandatory tutorial equipment, on behalf of a player who lost theirs. The bound
+         * lives in Rails -- per player, per quest, per item -- so it survives a reconnect and a
+         * quest restart, and the replacement comes back as an ordinary reward delivery rather than
+         * down a second path.
+         */
+        QUEST_EQUIPMENT_REISSUES("v2/quest_equipment_reissues"),
         BANKING_OPEN("banking/open"),
         BANKING_DEPOSIT_PREPARE("banking/deposit/prepare"),
         BANKING_WITHDRAWAL_PREPARE("banking/withdrawal/prepare"),

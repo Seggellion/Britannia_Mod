@@ -76,6 +76,15 @@ public final class DialoguePresentation {
         return button;
     }
 
+    /**
+     * Rowan farming questline M11: the portrait branch is now chosen by
+     * {@link DialogueLayout#portraitVisible()} as well as by there being a name, because the layout
+     * drops the portrait column on a narrow screen rather than squashing the body into a negative
+     * wrap width. When it does, the quest giver's name becomes the heading -- the name is not lost
+     * with the picture -- and the body wraps to {@link DialogueLayout#maxTextWidth()} as computed
+     * for the arrangement actually in use, rather than to that width plus a portrait's worth of
+     * units.
+     */
     public static void renderDialogue(
             GuiGraphics graphics,
             Font font,
@@ -84,7 +93,7 @@ public final class DialoguePresentation {
             Component bodyComponent,
             String fallbackTitle
     ) {
-        if (!view.npcName().isEmpty()) {
+        if (!view.npcName().isEmpty() && layout.portraitVisible()) {
             ResourceLocation portrait = PortraitDownloader.getPortrait(view.npcName(), view.npcGender());
             graphics.blit(
                     portrait,
@@ -128,11 +137,13 @@ public final class DialoguePresentation {
                     TEXT_COLOR
             );
         } else {
-            Component title = text(view.title().isBlank() ? fallbackTitle : view.title());
+            Component heading = text(view.npcName().isEmpty()
+                    ? (view.title().isBlank() ? fallbackTitle : view.title())
+                    : view.npcName());
             graphics.drawString(
                     font,
-                    title,
-                    DialogueLayout.PORTRAIT_X,
+                    heading,
+                    layout.textX(),
                     layout.portraitY(),
                     TEXT_COLOR,
                     false
@@ -140,9 +151,9 @@ public final class DialoguePresentation {
             graphics.drawWordWrap(
                     font,
                     bodyComponent,
-                    DialogueLayout.PORTRAIT_X,
+                    layout.textX(),
                     layout.textY() + 15,
-                    layout.maxTextWidth() + PORTRAIT_VISIBLE_SIZE,
+                    layout.maxTextWidth(),
                     TEXT_COLOR
             );
         }

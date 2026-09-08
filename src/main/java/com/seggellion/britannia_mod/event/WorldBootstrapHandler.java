@@ -14,6 +14,7 @@ import com.seggellion.britannia_mod.quest.QuestCleanupService;
 import com.seggellion.britannia_mod.quest.QuestJournalRefresh;
 import com.seggellion.britannia_mod.quest.QuestObjectiveWatcher;
 import com.seggellion.britannia_mod.quest.ServerQuestTable;
+import com.seggellion.britannia_mod.quest.delivery.QuestRewardDeliveryReconciler;
 import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
 import com.seggellion.britannia_mod.server.http.BoundedHttp;
 import com.seggellion.britannia_mod.server.http.ServerHttpExecutor;
@@ -142,8 +143,11 @@ public final class WorldBootstrapHandler {
         ServerQuestTable.replaceFromBootstrap(player, data.acceptedQuests());
         QuestCleanupService.cleanupStaleLocalQuestState(player, data.acceptedQuests());
         ClientboundSyncQuestsPayload.send(player, ServerQuestTable.snapshot(player));
-        LOGGER.info("World bootstrap applied: {} fish, {} regions, {} cities",
-            data.fish().size(), data.regions().size(), data.cities().size());
+        // M3 (protocol 1.6, 1.8): with the journal installed, apply what Rails still holds as
+        // pending for this player and sweep the local ledger's open rows.
+        QuestRewardDeliveryReconciler.onLogin(player, data.pendingRewardDeliveries());
+        LOGGER.info("World bootstrap applied: {} fish, {} regions, {} cities, {} pending reward deliveries",
+            data.fish().size(), data.regions().size(), data.cities().size(), data.pendingRewardDeliveries().size());
     }
 
     /**

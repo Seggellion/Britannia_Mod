@@ -11,40 +11,45 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.glfw.GLFW;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * The quest journal.
+ *
+ * <h2>Milestone 8</h2>
+ * Item 3 wants the quest number, the next action, the ordered progress and the return-to-Rowan
+ * state in every entry, and item 9 wants the panel responsive with keyboard focus and a Quit
+ * confirmation. The geometry for all of that is in {@link QuestJournalLayout}, where JUnit can
+ * assert it; this file holds state and events.
+ *
+ * <p>The panel was a fixed 370x260 centred on the screen, which is wider and taller than the screen
+ * itself at 320x240 scaled units -- a 1280x1024 window at GUI scale 4, or any window with Force
+ * Unicode Font on. It is now clamped, and rows are measured from their own content instead of
+ * every row taking a constant 62 units whether it has five progress steps or none.
+ *
+ * <p>Quit no longer fires on the first press. It arms a confirmation, because quitting a quest is
+ * not undoable from here and the button sat one row away from the mouse wheel.
+ */
 public class QuestJournalScreen extends Screen {
-    private static final int PANEL_W = 370;
-    private static final int PANEL_H = 260;
-    private static final int ROW_H = 62;
-    private static final int ROW_GAP = 4;
-    private static final int QUIT_W = 46;
-    private static final int QUIT_H = 20;
-    private static final DateTimeFormatter ACCEPTED_AT_FORMAT =
-            DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a");
 
-    // Define the path to your custom background texture
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/screens/quest-journal.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            "britannia_mod", "textures/screens/quest-journal.png");
 
-    private int panelLeft;
-    private int panelTop;
+    private QuestJournalLayout layout;
     private int scrollOffset;
+    private int confirmingIndex = -1;
     private List<ClientQuestEntry> quests = List.of();
     private String lastSignature = "";
 
     public QuestJournalScreen() {
-        super(Component.literal("Quest Journal"));
+        super(Component.translatable(QuestScreenText.JOURNAL_TITLE));
     }
 
     @Override
     protected void init() {
-        panelLeft = (this.width - PANEL_W) / 2;
-        panelTop = (this.height - PANEL_H) / 2;
+        super.init();
         refreshWidgets();
     }
 
@@ -60,149 +65,284 @@ public class QuestJournalScreen extends Screen {
         this.clearWidgets();
         this.quests = ClientQuestTable.snapshot();
         this.lastSignature = signature(this.quests);
-        this.scrollOffset = Math.min(scrollOffset, maxScroll());
-
-        addRenderableWidget(Button.builder(Component.literal("Close"), b -> onClose())
-                .bounds(panelLeft + PANEL_W / 2 - 40, panelTop + PANEL_H - 28, 80, 20)
-                .build());
-
-        int rowTop = panelTop + 42;
-        // Increased the right margin from 14 to 40 to account for the scroll edge
-        int rowRight = panelLeft + PANEL_W - 40;
-        int visibleRows = visibleRows();
-
-        for (int slot = 0; slot < visibleRows; slot++) {
-            int questIndex = scrollOffset + slot;
-            if (questIndex >= quests.size()) break;
-
-            ClientQuestEntry quest = quests.get(questIndex);
-            int y = rowTop + slot * (ROW_H + ROW_GAP);
-            Button quit = Button.builder(Component.literal("Quit"), b -> {
-                        b.active = false;
-                        NetworkHandler.sendToServer(new ServerboundQuitQuestPayload(quest.questStateId()));
-                    })
-                    .bounds(rowRight - QUIT_W, y + (ROW_H - QUIT_H) / 2, QUIT_W, QUIT_H)
-                    .build();
-            addRenderableWidget(quit);
+        if (confirmingIndex >= this.quests.size()) {
+            confirmingIndex = -1;
         }
-    }
 
-    @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
-        drawPanel(graphics);
-        drawQuestRows(graphics);
-        super.render(graphics, mouseX, mouseY, partialTick);
-    }
+        List<Integer> stepCounts = new ArrayList<>(quests.size());
+        List<Boolean> claimPending = new ArrayList<>(quests.size());
+        for (ClientQuestEntry quest : quests) {
+            stepCounts.add(quest.detail().progress().size());
+            claimPending.add(quest.detail().claimPending());
+        }
 
-    private void drawPanel(GuiGraphics graphics) {
-        // Draw the custom background image instead of filled rectangles
-        graphics.blit(TEXTURE, panelLeft, panelTop, 0, 0, PANEL_W, PANEL_H, PANEL_W, PANEL_H);
-    }
+        this.layout = QuestJournalLayout.calculate(this.width, this.height, this.font.lineHeight,
+                stepCounts, claimPending, scrollOffset, confirmingIndex);
+        this.scrollOffset = layout.firstVisibleRow();
 
-    private void drawQuestRows(GuiGraphics graphics) {
-        if (quests.isEmpty()) {
-            Component empty = Component.literal("No active quests.");
-            int x = panelLeft + (PANEL_W - font.width(empty)) / 2;
-            graphics.drawString(font, empty, x, panelTop + 110, 0xFF6A3A22, false);
+        // Widgets are added in the layout's focus order, so vanilla's Tab handling walks them in
+        // the order QuestJournalLayoutTest asserts. While the confirmation is up it is the only
+        // thing focusable, which is what makes it a confirmation.
+        if (layout.confirmation().active()) {
+            addConfirmationWidgets();
             return;
         }
 
-        int rowTop = panelTop + 42;
-        // Increased the left and right margins from 14 to 40 
-        int rowLeft = panelLeft + 40;
-        int rowRight = panelLeft + PANEL_W - 40;
-        int textRight = rowRight - QUIT_W - 10;
-        int textWidth = textRight - rowLeft;
+        for (QuestJournalLayout.Row row : layout.rows()) {
+            ScreenRect at = row.quitButton();
+            if (at.isEmpty()) continue;
+            int index = row.entryIndex();
+            addRenderableWidget(Button.builder(QuestScreenDraw.text(QuestScreenText.JOURNAL_QUIT),
+                            b -> armQuit(index))
+                    .bounds(at.x(), at.y(), at.width(), at.height())
+                    .build());
+        }
 
-        for (int slot = 0; slot < visibleRows(); slot++) {
-            int questIndex = scrollOffset + slot;
-            if (questIndex >= quests.size()) break;
+        ScreenRect close = layout.closeButton();
+        Button closeButton = Button.builder(QuestScreenDraw.text(QuestScreenText.JOURNAL_CLOSE),
+                        b -> onClose())
+                .bounds(close.x(), close.y(), close.width(), close.height())
+                .build();
+        addRenderableWidget(closeButton);
+        if (layout.rows().isEmpty()) {
+            setInitialFocus(closeButton);
+        }
+    }
 
-            ClientQuestEntry quest = quests.get(questIndex);
-            int y = rowTop + slot * (ROW_H + ROW_GAP);
-            
-            // Rendering the background highlight strip (optional: you can remove this if it clashes with the texture)
-            graphics.fill(rowLeft, y, rowRight, y + ROW_H, 0x33A06B32);
+    private void addConfirmationWidgets() {
+        QuestJournalLayout.Confirmation confirmation = layout.confirmation();
+        ScreenRect cancel = confirmation.cancelButton();
+        Button cancelButton = Button.builder(QuestScreenDraw.text(QuestScreenText.QUIT_CONFIRM_NO),
+                        b -> {
+                            confirmingIndex = -1;
+                            refreshWidgets();
+                        })
+                .bounds(cancel.x(), cancel.y(), cancel.width(), cancel.height())
+                .build();
+        addRenderableWidget(cancelButton);
 
-            int lineY = y + 5;
-            graphics.drawString(font, fit(quest.name(), textWidth), rowLeft + 6, lineY, 0xFF3D1B0F, false);
-            lineY += 13;
+        ScreenRect confirm = confirmation.confirmButton();
+        addRenderableWidget(Button.builder(QuestScreenDraw.text(QuestScreenText.QUIT_CONFIRM_YES),
+                        b -> confirmQuit(confirmation.entryIndex()))
+                .bounds(confirm.x(), confirm.y(), confirm.width(), confirm.height())
+                .build());
 
-            graphics.drawString(font, fit("Given by: " + questGiverName(quest), textWidth), rowLeft + 6, lineY, 0xFF4C2614, false);
-            lineY += 13;
+        // Cancel takes focus, so a stray Enter keeps the quest rather than losing it.
+        setInitialFocus(cancelButton);
+    }
 
-            if (hasText(quest.briefDescription())) {
-                graphics.drawString(font, fit(quest.briefDescription(), textWidth), rowLeft + 6, lineY, 0xFF5C321C, false);
-                lineY += 13;
+    private void armQuit(int entryIndex) {
+        this.confirmingIndex = entryIndex;
+        refreshWidgets();
+    }
+
+    private void confirmQuit(int entryIndex) {
+        if (entryIndex >= 0 && entryIndex < quests.size()) {
+            NetworkHandler.sendToServer(new ServerboundQuitQuestPayload(quests.get(entryIndex).questStateId()));
+        }
+        this.confirmingIndex = -1;
+        refreshWidgets();
+    }
+
+    // ------------------------------------------------------------ rendering
+
+    /**
+     * {@code super.render} first, then anything that belongs on top of the widgets.
+     *
+     * <p>{@code Screen#render} begins with {@code this.renderBackground(...)} and then draws the
+     * renderables, so a screen that paints its panel and <i>then</i> calls {@code super.render}
+     * is relying on its own background override being harmless. This one's was -- it was empty --
+     * but the arrangement is the same one that painted the help view of {@link QuestDecisionScreen}
+     * black, and it only stays safe for as long as nobody gives this screen a real background. The
+     * panel, the rows and the confirmation now live in {@link #renderBackground}, which is where
+     * {@code Screen} already draws them from, in exactly the order they were drawn in before: panel,
+     * header, rows, confirmation dim, then the buttons.
+     */
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
+    }
+
+    @Override
+    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (layout == null) return;
+
+        ScreenRect panel = layout.panel();
+        graphics.blit(TEXTURE, panel.x(), panel.y(), 0, 0, panel.width(), panel.height(),
+                panel.width(), panel.height());
+
+        drawHeader(graphics);
+        drawRows(graphics);
+        drawConfirmationBackdrop(graphics);
+    }
+
+    private void drawHeader(GuiGraphics graphics) {
+        ScreenRect header = layout.header();
+        if (header.isEmpty()) return;
+        Component title = layout.isEmpty()
+                ? QuestScreenDraw.text(QuestScreenText.JOURNAL_TITLE)
+                : QuestScreenDraw.text(QuestScreenText.JOURNAL_COUNT,
+                        layout.visibleRowCount(), layout.totalRowCount());
+        graphics.drawString(this.font, QuestScreenDraw.fit(this.font, title, header.width()),
+                header.x(), header.y(), QuestScreenDraw.HEADING_COLOR, false);
+    }
+
+    private void drawRows(GuiGraphics graphics) {
+        if (layout.isEmpty()) {
+            Component empty = QuestScreenDraw.text(QuestScreenText.JOURNAL_EMPTY);
+            ScreenRect list = layout.list();
+            graphics.drawString(this.font, QuestScreenDraw.fit(this.font, empty, list.width()),
+                    list.x() + Math.max(0, (list.width() - this.font.width(empty)) / 2),
+                    list.y() + Math.max(0, (list.height() - this.font.lineHeight) / 2),
+                    QuestScreenDraw.MUTED_COLOR, false);
+            return;
+        }
+
+        for (QuestJournalLayout.Row row : layout.rows()) {
+            if (row.entryIndex() >= quests.size()) continue;
+            ClientQuestEntry quest = quests.get(row.entryIndex());
+            ClientQuestEntry.JournalDetail detail = quest.detail();
+
+            graphics.fill(row.bounds().x(), row.bounds().y(), row.bounds().right(),
+                    row.bounds().bottom(), 0x33A06B32);
+
+            drawLine(graphics, row.stageLabel(), stageLine(detail), QuestScreenDraw.HEADING_COLOR);
+            drawLine(graphics, row.title(), QuestScreenDraw.literal(quest.name()),
+                    QuestScreenDraw.HEADING_COLOR);
+            drawLine(graphics, row.objective(), objectiveLine(quest), QuestScreenDraw.TEXT_COLOR);
+
+            List<ClientQuestEntry.ProgressStep> steps = detail.progress();
+            for (int i = 0; i < row.progressRows().size() && i < steps.size(); i++) {
+                QuestScreenDraw.drawProgressStep(graphics, this.font, row.progressRows().get(i),
+                        steps.get(i));
             }
-
-            String acceptedAt = formatAcceptedAt(quest.acceptedAt());
-            if (hasText(acceptedAt)) {
-                graphics.drawString(font, fit("Accepted: " + acceptedAt, textWidth), rowLeft + 6, lineY, 0xFF7A4B2C, false);
+            // M11 deferred defect F11: the count goes on its own reserved line. It used to be
+            // drawn at the LAST step's rectangle -- over a step, not after it -- and only when at
+            // least one step had been drawn, so at the smallest size, where no step fits, the row
+            // said nothing about the steps it was hiding.
+            if (row.hiddenSteps() > 0 && !row.hiddenStepsLine().isEmpty()) {
+                drawLine(graphics, row.hiddenStepsLine(),
+                        QuestScreenDraw.text(QuestScreenText.JOURNAL_MORE_STEPS, row.hiddenSteps()),
+                        QuestScreenDraw.MUTED_COLOR);
+            }
+            if (!row.claimBadge().isEmpty()) {
+                drawLine(graphics, row.claimBadge(),
+                        QuestScreenDraw.text(QuestScreenText.JOURNAL_RETURN_TO, giverName(quest)),
+                        QuestScreenDraw.CLAIM_COLOR);
             }
         }
     }
 
+    /**
+     * The confirmation's dim and panel, drawn before the widgets so its two buttons -- the only
+     * widgets on the screen while it is up -- land on top of it rather than under it.
+     */
+    private void drawConfirmationBackdrop(GuiGraphics graphics) {
+        QuestJournalLayout.Confirmation confirmation = layout.confirmation();
+        if (!confirmation.active()) return;
+
+        ScreenRect box = confirmation.panel();
+        graphics.fill(0, 0, this.width, this.height, 0x99000000);
+        graphics.fill(box.x(), box.y(), box.right(), box.bottom(), 0xF2E8DCC8);
+        graphics.renderOutline(box.x(), box.y(), box.width(), box.height(), 0xFF8B0000);
+
+        String name = confirmation.entryIndex() >= 0 && confirmation.entryIndex() < quests.size()
+                ? quests.get(confirmation.entryIndex()).name()
+                : "";
+        Component message = QuestScreenDraw.text(QuestScreenText.QUIT_CONFIRM_MESSAGE,
+                QuestScreenDraw.literal(name));
+        QuestScreenDraw.drawWrapped(graphics, this.font, message, confirmation.message(),
+                confirmation.messageWrapWidth(), 0, QuestScreenDraw.TEXT_COLOR);
+    }
+
+    private void drawLine(GuiGraphics graphics, ScreenRect at, Component text, int color) {
+        if (at.isEmpty()) return;
+        graphics.drawString(this.font, QuestScreenDraw.fit(this.font, text, at.width()),
+                at.x(), at.y(), color, false);
+    }
+
+    private Component stageLine(ClientQuestEntry.JournalDetail detail) {
+        ClientQuestEntry.Stage stage = detail.stage();
+        return stage.known()
+                ? QuestScreenDraw.text(QuestScreenText.STAGE, stage.index(), stage.count())
+                : QuestScreenDraw.text(QuestScreenText.STAGE_UNKNOWN);
+    }
+
+    /**
+     * The next action.
+     *
+     * <p>Prefers the node's objective; falls back to the quest's own brief description, and then to
+     * a translated "nothing pending" line. Never blank, so a row never looks like it lost its text.
+     */
+    private Component objectiveLine(ClientQuestEntry quest) {
+        String objective = quest.detail().objective();
+        if (!objective.isBlank()) {
+            return QuestScreenDraw.text(QuestScreenText.JOURNAL_OBJECTIVE,
+                    QuestScreenDraw.literal(objective));
+        }
+        if (!quest.briefDescription().isBlank()) {
+            return QuestScreenDraw.text(QuestScreenText.JOURNAL_OBJECTIVE,
+                    QuestScreenDraw.literal(quest.briefDescription()));
+        }
+        return QuestScreenDraw.text(QuestScreenText.JOURNAL_OBJECTIVE_NONE);
+    }
+
+    private Component giverName(ClientQuestEntry quest) {
+        return quest.questGiverName().isBlank()
+                ? QuestScreenDraw.text(QuestScreenText.JOURNAL_GIVER_UNKNOWN)
+                : QuestScreenDraw.literal(quest.questGiverName());
+    }
+
+    // ------------------------------------------------------------ input
+
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        if (!isInsidePanel(mouseX, mouseY)) {
+        if (layout == null || layout.confirmation().active() || !isInsidePanel(mouseX, mouseY)) {
             return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
         }
-
         int next = scrollOffset - (int) Math.signum(scrollY);
-        scrollOffset = Math.max(0, Math.min(maxScroll(), next));
+        scrollOffset = Math.max(0, Math.min(layout.scrollMax(), next));
         refreshWidgets();
         return true;
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && !isInsidePanel(mouseX, mouseY)) {
+        if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && layout != null
+                && !layout.confirmation().active() && !isInsidePanel(mouseX, mouseY)) {
             onClose();
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    private boolean isInsidePanel(double mouseX, double mouseY) {
-        return mouseX >= panelLeft && mouseX <= panelLeft + PANEL_W
-                && mouseY >= panelTop && mouseY <= panelTop + PANEL_H;
-    }
-
-    private int visibleRows() {
-        return Math.max(1, (PANEL_H - 86) / (ROW_H + ROW_GAP));
-    }
-
-    private int maxScroll() {
-        return Math.max(0, quests.size() - visibleRows());
-    }
-
-    private String fit(String text, int width) {
-        String safeText = text == null ? "" : text;
-        if (font.width(safeText) <= width) return safeText;
-        return font.plainSubstrByWidth(safeText, Math.max(0, width - font.width("..."))) + "...";
-    }
-
-    private static boolean hasText(String value) {
-        return value != null && !value.isBlank();
-    }
-
-    private static String questGiverName(ClientQuestEntry quest) {
-        if (quest == null || !hasText(quest.questGiverName())) return "Unknown";
-        return quest.questGiverName();
-    }
-
-    private static String formatAcceptedAt(String raw) {
-        if (!hasText(raw)) return "";
-        String trimmed = raw.trim();
-        try {
-            return Instant.parse(trimmed)
-                    .atZone(ZoneId.systemDefault())
-                    .format(ACCEPTED_AT_FORMAT);
-        } catch (DateTimeParseException ignored) {
-            return trimmed;
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE && layout != null && layout.confirmation().active()) {
+            // Escape cancels the confirmation instead of closing the journal: the safe answer.
+            confirmingIndex = -1;
+            refreshWidgets();
+            return true;
         }
+        if (layout != null && !layout.confirmation().active() && layout.scrolls()) {
+            if (keyCode == GLFW.GLFW_KEY_PAGE_DOWN) {
+                scrollOffset = Math.min(layout.scrollMax(), scrollOffset + 1);
+                refreshWidgets();
+                return true;
+            }
+            if (keyCode == GLFW.GLFW_KEY_PAGE_UP) {
+                scrollOffset = Math.max(0, scrollOffset - 1);
+                refreshWidgets();
+                return true;
+            }
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    private boolean isInsidePanel(double mouseX, double mouseY) {
+        ScreenRect panel = layout.panel();
+        return mouseX >= panel.x() && mouseX <= panel.right()
+                && mouseY >= panel.y() && mouseY <= panel.bottom();
     }
 
     private static String signature(List<ClientQuestEntry> entries) {
@@ -212,7 +352,11 @@ public class QuestJournalScreen extends Screen {
                         + ":" + entry.name()
                         + ":" + entry.briefDescription()
                         + ":" + entry.acceptedAt()
-                        + ":" + entry.status())
+                        + ":" + entry.status()
+                        + ":" + entry.detail().objective()
+                        + ":" + entry.detail().completedSteps()
+                        + "/" + entry.detail().progress().size()
+                        + ":" + entry.detail().claimPending())
                 .collect(Collectors.joining("|"));
     }
 
@@ -220,7 +364,4 @@ public class QuestJournalScreen extends Screen {
     public boolean isPauseScreen() {
         return false;
     }
-
-    @Override
-    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {}
 }
