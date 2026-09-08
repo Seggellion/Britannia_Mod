@@ -327,6 +327,7 @@ enforceBoundary(sl, (QuestGiverEntity) currentNpc); // Active leash
         tag.putString("Mode", mode.name());
         tag.putString("CityName", cityName);
         tag.putString("NpcName", npcName);
+        tag.putString("CustomApiId", customApiId); // Save the Generic Combat Rails key
         tag.putString("EscortDestination", escortDestination);
         tag.putString("Gender", gender);
         tag.putInt("SpawnRadius", spawnRadius); // Save radius
@@ -340,6 +341,8 @@ enforceBoundary(sl, (QuestGiverEntity) currentNpc); // Active leash
         if (tag.contains("Mode")) mode = SpawnerMode.valueOf(tag.getString("Mode"));
         cityName = tag.getString("CityName");
         npcName = tag.getString("NpcName");
+        // Spawners saved before this key existed keep the empty default and behave as they did.
+        if (tag.contains("CustomApiId")) customApiId = tag.getString("CustomApiId"); // Load the key
         escortDestination = tag.getString("EscortDestination");
         if (tag.contains("Gender")) gender = tag.getString("Gender"); 
         if (tag.contains("SpawnRadius")) spawnRadius = tag.getInt("SpawnRadius"); // Load radius
