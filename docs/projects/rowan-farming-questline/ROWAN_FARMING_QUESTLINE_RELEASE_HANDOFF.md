@@ -79,10 +79,22 @@ Rebuild from the final commit on a clean tree:
 | Mod id / display name | `britannia_mod` / Britannia |
 | Build metadata | `britannia_mod_build.properties` records `git.head`, `git.branch`, `git.dirty` |
 
-The jar identity is recorded in the commit that follows this document, built from a clean tree with
-`git.dirty=false`. **The jar is not byte-reproducible** on this project (a known property of this
-build), so compare `git.head` and `git.dirty` in the build properties rather than expecting a stable
-digest across machines.
+**Verified clean-tree build** at `402f5585`, the commit that introduced this document:
+
+| Property | Value |
+| --- | --- |
+| `git.head` | `402f5585e63a08dce303e646dd48d9ed96d731cb` |
+| `git.branch` | `claude/rowan-farming-questline-mod` |
+| `git.dirty` | `false` |
+| Build timestamp | 2026-09-08T10:23:38Z |
+| `britannia_mod-0.1.8a.jar` | 34,353,079 bytes, SHA-256 `3ae8ddbd9299013fcacffcd3b4d6ab8b4c8a5dfef9fe04b5a441abd98e96ebe5` |
+| `britannia_mod-0.1.8a-all.jar` | 34,924,717 bytes, SHA-256 `d10b982273bbb5f0849be89fd50d232a629d3b7df3017c340c8c7ec79f2ef09e` |
+
+**The jar is not byte-reproducible** on this project — a known property of this build. An earlier
+build of the identical source, differing only in that one documentation file was uncommitted,
+produced a jar one byte larger with a completely different digest. Verify a candidate by reading
+`git.head` and `git.dirty` from `britannia_mod_build.properties` inside the jar, not by comparing
+digests across machines or rebuilds.
 
 ---
 
