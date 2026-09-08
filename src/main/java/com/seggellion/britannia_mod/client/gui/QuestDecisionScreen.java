@@ -122,11 +122,11 @@ public class QuestDecisionScreen extends Screen {
         // Two passes, as before: the wrap width depends only on the width, and the line count
         // depends on the wrap width, so one probe and one calculate is exact.
         int wrapWidth = QuestDialogueLayout.probeWrapWidth(
-                this.width, this.height, this.font.lineHeight, hasPortrait, choices.size());
+                this.width, this.height, QuestScreenDraw.lineHeight(this.font), hasPortrait, choices.size());
         int bodyLines = this.font.split(this.bodyComponent, Math.max(1, wrapWidth)).size();
 
         this.layout = QuestDialogueLayout.calculate(
-                this.width, this.height, this.font.lineHeight, hasPortrait, hasProfession,
+                this.width, this.height, QuestScreenDraw.lineHeight(this.font), hasPortrait, hasProfession,
                 stage().known(), choices.size(), bodyLines,
                 rewardsOnAccept().size(), rewardsOnComplete().size(), keepItems().size());
 
@@ -209,10 +209,10 @@ public class QuestDecisionScreen extends Screen {
         // Measured against the panel's content width, not the screen's: the guide body wraps
         // inside the panel, and measuring against the screen counts far too few lines.
         int probeWrap = QuestMixingGuideLayout.probeBodyWrapWidth(
-                this.width, this.height, this.font.lineHeight);
+                this.width, this.height, QuestScreenDraw.lineHeight(this.font));
         int bodyLines = this.font.split(QuestScreenDraw.literal(help.body()), probeWrap).size();
         this.guideLayout = QuestMixingGuideLayout.calculate(this.width, this.height,
-                this.font.lineHeight, bodyLines, offHand, returned, this.guideScroll);
+                QuestScreenDraw.lineHeight(this.font), bodyLines, offHand, returned, this.guideScroll);
         this.guideScroll = clamp(this.guideScroll, 0, guideLayout.scrollMax());
 
         ScreenRect back = guideLayout.backButton();
@@ -253,7 +253,7 @@ public class QuestDecisionScreen extends Screen {
         ScreenRect bodyBounds = layout.body().bounds();
         ScreenRect textArea = layout.body().scrolls()
                 ? new ScreenRect(bodyBounds.x(), bodyBounds.y(), bodyBounds.width(),
-                        Math.max(this.font.lineHeight, bodyBounds.height() - this.font.lineHeight))
+                        Math.max(QuestScreenDraw.lineHeight(this.font), bodyBounds.height() - QuestScreenDraw.lineHeight(this.font)))
                 : bodyBounds;
         QuestScreenDraw.drawWrapped(graphics, this.font, bodyComponent, textArea,
                 layout.body().wrapWidth(), bodyScroll, QuestScreenDraw.TEXT_COLOR);
@@ -275,10 +275,10 @@ public class QuestDecisionScreen extends Screen {
         // gone by then; this says why.
         if (awaitingServer) {
             ScreenRect body = layout.body().bounds();
-            graphics.drawString(this.font, QuestScreenDraw.fit(this.font,
+            QuestScreenDraw.drawLine(graphics, this.font, QuestScreenDraw.fit(this.font,
                             QuestScreenDraw.text(QuestScreenText.PENDING_CONFIRMATION), body.width()),
-                    body.x(), Math.max(body.y(), body.bottom() - this.font.lineHeight),
-                    QuestScreenDraw.CLAIM_COLOR, false);
+                    body.x(), Math.max(body.y(), body.bottom() - QuestScreenDraw.lineHeight(this.font)),
+                    QuestScreenDraw.CLAIM_COLOR);
         }
 
         drawDirections(graphics);
@@ -310,8 +310,8 @@ public class QuestDecisionScreen extends Screen {
         Component title = help.title().isBlank()
                 ? QuestScreenDraw.text(QuestScreenText.HELP_TITLE_FALLBACK)
                 : QuestScreenDraw.literal(help.title());
-        graphics.drawString(this.font, QuestScreenDraw.fit(this.font, title, guideLayout.title().width()),
-                guideLayout.title().x(), guideLayout.title().y(), QuestScreenDraw.HEADING_COLOR, false);
+        QuestScreenDraw.drawLine(graphics, this.font, QuestScreenDraw.fit(this.font, title, guideLayout.title().width()),
+                guideLayout.title().x(), guideLayout.title().y(), QuestScreenDraw.HEADING_COLOR);
 
         if (!guideLayout.body().isEmpty()) {
             QuestScreenDraw.drawWrapped(graphics, this.font, QuestScreenDraw.literal(help.body()),
@@ -325,8 +325,8 @@ public class QuestDecisionScreen extends Screen {
         // layout having produced no rows.
         if (guide.isEmpty()
                 || (guideLayout.rows().isEmpty() && guideLayout.totalRowCount() > 0)) {
-            graphics.drawString(this.font, QuestScreenDraw.text(QuestScreenText.GUIDE_EMPTY),
-                    guideLayout.list().x(), guideLayout.list().y(), QuestScreenDraw.MUTED_COLOR, false);
+            QuestScreenDraw.drawLine(graphics, this.font, QuestScreenDraw.text(QuestScreenText.GUIDE_EMPTY),
+                    guideLayout.list().x(), guideLayout.list().y(), QuestScreenDraw.MUTED_COLOR);
         }
         for (QuestMixingGuideLayout.Row row : guideLayout.rows()) {
             if (row.stepIndex() >= guide.size()) continue;
@@ -401,8 +401,8 @@ public class QuestDecisionScreen extends Screen {
     private void drawMarker(GuiGraphics graphics, ScreenRect at, String key) {
         Component marker = QuestScreenDraw.text(key);
         int x = at.x() + Math.max(0, (at.width() - this.font.width(marker)) / 2);
-        graphics.drawString(this.font, QuestScreenDraw.fit(this.font, marker, at.width()),
-                x, at.y(), QuestScreenDraw.MUTED_COLOR, false);
+        QuestScreenDraw.drawLine(graphics, this.font, QuestScreenDraw.fit(this.font, marker, at.width()),
+                x, at.y(), QuestScreenDraw.MUTED_COLOR);
     }
 
     private void tooltip(GuiGraphics graphics, String roleKey, String itemId, int mouseX, int mouseY) {
@@ -426,41 +426,41 @@ public class QuestDecisionScreen extends Screen {
     private void drawDirections(GuiGraphics graphics) {
         QuestDialogueLayout.RewardBlock rewards = layout.rewards();
         int y = rewards.visible() ? rewards.panel().bottom() + 2 : layout.parchment().bottom() + 4;
-        if (y + this.font.lineHeight > this.height) return;
+        if (y + QuestScreenDraw.lineHeight(this.font) > this.height) return;
 
         int x = QuestDialogueLayout.margin(this.width);
         int maxWidth = Math.max(1, this.width - (x * 2));
         if (!localDirections.isBlank()) {
-            graphics.drawString(this.font, QuestScreenDraw.fit(this.font,
+            QuestScreenDraw.drawLine(graphics, this.font, QuestScreenDraw.fit(this.font,
                             QuestScreenDraw.text(QuestScreenText.DIRECTIONS,
                                     QuestScreenDraw.literal(localDirections)), maxWidth),
-                    x, y, QuestScreenDraw.MUTED_COLOR, false);
-            y += this.font.lineHeight + 1;
+                    x, y, QuestScreenDraw.MUTED_COLOR);
+            y += QuestScreenDraw.lineHeight(this.font) + 1;
         }
-        if (y + this.font.lineHeight <= this.height) {
+        if (y + QuestScreenDraw.lineHeight(this.font) <= this.height) {
             String boundKey = Keybinds.OPEN_SKILL_SCREEN.getKey().getName();
-            graphics.drawString(this.font, QuestScreenDraw.fit(this.font,
+            QuestScreenDraw.drawLine(graphics, this.font, QuestScreenDraw.fit(this.font,
                             QuestScreenDraw.text(QuestKeyPrompt.openJournalMessageKey(boundKey),
                                     Component.translatable(QuestKeyPrompt.openJournalArgumentKey(boundKey))),
                             maxWidth),
-                    x, y, QuestScreenDraw.MUTED_COLOR, false);
+                    x, y, QuestScreenDraw.MUTED_COLOR);
         }
     }
 
     private void drawScrollHint(GuiGraphics graphics, ScreenRect body) {
-        int y = body.bottom() - this.font.lineHeight;
+        int y = body.bottom() - QuestScreenDraw.lineHeight(this.font);
         if (y < body.y()) return;
         Component hint = QuestScreenDraw.text(QuestScreenText.SCROLL_HINT);
-        graphics.drawString(this.font, QuestScreenDraw.fit(this.font, hint, body.width()),
-                body.x(), y, QuestScreenDraw.MUTED_COLOR, false);
+        QuestScreenDraw.drawLine(graphics, this.font, QuestScreenDraw.fit(this.font, hint, body.width()),
+                body.x(), y, QuestScreenDraw.MUTED_COLOR);
     }
 
     /** The choice column's affordance, in the line the layout reserved under the last button. */
     private void drawChoiceScrollHint(GuiGraphics graphics, ScreenRect at) {
         if (at.isEmpty()) return;
         Component hint = QuestScreenDraw.text(QuestScreenText.SCROLL_HINT);
-        graphics.drawString(this.font, QuestScreenDraw.fit(this.font, hint, at.width()),
-                at.x(), at.y(), QuestScreenDraw.MUTED_COLOR, false);
+        QuestScreenDraw.drawLine(graphics, this.font, QuestScreenDraw.fit(this.font, hint, at.width()),
+                at.x(), at.y(), QuestScreenDraw.MUTED_COLOR);
     }
 
     /**

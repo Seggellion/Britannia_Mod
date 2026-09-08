@@ -151,8 +151,12 @@ class QuestScreenDrawOrderTest {
         String body = method(JavaSource.MOD.resolve("client/gui/QuestScreenDraw.java"),
                 "public static void drawRewardPanel");
         int fill = body.indexOf("graphics.fill(");
-        int firstHeading = body.indexOf("graphics.drawString(");
+        // Dialogue text goes through drawScaled now rather than graphics.drawString: the glyphs are
+        // drawn through QuestScreenDraw.TEXT_SCALE. What this guard is about is unchanged -- the
+        // ground has to be down before anything is written on it.
+        int firstHeading = body.indexOf("drawScaled(");
         assertTrue(fill >= 0, "the reward panel still has no background of its own");
+        assertTrue(firstHeading >= 0, "the headings no longer go through the scaled text helper");
         assertTrue(firstHeading > fill, "a heading is drawn before the ground it sits on");
         assertTrue(body.contains("REWARD_PANEL_COLOR"), "the ground is not a named colour");
 

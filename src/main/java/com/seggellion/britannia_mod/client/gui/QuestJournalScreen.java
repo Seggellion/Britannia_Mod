@@ -76,7 +76,7 @@ public class QuestJournalScreen extends Screen {
             claimPending.add(quest.detail().claimPending());
         }
 
-        this.layout = QuestJournalLayout.calculate(this.width, this.height, this.font.lineHeight,
+        this.layout = QuestJournalLayout.calculate(this.width, this.height, QuestScreenDraw.lineHeight(this.font),
                 stepCounts, claimPending, scrollOffset, confirmingIndex);
         this.scrollOffset = layout.firstVisibleRow();
 
@@ -183,18 +183,18 @@ public class QuestJournalScreen extends Screen {
                 ? QuestScreenDraw.text(QuestScreenText.JOURNAL_TITLE)
                 : QuestScreenDraw.text(QuestScreenText.JOURNAL_COUNT,
                         layout.visibleRowCount(), layout.totalRowCount());
-        graphics.drawString(this.font, QuestScreenDraw.fit(this.font, title, header.width()),
-                header.x(), header.y(), QuestScreenDraw.HEADING_COLOR, false);
+        QuestScreenDraw.drawLine(graphics, this.font, QuestScreenDraw.fit(this.font, title, header.width()),
+                header.x(), header.y(), QuestScreenDraw.HEADING_COLOR);
     }
 
     private void drawRows(GuiGraphics graphics) {
         if (layout.isEmpty()) {
             Component empty = QuestScreenDraw.text(QuestScreenText.JOURNAL_EMPTY);
             ScreenRect list = layout.list();
-            graphics.drawString(this.font, QuestScreenDraw.fit(this.font, empty, list.width()),
+            QuestScreenDraw.drawLine(graphics, this.font, QuestScreenDraw.fit(this.font, empty, list.width()),
                     list.x() + Math.max(0, (list.width() - this.font.width(empty)) / 2),
-                    list.y() + Math.max(0, (list.height() - this.font.lineHeight) / 2),
-                    QuestScreenDraw.MUTED_COLOR, false);
+                    list.y() + Math.max(0, (list.height() - QuestScreenDraw.lineHeight(this.font)) / 2),
+                    QuestScreenDraw.MUTED_COLOR);
             return;
         }
 
@@ -257,8 +257,8 @@ public class QuestJournalScreen extends Screen {
 
     private void drawLine(GuiGraphics graphics, ScreenRect at, Component text, int color) {
         if (at.isEmpty()) return;
-        graphics.drawString(this.font, QuestScreenDraw.fit(this.font, text, at.width()),
-                at.x(), at.y(), color, false);
+        QuestScreenDraw.drawLine(graphics, this.font, QuestScreenDraw.fit(this.font, text, at.width()),
+                at.x(), at.y(), color);
     }
 
     private Component stageLine(ClientQuestEntry.JournalDetail detail) {

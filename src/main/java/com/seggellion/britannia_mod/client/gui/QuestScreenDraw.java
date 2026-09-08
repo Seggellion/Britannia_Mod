@@ -57,6 +57,80 @@ public final class QuestScreenDraw {
     public static final int CLAIM_COLOR = 0xFFB8860B;
     public static final int FOCUS_RING_COLOR = 0xFFB8860B;
 
+    // ------------------------------------------------------------ text scale
+
+    /**
+     * How much larger dialogue text is drawn than Minecraft's own font.
+     *
+     * <p>The vanilla font is a fixed 8 pixels, which on a 1080p screen at the default GUI scale is
+     * markedly smaller than the parchment it sits on. Nothing here changes the font: the glyphs go
+     * through a scale transform, so they stay the same pixel art, only bigger.
+     *
+     * <p>The banner does not grow to match. {@link QuestDialogueLayout#PARCHMENT_MAX_HEIGHT} is
+     * deliberately unchanged, so larger text means fewer lines fit and the body scrolls. The layout
+     * already computes that ({@code visibleLines}, {@code scrollMax}) and the screen already drives
+     * it with the wheel and the arrow keys, so bigger text costs a scroll, never a clipped sentence.
+     *
+     * <p>Every measurement a layout is given must be in these units, which is why
+     * {@link #lineHeight(Font)} and {@link #width(Font, Component)} exist. A caller that reached for
+     * {@code font.lineHeight} directly would reserve two thirds of the room it needs, and the last
+     * line of every node would be cut in half.
+     */
+    public static final float TEXT_SCALE = 1.5f;
+
+    /** The line height a layout must reserve per line of dialogue text. */
+    public static int lineHeight(Font font) {
+        return Math.max(1, Math.round(font.lineHeight * TEXT_SCALE));
+    }
+
+    /** What {@code component} occupies on screen once drawn at {@link #TEXT_SCALE}. */
+    public static int width(Font font, Component component) {
+        return Math.round(font.width(component) * TEXT_SCALE);
+    }
+
+    /** A screen-space width expressed in the font's own units, for {@code split} and {@code width}. */
+    public static int fontUnits(int screenWidth) {
+        return Math.max(1, (int) Math.floor(screenWidth / TEXT_SCALE));
+    }
+
+    /**
+     * One line of text at {@link #TEXT_SCALE}.
+     *
+     * <p>Translates first and scales second, so glyphs land exactly on {@code (x, y)} rather than on
+     * a rounded {@code (x / 1.5, y / 1.5)}, which would drift by up to a pixel per call and read as
+     * a ragged left edge down a wrapped paragraph.
+     */
+    private static void drawScaled(GuiGraphics graphics, Font font, Component component,
+                                   int x, int y, int color) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(x, y, 0);
+        graphics.pose().scale(TEXT_SCALE, TEXT_SCALE, 1f);
+        graphics.drawString(font, component, 0, 0, color, false);
+        graphics.pose().popPose();
+    }
+
+    /**
+     * One line of dialogue text, for a screen drawing outside the blocks above.
+     *
+     * <p>Public so that a screen never reaches for {@code graphics.drawString} itself: mixing a
+     * scaled paragraph with an unscaled footnote is exactly the inconsistency this file exists to
+     * prevent.
+     */
+    public static void drawLine(GuiGraphics graphics, Font font, Component component,
+                                int x, int y, int color) {
+        drawScaled(graphics, font, component, x, y, color);
+    }
+
+    /** {@link #drawScaled} for a line the font has already split. */
+    private static void drawScaled(GuiGraphics graphics, Font font, FormattedCharSequence line,
+                                   int x, int y, int color) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(x, y, 0);
+        graphics.pose().scale(TEXT_SCALE, TEXT_SCALE, 1f);
+        graphics.drawString(font, line, 0, 0, color, false);
+        graphics.pose().popPose();
+    }
+
     // ------------------------------------------------------------ text
 
     /** UO-styled translatable component. Every player-facing string on these screens goes through here. */
@@ -79,12 +153,13 @@ public final class QuestScreenDraw {
      */
     public static int drawWrapped(GuiGraphics graphics, Font font, Component component,
                                   ScreenRect area, int wrapWidth, int scroll, int color) {
-        List<FormattedCharSequence> lines = font.split(component, Math.max(1, wrapWidth));
-        int visible = Math.max(0, area.height() / font.lineHeight);
+        // wrapWidth is screen space; the font wraps in its own units, TEXT_SCALE smaller.
+        List<FormattedCharSequence> lines = font.split(component, fontUnits(wrapWidth));
+        int step = lineHeight(font);
+        int visible = Math.max(0, area.height() / step);
         int first = Math.max(0, Math.min(scroll, Math.max(0, lines.size() - Math.max(1, visible))));
         for (int i = 0; i < visible && first + i < lines.size(); i++) {
-            graphics.drawString(font, lines.get(first + i), area.x(), area.y() + (i * font.lineHeight),
-                    color, false);
+            drawScaled(graphics, font, lines.get(first + i), area.x(), area.y() + (i * step), color);
         }
         return lines.size();
     }
@@ -92,9 +167,9 @@ public final class QuestScreenDraw {
     /** Truncates to {@code width} with an ellipsis. For single-line labels only. */
     public static Component fit(Font font, Component component, int width) {
         if (width <= 0) return Component.empty();
-        if (font.width(component) <= width) return component;
+        if (width(font, component) <= width) return component;
         String plain = component.getString();
-        int room = Math.max(0, width - font.width("..."));
+        int room = Math.max(0, fontUnits(width) - font.width("..."));
         return literal(font.plainSubstrByWidth(plain, room) + "...");
     }
 
@@ -172,14 +247,14 @@ public final class QuestScreenDraw {
                 DialoguePresentation.PORTRAIT_TEXTURE_SIZE, DialoguePresentation.PORTRAIT_TEXTURE_SIZE);
 
         Component name = fit(font, literal(npcName), at.width() + 20);
-        graphics.drawString(font, name, block.nameCenterX() - (font.width(name) / 2), block.nameY(),
-                TEXT_COLOR, false);
+        drawScaled(graphics, font, name, block.nameCenterX() - (width(font, name) / 2), block.nameY(),
+                TEXT_COLOR);
 
         if (professionLabel != null && !professionLabel.isBlank()) {
             Component profession = fit(font, literal(professionLabel), at.width() + 20);
-            graphics.drawString(font, profession,
-                    block.nameCenterX() - (font.width(profession) / 2), block.professionY(),
-                    MUTED_COLOR, false);
+            drawScaled(graphics, font, profession,
+                    block.nameCenterX() - (width(font, profession) / 2), block.professionY(),
+                    MUTED_COLOR);
         }
     }
 
@@ -191,7 +266,7 @@ public final class QuestScreenDraw {
         Component line = stage != null && stage.known()
                 ? text(QuestScreenText.STAGE, stage.index(), stage.count())
                 : text(QuestScreenText.STAGE_UNKNOWN);
-        graphics.drawString(font, fit(font, line, at.width()), at.x(), at.y(), HEADING_COLOR, false);
+        drawScaled(graphics, font, fit(font, line, at.width()), at.x(), at.y(), HEADING_COLOR);
     }
 
     /**
@@ -219,8 +294,8 @@ public final class QuestScreenDraw {
             List<ClientQuestEntry.RewardItem> items = itemsFor(section.kind(), onAccept, onComplete, keep);
             Component heading = text(QuestScreenText.REWARDS_HEADING_COUNT,
                     text(QuestScreenText.sectionHeading(section.kind())), items.size());
-            graphics.drawString(font, fit(font, heading, section.label().width()),
-                    section.label().x(), section.label().y(), HEADING_COLOR, false);
+            drawScaled(graphics, font, fit(font, heading, section.label().width()),
+                    section.label().x(), section.label().y(), HEADING_COLOR);
 
             for (int i = 0; i < section.visibleIconCount() && i < items.size(); i++) {
                 drawItemIcon(graphics, font, section.icon(i), items.get(i).id(), items.get(i).count());
@@ -228,9 +303,9 @@ public final class QuestScreenDraw {
             if (section.overflowCount() > 0) {
                 Component more = text(QuestScreenText.REWARDS_MORE, section.overflowCount());
                 int y = section.icons().y() + QuestDialogueLayout.ICON_SIZE + 1;
-                if (y + font.lineHeight <= section.bounds().bottom()) {
-                    graphics.drawString(font, fit(font, more, section.bounds().width()),
-                            section.bounds().x(), y, MUTED_COLOR, false);
+                if (y + lineHeight(font) <= section.bounds().bottom()) {
+                    drawScaled(graphics, font, fit(font, more, section.bounds().width()),
+                            section.bounds().x(), y, MUTED_COLOR);
                 }
             }
         }
@@ -290,7 +365,7 @@ public final class QuestScreenDraw {
         if (at.isEmpty()) return;
         Component line = text(QuestScreenText.PROGRESS_LINE,
                 text(QuestScreenText.progressMarker(step.done())), literal(step.label()));
-        graphics.drawString(font, fit(font, line, at.width()), at.x(), at.y(),
-                step.done() ? DONE_COLOR : PENDING_COLOR, false);
+        drawScaled(graphics, font, fit(font, line, at.width()), at.x(), at.y(),
+                step.done() ? DONE_COLOR : PENDING_COLOR);
     }
 }

@@ -202,6 +202,30 @@ public record QuestDialogueLayout(
     public static final int PARCHMENT_MIN_HEIGHT = 60;
     /** Breathing room inside the parchment. */
     public static final int PARCHMENT_INSET = 5;
+
+    /**
+     * The burnt border of {@code dialogue_screen.png}, as a fraction of the texture.
+     *
+     * <p>Measured off the file, not chosen: the art is 1459x603 and the parchment does not begin
+     * until 63px down, 30px up from the bottom and 85px in from the left. The texture is stretched
+     * over the whole banner, so those fractions are what the border costs at any size.
+     *
+     * <p>{@link #PARCHMENT_INSET} alone was 5 for every edge, which is roughly a third of what the
+     * top edge needs. The stage line ("Quest 1 of 5") was drawn inside the burn and came out
+     * unreadable -- dark text on the darkest part of the art.
+     */
+    public static final float BORDER_TOP_RATIO = 63f / 603f;
+    public static final float BORDER_BOTTOM_RATIO = 30f / 603f;
+
+    /** Top inset for a banner of {@code parchmentHeight}, never less than the old flat inset. */
+    public static int topInset(int parchmentHeight) {
+        return Math.max(PARCHMENT_INSET, Math.round(parchmentHeight * BORDER_TOP_RATIO));
+    }
+
+    /** Bottom inset for a banner of {@code parchmentHeight}. The lower edge burns less than the top. */
+    public static int bottomInset(int parchmentHeight) {
+        return Math.max(PARCHMENT_INSET, Math.round(parchmentHeight * BORDER_BOTTOM_RATIO));
+    }
     /** Vertical gap between the parchment and the reward panel. */
     public static final int SECTION_GAP = 4;
 
@@ -302,9 +326,11 @@ public record QuestDialogueLayout(
             rewards = RewardBlock.hidden();
         }
         ScreenRect parchment = new ScreenRect(0, 0, screen.width(), parchmentHeight);
-        ScreenRect content = new ScreenRect(margin, PARCHMENT_INSET,
+        int topInset = topInset(parchmentHeight);
+        int bottomInset = bottomInset(parchmentHeight);
+        ScreenRect content = new ScreenRect(margin, topInset,
                 Math.max(0, screen.width() - (margin * 2)),
-                Math.max(0, parchmentHeight - (PARCHMENT_INSET * 2)));
+                Math.max(0, parchmentHeight - topInset - bottomInset));
 
         // ---- horizontal split: pick the widest arrangement that still leaves a usable column ----
         int choiceWidth = clamp((screen.width() - (margin * 2)) / 3, MIN_CHOICE_WIDTH, MAX_CHOICE_WIDTH);
@@ -317,7 +343,7 @@ public record QuestDialogueLayout(
 
         Mode mode;
         if (hasPortrait && widthWithPortrait >= MIN_BODY_WIDTH
-                && PORTRAIT_SIZE + (PARCHMENT_INSET * 2) <= parchmentHeight) {
+                && PORTRAIT_SIZE + topInset + bottomInset <= parchmentHeight) {
             mode = Mode.FULL;
         } else if (widthWithoutPortrait >= MIN_BODY_WIDTH) {
             mode = Mode.COMPACT;
@@ -331,10 +357,10 @@ public record QuestDialogueLayout(
         if (mode == Mode.FULL) {
             int labelLines = 1 + (hasProfession ? 1 : 0);
             int columnHeight = PORTRAIT_SIZE + 3 + (labelLines * lineHeight);
-            int portraitY = Math.max(PARCHMENT_INSET, (parchmentHeight - columnHeight) / 2);
+            int portraitY = Math.max(topInset, (parchmentHeight - columnHeight) / 2);
             // A tall label block must not push the portrait through the bottom of the parchment.
             portraitY = Math.min(portraitY,
-                    Math.max(PARCHMENT_INSET, parchmentHeight - PARCHMENT_INSET - columnHeight));
+                    Math.max(topInset, parchmentHeight - bottomInset - columnHeight));
             int nameY = portraitY + PORTRAIT_SIZE + 3;
             portrait = new PortraitBlock(true,
                     new ScreenRect(portraitX, portraitY, PORTRAIT_SIZE, PORTRAIT_SIZE),
