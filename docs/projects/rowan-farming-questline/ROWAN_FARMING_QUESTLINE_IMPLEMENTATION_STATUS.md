@@ -27,8 +27,8 @@ were not switched, stashed, reset, or modified.
 | M5 NeoForge farming events, outbox, crop attribution | **PASSED** | `473917c0` | — | 2026-09-07 |
 | M6 Rowan archetype | **PASSED** | `6b783003` | — | 2026-09-07 |
 | M7 Rails content, seed, admin | **PASSED** | — | `abea5ff` | 2026-09-07 |
-| M8 Dialogue and journal UX | **PASSED** | (this commit) | — | 2026-09-07 |
-| M9 Timing, skill, recovery | not started | | | |
+| M8 Dialogue and journal UX | **PASSED** | `75bdb1c5` | — | 2026-09-07 |
+| M9 Timing, skill, recovery | **PASSED** | (this commit) | `39d14b3` | 2026-09-08 |
 | M10 Achievement and advancement | not started | | | |
 | M11 Hardening and automated acceptance | not started | | | |
 | M12 Live acceptance and release handoff | not started | | | |
@@ -1024,6 +1024,141 @@ mixing-guide content, which lives in Rails and is only transcribed here; and a l
 render, which is the one visual-acceptance row with no artifact. All need a running client or the
 Rails content, and all belong to M12's live acceptance.
 
-### Next action
+### Next action (at M8 close)
 
 M9 — timing, skill recovery and player recovery.
+## M9 — Timing, skill recovery and player recovery (PASSED 2026-09-07, both repositories)
+
+### OWNER-VISIBLE GAMEPLAY CHANGE
+
+The public-plot windows were retuned to the playbook's values, and this affects **every player who
+uses a public farm, not only players on the questline**:
+
+| Window | Was | Now |
+| --- | --- | --- |
+| Hoed public plot reverts if nobody fertilizes | 180 s | **600 s** |
+| Fertilized public plot reverts if nothing is planted | 60 s | **300 s** |
+| Replant window after a harvest on a public plot | 60 s | **300 s** |
+
+The integrator verified that every code path reading these constants is gated on the plot being a
+community plot, so private and house plots are untouched. Both changes make public farming more
+forgiving, and the playbook specified these values directly. Flagged here because it is a live
+behaviour change beyond the questline.
+
+### Changes
+
+**NeoForge.** `farming/CommunityPlotWindow` is now the single source of truth for both windows, in
+seconds first and ticks second so it can be read against Rails without arithmetic. Expiry became
+**deterministic**: the plot books a scheduled tick rather than waiting on a random tick, with the
+random-tick reclaim kept only as a backstop for worlds saved before this change — that closes
+discovery defect D6, where expiry depended on `randomTickSpeed`. Planting now reclaims an expired
+plot **before** anything is consumed, and hoeing refuses an expired preparation before the
+fertilized dirt is taken. Countdown warnings are announced to players in range.
+
+`skill/SkillDataBackoff` and `SkillManager` add the bounded retry (10 s, 30 s, 60 s, 2 min, 5 min,
+capped, six attempts, with a floor between player-triggered attempts), cleared on logout and on any
+successful load. `SkillSnapshot` can now distinguish a **known zero** from an **unknown** value, and
+`FarmingCultivationGate` asks for a retry only when the data is unavailable, never when the answer
+was an authoritative refusal — that closes D11, where a player whose skill data had not arrived
+simply could not plant.
+
+`WildResourceQuestScheduling` and `RowanQuestlineHooks` bring the *next scheduled attempt* for dung
+forward in a bounded area near the interacting Rowan when quest 1 is accepted. It never places a
+block and never delays an attempt already due, so caps, spacing, substrate rules and ordinary
+randomness all still apply — the playbook's "do not command-place an untracked pile".
+
+`WateringCanItem` now teaches moisture from the **actual crop and the plot's current state** through
+the existing care-state calculation, instead of a hardcoded instruction to water twice, so rain or
+another player's watering cannot make the advice false.
+
+**Rails.** `quest_equipment_reissues` records replacements for lost tutorial equipment: one row per
+replacement, bounded at two per player per quest per item, enforced by the database twice (a unique
+index including the ordinal, and a check constraint on the ordinal) with the application only
+reading the count. Coins are excluded twice — absent from the allow-list, and refused by a check
+constraint even if the model is bypassed. The item is granted as an ordinary reward delivery through
+the existing M2/M3 ledger, inside the same transaction and row lock; there is no second reward path.
+
+### How the two deadlines agree
+
+Rails expires a step on the event timestamps the shard mints, the game on its own scheduled tick,
+and the numbers are the same on both sides, asserted in seconds on one side and in ticks on the
+other so a change has to be made twice and deliberately. They can drift in exactly one direction: a
+server running below full tick rate makes the game's window *longer* in wall time, never stricter
+than the server. When they disagree Rails wins, answering the planting `window_expired` with the
+step to reset to, and the player sees the step un-tick at the next journal refresh.
+
+**Known limitation carried to M11:** the mod logs that rejection but does not yet surface
+`window_expired` in the player's own words, because the reset instruction is not parsed.
+
+### The reissue model
+
+Recorded as a durable row, not a session counter, so a reconnect is irrelevant. A quest restart was
+the case that had to be designed for, and the agent's first premise was wrong and was corrected by
+its own test: a restart does **not** mint a new journal row, it re-accepts the same one and wipes
+its state variables. Anything counted in those variables would reset on every restart, so the
+allowance lives outside them and is keyed on the quest's stable key rather than its row id, so
+re-seeding the content does not hand out a fresh allowance either. Carried inventory is checked on
+the game side because Rails cannot see a Minecraft inventory, and every non-grant answer tells the
+player plainly that items in a chest or the bank cannot be seen.
+
+### Tests and gates
+
+| Run | Result |
+| --- | --- |
+| Mod full JUnit (integrator) | 3841 tests, 0 failures, 0 errors, 23 skipped (483 suites; baseline 3804) |
+| Mod GameTests (integrator) | 1154 required tests passed, 0 failed, no "Failed to start" (baseline 1146, +8) |
+| Rails quest selection (integrator, fresh database) | 803 runs, 4490 assertions, 0 failures |
+| Rails full suite | 3502 runs (3472 baseline + exactly the 30 new), 54011 assertions, 12 failures, 1 error, 1 skip — 11 audit-count admin tests, the stable food-supply one, the query-budget one, and one newly-appearing name proven unrelated below |
+| Rails admin control (fresh database) | all four admin classes together: 51 runs, 208 assertions, 0 failures |
+| Migration ⇔ schema proof | up, down, up on a disposable database; the only differing dumper lines are the PostgreSQL 18 check-constraint rendering artifact that already affects the two earlier tables |
+| `git diff --check` | clean in both repositories |
+
+### Deviations, stated rather than buried
+
+* **Recovery is offered when the player talks to Rowan, not as a dialogue choice.** The questline's
+  content and its contract fixtures are frozen under a digest from M0; adding a choice would have
+  rewritten a pinned fixture. Same reasoning kept the dung scheduling on the game side rather than
+  as a server-driven effect. The contract between the halves is the quest key, which Rails never
+  re-mints.
+* **Item 8 was largely verification rather than new code**: dung, dirt, well water and the returned
+  bowls were already renewable. What was added is the dung expedite and a test proving a stage-5
+  failure cannot disturb the completed stages 1–4.
+* **Countdown warnings are not persisted**, so a plot reloaded mid-window may re-announce its
+  current mark to a returning player. Deliberate and documented.
+* `ShardPlatformQueryBudgetTest` now fails **deterministically on a fresh database** in isolation on
+  this branch, rather than intermittently. It is unrelated to anything this milestone touched, and
+  M11 investigates the whole pre-existing failure family properly rather than restating the label.
+* **The Rails suite cannot run in parallel on this machine**: the database's host-based
+  authentication trusts specific database names, so forked workers fail to authenticate. Serial runs
+  are required and take 12–25 minutes. Worth recording for the release handoff.
+
+### Only a live run can prove
+
+End-to-end skill recovery against a real Rails outage; that the expedited dung schedule produces a
+findable pile in populated terrain, since caps and substrate rules may still refuse every probe; the
+reissue round trip over signed HTTP with real credentials; and whether 600 and 300 seconds are the
+right *feel* rather than merely the right *numbers*.
+
+### Next action
+
+M10 — the First Harvest achievement, its in-game toast and the persistent advancement, all
+idempotent under replay and repeated claims.
+
+### The newly appearing failure, investigated rather than labelled
+
+`SeoPublicationRouteSafetyTest#test_legacy_Update_Center_Pages_redirect_one_hop_to_the_owned_category_route`
+appeared for the first time in this milestone's full run, as an **error** rather than a failure.
+The gate rule says a new name must be proven, not assumed, so it was:
+
+* On this branch, **in isolation on a fresh database, it passes** (5 runs, 0 failures).
+* The test file references nothing this milestone touched — zero mentions of quests or reissues.
+* Its failure mode is `at_css('link[rel="canonical"]')` returning nil, i.e. a page that rendered
+  without a canonical link. That is a content-state symptom, the same shape as the admin family's
+  unscoped audit-row counts.
+* The one change M9 made to routing adds a single v2 API endpoint inside the shard-authenticated
+  block, which no SEO redirect can reach.
+
+Conclusion: order- and state-dependent, pre-existing in kind, not caused by M9. A comparison run at
+the base commit was attempted in a detached worktree and produced an unrelated missing-asset error,
+so that probe proved nothing and is not counted as evidence either way. M11 investigates the whole
+family properly.

@@ -147,6 +147,32 @@ public final class QuestScreenText {
     public static final String CROP_LOST = MESSAGE + "crop.lost";
     public static final String INVENTORY_FULL_DROPPED = MESSAGE + "inventory.full_dropped";
 
+    /** M9 item 3: the two preparation windows announce themselves on the way down, not only at the ends. */
+    public static final String PLOT_HOED_WARNING = MESSAGE + "plot.hoed_warning";
+    public static final String PLOT_FERTILIZED_WARNING = MESSAGE + "plot.fertilized_warning";
+
+    /** M9 item 9: somebody else pulled the crop this player planted on a public plot. */
+    public static final String CROP_TAKEN_BY_OTHER = MESSAGE + "crop.taken_by_other";
+
+    /**
+     * M9 item 6: what the soil reads as for the crop that is actually in it. Four states, matching
+     * the {@code care_state} vocabulary the action-event contract already uses, so the sentence
+     * stays true whether the water came from a can, a bucket, rain or another player.
+     */
+    public static final String WATER_STATE_DRY = MESSAGE + "water.state.dry";
+    public static final String WATER_STATE_OK = MESSAGE + "water.state.ok";
+    public static final String WATER_STATE_IDEAL = MESSAGE + "water.state.ideal";
+    public static final String WATER_STATE_OVER = MESSAGE + "water.state.over";
+    public static final String WATER_FULL = MESSAGE + "water.full";
+    public static final String WATER_CAN_EMPTY = MESSAGE + "water.can_empty";
+
+    /** M9 item 7: the bounded, Rails-tracked replacement of lost tutorial equipment. */
+    public static final String EQUIPMENT_REISSUED = MESSAGE + "equipment.reissued";
+    public static final String EQUIPMENT_ALREADY_CARRIED = MESSAGE + "equipment.already_carried";
+    public static final String EQUIPMENT_LIMIT_REACHED = MESSAGE + "equipment.limit_reached";
+    public static final String EQUIPMENT_STORAGE_CAVEAT = MESSAGE + "equipment.storage_caveat";
+    public static final String EQUIPMENT_UNAVAILABLE = MESSAGE + "equipment.unavailable";
+
     /**
      * Every key above. The localization test walks this, so a key added to the class without a
      * line in {@code en_us.json} fails the build rather than reaching a player as its own name.
@@ -166,7 +192,12 @@ public final class QuestScreenText {
             KEY_OPEN_JOURNAL, KEY_OPEN_JOURNAL_UNBOUND,
             MIX_SWAP_HANDS, MIX_WRONG_BOWL, MIX_MISSING_OFF_HAND, MIX_WRONG_DIRT, WATER_FLOWING,
             WATER_PROTECTED, PENDING_CONFIRMATION, PLOT_OCCUPIED, PLOT_EXPIRED, CROP_LOST,
-            INVENTORY_FULL_DROPPED
+            INVENTORY_FULL_DROPPED,
+            PLOT_HOED_WARNING, PLOT_FERTILIZED_WARNING, CROP_TAKEN_BY_OTHER,
+            WATER_STATE_DRY, WATER_STATE_OK, WATER_STATE_IDEAL, WATER_STATE_OVER,
+            WATER_FULL, WATER_CAN_EMPTY,
+            EQUIPMENT_REISSUED, EQUIPMENT_ALREADY_CARRIED, EQUIPMENT_LIMIT_REACHED,
+            EQUIPMENT_STORAGE_CAVEAT, EQUIPMENT_UNAVAILABLE
     );
 
     /** The heading key for one reward section. */

@@ -306,7 +306,13 @@ public final class QuestProxyService {
             }
 
             List<ClientQuestEntry> accepted = QuestEntryParser.parseRailsAcceptSuccess(root, intent.questGiverName());
-            accepted.forEach(entry -> ServerQuestTable.addFromRailsAcceptSuccess(player, entry));
+            accepted.forEach(entry -> {
+                ServerQuestTable.addFromRailsAcceptSuccess(player, entry);
+                // M9 item 5. The only place a quest becomes accepted, so the only place an
+                // accept-time side effect can run exactly once. It runs after the journal row
+                // exists, so anything it does is consistent with what the player can see.
+                RowanQuestlineHooks.onQuestAccepted(player, entry, intent.questGiverUuid());
+            });
 
             QuestModels.QuestResponse response = GSON.fromJson(root, QuestModels.QuestResponse.class);
             QuestRewardService.apply(player, response, root, request.requestUuid());
@@ -328,6 +334,16 @@ public final class QuestProxyService {
                 ServerQuestTable.removeAfterRailsCompletionSuccessByQuestId(player, request.questId());
             }
             ClientboundSyncQuestsPayload.send(player, ServerQuestTable.snapshot(player));
+
+            // M9 item 7. Talking to the quest giver is the gesture a player already makes when
+            // something has gone wrong, so it is where a lost tool is noticed and, within the
+            // Rails-held bound, replaced. Runs after the journal is level with Rails, so the
+            // active stage it reads is the real one, and does nothing at all when the player is
+            // carrying everything the questline requires.
+            if (request.action() == QuestActionC2SPayload.Action.INTERACT) {
+                com.seggellion.britannia_mod.quest.equipment.QuestEquipmentReissueService
+                        .offerRecovery(player);
+            }
         } catch (RuntimeException invalid) {
             LOGGER.warn("event=quest_journal_not_updated request_uuid={} action={} player_uuid={} "
                     + "quest_id={} reason=unreadable_response detail={}",

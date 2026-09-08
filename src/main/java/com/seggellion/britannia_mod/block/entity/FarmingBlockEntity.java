@@ -38,7 +38,17 @@ public class FarmingBlockEntity extends BlockEntity {
     public static final int MAX_HYDRATION = 5;
     public static final int MAX_FERTILE_HARVESTS = 5;
     public static final int UNTRACKED_FERTILE_HARVESTS = -1;
-    public static final long COMMUNITY_SEED_WINDOW_TICKS = 1200L;
+    /**
+     * How long a fertilized public plot with nothing growing in it waits for a seed.
+     *
+     * <p>M9 item 2: 1200 ticks (60 s) before, now
+     * {@link com.seggellion.britannia_mod.farming.CommunityPlotWindow#FERTILIZE_TO_PLANT_TICKS}
+     * (300 s), matching the deadline Rails enforces on the {@code crop_planted} step. The old
+     * number was doubly misleading -- it was only ever evaluated on a random tick (see
+     * {@code FarmingBlock#tick}), so the 60 s in the source was not the 60 s a player experienced.
+     */
+    public static final long COMMUNITY_SEED_WINDOW_TICKS =
+            com.seggellion.britannia_mod.farming.CommunityPlotWindow.FERTILIZE_TO_PLANT_TICKS;
     private static final String OWNER_ID_KEY = "OwnerUUID";
     private static final String PLANTER_ID_KEY = "PlanterUUID";
     private static final String CROP_CYCLE_ID_KEY = "CropCycleUUID";
@@ -64,6 +74,7 @@ public class FarmingBlockEntity extends BlockEntity {
     private boolean growthBlocked = false;
     private boolean communityPlot = false;
     private long seedableUntilGameTime = 0L;
+    private long announcedSeedWarningSeconds = 0L;
     // Missing legacy NBT remains unlimited. Only canonical fertilized-dirt application tracks 5..0.
     private int remainingFertileHarvests = UNTRACKED_FERTILE_HARVESTS;
 
@@ -384,7 +395,21 @@ public class FarmingBlockEntity extends BlockEntity {
         this.communityPlot = true;
         this.ownerId = null;
         this.seedableUntilGameTime = deadlineGameTime;
+        this.announcedSeedWarningSeconds = 0L;
         setChangedAndSync();
+    }
+
+    /**
+     * True once, for each countdown mark. M9 item 3: the seed window speaks on the way down, and a
+     * repeated tick at the same game time must not repeat itself. Deliberately not persisted --
+     * see {@code CommunityFarmBlockEntity}.
+     */
+    public boolean claimSeedWindowWarning(long seconds) {
+        if (announcedSeedWarningSeconds == seconds) {
+            return false;
+        }
+        announcedSeedWarningSeconds = seconds;
+        return true;
     }
 
     /** Turns the crop's model a quarter turn clockwise, wrapping back to its original heading. */

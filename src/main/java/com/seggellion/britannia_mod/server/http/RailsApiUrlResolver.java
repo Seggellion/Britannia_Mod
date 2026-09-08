@@ -274,6 +274,14 @@ public final class RailsApiUrlResolver {
          * idempotency key, so a retry after a lost response advances nothing twice.
          */
         QUEST_ACTION_EVENTS("v2/quest_action_events"),
+        /**
+         * Rowan farming questline M9 item 7: where this server asks for one bounded replacement of
+         * a piece of mandatory tutorial equipment, on behalf of a player who lost theirs. The bound
+         * lives in Rails -- per player, per quest, per item -- so it survives a reconnect and a
+         * quest restart, and the replacement comes back as an ordinary reward delivery rather than
+         * down a second path.
+         */
+        QUEST_EQUIPMENT_REISSUES("v2/quest_equipment_reissues"),
         BANKING_OPEN("banking/open"),
         BANKING_DEPOSIT_PREPARE("banking/deposit/prepare"),
         BANKING_WITHDRAWAL_PREPARE("banking/withdrawal/prepare"),

@@ -1,6 +1,8 @@
 package com.seggellion.britannia_mod.block;
 
+import com.seggellion.britannia_mod.block.entity.CommunityFarmBlockEntity;
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
+import com.seggellion.britannia_mod.client.gui.QuestScreenText;
 import com.seggellion.britannia_mod.farming.FarmingActionType;
 import com.seggellion.britannia_mod.farming.FarmingSkill;
 import com.seggellion.britannia_mod.quest.action.QuestActionEvents;
@@ -44,13 +46,34 @@ public class CommunityHoedFarmBlock extends CommunityFarmBlock {
 
     public static ItemInteractionResult fertilizeCommunityPlot(Level level, BlockPos pos, Player player, ItemStack stack) {
         if (!level.isClientSide) {
+            // M9 item 3. Fertilized dirt is four gathering steps and a mixing step of work, and it
+            // used to be swallowed by a plot whose hoeing had already run out: the block-entity
+            // tick reverts an expired plot, but between the deadline and that tick the plot still
+            // looked hoed and still took the dirt. Checked here, before anything is consumed, and
+            // the plot is reverted on the spot rather than a tick later.
+            if (level.getBlockEntity(pos) instanceof CommunityFarmBlockEntity communityBe
+                    && communityBe.preparationExpired(level)) {
+                communityBe.clearPreparedExpiry();
+                level.setBlock(pos, BlockRegistry.COMMUNITY_FARM_BLOCK.get().defaultBlockState(), 3);
+                if (player != null) {
+                    player.displayClientMessage(
+                            Component.translatable(QuestScreenText.PLOT_EXPIRED)
+                                    .withStyle(ChatFormatting.YELLOW), true);
+                }
+                return ItemInteractionResult.SUCCESS;
+            }
+
+            long seedDeadline = level.getGameTime() + FarmingBlockEntity.COMMUNITY_SEED_WINDOW_TICKS;
             boolean fertilized = level.setBlock(pos, BlockRegistry.FARMING_BLOCK.get().defaultBlockState()
                     .setValue(FarmingBlock.HYDRATION, 1)
                     .setValue(FarmingBlock.HAS_SEEDS, false), 3);
             if (level.getBlockEntity(pos) instanceof FarmingBlockEntity farmBe) {
                 farmBe.setHydration(1);
-                farmBe.startCommunitySeedWindow(level.getGameTime() + FarmingBlockEntity.COMMUNITY_SEED_WINDOW_TICKS);
+                farmBe.startCommunitySeedWindow(seedDeadline);
                 farmBe.initializeFertileHarvests();
+                // M9 item 1: book the window's own deterministic clock, so it no longer depends on
+                // randomTickSpeed and expires at the second Rails also expires it.
+                FarmingBlock.scheduleCommunitySeedWindow(level, pos, seedDeadline);
             }
             level.playSound(null, pos, SoundEvents.GRAVEL_PLACE, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (player != null) {

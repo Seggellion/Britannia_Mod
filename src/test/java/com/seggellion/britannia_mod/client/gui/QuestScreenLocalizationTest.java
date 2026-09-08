@@ -57,7 +57,12 @@ class QuestScreenLocalizationTest {
             "block/CommunityHoedFarmBlock.java",
             "block/entity/CommunityFarmBlockEntity.java",
             "item/FarmingHoeItem.java",
-            "network/ClientNetworkHandler.java");
+            "network/ClientNetworkHandler.java",
+            // M9: the countdown and expiry sentences, the moisture reading and the equipment
+            // recovery messages. Listed so a future edit that writes a key inline instead of
+            // through QuestScreenText fails the build rather than reaching a player as its own name.
+            "item/WateringCanItem.java",
+            "quest/equipment/QuestEquipmentReissueService.java");
 
     // ---------------------------------------------------------------- 1: keys exist
 

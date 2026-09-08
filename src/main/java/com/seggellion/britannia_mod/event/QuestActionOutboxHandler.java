@@ -44,6 +44,10 @@ public final class QuestActionOutboxHandler {
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
         QuestActionDispatcher.tick(event.getServer());
+        // M9 item 4 / discovery D11: the bounded skill-data retry runs on the same beat. It is one
+        // map lookup per connected player and does nothing at all unless somebody's skill fetch
+        // actually failed, which on a healthy server is nobody.
+        com.seggellion.britannia_mod.skill.SkillManager.tickSkillDataRetries(event.getServer());
     }
 
     @SubscribeEvent

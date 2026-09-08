@@ -199,6 +199,13 @@ public final class FarmingCultivationGate {
         if (!(actor instanceof ServerPlayer serverPlayer) || evaluation.permitsPlanting()) {
             return;
         }
+        // M9 item 4 / discovery D11. Trying to plant is the moment the skill data is wanted, so it
+        // is the moment to ask for it again. Bounded and rate-limited inside SkillManager, and a
+        // no-op unless the state really is missing -- an INSUFFICIENT_SKILL denial asks for
+        // nothing, because that answer was authoritative.
+        if (evaluation.type() == ResultType.SKILL_DATA_UNAVAILABLE) {
+            SkillManager.requestSkillDataRetry(serverPlayer);
+        }
         Component message = evaluation.type() == ResultType.INSUFFICIENT_SKILL
                 ? Component.translatable(
                         evaluation.feedbackTranslationKey(),
