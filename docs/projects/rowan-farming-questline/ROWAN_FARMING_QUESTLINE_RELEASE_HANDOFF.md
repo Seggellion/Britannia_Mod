@@ -3,7 +3,7 @@
 **Status: engineering complete and locally integrated, live acceptance not started.** Every
 milestone from M0 to M11 passed its gates, and a later integration milestone merged both feature
 branches into their local target branches: `patch-18` in the mod, `release/public` in Rails.
-**Nothing has been pushed, deployed, seeded to a live database, or uploaded.** The remaining work
+**Nothing has been pushed, deployed, or seeded to a live database.** The remaining work
 is the owner's: the live acceptance walkthrough (M12) and the release actions listed at the end, in
 the order given.
 
@@ -225,10 +225,17 @@ without the new Rails.
    * a **Water Well** — in Adventure mode a bucket cannot be filled from natural water;
    * at least four base **Community Farm Blocks** outside spawn protection.
 3. **Farming skill** must exist on the shard (slug `farming`).
-4. **Portrait**: upload `Rowan.png` to the portrait bucket under the gender you placed. **Not done —
-   this is one of the owner-only actions.** Until then the generic portrait renders, which is not a
-   questline failure. Note the pre-existing client behaviour that one missing portrait pins the
-   fallback for the rest of that client session.
+4. **Portrait: already in place — just place Rowan as `male`.** This was previously recorded as an
+   outstanding upload. It is not. `portraits/male/Rowan.png` has been in the bucket since
+   2026-03-29, uploaded in the same batch as the rest of the cast, and the existing portrait system
+   resolves it with no upload, no configuration and no Rails involvement: the client composes
+   `https://storage.googleapis.com/ultimacraft/portraits/<gender>/<Personal_Name>.png` from the
+   NPC's personal name and the gender configured on the spawner (`PortraitFetch.portraitUrl`,
+   reached from `QuestGiverEntity.getGender()`).
+   The one thing that matters is the gender you configure. `male` resolves;
+   `portraits/female/Rowan.png` does not exist, so placing Rowan as female 404s — and the
+   pre-existing client behaviour that one missing portrait pins the generic fallback for the rest
+   of that session would make that configuration mistake look like a broken portrait system.
 
 **Public-plot timing changed for everyone, not just questers.** A hoed public plot now reverts after
 600 seconds rather than 180, and a fertilized one after 300 rather than 60, which also lengthens the
@@ -305,7 +312,8 @@ because no live acceptance has been performed**:
    positions.
 4. A test account that is **not** an operator, starting with an empty inventory.
 5. `randomTickSpeed` and the region's climate recorded, since crop growth depends on both.
-6. The portrait uploaded, or the generic fallback explicitly accepted for the run.
+6. Rowan configured as `male`, so the existing `portraits/male/Rowan.png` resolves. Nothing to
+   upload.
 
 Record observed inventory accounting, coordinates, timings, screenshots, logs and persistence
 results. **Expected source behaviour is not live evidence.**
@@ -319,7 +327,6 @@ results. **Expected source behaviour is not live evidence.**
 * Any deployment, including the Heroku release phase.
 * Any seed against a development or production database. Every seed and migration in this project
   ran only against disposable databases, which were dropped.
-* The `Rowan.png` portrait upload.
 
 Every one is prepared and documented above so that each is a single reviewable step.
 

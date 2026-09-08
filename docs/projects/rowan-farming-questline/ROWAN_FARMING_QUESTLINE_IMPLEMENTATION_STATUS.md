@@ -776,12 +776,21 @@ and its sender are outside this milestone's file boundary. The box therefore ope
 means "keep the stored hint", which is labelled in the UI but means a hint can be replaced and not
 cleared from the screen. The fix is one field on the screen payload and its sender; **M11 owns it.**
 
-### External asset the owner must supply (M12)
+### External asset the owner must supply (M12) — CORRECTED 2026-09-08: none
 
-`Rowan.png`, uploaded to the portrait bucket under whichever gender is placed. Nothing was
-uploaded. Until it exists the generic peasant portrait renders. Note the pre-existing client
-behaviour that a single missing-portrait response pins the fallback for the rest of that client
-session.
+This section previously said `Rowan.png` had to be uploaded to the portrait bucket. That was wrong,
+and it made a placement detail look like a release blocker for the whole project.
+
+`portraits/male/Rowan.png` already exists — a 128×128 RGB PNG, 12,465 bytes, last modified
+2026-03-29, uploaded in the same batch as the rest of the cast. The portrait system is entirely
+client-side and needs nothing from Rails: the client composes
+`https://storage.googleapis.com/ultimacraft/portraits/<gender>/<Personal_Name>.png` from the NPC's
+personal name and the gender configured on the spawner.
+
+What remains is not an upload but a placement rule: **configure Rowan as `male`**.
+`portraits/female/Rowan.png` returns 404, and the pre-existing client behaviour that one missing
+portrait pins the generic fallback for the rest of the session would make that mistake present
+itself as a broken portrait system.
 
 ### Defect found in passing (pre-existing, NOT fixed here, outside this project)
 
@@ -1386,8 +1395,8 @@ establish, and the live acceptance prerequisites.
 **At M12 nothing had been pushed, merged, deployed, seeded to a live database, or uploaded.** The
 merges were carried out afterwards, locally and under separate explicit authorization — see
 "Integration into the target branches" at the end of this document. Pushing, deployment, live
-seeding and the portrait upload remain untaken and remain the owner's, each prepared as a single
-reviewable step.
+seeding remain untaken and remain the owner's, each prepared as a single reviewable step. The
+portrait was never outstanding — see the corrected section above.
 
 All 58 items in `ROWAN_FARMING_QUESTLINE_ACCEPTANCE_DRAFT.md` remain unchecked, because no
 behaviour has been observed in a live game. The playbook's rule that an acceptance box is checked
