@@ -789,7 +789,8 @@ session.
 spawner's Rails api id did not survive a chunk reload. Recorded for the owner rather than fixed,
 because it belonged to no milestone here. **Resolved outside this project**: the owner ran it as the
 separate task this milestone raised, and it landed on `patch-18` as `b9a0662f`. The integration
-milestone merged it with this work; see the integration section at the end of this document.
+milestone merged it with this work; see "Integration into the target branches" at the end of this
+document.
 
 ### Next action (at M6 close)
 
@@ -1382,8 +1383,11 @@ test totals, the candidate build's identity, the migration and seed list, deploy
 rollback, operator setup, unresolved risks and owner decisions, what automated testing cannot
 establish, and the live acceptance prerequisites.
 
-**Nothing was pushed, merged, deployed, seeded to a live database, or uploaded.** Those five actions
-are the owner's, each prepared as a single reviewable step.
+**At M12 nothing had been pushed, merged, deployed, seeded to a live database, or uploaded.** The
+merges were carried out afterwards, locally and under separate explicit authorization — see
+"Integration into the target branches" at the end of this document. Pushing, deployment, live
+seeding and the portrait upload remain untaken and remain the owner's, each prepared as a single
+reviewable step.
 
 All 58 items in `ROWAN_FARMING_QUESTLINE_ACCEPTANCE_DRAFT.md` remain unchecked, because no
 behaviour has been observed in a live game. The playbook's rule that an acceptance box is checked
@@ -1393,3 +1397,101 @@ only when observed has been kept throughout.
 
 The owner's: deploy Rails, seed the questline, deploy the jar, place Rowan with the infrastructure
 listed in the handoff, then walk the acceptance draft.
+---
+
+## Integration into the target branches (2026-09-08, local only)
+
+A milestone after M12, authorized separately, merged both feature branches into their current local
+target branches, reran the cross-repository gates against the integrated result and built the
+candidate. It did not push, deploy, seed a live database, replace a server jar or upload a
+portrait.
+
+### What the targets looked like first
+
+| | Feature tip | Target before | Merge base | Divergence |
+| --- | --- | --- | --- | --- |
+| NeoForge | `fc08112c` | `patch-18` at `b9a0662f` | `421e2785` | 13 commits on the feature side, 1 on the target |
+| Rails | `7602ede` | `release/public` at `a9425ca` | `a9425ca` | 90 files on the feature side, 0 on the target |
+
+The recorded M11 mod tip was `8d2dbcfa`; the branch was two documentation commits further along at
+`fc08112c` (`402f5585` preparing the acceptance draft, `fc08112c` recording the verified jar
+identity). Both are M12 handoff work committed after the M11 record was written, which is why the
+tips differ, and neither touches `src/`.
+
+The single target-side commit, `b9a0662f`, is the owner's fix for the spawner-persistence defect
+this project reported at M6 and deliberately did not fix. It is not unrelated work in the sense the
+integration rules guard against; it is the same defect, fixed independently.
+
+### What actually conflicted
+
+Nothing textually. Both sides added a key to the same two NBT methods in
+`QuestGiverSpawnBlockEntity`, but three lines apart rather than on the same lines, and
+`git merge-file` resolves them cleanly with no markers. The conflict was semantic and one level up:
+
+* `b9a0662f` shipped a new GameTest file whose fixture calls the five-argument
+  `applyConfig(name, city, apiId, gender, radius)`. The questline had widened that method to six
+  arguments with a per-spawner directions hint. The merged tree therefore compiled on neither side
+  alone and would not have compiled after a clean textual merge either.
+* Resolved by updating the target's test call site to pass an empty hint, rather than by adding a
+  five-argument overload. An empty hint means "leave the stored hint alone", so the fixture
+  configures exactly what it configured before, and the production class stays byte-identical to
+  what both sides validated. An overload would have changed production code to accommodate a test.
+
+### What the merge added
+
+Two GameTests that neither side could have written alone, because each side's suite only asserted
+its own NBT key. A merge that silently dropped either key would still have passed both suites:
+
+* `theCustomApiIdAndTheDirectionsHintBothSurviveTheSameReload` — both keys through one reload.
+* `aSaveWithoutTheDirectionsKeyStillLoadsTheApiId` — the reverse compatibility case, with a real
+  hint configured first so that removing the key removes something.
+
+`QuestGiverSpawnPersistenceGameTests` goes from 4 registered tests to 6.
+
+### Integration commits
+
+| | Commit | Kind | Result |
+| --- | --- | --- | --- |
+| NeoForge | `30d3e2c4` | true merge (`b9a0662f` + `fc08112c`) | `patch-18` moved to `30d3e2c4` |
+| Rails | `7602ede` | fast-forward | `release/public` moved to `7602ede` |
+
+Both feature branches are preserved at their tips. No branch or worktree was deleted, and no
+`reset`, `clean` or `checkout --` was run in either repository.
+
+### Owner work preserved
+
+The canonical Rails checkout carries the owner's uncommitted work. It was hashed before and after
+integration and is byte-identical: `app/themes/Avatar/views/pages/article.html.erb` at
+`f725d829f0ecefefa341a682b5b27bfdc3149f38f73ae4476e603d6767ce58dc`, and the three untracked files at
+`63e0215748682134`, `9d98f77a297c04ce` and `f76ba23750ed1115`. Nothing was stashed, discarded,
+committed or absorbed. Every Rails gate ran in a disposable worktree against disposable databases,
+so the canonical checkout was never switched or migrated.
+
+### Independent audit of the integrated result
+
+An audit agent reviewed the merged tree against both parents. Six findings were substantiated and
+all six were fixed:
+
+1. `QuestProxyService.send` — the fourth path by which a Rails answer reaches a client, and the one
+   an ordinary quest accept takes — forwarded the body unsanitized, so it published the journal
+   entry's objective machinery including a stage-five subscription's resolved plot key and crop
+   cycle. Now routed through a new `QuestClientPayload.sanitizeJson(String)`, which parses,
+   sanitizes and re-serializes, and returns anything that is not a JSON object unchanged.
+2. Equipment reissue offered the whole kit regardless of stage, so a player partway through stage
+   one could be handed the hoe stage four pays out. `QuestEquipmentReissuePolicy` now keys expected
+   equipment on the stage (`EQUIPMENT_BY_STAGE`) and `missingEquipment(Inventory, String questKey)`
+   answers per stage; an unrecognised questline is owed nothing rather than everything.
+3. This document and the release handoff still asserted that nothing had been merged.
+4. This document pointed forward to an integration section that did not exist. It is this one.
+5. `aSaveWithoutTheDirectionsKeyStillLoadsTheApiId` asserted an empty hint without ever configuring
+   one, so it would have passed even if the key were never written. It now configures a real hint
+   and asserts that precondition before removing the key.
+6. The handoff's change-size figures were stale (183 files, +29,448 rather than 184 and +29,739).
+
+Findings 1 and 2 are behavioural and carry six new unit tests between them: four in
+`QuestEquipmentReissuePolicyTest` and two in `QuestClientPayloadSanitizationTest`.
+
+### Next action
+
+The owner's, and unchanged in substance from M12: deploy Rails to the chosen test environment, seed
+the questline, deploy the candidate jar, place Rowan, then walk the 58-row acceptance draft.

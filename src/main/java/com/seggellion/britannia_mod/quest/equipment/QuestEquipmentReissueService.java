@@ -96,7 +96,8 @@ public final class QuestEquipmentReissueService {
         if (questKey == null) {
             return QuestEquipmentReissuePolicy.Outcome.NOTHING_MISSING;
         }
-        List<String> missing = QuestEquipmentReissuePolicy.missingEquipment(player.getInventory());
+        // Stage-scoped: a player is only offered equipment an earlier stage already gave them.
+        List<String> missing = QuestEquipmentReissuePolicy.missingEquipment(player.getInventory(), questKey);
         if (missing.isEmpty()) {
             return QuestEquipmentReissuePolicy.Outcome.NOTHING_MISSING;
         }

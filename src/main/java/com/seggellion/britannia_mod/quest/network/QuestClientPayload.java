@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import javax.annotation.Nullable;
 
@@ -112,6 +113,30 @@ public final class QuestClientPayload {
     public static JsonObject sanitize(@Nullable JsonObject root) {
         if (root == null) return null;
         return (JsonObject) strip(root.deepCopy(), 0);
+    }
+
+    /**
+     * {@link #toJson} for a body this server holds only as text.
+     *
+     * <p>The quest proxy forwards Rails' answer verbatim, so it never parses it into a
+     * {@link JsonObject} of its own. That is the path an ordinary quest accept takes, and its body
+     * carries the same published objective machinery every other path strips — the journal entry's
+     * {@code triggers}, with a stage-five subscription's resolved {@code plot_key} and
+     * {@code crop_cycle_uuid} in it. Parsing here rather than at the call site keeps every sending
+     * site going through one function.
+     *
+     * <p>A body that is not a JSON object is returned unchanged: an error envelope or a bare string
+     * carries nothing to strip, and rewriting it would change what the client is told.
+     */
+    public static String sanitizeJson(@Nullable String body) {
+        if (body == null || body.isBlank()) return body;
+        try {
+            JsonElement parsed = JsonParser.parseString(body);
+            if (!parsed.isJsonObject()) return body;
+            return toJson(parsed.getAsJsonObject());
+        } catch (RuntimeException notJson) {
+            return body;
+        }
     }
 
     /** {@link #sanitize} then serialize -- the one call every sending site makes. */

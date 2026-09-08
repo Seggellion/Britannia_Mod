@@ -158,6 +158,12 @@ public final class QuestGiverSpawnPersistenceGameTests {
         ServerLevel level = helper.getLevel();
         BlockPos pos = placeConfiguredSpawner(helper);
 
+        // Configure a real hint first, so removing the key removes something. Without this the
+        // empty-hint assertion below would pass even if Directions were never written at all.
+        spawnerAt(level, pos).applyConfig("Generic Combat", "Britain", API_ID, "male", RADIUS,
+            "Ask at the well, east of the barn");
+        check(!spawnerAt(level, pos).getDirections().isEmpty(), "precondition: a hint is stored");
+
         CompoundTag beforeTheQuestline = saveTag(level, pos);
         beforeTheQuestline.remove("Directions");
 

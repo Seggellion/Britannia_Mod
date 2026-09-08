@@ -51,6 +51,30 @@ class QuestClientPayloadSanitizationTest {
         ClientQuestTable.clear();
     }
 
+    @Test
+    void theProxysTextOnlyPathStripsTheAnswerKeyToo() {
+        // The quest proxy forwards Rails' answer as text and never parses it into an object of its
+        // own, so it sanitizes through the string form. An ordinary quest accept takes that path.
+        String raw = body().toString();
+        assertTrue(raw.contains(BOUND_PLOT_KEY), "precondition: the raw body really does carry it");
+
+        String sanitized = QuestClientPayload.sanitizeJson(raw);
+
+        assertFalse(sanitized.contains(BOUND_PLOT_KEY), "the bound plot key reached the client");
+        assertFalse(sanitized.contains(BOUND_CROP_CYCLE), "the bound crop cycle reached the client");
+        assertFalse(sanitized.contains("\"triggers\""), "the objective machinery reached the client");
+    }
+
+    @Test
+    void aBodyThatIsNotAJsonObjectIsForwardedUnchanged() {
+        // An error envelope or a bare string carries nothing to strip, and rewriting it would
+        // change what the player is told.
+        assertEquals("not json at all", QuestClientPayload.sanitizeJson("not json at all"));
+        assertEquals("[1,2,3]", QuestClientPayload.sanitizeJson("[1,2,3]"));
+        assertEquals("", QuestClientPayload.sanitizeJson(""));
+        assertNull(QuestClientPayload.sanitizeJson(null));
+    }
+
     // ---------------------------------------------------------------- a guard on the guard
 
     @Test

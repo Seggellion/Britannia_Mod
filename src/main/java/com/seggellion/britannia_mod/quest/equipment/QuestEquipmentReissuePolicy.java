@@ -102,6 +102,47 @@ public final class QuestEquipmentReissuePolicy {
     }
 
     /** The equipment this player is short of, in the order the questline hands it out. */
+    /**
+     * What a player on a given stage should already be carrying.
+     *
+     * <p>Recovery must not hand out equipment a player has not earned yet. The questline issues its
+     * kit across four stages — the shovel on accepting stage one, the bowls and the bucket on
+     * completing stage two, the watering can on completing stage three, the hoe on completing stage
+     * four — so a player partway through stage one is *correctly* without a hoe, and asking Rails to
+     * replace one would hand them a later stage's tool three quests early.
+     *
+     * <p>Keyed on the stage the player is on, so it names only what an earlier stage already gave
+     * them. An unknown key yields nothing rather than everything: a questline this policy does not
+     * recognise gets no reissues at all, which is the safe direction.
+     */
+    public static final Map<String, List<String>> EQUIPMENT_BY_STAGE;
+
+    static {
+        Map<String, List<String>> byStage = new LinkedHashMap<>();
+        byStage.put("rowan_farming_1", List.of("britannia_mod:britannia_shovel"));
+        byStage.put("rowan_farming_2", List.of("britannia_mod:britannia_shovel"));
+        byStage.put("rowan_farming_3", List.of("britannia_mod:britannia_shovel", "britannia_mod:empty_bowl", "minecraft:bucket"));
+        byStage.put("rowan_farming_4", List.of("britannia_mod:britannia_shovel", "britannia_mod:empty_bowl", "minecraft:bucket", "britannia_mod:watering_can"));
+        byStage.put("rowan_farming_5", List.of("britannia_mod:britannia_shovel", "britannia_mod:empty_bowl", "minecraft:bucket", "britannia_mod:watering_can", "britannia_mod:farming_hoe"));
+        EQUIPMENT_BY_STAGE = Map.copyOf(byStage);
+    }
+
+    /**
+     * The equipment this stage's player should hold and does not, in the order the questline issued
+     * it. Empty for a stage this policy does not know.
+     */
+    public static List<String> missingEquipment(Inventory inventory, String questKey) {
+        List<String> expected = EQUIPMENT_BY_STAGE.get(questKey);
+        if (expected == null) {
+            return List.of();
+        }
+        return expected.stream()
+                .filter(itemId -> isMissing(inventory, itemId))
+                .toList();
+    }
+
+    /** @deprecated stage-blind; use {@link #missingEquipment(Inventory, String)}. Kept for tests. */
+    @Deprecated
     public static List<String> missingEquipment(Inventory inventory) {
         return REQUIRED_EQUIPMENT.keySet().stream()
                 .filter(itemId -> isMissing(inventory, itemId))

@@ -4,6 +4,7 @@ import com.seggellion.britannia_mod.client.gui.QuestScreenText;
 import com.seggellion.britannia_mod.quest.equipment.QuestEquipmentReissuePolicy;
 import com.seggellion.britannia_mod.quest.equipment.QuestEquipmentReissueService;
 import org.junit.jupiter.api.Test;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -18,6 +19,57 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * the rules the game applies before it asks and after it hears back.
  */
 class QuestEquipmentReissuePolicyTest {
+
+    // ------------------------------------------------------------------ what a stage is owed
+
+    @Test
+    void aStageOnlyOffersEquipmentAnEarlierStageAlreadyGave() {
+        // The questline issues the shovel on accepting stage one, the bowls and bucket on completing
+        // stage two, the watering can on completing stage three and the hoe on completing stage four.
+        // A player partway through stage one is correctly without a hoe, and recovery must not treat
+        // that as something to replace.
+        assertEquals(List.of("britannia_mod:britannia_shovel"),
+            QuestEquipmentReissuePolicy.EQUIPMENT_BY_STAGE.get("rowan_farming_1"),
+            "stage one has only ever handed out the shovel");
+        assertEquals(List.of("britannia_mod:britannia_shovel"),
+            QuestEquipmentReissuePolicy.EQUIPMENT_BY_STAGE.get("rowan_farming_2"),
+            "stage two's bowls and bucket are paid on completion, so they are not owed during it");
+
+        for (String stage : List.of("rowan_farming_1", "rowan_farming_2", "rowan_farming_3")) {
+            assertFalse(QuestEquipmentReissuePolicy.EQUIPMENT_BY_STAGE.get(stage)
+                    .contains("britannia_mod:farming_hoe"),
+                "the hoe is stage four's reward and must not be reachable on " + stage);
+        }
+        for (String stage : List.of("rowan_farming_1", "rowan_farming_2")) {
+            assertFalse(QuestEquipmentReissuePolicy.EQUIPMENT_BY_STAGE.get(stage)
+                    .contains("britannia_mod:watering_can"),
+                "the watering can is stage three's reward and must not be reachable on " + stage);
+        }
+    }
+
+    @Test
+    void everyStageOnlyEverNamesItemsTheAllowListPermits() {
+        QuestEquipmentReissuePolicy.EQUIPMENT_BY_STAGE.forEach((stage, items) ->
+            items.forEach(item -> assertTrue(QuestEquipmentReissuePolicy.REQUIRED_EQUIPMENT.containsKey(item),
+                stage + " names " + item + ", which is not reissuable equipment")));
+    }
+
+    @Test
+    void theFinalStageOwesTheWholeKitAndNoCurrency() {
+        List<String> stageFive = QuestEquipmentReissuePolicy.EQUIPMENT_BY_STAGE.get("rowan_farming_5");
+        assertEquals(QuestEquipmentReissuePolicy.REQUIRED_EQUIPMENT.keySet().size(), stageFive.size(),
+            "by stage five the player has been given every piece of equipment");
+        QuestEquipmentReissuePolicy.CURRENCY_ITEM_IDS.forEach(coin ->
+            assertFalse(stageFive.contains(coin), "no stage may owe currency, found " + coin));
+    }
+
+    @Test
+    void aQuestlineThisPolicyDoesNotKnowIsOwedNothingRatherThanEverything() {
+        assertTrue(QuestEquipmentReissuePolicy.EQUIPMENT_BY_STAGE.get("some_other_questline_3") == null,
+            "precondition: an unrecognised stage key");
+        // The lookup returning null is what makes missingEquipment answer with an empty list, so a
+        // questline this policy has never heard of cannot claim the farming kit.
+    }
 
     // ------------------------------------------------------------------ currency is never in
 

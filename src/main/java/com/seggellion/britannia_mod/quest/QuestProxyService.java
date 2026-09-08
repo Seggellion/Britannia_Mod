@@ -13,6 +13,7 @@ import com.seggellion.britannia_mod.network.payload.ClientboundSyncQuestsPayload
 import com.seggellion.britannia_mod.network.payload.QuestActionC2SPayload;
 import com.seggellion.britannia_mod.network.payload.QuestActionResultS2CPayload;
 import com.seggellion.britannia_mod.quest.achievement.QuestAchievementAward;
+import com.seggellion.britannia_mod.quest.network.QuestClientPayload;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
 import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
 import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
@@ -482,8 +483,16 @@ public final class QuestProxyService {
         return rawName.contains(":") ? rawName.split(":", 2)[0].trim() : rawName.trim();
     }
 
+    /**
+     * The fourth place a Rails answer reaches a client, and the one an ordinary quest accept
+     * goes through. It is sanitized for the same reason the three trigger-result paths are:
+     * the body carries the journal entry's published objective machinery, including the
+     * resolved plot key and crop cycle a stage-five subscription binds to. The server still
+     * decides everything; this only stops the client being handed the answer.
+     */
     private static void send(ServerPlayer player, long requestId, int status, String body) {
-        NetworkHandler.sendToPlayer(player, new QuestActionResultS2CPayload(requestId, status, body));
+        NetworkHandler.sendToPlayer(player,
+                new QuestActionResultS2CPayload(requestId, status, QuestClientPayload.sanitizeJson(body)));
     }
 
     private record ResolvedIntent(String argument, String questGiverName, UUID questGiverUuid) {}

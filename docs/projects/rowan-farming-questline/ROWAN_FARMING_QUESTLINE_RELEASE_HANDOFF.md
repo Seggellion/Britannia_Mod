@@ -1,9 +1,11 @@
 # Rowan the Farmer — From Soil to Supper: release handoff
 
-**Status: engineering complete, live acceptance not started.** Every milestone from M0 to M11 has
-passed its gates and is committed locally in both repositories. **Nothing has been pushed, merged,
-deployed, seeded to a live database, or uploaded.** The remaining work is the owner's: the live
-acceptance walkthrough (M12) and the release actions listed at the end, in the order given.
+**Status: engineering complete and locally integrated, live acceptance not started.** Every
+milestone from M0 to M11 passed its gates, and a later integration milestone merged both feature
+branches into their local target branches: `patch-18` in the mod, `release/public` in Rails.
+**Nothing has been pushed, deployed, seeded to a live database, or uploaded.** The remaining work
+is the owner's: the live acceptance walkthrough (M12) and the release actions listed at the end, in
+the order given.
 
 ---
 
@@ -25,17 +27,26 @@ acceptance walkthrough (M12) and the release actions listed at the end, in the o
 | M11 Hardening and automated acceptance | `8d2dbcfa` | `7602ede` |
 | M12 Release handoff | this commit | — |
 
-**Branches (local, unpushed):** `claude/rowan-farming-questline-mod` and
-`claude/rowan-farming-questline-rails`.
+**Feature branches (local, unpushed):** `claude/rowan-farming-questline-mod` at `fc08112c` and
+`claude/rowan-farming-questline-rails` at `7602ede`. Both are preserved; neither was deleted.
 **Bases:** the mod from `patch-18` at `421e2785`; Rails from `release/public` at `a9425ca`.
 **Worktrees:** `C:\projects\britannia\mod\Britannia_Mod\.claude\worktrees\rowan-farming-questline-mod`
 and `/home/dusti/ultimacraft-website/.claude/worktrees/rowan-farming-questline-rails`.
 
-**Working-tree state:** both clean at the final commit. The canonical checkouts were never switched,
-stashed, reset or modified; the owner's uncommitted work in the Rails checkout and the untracked
-notes in the mod checkout are exactly as they were.
+**Integration (local, unpushed):** the mod merged into `patch-18` as `30d3e2c4`, a true merge
+commit, because the target had moved on to `b9a0662f` (see §7). Rails fast-forwarded `release/public`
+to `7602ede`, since the target had not moved. Both target branches are ahead of their remotes and
+neither has been pushed.
 
-**Size of the change:** mod 183 files, +29,448 −490. Rails 90 files, +13,390 −172.
+**Working-tree state:** both feature worktrees clean at their final commits. The canonical checkouts
+were never switched, stashed, reset or modified; the owner's uncommitted work in the Rails checkout
+and the untracked notes in the mod checkout are exactly as they were, verified by content hash
+before and after integration.
+
+**Size of the change:** mod 184 files, +29,739 −490 against the base. Rails 90 files, +13,390
+−172. The integrated `patch-18` differs from that same base by 185 files, +29,959 −490 — the extra
+file and lines are the target's own spawner-persistence fix and the regression tests this
+integration added around it.
 
 ---
 
@@ -263,11 +274,15 @@ results. **Expected source behaviour is not live evidence.**
 
 ## 10. The owner-only actions this project deliberately did not take
 
-* `git push` of either branch.
-* Any merge into `patch-18` or `release/public`.
+* `git push` of any branch. `patch-18` and `release/public` both carry this work locally and both
+  are ahead of their remotes.
 * Any deployment, including the Heroku release phase.
 * Any seed against a development or production database. Every seed and migration in this project
   ran only against disposable databases, which were dropped.
 * The `Rowan.png` portrait upload.
 
 Every one is prepared and documented above so that each is a single reviewable step.
+
+The local integration itself — both merges, the target-branch updates and the candidate build — was
+carried out by a later milestone under explicit authorization, and is recorded in §1. None of it
+reached a remote, a server or a live database.
