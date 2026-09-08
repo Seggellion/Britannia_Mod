@@ -30,8 +30,8 @@ were not switched, stashed, reset, or modified.
 | M8 Dialogue and journal UX | **PASSED** | `75bdb1c5` | — | 2026-09-07 |
 | M9 Timing, skill, recovery | **PASSED** | `6fe3f1e9` | `39d14b3` | 2026-09-08 |
 | M10 Achievement and advancement | **PASSED** | `994d9b7c` | `0aed9dd` | 2026-09-08 |
-| M11 Hardening and automated acceptance | **PASSED** | (this commit) | `7602ede` | 2026-09-08 |
-| M12 Live acceptance and release handoff | not started | | | |
+| M11 Hardening and automated acceptance | **PASSED** | `8d2dbcfa` | `7602ede` | 2026-09-08 |
+| M12 Live acceptance and release handoff | **HANDOFF PREPARED** (live acceptance not started) | (this commit) | — | 2026-09-08 |
 
 ## M0 — Baselines, worktrees, executable contracts (PASSED 2026-09-06)
 
@@ -1370,7 +1370,26 @@ re-triggers acceptance. Clientbound payload contents cannot be observed in the G
 The toast and its sound, the parchment art, portraits and real glyph metrics need a running client.
 The Rails half of the fixture mirror was verified by the Rails-side agent, not the mod-side one.
 
-### Next action
+### Next action (at M11 close)
 
 M12 — the release handoff: SHAs, diffs, test totals, jar identity, migrations and seeds, deployment
 order, rollback, operator setup and the remaining live gates, prepared but not executed.
+
+## M12 — Release handoff (PREPARED 2026-09-08; live acceptance NOT started)
+
+The handoff is `ROWAN_FARMING_QUESTLINE_RELEASE_HANDOFF.md` beside this document: milestone SHAs,
+test totals, the candidate build's identity, the migration and seed list, deployment order and
+rollback, operator setup, unresolved risks and owner decisions, what automated testing cannot
+establish, and the live acceptance prerequisites.
+
+**Nothing was pushed, merged, deployed, seeded to a live database, or uploaded.** Those five actions
+are the owner's, each prepared as a single reviewable step.
+
+All 58 items in `ROWAN_FARMING_QUESTLINE_ACCEPTANCE_DRAFT.md` remain unchecked, because no
+behaviour has been observed in a live game. The playbook's rule that an acceptance box is checked
+only when observed has been kept throughout.
+
+### Next action
+
+The owner's: deploy Rails, seed the questline, deploy the jar, place Rowan with the infrastructure
+listed in the handoff, then walk the acceptance draft.
