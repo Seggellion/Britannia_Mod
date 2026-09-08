@@ -50,15 +50,26 @@ integration added around it.
 
 ---
 
-## 2. Test totals at the final commit
+## 2. Test totals at the integrated commit
+
+Measured on the integrated tree at `2c63b207`, not on the feature branch.
 
 | Suite | Result |
 | --- | --- |
-| Mod unit tests | **3902 tests, 0 failures, 0 errors, 23 skipped** (487 suites; baseline at the branch point was 3479) |
-| Mod GameTests | **1167 required tests passed, 0 failed** (baseline 1102) |
-| Rails full suite | **3517 runs, 54,113 assertions, 13 failures, 1 error, 1 skip** |
-| Rails quest selection | **838 runs, 0 failures** |
+| Mod unit tests | **3908 tests, 0 failures, 0 errors, 23 skipped** (487 suites; 3902 at the feature tip, 3479 at the branch point) |
+| Mod GameTests | **1172 required tests passed, 0 failed** (1167 at the feature tip, 1102 at the branch point) |
+| Rails full suite | **3517 runs, 54,214 assertions, 9 failures, 0 errors, 1 skip** |
+| Rails quest selection | **1297 runs, 7,606 assertions, 0 failures** |
+| Rails known-family control, fresh database | **56 runs, 248 assertions, 0 failures** |
 | Frozen contract fixtures | **12 of 12** verify against the manifest on both sides of the mirror |
+
+The mod gains 5 GameTests and 6 unit tests over the feature tip. Both deltas are exact and account
+for every new test: 3 GameTests came in with the target's own commit, 2 more were added by the merge
+to assert the two NBT keys together, and the 6 unit tests cover the two behavioural audit fixes.
+
+The Rails run is the same suite against the integrated `release/public`; the failure count differs
+from run to run because most of these failures are order-dependent, and the set below is a subset of
+the set analysed at M11, not a new one.
 
 The Rails failures are **entirely pre-existing** and are explained mechanism by mechanism in
 `docs/rowan_farming_questline_preexisting_failures.md` in the Rails repository. Summary: seven tests
@@ -69,6 +80,20 @@ test disabled and never restored. Two fail deterministically rather than by orde
 whose assertion contradicts the method it calls, and one genuine finding described in §7. All
 thirteen reproduce at the commit this project branched from, at the same line numbers, and every
 file involved is byte-identical between the two commits.
+
+The nine that surfaced in this ordering map onto that catalogue with nothing left over:
+
+| Failing class | Count | Mechanism |
+| --- | --- | --- |
+| `Admin::RedeemShardResetsControllerTest` | 4 | unscoped `AdminActionAudit.count` |
+| `Admin::RedeemsControllerTest` | 3 | unscoped `AdminActionAudit.count` |
+| `Admin::BankReconciliationsControllerTest` | 1 | unscoped bank aggregate |
+| `Economy::CityFoodSupplyRecalculatorTest` | 1 | deterministic; the assertion contradicts the method |
+
+All four classes pass together on a fresh database — the control run in the table above, 56 runs with no
+failures. `ShardPlatformQueryBudgetTest` did not fail in this ordering, which is a property of the
+ordering and not a fix: the two public endpoints are still over budget, and that finding in §7
+stands unchanged.
 
 The 23 mod skips include 6 opt-in live-Rails tests that skip unless credentials are supplied.
 
@@ -90,16 +115,31 @@ Rebuild from the final commit on a clean tree:
 | Mod id / display name | `britannia_mod` / Britannia |
 | Build metadata | `britannia_mod_build.properties` records `git.head`, `git.branch`, `git.dirty` |
 
-**Verified clean-tree build** at `402f5585`, the commit that introduced this document:
+**The candidate.** Built clean-tree from `2c63b207`, the integrated commit both gates above ran
+against. This supersedes the earlier feature-branch build at `402f5585`; that jar is no longer the
+candidate.
 
 | Property | Value |
 | --- | --- |
-| `git.head` | `402f5585e63a08dce303e646dd48d9ed96d731cb` |
-| `git.branch` | `claude/rowan-farming-questline-mod` |
+| `git.head` | `2c63b2075ad7b8ecd6ca15bf4bbc2eb5708d9a53` |
+| `git.branch` | `integration/rowan-patch18` |
 | `git.dirty` | `false` |
-| Build timestamp | 2026-09-08T10:23:38Z |
-| `britannia_mod-0.1.8a.jar` | 34,353,079 bytes, SHA-256 `3ae8ddbd9299013fcacffcd3b4d6ab8b4c8a5dfef9fe04b5a441abd98e96ebe5` |
-| `britannia_mod-0.1.8a-all.jar` | 34,924,717 bytes, SHA-256 `d10b982273bbb5f0849be89fd50d232a629d3b7df3017c340c8c7ec79f2ef09e` |
+| Build timestamp | 2026-09-08T15:51:00Z |
+| `britannia_mod-0.1.8a.jar` | 34,353,735 bytes, SHA-256 `df77ad0e56373201b5a91745f25bbcf871aef11f1027d2d13b695b4a009f56cb` |
+| `britannia_mod-0.1.8a-all.jar` | 34,925,373 bytes, SHA-256 `3f654f4e85a037aac98272858d00d3cc65038cc998098cd4f23854b9e06f3804` |
+
+Two things about that table are worth stating plainly rather than leaving to be noticed.
+
+`git.branch` reads `integration/rowan-patch18` and not `patch-18`. It names the branch the build ran
+from, and it had to: `git.dirty` is computed from `git status --porcelain`, which counts untracked
+files, and the canonical checkout permanently holds five untracked owner playbooks that must be
+preserved. A build there would stamp `git.dirty=true`, and a dirty build is not a release candidate.
+`git.head` is the authoritative field, and it is an ancestor of `patch-18` — verifiable with
+`git merge-base --is-ancestor 2c63b207 patch-18`.
+
+`git.head` is `2c63b207` while `patch-18`'s tip is one commit further along. That one commit is this
+documentation record and nothing else; `git diff 2c63b207 patch-18 -- src/` is empty. The candidate
+is built from the exact tree both gates ran against, which is the property that matters.
 
 **The jar is not byte-reproducible** on this project — a known property of this build. An earlier
 build of the identical source, differing only in that one documentation file was uncommitted,
