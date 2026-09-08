@@ -200,15 +200,17 @@ class QuestNodePresentationTest {
 
     @Test
     void neitherClassClaimsTriggerDataHasNeverReachedAClient() {
-        // Both javadocs asserted a property of the whole mod that the mod does not have.
+        // Both javadocs once asserted a property of the whole mod that the mod did not have.
         // QuestEntryCodecs said the trigger data "has never reached a client"; this class said "a
-        // screen that never sees it cannot leak it". Meanwhile QuestActionDispatcher ships the raw
-        // Rails body -- accepted_quest.triggers, resolved bound values and all -- in
-        // QuestTriggerResultS2CPayload, and QuestObjectiveWatcher and QuestEventHandlers ship
+        // screen that never sees it cannot leak it". Meanwhile QuestActionDispatcher shipped the
+        // raw Rails body -- accepted_quest.triggers, resolved bound values and all -- in
+        // QuestTriggerResultS2CPayload, and QuestObjectiveWatcher and QuestEventHandlers shipped
         // node.metadata whole, action_steps and action_trigger included.
         //
-        // The payloads are M11's to change and are deliberately untouched here. What is fixed is
-        // the documentation, because a false safety claim is how the real exposure stays unnoticed.
+        // M8 corrected the documentation and deferred the payloads. M11 fixed the payloads, and the
+        // prose is corrected again below -- but neither sentence may come back, because what made
+        // them wrong was that they described the codec's own rule as a property of the mod. The
+        // payloads being clean today is a fact about three call sites, not about this file.
         //
         // The two sentences, verbatim, rather than a keyword ban: the replacement prose has to be
         // able to say what it corrected, and a ban on the words would fail on the correction.
@@ -221,7 +223,7 @@ class QuestNodePresentationTest {
     }
 
     @Test
-    void bothClassesNameTheRawPayloadPathsThatDoCarryIt() {
+    void bothClassesNameTheRawPayloadPathsThatCarriedIt() {
         String codecs = javadocOf(CODECS);
         String presentation = javadocOf(PRESENTATION);
         for (String path : new String[]{"QuestActionDispatcher", "QuestTriggerResultS2CPayload"}) {
@@ -230,33 +232,47 @@ class QuestNodePresentationTest {
         }
         assertTrue(presentation.contains("QuestObjectiveWatcher")
                         && presentation.contains("QuestEventHandlers"),
-                "the two handlers that ship node.metadata are not named");
+                "the two handlers that shipped node.metadata are not named");
+        // And both must now name what closed it, or a reader is left believing the exposure stands.
+        assertTrue(codecs.contains("QuestClientPayload"),
+                "QuestEntryCodecs does not name what closed the exposure it describes");
+        assertTrue(presentation.contains("QuestClientPayload"),
+                "QuestNodePresentation does not name what closed the exposure it describes");
     }
 
     @Test
-    void theExposureIsStillReal() {
-        // A guard on the correction: if somebody hardens the payloads, these docs stop being true
-        // in the other direction and this test says so rather than leaving stale prose behind.
+    void theExposureIsClosedAtEveryOneOfTheThreeSendingSites() {
+        // M8's version of this test asserted the opposite -- that the payloads still shipped whole
+        // bodies -- so that hardening them would fail here rather than leave stale prose behind.
+        // M11 hardened them, so it is inverted: every site that builds a QuestTriggerResultS2CPayload
+        // must build it through QuestClientPayload, and none may serialize a body itself.
         //
-        // M10 renamed the argument on both paths from the body itself to `forwarded`, which is that
-        // same body with ONE thing possibly removed: an achievement announcement this player had
-        // already earned. Everything the corrected javadocs are about -- accepted_quest.triggers,
-        // the resolved bound values, node.metadata -- still ships whole, so both halves are
-        // asserted: the payload is still built from a whole body, and the only subtraction is the
-        // announcement filter.
-        String dispatcher = read(JavaSource.MOD.resolve("quest/action/QuestActionDispatcher.java"));
-        assertTrue(dispatcher.contains("new QuestTriggerResultS2CPayload(GSON.toJson(forwarded)"),
-                "the dispatcher no longer ships the raw body; the corrected javadocs are now stale");
-        assertTrue(dispatcher.contains("QuestAchievementAward.grantAndFilter(player, root,"),
-                "`forwarded` is no longer the raw Rails body minus only the achievement "
-                        + "announcement; the corrected javadocs may now be stale");
+        // Source text rather than behaviour on purpose. The behaviour is asserted in
+        // QuestClientPayloadSanitizationTest against the frozen fixtures; what this adds is that a
+        // FOURTH sending site cannot appear without turning this red.
+        for (String file : new String[]{
+                "quest/action/QuestActionDispatcher.java",
+                "quest/QuestObjectiveWatcher.java",
+                "quest/events/QuestEventHandlers.java"}) {
+            String source = JavaSource.withoutComments(JavaSource.MOD.resolve(file));
+            assertTrue(source.contains("QuestClientPayload."),
+                    file + " builds a trigger result without sanitizing it");
+            // The three pre-M11 spellings, all of which serialized a whole body straight out.
+            for (String raw : new String[]{
+                    "GSON.toJson(forwarded)", "GSON.toJson(response)", "GSON.toJson(root)"}) {
+                assertFalse(source.contains(raw),
+                        file + " still serializes the whole body with " + raw);
+            }
+        }
 
-        String watcher = read(JavaSource.MOD.resolve("quest/QuestObjectiveWatcher.java"));
-        assertTrue(watcher.contains("new QuestTriggerResultS2CPayload(GSON.toJson(forwarded)"),
-                "the watcher no longer ships the parsed response; the corrected javadocs are stale");
-        assertTrue(watcher.contains("GSON.toJsonTree(response).getAsJsonObject()"),
-                "`forwarded` is no longer the whole parsed response minus only the achievement "
-                        + "announcement; the corrected javadocs may now be stale");
+        // The whole mod, not only the three known sites: any file that builds this payload has to
+        // be a file that sanitizes, so a fourth sending site cannot appear quietly.
+        for (java.nio.file.Path source : JavaSource.modSources()) {
+            String text = JavaSource.withoutComments(source);
+            if (!text.contains("new QuestTriggerResultS2CPayload(")) continue;
+            assertTrue(text.contains("QuestClientPayload."),
+                    source.getFileName() + " builds a trigger result without sanitizing it");
+        }
     }
 
     private static final java.nio.file.Path CODECS =

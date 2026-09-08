@@ -11,8 +11,12 @@ import com.seggellion.britannia_mod.quest.QuestObjectiveTriggers;
 import com.seggellion.britannia_mod.quest.QuestRewardService;
 import com.seggellion.britannia_mod.quest.ServerQuestTable;
 import com.seggellion.britannia_mod.quest.achievement.QuestAchievementAward;
+import com.seggellion.britannia_mod.client.gui.QuestScreenText;
+import com.seggellion.britannia_mod.quest.network.QuestClientPayload;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -233,9 +237,43 @@ public final class QuestActionDispatcher {
             // used since finding Q-06. `irrelevant` deliberately does NOT: section 2.3 says only
             // "remove", and Rails answering "nothing subscribes to this" is not a reason to stop
             // reporting the player's NEXT real mutation of the same kind.
-            case REJECTED -> cooldown(server, entry);
+            case REJECTED -> {
+                cooldown(server, entry);
+                explainRejection(player, response, entry, requestUuid);
+            }
             case IRRELEVANT -> { }
         }
+    }
+
+    /**
+     * M11 deferred defect 3: says {@code window_expired} in the player's own words.
+     *
+     * <p>Rails owns the deadline and the game owns a scheduled tick for the same window, and they
+     * can disagree in exactly one direction -- a server below full tick rate makes the game's window
+     * longer in wall time, never stricter. When they do, Rails wins: it answers the planting
+     * {@code rejected}/{@code window_expired} with the step to reset to and clears the progress from
+     * there. Until this milestone the mod logged that and took the generic refusal path, so the
+     * player got a step quietly un-ticking with nothing said.
+     *
+     * <p>Only this one reason is spoken. The other eight of section 2.3 -- {@code wrong_player},
+     * {@code mismatch}, {@code step_out_of_order} and the rest -- describe a request the player
+     * cannot have caused on purpose and could not act on, and a line of text for those is noise. The
+     * {@code reset_to} step is logged rather than shown: it is a step key, not a sentence, and the
+     * message says which work has lapsed without naming an internal identifier.
+     */
+    private static void explainRejection(ServerPlayer player,
+                                         QuestActionEventProtocol.Response response,
+                                         QuestActionOutboxEntry entry, UUID requestUuid) {
+        if (!QuestActionEventProtocol.REASON_WINDOW_EXPIRED.equals(response.reason())) return;
+
+        String resetTo = QuestActionEventProtocol.resetTo(response.root());
+        LOGGER.info("event=quest_action_window_expired player_uuid={} event_uuid={} action={} "
+                + "quest_state_id={} trigger_key={} reset_to={} request_uuid={}",
+            player.getStringUUID(), entry.eventUuid(), entry.event().action().wireName(),
+            entry.questStateId(), entry.triggerKey(), resetTo, requestUuid);
+
+        player.sendSystemMessage(Component.translatable(QuestScreenText.STEP_WINDOW_EXPIRED)
+            .withStyle(ChatFormatting.YELLOW));
     }
 
     /**
@@ -282,8 +320,20 @@ public final class QuestActionDispatcher {
         JsonObject forwarded = QuestAchievementAward.grantAndFilter(player, root,
             requestUuid.toString(), "action_event");
 
+        // M11 deferred defect 2. Everything above has already read what it needs from `root`; what
+        // leaves for the client is the same body with the objective machinery stripped, because
+        // `accepted_quest.triggers` is published with its placeholders resolved and its bound values
+        // filled in -- the plot key and the crop-cycle UUID that would satisfy the next step.
+        // QuestClientPayload keeps the journal fields M8's refresh reads and the client_actions M10
+        // rewrites; see its javadoc for the whole list.
+        // `toAppliedResultJson` rather than `toJson`: the action-event envelope carries `result`,
+        // not `success`, and the client's handler discards any body whose `success` is not true --
+        // so forwarding this envelope unchanged skipped the journal refresh, the quiet notice and
+        // the achievement toast. The server has already decided this one succeeded, which is what
+        // `parsed.success = true` above says; the body it sends now says so too.
         PacketDistributor.sendToPlayer(player,
-            new QuestTriggerResultS2CPayload(GSON.toJson(forwarded), parsed.quest_id, entry.triggerKey()));
+            new QuestTriggerResultS2CPayload(QuestClientPayload.toAppliedResultJson(forwarded),
+                parsed.quest_id, entry.triggerKey()));
     }
 
     /**

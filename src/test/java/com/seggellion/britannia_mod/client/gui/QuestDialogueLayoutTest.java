@@ -309,6 +309,74 @@ class QuestDialogueLayoutTest {
                 "an icon past the visible count has no rectangle at all");
     }
 
+    // ---------------------------------------------------------------- M11 deferred defect F9
+
+    @Test
+    void fitsTheRewardPanelToItsIconsInsteadOfTakingEverythingLeftOver() {
+        // The defect: the panel took min(REWARD_MAX_HEIGHT, whatever remained under the parchment).
+        // The parchment is capped at PARCHMENT_MAX_HEIGHT, so every unit a taller screen added went
+        // to a band holding one row of 16-unit icons -- and the dead space grew with the screen.
+        QuestDialogueLayout small = QuestDialogueLayout.calculate(960, 540, FONT_LINE_HEIGHT,
+                true, true, true, 3, 4, 1, 1, 1);
+        assertTrue(small.rewards().visible());
+        assertEquals(QuestDialogueLayout.REWARD_MIN_HEIGHT, small.rewards().panel().height(),
+                "three single-item sections need one row of icons, not the maximum band");
+
+        // Taller screen, same content: the panel does not grow, so the dead space does not either.
+        QuestDialogueLayout tall = QuestDialogueLayout.calculate(960, 1080, FONT_LINE_HEIGHT,
+                true, true, true, 3, 4, 1, 1, 1);
+        assertEquals(small.rewards().panel().height(), tall.rewards().panel().height(),
+                "the panel still grows with the screen rather than with its contents");
+    }
+
+    @Test
+    void aFullerSectionGetsATallerPanelUpToTheBound() {
+        QuestDialogueLayout oneRow = QuestDialogueLayout.calculate(480, 540, FONT_LINE_HEIGHT,
+                true, true, true, 3, 4, 2, 0, 0);
+        QuestDialogueLayout manyRows = QuestDialogueLayout.calculate(480, 540, FONT_LINE_HEIGHT,
+                true, true, true, 3, 4, 300, 0, 0);
+        assertTrue(manyRows.rewards().panel().height() > oneRow.rewards().panel().height(),
+                "fitting must mean taller for more, not one fixed height for everything");
+        assertTrue(manyRows.rewards().panel().height() <= QuestDialogueLayout.REWARD_MAX_HEIGHT,
+                "fitting must still stop at the bound and count the rest in the heading");
+        assertTrue(manyRows.rewards().sections().get(0).overflowCount() > 0,
+                "a section past the bound must still say how much it is not showing");
+    }
+
+    @Test
+    void everyRewardIconThatFitsIsInsideTheFittedPanelAtEveryReachableSize() {
+        for (GuiScaleRule.Row row : GuiScaleRule.acceptanceMatrix()) {
+            for (int icons : new int[]{1, 3, 9, 40}) {
+                QuestDialogueLayout l = QuestDialogueLayout.calculate(row.scaledWidth(),
+                        row.scaledHeight(), FONT_LINE_HEIGHT, true, true, true, 3, 6,
+                        icons, icons, icons);
+                if (!l.rewards().visible()) continue;
+                String where = row + " icons=" + icons;
+                assertTrue(l.rewards().panel().isInside(l.screen()), where + ": panel off screen");
+                assertFalse(l.rewards().panel().overlaps(l.parchment()),
+                        where + ": fitted panel ran into the parchment");
+                for (QuestDialogueLayout.RewardBlock.Section section : l.rewards().sections()) {
+                    for (int i = 0; i < section.visibleIconCount(); i++) {
+                        assertTrue(section.icon(i).isInside(section.icons()),
+                                where + ": icon " + i + " escaped its fitted grid");
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    void theFittedHeightIsWhatTheSectionsActuallyNeed() {
+        // One row of icons: a heading line, two units of air, and one 16-unit row.
+        assertEquals(FONT_LINE_HEIGHT + 2 + QuestDialogueLayout.ICON_SIZE,
+                QuestDialogueLayout.fittedRewardHeight(300, FONT_LINE_HEIGHT, 3, 0, 0));
+        // Nothing to show is no height at all; calculate() is what turns that into a hidden panel.
+        assertEquals(0, QuestDialogueLayout.fittedRewardHeight(300, FONT_LINE_HEIGHT, 0, 0, 0));
+        // The fullest section decides, not the total.
+        assertEquals(QuestDialogueLayout.fittedRewardHeight(300, FONT_LINE_HEIGHT, 40, 1, 1),
+                QuestDialogueLayout.fittedRewardHeight(300, FONT_LINE_HEIGHT, 1, 40, 1));
+    }
+
     // ---------------------------------------------------------------- misc
 
     @Test

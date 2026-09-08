@@ -334,12 +334,18 @@ public class QuestDecisionScreen extends Screen {
             if (step.usesOffHand()) {
                 QuestScreenDraw.drawItemIcon(graphics, this.font, row.offHandIcon(), step.offHand(), 1);
             }
+            // M11 F13. The "produces" marker was a one-pixel rule and the returned items had no
+            // marker at all, so the only thing telling the two icon groups apart on screen was
+            // which side of the row they were on -- with the difference stated in a tooltip. Both
+            // are now translated symbols, drawn in their own reserved rectangles.
             if (!row.arrow().isEmpty()) {
-                graphics.fill(row.arrow().x(), row.arrow().y(),
-                        row.arrow().right(), row.arrow().y() + 1, 0xFF5C321C);
+                drawMarker(graphics, row.arrow(), QuestScreenText.GUIDE_PRODUCES_MARKER);
             }
             if (!row.resultIcon().isEmpty() && !step.result().isBlank()) {
                 QuestScreenDraw.drawItemIcon(graphics, this.font, row.resultIcon(), step.result(), 1);
+            }
+            if (!row.returnedMarker().isEmpty()) {
+                drawMarker(graphics, row.returnedMarker(), QuestScreenText.GUIDE_RETURNED_MARKER);
             }
             for (int i = 0; i < row.returnedIcons().size() && i < step.returned().size(); i++) {
                 QuestScreenDraw.drawItemIcon(graphics, this.font, row.returnedIcons().get(i),
@@ -378,7 +384,24 @@ public class QuestDecisionScreen extends Screen {
                     return;
                 }
             }
+            // The marker answers for the group it labels, so hovering the symbol says what it means.
+            if (hovered(row.returnedMarker(), mouseX, mouseY) && !step.returned().isEmpty()) {
+                tooltip(graphics, QuestScreenText.GUIDE_RETURNED, step.returned().get(0), mouseX, mouseY);
+                return;
+            }
+            if (hovered(row.arrow(), mouseX, mouseY) && !step.result().isBlank()) {
+                tooltip(graphics, QuestScreenText.GUIDE_RESULT, step.result(), mouseX, mouseY);
+                return;
+            }
         }
+    }
+
+    /** One guide marker, centred in the rectangle the layout reserved for it. */
+    private void drawMarker(GuiGraphics graphics, ScreenRect at, String key) {
+        Component marker = QuestScreenDraw.text(key);
+        int x = at.x() + Math.max(0, (at.width() - this.font.width(marker)) / 2);
+        graphics.drawString(this.font, QuestScreenDraw.fit(this.font, marker, at.width()),
+                x, at.y(), QuestScreenDraw.MUTED_COLOR, false);
     }
 
     private void tooltip(GuiGraphics graphics, String roleKey, String itemId, int mouseX, int mouseY) {

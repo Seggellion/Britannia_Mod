@@ -18,22 +18,24 @@ import java.util.List;
  * first time somebody added a field, which is exactly why this is written out by hand.
  *
  * <h2>What this codec does not claim</h2>
- * It is <b>the sync payload's</b> field list, and it is the only thing it speaks for. It is not a
- * statement that trigger data has never reached a client, because it has, by other routes that do
- * not come through here:
+ * It is <b>the sync payload's</b> field list, and it is the only thing it speaks for. It has never
+ * been a statement about the mod as a whole, because until M11 trigger data did reach a client by
+ * routes that do not come through here:
  * <ul>
- *   <li>{@code QuestActionDispatcher} sends the raw Rails body in
+ *   <li>{@code QuestActionDispatcher} sent the raw Rails body in
  *       {@code QuestTriggerResultS2CPayload}, {@code accepted_quest.triggers} and its resolved
  *       bound values included;</li>
- *   <li>{@code QuestObjectiveWatcher} and {@code QuestEventHandlers} send the response with
+ *   <li>{@code QuestObjectiveWatcher} and {@code QuestEventHandlers} sent the response with
  *       {@code node.metadata} intact, which carries {@code action_trigger} and
  *       {@code action_steps}.</li>
  * </ul>
- * Those are a separate, pre-existing exposure with its own gate; nothing in this milestone changes
- * those payloads. Milestone 6's finding Q-05 -- a modified client asserting any objective it likes
- * -- is closed by the <i>server</i> deciding, which is true regardless of what a client can read.
- * What this file guarantees is narrower and still worth having: adding a field to
- * {@code ClientQuestEntry} does not silently widen the journal sync.
+ * M11 closed those: all three now serialize through {@code QuestClientPayload}, which removes
+ * {@code triggers} and the five node observer keys at every depth. Milestone 6's finding Q-05 -- a
+ * modified client asserting any objective it likes -- was already closed by the <i>server</i>
+ * deciding, which is true regardless of what a client can read; what changed in M11 is that the
+ * client is no longer handed the answer either. What this file guarantees remains narrower and
+ * still worth having: adding a field to {@code ClientQuestEntry} does not silently widen the
+ * journal sync, whatever any other path does.
  *
  * <h2>Milestone 8: what was added, and why triggers still does not travel</h2>
  * The journal screen has to show the quest number, the next action, the ordered progress list, the

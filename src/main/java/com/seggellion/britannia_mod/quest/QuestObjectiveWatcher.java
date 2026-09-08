@@ -8,6 +8,7 @@ import com.seggellion.britannia_mod.quest.action.QuestAction;
 import com.seggellion.britannia_mod.quest.action.QuestActionDispatcher;
 import com.seggellion.britannia_mod.quest.action.QuestActionSubject;
 import com.seggellion.britannia_mod.quest.achievement.QuestAchievementAward;
+import com.seggellion.britannia_mod.quest.network.QuestClientPayload;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
 import com.seggellion.britannia_mod.quest.network.QuestServerAPI;
 import net.minecraft.core.BlockPos;
@@ -186,8 +187,12 @@ public final class QuestObjectiveWatcher {
         JsonObject forwarded = QuestAchievementAward.grantAndFilter(
             player, GSON.toJsonTree(response).getAsJsonObject(), "", "objective_watcher");
 
+        // M11 deferred defect 2. The journal and the triggers above are installed from `response`
+        // before this line; what leaves for the client is the same answer with `node.metadata`'s
+        // objective machinery -- `action_trigger`, `action_steps` and the three legacy observers --
+        // stripped. Nothing the client reads from this body is in that set.
         PacketDistributor.sendToPlayer(player,
-            new QuestTriggerResultS2CPayload(GSON.toJson(forwarded), questId, triggerKey));
+            new QuestTriggerResultS2CPayload(QuestClientPayload.toJson(forwarded), questId, triggerKey));
 
         LOGGER.info("event=quest_objective_applied player_uuid={} quest_id={} quest_state_id={} "
                 + "trigger_key={} completed={}",

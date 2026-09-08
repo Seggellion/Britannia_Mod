@@ -108,6 +108,64 @@ class QuestContractFixturesTest {
         }));
     }
 
+    /**
+     * M11: the versions the <b>code</b> sends and accepts, checked against the frozen fixtures
+     * rather than against each other.
+     *
+     * <p>Everything above proves the fixtures say {@code protocol_version: 1}. That is only half of
+     * a compatibility check: a constant bumped in the mod would keep every fixture assertion green
+     * while the mod posted a body Rails answers 400 to forever, and a parser that stopped enforcing
+     * the version would accept a v2 envelope it cannot read. Both constants are therefore pinned to
+     * the fixture value, and both parsers are shown refusing anything else.
+     */
+    @Test
+    void theVersionsTheCodeSendsAndAcceptsMatchTheFrozenFixtures() {
+        assertEquals(PROTOCOL_VERSION,
+                com.seggellion.britannia_mod.quest.action.QuestActionEventProtocol.PROTOCOL_VERSION,
+                "the action-event encoder would post a version the frozen contract does not describe");
+        assertEquals(PROTOCOL_VERSION,
+                com.seggellion.britannia_mod.quest.delivery.QuestRewardDeliveryProtocol.PROTOCOL_VERSION,
+                "the delivery protocol would post a version the frozen contract does not describe");
+
+        // Every fixture that declares a version declares the one the code uses.
+        for (String name : EXPECTED_FIXTURES) {
+            JsonObject object = JsonParser.parseString(normalise(readFixture(name))).getAsJsonObject();
+            if (!object.has("protocol_version")) continue;
+            assertEquals(
+                    com.seggellion.britannia_mod.quest.action.QuestActionEventProtocol.PROTOCOL_VERSION,
+                    object.get("protocol_version").getAsInt(),
+                    name + " and the code disagree about the protocol version");
+        }
+
+        // And the accepting half: a version the code does not implement is refused, not guessed at.
+        String v2 = normalise(readFixture("action_event_response_applied.json"))
+                .replace("\"protocol_version\": 1", "\"protocol_version\": 2");
+        org.junit.jupiter.api.Assertions.assertThrows(
+                com.seggellion.britannia_mod.quest.action.QuestActionEventProtocol
+                        .MalformedActionEventException.class,
+                () -> com.seggellion.britannia_mod.quest.action.QuestActionEventProtocol
+                        .parse(v2.getBytes(StandardCharsets.UTF_8)),
+                "the action-event parser accepted an envelope from a protocol it does not implement");
+    }
+
+    /**
+     * The frozen document and the frozen directory agree about which version this is.
+     *
+     * <p>{@code quest_contract/v1} is a path, and a path is easy to leave behind: bumping the
+     * protocol without moving the fixtures would leave both repositories mirroring v1 files under a
+     * v2 contract and nothing would say so.
+     */
+    @Test
+    void theProtocolDocumentDescribesTheVersionTheseFixturesAre() throws IOException {
+        Path document = Path.of(System.getProperty("britannia.projectDir", "."))
+                .resolve("docs/projects/rowan-farming-questline/ROWAN_FARMING_QUESTLINE_PROTOCOL.md");
+        assertTrue(Files.isRegularFile(document), "the frozen protocol document is missing");
+        String text = Files.readString(document, StandardCharsets.UTF_8);
+        assertTrue(text.contains(RESOURCE_ROOT),
+                "the protocol document does not name " + RESOURCE_ROOT + ", so the fixtures this "
+                        + "test verifies may belong to a different version of the contract");
+    }
+
     static Map<String, String> readManifest() {
         Map<String, String> entries = new LinkedHashMap<>();
         for (String line : normalise(readFixture(MANIFEST)).split("\n")) {

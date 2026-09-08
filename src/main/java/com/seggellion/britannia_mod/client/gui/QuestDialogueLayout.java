@@ -19,13 +19,17 @@ import java.util.List;
  *
  * <h2>The defect this replaces</h2>
  * {@code com.seggellion.britannia_mod.dialogue.DialogueLayout}, which the quest dialogue screen
- * used until this milestone, computes
+ * used until M8, computed
  * <pre>{@code   maxTextWidth = buttonStartX - textX - 20 = screenWidth - 343 }</pre>
- * and hands it straight to {@code GuiGraphics#drawWordWrap}. Below 343 scaled units that is
+ * and handed it straight to {@code GuiGraphics#drawWordWrap}. Below 343 scaled units that is
  * negative. {@code BankDialogueLayout} recorded the defect and deliberately left the class alone
- * because fixing it would have moved the quest and service screens' geometry; this milestone owns
- * the quest screen's geometry, so the quest path now computes its own numbers here and the shared
- * class is still untouched for the service dialogue.
+ * because fixing it would have moved the quest and service screens' geometry; M8 owned the quest
+ * screen's geometry, so the quest path computes its own numbers here.
+ *
+ * <p>M11 then fixed the shared class itself, by the same two rules this one follows: drop the
+ * portrait column before squashing the text, and clamp the wrap width positive regardless. The
+ * arithmetic quoted above is what that class <i>used to</i> compute, and
+ * {@code ServiceDialogueLayoutTest} is the regression guard for it.
  *
  * <p>That band is reachable, not theoretical. {@code Window#calculateScale} refuses to scale up
  * past the point where the scaled size would drop below 320x240 -- but the <b>Force Unicode
@@ -271,16 +275,27 @@ public record QuestDialogueLayout(
                 + Math.max(0, keepIcons);
 
         // ---- vertical split: parchment on top, reward panel underneath ----
+        // M11 deferred defect F9: the panel is FITTED to the icons it holds, not given every unit
+        // left over. It used to take min(REWARD_MAX_HEIGHT, whatever remained), so a three-item
+        // preview on a 1080-unit screen was a 110-unit band holding one 16-unit row of icons and 70
+        // units of nothing -- and the dead space grew with the screen, because the parchment is
+        // capped at PARCHMENT_MAX_HEIGHT and everything below it went to the panel.
+        int panelWidth = Math.max(0, screenWidth - (margin * 2));
+        int wantedRewardHeight = clamp(
+                fittedRewardHeight(panelWidth, lineHeight, onAcceptIcons, onCompleteIcons, keepIcons),
+                REWARD_MIN_HEIGHT, REWARD_MAX_HEIGHT);
+
         int parchmentHeight;
         RewardBlock rewards;
         int rewardCandidate = Math.min(PARCHMENT_MAX_HEIGHT,
-                screenHeight - REWARD_MIN_HEIGHT - SECTION_GAP - margin);
+                screenHeight - wantedRewardHeight - SECTION_GAP - margin);
         if (totalRewardIcons > 0 && rewardCandidate >= PARCHMENT_MIN_HEIGHT) {
             parchmentHeight = rewardCandidate;
             int panelTop = parchmentHeight + SECTION_GAP;
-            int panelHeight = Math.min(REWARD_MAX_HEIGHT, screenHeight - panelTop - margin);
-            ScreenRect panel = new ScreenRect(margin, panelTop,
-                    Math.max(0, screenWidth - (margin * 2)), panelHeight);
+            // The candidate above already left room for the whole fitted height, so the min is a
+            // floor against arithmetic rather than a squeeze.
+            int panelHeight = Math.min(wantedRewardHeight, screenHeight - panelTop - margin);
+            ScreenRect panel = new ScreenRect(margin, panelTop, panelWidth, panelHeight);
             rewards = rewardBlock(panel, lineHeight, onAcceptIcons, onCompleteIcons, keepIcons);
         } else {
             parchmentHeight = Math.max(1, Math.min(PARCHMENT_MAX_HEIGHT, screenHeight - margin));
@@ -432,6 +447,28 @@ public record QuestDialogueLayout(
         int top = choices.bottom() + 1;
         if (top + lineHeight > contentBottom) return ScreenRect.EMPTY;
         return new ScreenRect(choices.x(), top, choices.width(), lineHeight);
+    }
+
+    /**
+     * The height the reward panel actually needs: a heading, then as many whole rows of icons as
+     * the fullest section wants at the width it will get. Zero when there is nothing to show.
+     *
+     * <p>Computed before the panel exists, which it can be because the only thing a section's width
+     * depends on is the panel's <i>width</i> -- fixed by the screen and the margin -- and never on
+     * its height. {@link #calculate} then clamps the answer between {@link #REWARD_MIN_HEIGHT} and
+     * {@link #REWARD_MAX_HEIGHT}, so a section with forty items still stops at a bounded band and
+     * counts the rest in its heading.
+     */
+    static int fittedRewardHeight(int panelWidth, int lineHeight, int onAccept, int onComplete,
+                                  int keep) {
+        int columns = (onAccept > 0 ? 1 : 0) + (onComplete > 0 ? 1 : 0) + (keep > 0 ? 1 : 0);
+        if (columns == 0) return 0;
+        int sectionWidth = Math.max(1,
+                (panelWidth - (REWARD_SECTION_GAP * (columns - 1))) / columns);
+        int perRow = (sectionWidth + ICON_GAP) / (ICON_SIZE + ICON_GAP);
+        int mostIcons = Math.max(Math.max(onAccept, onComplete), keep);
+        int rows = perRow <= 0 ? 1 : Math.max(1, ((mostIcons + perRow) - 1) / perRow);
+        return lineHeight + 2 + (rows * (ICON_SIZE + ICON_GAP)) - ICON_GAP;
     }
 
     private static RewardBlock rewardBlock(ScreenRect panel, int lineHeight, int onAccept,

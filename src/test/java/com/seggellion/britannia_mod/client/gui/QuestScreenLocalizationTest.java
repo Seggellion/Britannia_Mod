@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -62,7 +63,11 @@ class QuestScreenLocalizationTest {
             // recovery messages. Listed so a future edit that writes a key inline instead of
             // through QuestScreenText fails the build rather than reaching a player as its own name.
             "item/WateringCanItem.java",
-            "quest/equipment/QuestEquipmentReissueService.java");
+            "quest/equipment/QuestEquipmentReissueService.java",
+            // M11: the window_expired sentence, sent from the server side of the action-event
+            // boundary. Listed for the same reason as the rest -- a key written inline there would
+            // reach a player as its own name.
+            "quest/action/QuestActionDispatcher.java");
 
     // ---------------------------------------------------------------- 1: keys exist
 
@@ -154,6 +159,44 @@ class QuestScreenLocalizationTest {
                     file.getFileName() + " embeds a raw registry id: "
                             + (matcher.hitEnd() ? "" : matcher.group()));
         }
+    }
+
+    @Test
+    void noQuestlineMessageSitePrintsARawRegistryId() {
+        // The same rule as the screens, applied to every file this project sends a player-facing
+        // message from. A message is as visible as a screen, and the sites that send them are not
+        // under client/gui, so questScreenSources() never covered them.
+        Pattern rawId = Pattern.compile("\"britannia_mod:[a-z0-9_/]+\"");
+        for (String relative : TOUCHED_MESSAGE_SITES) {
+            Path file = MOD_SOURCE.resolve(relative);
+            Matcher matcher = rawId.matcher(JavaSource.withoutComments(file));
+            assertFalse(matcher.find(),
+                    relative + " embeds a raw registry id in a file that talks to players: "
+                            + (matcher.hitEnd() ? "" : matcher.group()));
+        }
+    }
+
+    @Test
+    void theTwoGuideMarkersAreDifferentSymbols() {
+        // M11 deferred defect F13. The result and the returned items are two runs of identical item
+        // icons on one line, and their markers are what separates them on screen. Two markers that
+        // read the same are the defect with extra steps -- and neither may be blank, or the group
+        // it labels goes back to being told apart by position alone.
+        JsonObject lang = lang();
+        String produces = lang.get(QuestScreenText.GUIDE_PRODUCES_MARKER).getAsString();
+        String returned = lang.get(QuestScreenText.GUIDE_RETURNED_MARKER).getAsString();
+        assertFalse(produces.isBlank(), "the produces marker is blank");
+        assertFalse(returned.isBlank(), "the returned marker is blank");
+        assertNotEquals(produces, returned,
+                "the two guide markers read the same, so the icon groups are still told apart only "
+                        + "by which side of the row they are on");
+
+        // And they are drawn, not just declared: a key nothing renders is not a distinction.
+        String screen = JavaSource.withoutComments(MOD_SOURCE.resolve("client/gui/QuestDecisionScreen.java"));
+        assertTrue(screen.contains("QuestScreenText.GUIDE_PRODUCES_MARKER"),
+                "the produces marker is never drawn");
+        assertTrue(screen.contains("QuestScreenText.GUIDE_RETURNED_MARKER"),
+                "the returned marker is never drawn");
     }
 
     @Test

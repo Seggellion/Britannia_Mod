@@ -216,9 +216,12 @@ public class QuestJournalScreen extends Screen {
                 QuestScreenDraw.drawProgressStep(graphics, this.font, row.progressRows().get(i),
                         steps.get(i));
             }
-            if (row.hiddenSteps() > 0 && !row.progressRows().isEmpty()) {
-                ScreenRect last = row.progressRows().get(row.progressRows().size() - 1);
-                drawLine(graphics, last,
+            // M11 deferred defect F11: the count goes on its own reserved line. It used to be
+            // drawn at the LAST step's rectangle -- over a step, not after it -- and only when at
+            // least one step had been drawn, so at the smallest size, where no step fits, the row
+            // said nothing about the steps it was hiding.
+            if (row.hiddenSteps() > 0 && !row.hiddenStepsLine().isEmpty()) {
+                drawLine(graphics, row.hiddenStepsLine(),
                         QuestScreenDraw.text(QuestScreenText.JOURNAL_MORE_STEPS, row.hiddenSteps()),
                         QuestScreenDraw.MUTED_COLOR);
             }

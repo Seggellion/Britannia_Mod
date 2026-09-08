@@ -338,13 +338,17 @@ public final class QuestLayoutEvidenceRenderer {
             if (step.usesOffHand()) {
                 iconBox(g, guideRow.offHandIcon(), shortName(step.offHand()));
             }
+            // M11 F13: both markers are text on the real screen now, so the renderer draws the
+            // same two symbols rather than a rule -- an image that shows a rule where the screen
+            // shows "->" is the overstating F8 was about.
             if (!guideRow.arrow().isEmpty()) {
-                g.setColor(MUTED);
-                g.fillRect(guideRow.arrow().x(), guideRow.arrow().y(), guideRow.arrow().width(), 1);
-                g.fillRect(guideRow.arrow().right() - 3, guideRow.arrow().y() - 2, 1, 5);
+                drawText(g, "->", guideRow.arrow().x(), guideRow.arrow().y(), MUTED);
             }
             if (!guideRow.resultIcon().isEmpty()) {
                 iconBox(g, guideRow.resultIcon(), shortName(step.result()));
+            }
+            if (!guideRow.returnedMarker().isEmpty()) {
+                drawText(g, "<-", guideRow.returnedMarker().x(), guideRow.returnedMarker().y(), MUTED);
             }
             for (int i = 0; i < guideRow.returnedIcons().size(); i++) {
                 iconBox(g, guideRow.returnedIcons().get(i), shortName(step.returned().get(i)));
@@ -420,8 +424,10 @@ public final class QuestLayoutEvidenceRenderer {
                 drawText(g, McFontMetrics.fit((step.done() ? "[x] " : "[ ] ") + step.label(),
                                 at.width()), at.x(), at.y(), step.done() ? DONE : PENDING);
             }
-            if (jrow.hiddenSteps() > 0 && !jrow.progressRows().isEmpty()) {
-                ScreenRect at = jrow.progressRows().get(jrow.progressRows().size() - 1);
+            // Follows the screen: the count has its own reserved line (M11 F11), so the renderer
+            // draws it where the screen does rather than over the last step.
+            if (jrow.hiddenSteps() > 0 && !jrow.hiddenStepsLine().isEmpty()) {
+                ScreenRect at = jrow.hiddenStepsLine();
                 drawText(g, "+" + jrow.hiddenSteps() + " more steps", at.x(), at.y(), MUTED);
             }
             drawLine(g, jrow.claimBadge(), "[!] Return to Rowan to claim your reward",

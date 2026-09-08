@@ -61,13 +61,19 @@ public record QuestJournalLayout(
      * @param objective      the next action, wrapped to {@link #textWrapWidth}
      * @param progressRows   one rectangle per ordered progress step that is drawn
      * @param hiddenSteps    steps the row had no room for; named in text, never silently dropped
+     * @param hiddenStepsLine where {@code hiddenSteps} is written. Reserved <b>before</b> the steps
+     *                       are placed, for the reason the dialogue's scroll affordance is: fitted
+     *                       afterwards it lands on top of a step or nowhere at all, and a count with
+     *                       nowhere to go is the contract above quietly broken. Empty only when the
+     *                       row has no room for a single line.
      * @param claimBadge     the return-to-Rowan state, when the quest is waiting to be claimed
      * @param quitButton     the per-row Quit control
      * @param textWrapWidth  wrap width for {@code title} and {@code objective}. Always positive.
      */
     public record Row(int entryIndex, ScreenRect bounds, ScreenRect stageLabel, ScreenRect title,
                       ScreenRect objective, List<ScreenRect> progressRows, int hiddenSteps,
-                      ScreenRect claimBadge, ScreenRect quitButton, int textWrapWidth) {}
+                      ScreenRect hiddenStepsLine, ScreenRect claimBadge, ScreenRect quitButton,
+                      int textWrapWidth) {}
 
     /**
      * The Quit confirmation (M8 item 9). Quitting a quest is not undoable from the client, so the
@@ -184,9 +190,18 @@ public record QuestJournalLayout(
 
     // ---------------------------------------------------------------- helpers
 
-    /** Stage label, title, objective, the steps that fit, and the claim badge if there is one. */
+    /**
+     * Stage label, title, objective, the steps that fit, the summary line when there are more steps
+     * than a row may show, and the claim badge if there is one.
+     *
+     * <p>The summary line is counted here as well as reserved in {@link #row}: a quest with more
+     * than {@link #MAX_STEPS_PER_ROW} steps always has a count to write, and a row sized without
+     * room for it would have to take the line off a step it could otherwise have shown.
+     */
     private static int rowHeight(int lineHeight, int stepCount, boolean claimPending) {
-        int lines = 3 + Math.min(Math.max(0, stepCount), MAX_STEPS_PER_ROW) + (claimPending ? 1 : 0);
+        int steps = Math.min(Math.max(0, stepCount), MAX_STEPS_PER_ROW);
+        int summary = stepCount > MAX_STEPS_PER_ROW ? 1 : 0;
+        int lines = 3 + steps + summary + (claimPending ? 1 : 0);
         return (lines * lineHeight) + (ROW_PADDING * 2);
     }
 
@@ -221,23 +236,43 @@ public record QuestJournalLayout(
         ScreenRect objective = clipLine(inner, cursor, textWidth, lineHeight, textBottom);
         cursor += lineHeight;
 
+        // M11 deferred defect F11. The summary line is reserved before the steps are placed rather
+        // than fitted around them afterwards. Both halves of the old behaviour were wrong: at the
+        // smallest size no step fitted, so `progressRows` was empty and the screen -- which drew the
+        // summary only "if (hiddenSteps > 0 && !progressRows.isEmpty())" -- dropped the count
+        // entirely; and when steps did fit, the summary was drawn AT the last step's rectangle, on
+        // top of a step it was meant to follow. A row now gives the count its own line and shows one
+        // step fewer, which is the trade the record's own contract asks for.
         int roomForSteps = textBottom;
+        int totalSteps = Math.max(0, stepCount);
+        int fitsWithoutSummary = Math.max(0, (roomForSteps - cursor) / lineHeight);
+        boolean needsSummary = totalSteps > Math.min(fitsWithoutSummary, MAX_STEPS_PER_ROW);
+        int stepRoom = roomForSteps - (needsSummary ? lineHeight : 0);
+
         List<ScreenRect> progressRows = new ArrayList<>();
         int drawn = 0;
-        int wanted = Math.min(Math.max(0, stepCount), MAX_STEPS_PER_ROW);
+        int wanted = Math.min(totalSteps, MAX_STEPS_PER_ROW);
         for (int i = 0; i < wanted; i++) {
-            if (cursor + lineHeight > roomForSteps) break;
+            if (cursor + lineHeight > stepRoom) break;
             progressRows.add(new ScreenRect(inner.x() + STEP_INDENT, cursor,
                     Math.max(1, textWidth - STEP_INDENT), lineHeight));
             cursor += lineHeight;
             drawn++;
         }
+
+        int hiddenSteps = Math.max(0, totalSteps - drawn);
+        ScreenRect hiddenStepsLine = hiddenSteps > 0 && cursor + lineHeight <= roomForSteps
+                ? new ScreenRect(inner.x() + STEP_INDENT, cursor,
+                        Math.max(1, textWidth - STEP_INDENT), lineHeight)
+                : ScreenRect.EMPTY;
+        if (!hiddenStepsLine.isEmpty()) cursor += lineHeight;
+
         ScreenRect claimBadge = claimPending && cursor + lineHeight <= roomForSteps
                 ? new ScreenRect(inner.x(), cursor, textWidth, lineHeight)
                 : ScreenRect.EMPTY;
 
         return new Row(entryIndex, bounds, stageLabel, title, objective, List.copyOf(progressRows),
-                Math.max(0, stepCount - drawn), claimBadge, quit, textWidth);
+                hiddenSteps, hiddenStepsLine, claimBadge, quit, textWidth);
     }
 
     private static ScreenRect clipLine(ScreenRect inner, int top, int width, int lineHeight,

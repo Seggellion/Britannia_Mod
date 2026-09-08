@@ -58,20 +58,31 @@ public record QuestMixingGuideLayout(
      * @param offHandIcon     the item held in the off hand, or empty when the step uses one hand
      * @param gesture         the sentence describing what the player does
      * @param gestureWrapWidth wrap width for {@code gesture}. Always positive.
-     * @param arrow           the "produces" marker between the inputs and the result
+     * @param arrow           the "produces" marker between the inputs and the result. M11 deferred
+     *                        defect F13: this is now a line of text rather than a one-pixel rule,
+     *                        so the marker carries a translatable symbol of its own
      * @param resultIcon      what the step produces
+     * @param returnedMarker  the "handed back" marker between the result and the returned items,
+     *                        so the two icon groups are told apart by a symbol and a caption rather
+     *                        than by which side of the row they sit on. Empty when nothing is
+     *                        returned, or when the row is too narrow to place it
      * @param returnedIcons   what comes back to the player -- both bowls, for the mixing step
      */
     public record Row(int stepIndex, RowStyle style, ScreenRect bounds, ScreenRect mainHandIcon,
                       ScreenRect offHandIcon, ScreenRect gesture, int gestureWrapWidth,
-                      ScreenRect arrow, ScreenRect resultIcon, List<ScreenRect> returnedIcons,
-                      int hiddenReturned) {}
+                      ScreenRect arrow, ScreenRect resultIcon, ScreenRect returnedMarker,
+                      List<ScreenRect> returnedIcons, int hiddenReturned) {}
 
     // ---------------------------------------------------------------- constants
 
     public static final int ICON = QuestDialogueLayout.ICON_SIZE;
     public static final int ICON_GAP = QuestDialogueLayout.ICON_GAP;
-    public static final int ARROW_WIDTH = 10;
+    /**
+     * Width of the two markers ("produces" and "handed back"). Widened from 10 in M11 so a
+     * two-character symbol fits: the markers used to be one-pixel rules, and a rule cannot say
+     * which of the two icon groups it belongs to.
+     */
+    public static final int ARROW_WIDTH = 12;
     public static final int COLUMN_GAP = 4;
     public static final int ROW_GAP = 3;
     public static final int ROW_PADDING = 2;
@@ -221,7 +232,10 @@ public record QuestMixingGuideLayout(
     /** What is left for the sentence once both inputs, the arrow, the result and the returns are placed. */
     private static int inlineGestureWidth(int listWidth, boolean anyOffHand, int maxReturned) {
         int inputs = ICON + (anyOffHand ? ICON_GAP + ICON : 0);
-        int outputs = ICON + (maxReturned > 0 ? COLUMN_GAP + (maxReturned * (ICON + ICON_GAP)) : 0);
+        // The returned group now costs its own marker as well as its icons (M11 F13).
+        int outputs = ICON + (maxReturned > 0
+                ? COLUMN_GAP + ARROW_WIDTH + COLUMN_GAP + (maxReturned * (ICON + ICON_GAP))
+                : 0);
         return listWidth - (ROW_PADDING * 2) - inputs - COLUMN_GAP - ARROW_WIDTH - COLUMN_GAP - outputs
                 - COLUMN_GAP;
     }
@@ -250,13 +264,25 @@ public record QuestMixingGuideLayout(
             returned.add(new ScreenRect(x, iconTop, ICON, ICON));
             drawn++;
         }
-        int resultRight = returned.isEmpty() ? rightEdge : returnedLeft - COLUMN_GAP;
+        // M11 F13: the returned group gets a marker of its own, reserved before the result is
+        // placed so the result can never end up where the marker has to go.
+        int markerHeight = Math.min(lineHeight, ICON);
+        int markerTop = iconTop + ((ICON - markerHeight) / 2);
+        int returnedMarkerRight = returned.isEmpty() ? returnedLeft : returnedLeft - COLUMN_GAP;
+        ScreenRect returnedMarker = !returned.isEmpty()
+                        && returnedMarkerRight - ARROW_WIDTH >= afterInputs
+                ? new ScreenRect(returnedMarkerRight - ARROW_WIDTH, markerTop, ARROW_WIDTH, markerHeight)
+                : ScreenRect.EMPTY;
+
+        int resultRight = returnedMarker.isEmpty()
+                ? (returned.isEmpty() ? rightEdge : returnedLeft - COLUMN_GAP)
+                : returnedMarker.x() - COLUMN_GAP;
         ScreenRect result = resultRight - ICON >= afterInputs
                 ? new ScreenRect(resultRight - ICON, iconTop, ICON, ICON)
                 : ScreenRect.EMPTY;
         int arrowRight = result.isEmpty() ? resultRight : result.x() - COLUMN_GAP;
         ScreenRect arrow = arrowRight - ARROW_WIDTH >= afterInputs
-                ? new ScreenRect(arrowRight - ARROW_WIDTH, iconTop + ((ICON - 1) / 2), ARROW_WIDTH, 1)
+                ? new ScreenRect(arrowRight - ARROW_WIDTH, markerTop, ARROW_WIDTH, markerHeight)
                 : ScreenRect.EMPTY;
 
         ScreenRect gesture;
@@ -272,7 +298,8 @@ public record QuestMixingGuideLayout(
         }
 
         return new Row(stepIndex, style, bounds, mainHand, offHand, gesture, gestureWrapWidth,
-                arrow, result, List.copyOf(returned), Math.max(0, returnedCount - drawn));
+                arrow, result, returnedMarker, List.copyOf(returned),
+                Math.max(0, returnedCount - drawn));
     }
 
     private static boolean maxOffHand(List<Boolean> flags) {

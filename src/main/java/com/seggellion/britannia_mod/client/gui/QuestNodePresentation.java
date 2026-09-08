@@ -21,14 +21,18 @@ import java.util.Locale;
  * -- is deliberately not read here: it is the server's, and {@code QuestObjectiveTriggers} is
  * where it is parsed.
  *
- * <p>That is a rule about what the <b>screens</b> hold, not a claim that the metadata never
- * reaches a client. It does: {@code QuestObjectiveWatcher} and {@code QuestEventHandlers} ship
- * {@code node.metadata} whole inside {@code QuestTriggerResultS2CPayload}, and
- * {@code QuestActionDispatcher} ships the raw Rails body including
- * {@code accepted_quest.triggers}. Those raw-payload paths are a separate, pre-existing exposure
- * with its own gate and are untouched by this milestone. What reading a narrow set here buys is
- * that no quest screen can put a solution on the display or into a tooltip by accident, and that
- * the client-visible surface is one auditable list rather than "whatever the node happened to
+ * <p>That is a rule about what the <b>screens</b> hold, and until M11 it was the only rule there
+ * was. The metadata did reach a client: {@code QuestObjectiveWatcher} and
+ * {@code QuestEventHandlers} shipped {@code node.metadata} whole inside
+ * {@code QuestTriggerResultS2CPayload}, and {@code QuestActionDispatcher} shipped the raw Rails
+ * body including {@code accepted_quest.triggers} with its bound values already resolved. M11 closed
+ * that: all three send through {@code QuestClientPayload}, which removes {@code triggers} and the
+ * five node observer keys at every depth, so section 2.3's "metadata: client-safe" is now enforced
+ * rather than assumed.
+ *
+ * <p>What reading a narrow set here buys on top of that is defence in depth: no quest screen can
+ * put a solution on the display or into a tooltip by accident even if one arrived, and the
+ * client-visible surface stays one auditable list rather than "whatever the node happened to
  * carry".
  *
  * <p>Pure Gson and pure data, so JUnit can assert the whole mapping against the frozen

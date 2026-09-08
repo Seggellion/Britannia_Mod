@@ -34,6 +34,14 @@ public final class QuestActionEventProtocol {
     public static final String ERROR_INVALID_ACTION_EVENT = "invalid_action_event";
     public static final String ERROR_PLAYER_NOT_FOUND = "player_not_found";
 
+    /**
+     * The one {@code rejected} reason of section 2.3 a player can act on: a step arrived later than
+     * its {@code deadline}, so Rails cleared the progress from {@link #resetTo} onward and the
+     * work has to be redone. The other eight reasons describe a request the player cannot have
+     * caused deliberately.
+     */
+    public static final String REASON_WINDOW_EXPIRED = "window_expired";
+
     private QuestActionEventProtocol() {}
 
     /** The five {@code result} values of section 2.3. All five are terminal for the outbox. */
@@ -171,6 +179,14 @@ public final class QuestActionEventProtocol {
             Result.fromWireName(originalResult);
         }
         return new Response(version, eventUuid, result, originalResult, reason, questStateId, root);
+    }
+
+    /**
+     * The step a {@code window_expired} rejection resets to, or an empty string when the answer
+     * names none. A step key, not a sentence: it belongs in a log line, never on a player's screen.
+     */
+    public static String resetTo(JsonObject root) {
+        return optionalString(root, "reset_to");
     }
 
     /** The {@code error} code of a section 0 error envelope, or an empty string when there is none. */

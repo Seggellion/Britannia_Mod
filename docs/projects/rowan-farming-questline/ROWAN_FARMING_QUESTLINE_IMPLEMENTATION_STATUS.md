@@ -29,8 +29,8 @@ were not switched, stashed, reset, or modified.
 | M7 Rails content, seed, admin | **PASSED** | — | `abea5ff` | 2026-09-07 |
 | M8 Dialogue and journal UX | **PASSED** | `75bdb1c5` | — | 2026-09-07 |
 | M9 Timing, skill, recovery | **PASSED** | `6fe3f1e9` | `39d14b3` | 2026-09-08 |
-| M10 Achievement and advancement | **PASSED** | (this commit) | `0aed9dd` | 2026-09-08 |
-| M11 Hardening and automated acceptance | not started | | | |
+| M10 Achievement and advancement | **PASSED** | `994d9b7c` | `0aed9dd` | 2026-09-08 |
+| M11 Hardening and automated acceptance | **PASSED** | (this commit) | `7602ede` | 2026-09-08 |
 | M12 Live acceptance and release handoff | not started | | | |
 
 ## M0 — Baselines, worktrees, executable contracts (PASSED 2026-09-06)
@@ -1258,7 +1258,119 @@ grant-and-filter function itself plus a source-level assertion that all three se
 and no client path does. The action-event boundary **is** driven end to end. The toast and its sound
 have no automated coverage and never had — only a live client shows them.
 
-### Next action
+### Next action (at M10 close)
 
 M11 — cross-repository hardening and automated acceptance, including a proper investigation of the
 pre-existing Rails failure family rather than a restatement of its label.
+## M11 — Cross-repository hardening and automated acceptance (PASSED 2026-09-08, both repositories)
+
+Two parallel sub-agents — one investigating the pre-existing Rails failures, one hardening the mod —
+plus a live cross-repository integration run by the integrator.
+
+### The defect that mattered most
+
+**The client was discarding every farming objective answer.** An action-event response carries
+`result`, not `success`, and none of the five frozen response fixtures has a `success` field — but
+`ClientNetworkHandler.handleQuestTriggerResult` returns early on any body whose `success` is not
+true, before the journal refresh. So M8's objective refresh and M10's achievement toast were both
+**dead on the action-event path**, which is the path that carries every farming objective. Their
+tests passed because they exercised those functions directly rather than through the gate that drops
+the message. The forwarded envelope is now stamped `success: true` on the applied and duplicate
+paths only, matching what the server already sets on the parsed object, and two tests pin both
+directions.
+
+This is the second time in this project that a green suite described behaviour the real path did not
+have. Both times an independent pass found it.
+
+### The client no longer receives the objective answer key
+
+`QuestClientPayload` deep-copies and strips six keys at every depth from every sending site: the
+journal entry's published objective machinery and all five node observer definitions. That is
+exactly the set the server's own parsers read, and the proof runs both of those parsers over the
+sanitized body and shows they find nothing. Bound plot keys and crop-cycle identities no longer
+travel. Kept deliberately: every journal field, the client actions, and the presentation metadata,
+each proven byte-identical afterwards, so the journal refresh and the achievement filtering still
+work. A source-wide test now fails if a fourth sending site appears.
+
+### GameTest coverage audit
+
+Of 1160 registered GameTests, 96 were quest-related — and **not one drove a real block or item
+interaction**. Every one entered production one layer below the player's gesture, though the harness
+supports real dispatch and other parts of the repository use it. Added real right-click coverage for
+each of the five farming boundaries, for a stranger harvesting an attributed crop, for the expired
+window being explained, and for the flowing-water warning. Three of the nine required behaviours
+have no in-world gesture to drive at all — relog, restart and acceptance replay are lifecycle or
+wire events — and that is stated rather than covered with a theatrical test.
+
+**Harness limitation found and documented**: a GameTest player joins over a connection that never
+negotiates the mod's payload channels, so clientbound custom payloads are dropped silently. Chat
+does arrive. This is why no test in the repository asserts on such a payload, and the sanitization
+test therefore asserts the payload's contents through its own codec instead.
+
+### The seven deferred defects, all fixed
+
+The shared dialogue layout's negative wrap width (live on eight of eighteen configurations); the
+raw payload exposure; the expired-window rejection now explained to the player in their own
+language; the reward panel fitted to its content instead of a fixed height; journal rows keeping
+their progress and their hidden-step count; guide result and returned markers distinguished by
+symbol and tooltip rather than position; and the stale flowing-water warning, which now stays
+silent after a successful preparation and warns at most once per click.
+
+**Two corrections to the integrator's brief**, both verified: another screen also consumes the
+shared dialogue layout and was fixed with it, and two of the three screens flagged for the same
+width defect do not have it, for reasons given.
+
+### Validation
+
+| Check | Result |
+| --- | --- |
+| Frozen contract fixtures | 12 of 12 verify against the manifest, no byte changed; protocol versions the code sends and accepts now pinned to the fixtures by test |
+| Resources | the one advancement this project added parses and resolves; the validation now walks the whole directory rather than one file |
+| Localization | every key referenced exists exactly once and is non-blank; the raw-registry-id rule extended from screens to every message site |
+| `git diff --check` | clean in both repositories |
+
+**Two pre-existing defects found in another questline's advancement** and recorded rather than
+fixed: its title and description are literals, so it cannot be translated, and its icon item has no
+localization entry, so players see a raw identifier. Guarded by a test that fails once either is
+fixed, so the exemption cannot outlive the defect.
+
+### Tests and gates
+
+| Run | Result |
+| --- | --- |
+| Mod full JUnit (integrator) | 3902 tests, 0 failures, 0 errors, 23 skipped (487 suites; baseline 3863) |
+| Mod GameTests (integrator) | 1167 required tests passed, 0 failed, no "Failed to start" (baseline 1160, +7) |
+| Rails suites | unchanged by this milestone; the investigation added documentation only |
+
+### Live cross-repository integration
+
+Run by the integrator against an isolated Rails at the committed head, on a disposable database,
+with **the real questline installed by its own rake task** — five chained quests, twenty-five nodes,
+the awarded seed and crop inherited into the final stage. The mod's own client, through its
+production signing and transport, then drove:
+
+* the pending reward listing, an applied acknowledgement, its duplicate replay, a refused
+  contradicting report, the delivery leaving the listing, and an unknown delivery answering
+  not-found;
+* a harvest by someone who did not plant the crop, refused as not the planter;
+* a harvest naming a different crop cycle, refused as the wrong cycle;
+* the planter's own harvest of the bound cycle, **applied**, advancing the authored quest from its
+  working node to its completion node;
+* the retry an outbox would send, answered duplicate with no second advance.
+
+Server-side afterwards: the journal row had advanced, three posted identities had produced exactly
+three stored rows and the retry none, and the reward delivery was acknowledged and applied. All six
+live tests passed with none skipped. Everything was torn down: server stopped, secret shredded,
+worktree removed, database dropped.
+
+### Not covered, stated plainly
+
+The acceptance replay is proven at the delivery-ledger level only, because no in-world gesture
+re-triggers acceptance. Clientbound payload contents cannot be observed in the GameTest harness.
+The toast and its sound, the parchment art, portraits and real glyph metrics need a running client.
+The Rails half of the fixture mirror was verified by the Rails-side agent, not the mod-side one.
+
+### Next action
+
+M12 — the release handoff: SHAs, diffs, test totals, jar identity, migrations and seeds, deployment
+order, rollback, operator setup and the remaining live gates, prepared but not executed.

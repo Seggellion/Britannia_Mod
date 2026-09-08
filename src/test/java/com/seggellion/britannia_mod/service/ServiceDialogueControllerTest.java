@@ -34,7 +34,7 @@ class ServiceDialogueControllerTest {
                 view.options().stream().map(option -> option.label()).toList());
         assertFalse(view.completed());
 
-        DialogueLayout layout = DialogueLayout.calculate(800, 2, view.options().size(), 9, true);
+        DialogueLayout layout = DialogueLayout.calculate(800, 2, view.options().size(), 9, true, true);
         assertEquals(163, layout.textX());
         assertEquals(640, layout.buttonStartX());
         assertEquals(457, layout.maxTextWidth());

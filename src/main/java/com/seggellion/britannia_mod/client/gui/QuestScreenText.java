@@ -85,6 +85,18 @@ public final class QuestScreenText {
     public static final String GUIDE_OFF_HAND = SCREEN + "guide.off_hand";
     public static final String GUIDE_RESULT = SCREEN + "guide.result";
     public static final String GUIDE_RETURNED = SCREEN + "guide.returned";
+    /**
+     * M11 deferred defect F13: the two markers that say which icon group is which.
+     *
+     * <p>The guide draws two groups of item icons on the same line -- what the step produces, and
+     * what is handed back -- and until M11 the only thing separating them was which side of the row
+     * they sat on, with the difference stated in a tooltip nobody sees unless they hover. Each group
+     * now carries a marker of its own: a symbol on screen, translatable, and paired with the
+     * {@link #GUIDE_RESULT} / {@link #GUIDE_RETURNED} caption in its tooltip. Two glyphs rather than
+     * two colours, because a colour is not a distinction for every player.
+     */
+    public static final String GUIDE_PRODUCES_MARKER = SCREEN + "guide.produces_marker";
+    public static final String GUIDE_RETURNED_MARKER = SCREEN + "guide.returned_marker";
     public static final String GUIDE_STEP = SCREEN + "guide.step";
     public static final String GUIDE_EMPTY = SCREEN + "guide.empty";
 
@@ -182,6 +194,20 @@ public final class QuestScreenText {
     public static final String ACHIEVEMENT_TOAST_TITLE = MESSAGE + "achievement.title";
     public static final String ACHIEVEMENT_UNNAMED = MESSAGE + "achievement.unnamed";
 
+    /**
+     * M11 deferred defect 3: Rails refused a step because its own deadline had passed.
+     *
+     * <p>Rails owns the authoritative window and answers {@code rejected} with
+     * {@code reason: "window_expired"} and the step to reset to, then clears the progress from there
+     * on. The mod logged that and un-ticked the step with nothing said, which reads as the game
+     * losing the player's work. This is the sentence that explains it.
+     *
+     * <p>Takes no arguments on purpose. The {@code reset_to} Rails names is a step key
+     * ({@code plot_hoed}, {@code crop_planted}) rather than a sentence, and a player-facing string
+     * is never an internal identifier; it goes in the log line instead.
+     */
+    public static final String STEP_WINDOW_EXPIRED = MESSAGE + "step.window_expired";
+
     /** M10: the karma and fame a completion paid, moved out of hardcoded English. */
     public static final String STAT_KARMA = MESSAGE + "stat.karma";
     public static final String STAT_FAME = MESSAGE + "stat.fame";
@@ -200,7 +226,8 @@ public final class QuestScreenText {
             JOURNAL_GIVER_UNKNOWN,
             QUIT_CONFIRM_MESSAGE, QUIT_CONFIRM_YES, QUIT_CONFIRM_NO,
             HELP_TITLE_FALLBACK, HELP_BACK, GUIDE_MAIN_HAND, GUIDE_OFF_HAND,
-            GUIDE_RESULT, GUIDE_RETURNED, GUIDE_STEP, GUIDE_EMPTY,
+            GUIDE_RESULT, GUIDE_RETURNED, GUIDE_PRODUCES_MARKER, GUIDE_RETURNED_MARKER,
+            GUIDE_STEP, GUIDE_EMPTY,
             PROGRESS_DONE, PROGRESS_PENDING, PROGRESS_LINE, ITEM_UNKNOWN,
             OBJECTIVE_TOAST_TITLE, OBJECTIVE_ADVANCED, OBJECTIVE_READY_TO_CLAIM, GIVER_UNKNOWN,
             KEY_OPEN_JOURNAL, KEY_OPEN_JOURNAL_UNBOUND,
@@ -212,7 +239,7 @@ public final class QuestScreenText {
             WATER_FULL, WATER_CAN_EMPTY,
             EQUIPMENT_REISSUED, EQUIPMENT_ALREADY_CARRIED, EQUIPMENT_LIMIT_REACHED,
             EQUIPMENT_STORAGE_CAVEAT, EQUIPMENT_UNAVAILABLE,
-            ACHIEVEMENT_TOAST_TITLE, ACHIEVEMENT_UNNAMED,
+            ACHIEVEMENT_TOAST_TITLE, ACHIEVEMENT_UNNAMED, STEP_WINDOW_EXPIRED,
             STAT_KARMA, STAT_FAME, STAT_KARMA_AND_FAME
     );
 

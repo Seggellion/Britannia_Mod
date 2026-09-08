@@ -268,4 +268,87 @@ class QuestMixingGuideLayoutTest {
         assertFalse(l.backButton().isEmpty(), "Back must exist even with nothing to go back from");
         assertNothingOutsideItsBounds(l, "empty guide");
     }
+
+    // ---------------------------------------------------------------- M11 deferred defect F13
+
+    @Test
+    void theTwoIconGroupsAreSeparatedByMarkersRatherThanByPositionAlone() {
+        // The defect: what the step produces and what is handed back were drawn as two runs of
+        // identical item icons on one line, and the only thing telling them apart on screen was
+        // which side of the row they were on -- the difference lived in a tooltip. Each group now
+        // has its own reserved marker, drawn as a translated symbol.
+        QuestMixingGuideLayout l = guide(960, 540, 4);
+        boolean sawAReturningRow = false;
+        for (QuestMixingGuideLayout.Row row : l.rows()) {
+            if (row.returnedIcons().isEmpty()) {
+                assertTrue(row.returnedMarker().isEmpty(),
+                        "a row with nothing returned reserved a marker for it");
+                continue;
+            }
+            sawAReturningRow = true;
+            assertFalse(row.returnedMarker().isEmpty(),
+                    "a row that hands items back has no marker saying so");
+            assertTrue(row.returnedMarker().isInside(row.bounds()),
+                    "the returned marker escaped its row");
+            assertTrue(row.returnedMarker().right() <= row.returnedIcons().get(0).x(),
+                    "the marker must sit before the items it labels");
+            if (!row.resultIcon().isEmpty()) {
+                assertTrue(row.resultIcon().right() <= row.returnedMarker().x(),
+                        "the marker must sit after the result it separates from");
+                assertFalse(row.resultIcon().overlaps(row.returnedMarker()));
+            }
+            for (ScreenRect returned : row.returnedIcons()) {
+                assertFalse(row.returnedMarker().overlaps(returned),
+                        "the marker was drawn on top of an item it labels");
+            }
+            assertFalse(row.gesture().overlaps(row.returnedMarker()),
+                    "the sentence ran into the returned marker");
+            assertFalse(row.arrow().overlaps(row.returnedMarker()),
+                    "the two markers were drawn in the same place");
+        }
+        assertTrue(sawAReturningRow, "the authored guide has no returning step to test with");
+    }
+
+    @Test
+    void bothMarkersAreTallEnoughToHoldTheSymbolTheyDraw() {
+        // They used to be one-pixel rules, which is why the guide could not say anything with them.
+        for (QuestMixingGuideLayout.Row row : guide(960, 540, 4).rows()) {
+            if (!row.arrow().isEmpty()) {
+                assertTrue(row.arrow().height() > 1, "the produces marker is still a hairline");
+                assertTrue(row.arrow().width() >= QuestMixingGuideLayout.ARROW_WIDTH);
+            }
+            if (!row.returnedMarker().isEmpty()) {
+                assertTrue(row.returnedMarker().height() > 1,
+                        "the returned marker is too short to draw a symbol in");
+            }
+        }
+    }
+
+    @Test
+    void bothMarkersStayInsideTheirRowsAtEveryReachableSize() {
+        for (GuiScaleRule.Row screen : GuiScaleRule.acceptanceMatrix()) {
+            QuestMixingGuideLayout l = guide(screen.scaledWidth(), screen.scaledHeight(), 4);
+            for (QuestMixingGuideLayout.Row row : l.rows()) {
+                assertTrue(row.arrow().isInside(row.bounds()),
+                        screen + ": the produces marker escaped its row");
+                assertTrue(row.returnedMarker().isInside(row.bounds()),
+                        screen + ": the returned marker escaped its row");
+                assertFalse(row.arrow().overlaps(row.mainHandIcon()),
+                        screen + ": a marker was drawn over an input");
+                assertFalse(row.returnedMarker().overlaps(row.mainHandIcon()),
+                        screen + ": a marker was drawn over an input");
+            }
+        }
+    }
+
+    /** The authored guide at a given screen size, laid out the way the screen lays it out. */
+    private static QuestMixingGuideLayout guide(int width, int height, int bodyLines) {
+        java.util.List<Boolean> offHands = new java.util.ArrayList<>();
+        java.util.List<Integer> returned = new java.util.ArrayList<>();
+        for (QuestNodePresentation.GuideStep step : RowanQuestContent.mixingGuide()) {
+            offHands.add(step.usesOffHand());
+            returned.add(step.returned().size());
+        }
+        return QuestMixingGuideLayout.calculate(width, height, 9, bodyLines, offHands, returned, 0);
+    }
 }

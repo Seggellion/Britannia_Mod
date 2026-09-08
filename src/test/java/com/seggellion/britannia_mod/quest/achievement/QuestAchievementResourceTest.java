@@ -126,4 +126,123 @@ class QuestAchievementResourceTest {
         assertFalse(clientActions.contains("getAdvancements()"),
             "the client must not touch advancements");
     }
+
+    /**
+     * M11: every advancement under {@code advancement/quest/} parses, and everything it names
+     * resolves.
+     *
+     * <p>The per-file assertions above are about {@code first_harvest} and are worth keeping, but
+     * they are a list somebody has to remember to extend. This walks the folder instead, so the
+     * next quest advancement is validated the day it is added rather than the day somebody notices
+     * its title rendering as its own key.
+     *
+     * <h2>The one file this cannot hold to the whole rule, and why</h2>
+     * {@code ring_destroyed.json} predates this project and carries two defects of its own: its
+     * {@code display.title} and {@code display.description} are string literals rather than
+     * translatable components, so that advancement is untranslatable; and its icon,
+     * {@code britannia_mod:one_ring}, is a registered item with <b>no line in en_us.json</b>, so the
+     * advancements screen shows a player the string {@code item.britannia_mod.one_ring}.
+     *
+     * <p>Both are real and both are recorded here rather than fixed. The ring belongs to another
+     * questline, its display name is content somebody owns, and inventing one -- or rewriting
+     * another quest's advancement -- is not this milestone's to do. What the exception costs is
+     * nothing: the file is named, the two defects are named, and a THIRD advancement cannot join it
+     * quietly, because the exception is one filename and not a predicate.
+     */
+    @Test
+    void everyQuestAdvancementParsesAndEverythingItNamesResolves() throws IOException {
+        JsonObject lang = read(LANG);
+        String itemRegistry = Files.readString(
+                PROJECT.resolve("src/main/java/com/seggellion/britannia_mod/registry/ItemRegistry.java"),
+                StandardCharsets.UTF_8);
+
+        java.util.List<Path> files;
+        try (java.util.stream.Stream<Path> walk = Files.list(DATA)) {
+            files = walk.filter(path -> path.getFileName().toString().endsWith(".json"))
+                    .sorted()
+                    .toList();
+        }
+        assertFalse(files.isEmpty(), "there are no quest advancements at all under " + DATA);
+
+        for (Path file : files) {
+            String name = file.getFileName().toString();
+            JsonObject advancement = read(file);
+
+            JsonObject criteria = advancement.getAsJsonObject("criteria");
+            assertTrue(criteria != null && !criteria.keySet().isEmpty(),
+                    name + " has no criteria, so it can never be awarded");
+            for (String criterion : criteria.keySet()) {
+                String trigger = criteria.getAsJsonObject(criterion).get("trigger").getAsString();
+                assertTrue(trigger.matches("[a-z0-9_.-]+:[a-z0-9_/.-]+"),
+                        name + " criterion " + criterion + " names " + trigger
+                                + ", which is not a resource location");
+            }
+
+            JsonObject display = advancement.getAsJsonObject("display");
+            assertTrue(display != null, name + " has no display block, so nothing can show it");
+
+            // The icon has to be a real item, or the advancements screen draws a missing-texture
+            // cube. Checked against the registrations rather than a live registry, which is the
+            // same way every other asset contract test in this repository resolves a mod id.
+            String icon = display.getAsJsonObject("icon").get("id").getAsString();
+            assertTrue(icon.matches("[a-z0-9_.-]+:[a-z0-9_/.-]+"),
+                    name + " has the icon id " + icon + ", which is not a resource location");
+            if (icon.startsWith("britannia_mod:")) {
+                String path = icon.substring("britannia_mod:".length());
+                assertTrue(itemRegistry.contains("register(\"" + path + "\""),
+                        name + " is iconed with " + icon + ", which nothing registers");
+                if (!PRE_EXISTING_UNTRANSLATED.contains(name)) {
+                    assertTrue(lang.has("item.britannia_mod." + path)
+                                    || lang.has("block.britannia_mod." + path),
+                            name + " is iconed with " + icon + ", which has no display name; the "
+                                    + "advancements screen would show its registry path");
+                }
+            }
+
+            if (!PRE_EXISTING_UNTRANSLATED.contains(name)) {
+                for (String field : new String[]{"title", "description"}) {
+                    assertTrue(display.get(field).isJsonObject(),
+                            name + ": display." + field + " must be translatable, not a literal");
+                    String key = display.getAsJsonObject(field).get("translate").getAsString();
+                    assertTrue(lang.has(key), name + ": en_us.json is missing " + key);
+                    assertFalse(lang.get(key).getAsString().isBlank(),
+                            name + ": " + key + " is blank");
+                }
+            }
+
+            // The file name is the key the grant looks the advancement up by, so a rename that did
+            // not follow the sanitizer would make the advancement unreachable rather than missing.
+            String key = name.substring(0, name.length() - ".json".length());
+            assertEquals(key, QuestAchievementAward.sanitize(key),
+                    name + " is not the sanitized form of its own key, so the grant would look "
+                            + "somewhere else for it");
+        }
+    }
+
+    @Test
+    void theOnlyExemptAdvancementIsStillTheOneTheExemptionDescribes() {
+        // A guard on the exception. If somebody translates ring_destroyed, or gives the one ring a
+        // display name, this says so rather than leaving the exemption -- and its prose -- standing
+        // over a file that no longer needs it.
+        assertEquals(java.util.Set.of("ring_destroyed.json"), PRE_EXISTING_UNTRANSLATED,
+                "the exemption list grew; a new advancement must not join it quietly");
+        try {
+            JsonObject display = read(DATA.resolve("ring_destroyed.json")).getAsJsonObject("display");
+            boolean stillLiteral = display.get("title").isJsonPrimitive()
+                    && display.get("description").isJsonPrimitive();
+            boolean stillUnnamed = !read(LANG).has("item.britannia_mod.one_ring");
+            assertTrue(stillLiteral || stillUnnamed,
+                    "ring_destroyed no longer has either defect the exemption is for; remove the "
+                            + "exemption and let the walk hold it to the whole rule");
+        } catch (IOException unreadable) {
+            throw new IllegalStateException(unreadable);
+        }
+    }
+
+    /**
+     * Advancements that predate this project and carry defects it does not own. One entry, named,
+     * with the reasons in the javadoc of the walk above.
+     */
+    private static final java.util.Set<String> PRE_EXISTING_UNTRANSLATED =
+            java.util.Set.of("ring_destroyed.json");
 }

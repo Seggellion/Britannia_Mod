@@ -268,4 +268,111 @@ class QuestJournalLayoutTest {
         }
         assertEquals(QuestJournalLayout.FocusKind.CLOSE, ring.get(ring.size() - 1).kind());
     }
+
+    // ---------------------------------------------------------------- M11 deferred defect F11
+
+    @Test
+    void theHiddenStepCountIsNeverWrittenOnTopOfAStep() {
+        // The defect, half one. The screen drew the count AT the last progress step's rectangle:
+        //     ScreenRect last = row.progressRows().get(size - 1);
+        //     drawLine(graphics, last, "+N more steps", ...)
+        // so the row that had steps to hide overprinted the last one it had just drawn. The count
+        // now has a rectangle of its own, reserved before the steps are placed.
+        for (GuiScaleRule.Row screen : GuiScaleRule.acceptanceMatrix()) {
+            for (int steps : new int[]{1, 3, 5, 6, 12, 20}) {
+                QuestJournalLayout l = QuestJournalLayout.calculate(screen.scaledWidth(),
+                        screen.scaledHeight(), FONT_LINE_HEIGHT, List.of(steps), List.of(false), 0, -1);
+                for (QuestJournalLayout.Row row : l.rows()) {
+                    String where = screen + " steps=" + steps;
+                    if (row.hiddenSteps() == 0) {
+                        assertTrue(row.hiddenStepsLine().isEmpty(),
+                                where + ": a row hiding nothing reserved a line to say so");
+                        continue;
+                    }
+                    if (row.hiddenStepsLine().isEmpty()) continue;
+                    assertTrue(row.hiddenStepsLine().isInside(row.bounds()),
+                            where + ": the count was written outside its row");
+                    for (ScreenRect step : row.progressRows()) {
+                        assertFalse(row.hiddenStepsLine().overlaps(step),
+                                where + ": the count was written on top of a step");
+                    }
+                    assertFalse(row.hiddenStepsLine().overlaps(row.claimBadge()),
+                            where + ": the count was written on top of the claim badge");
+                    assertFalse(row.hiddenStepsLine().overlaps(row.quitButton()),
+                            where + ": the count was written under the Quit button");
+                }
+            }
+        }
+    }
+
+    @Test
+    void aRowWithRoomForAnythingBelowTheObjectiveHasRoomForTheCount() {
+        // The defect, half two. The screen drew the count only "if hiddenSteps > 0 AND
+        // !progressRows.isEmpty()", so a row that hid EVERY step said nothing at all. The line is
+        // now reserved before the steps are placed, which means any row with a line to spare spends
+        // it on the count -- showing one step fewer -- rather than on a step and a silence.
+        //
+        // The one size that still cannot say it is a row with no room below its three fixed lines
+        // at all, and that row cannot draw a step or a claim badge either. That is the same escape
+        // QuestDialogueLayoutTest allows its scroll affordance, and it is named rather than assumed.
+        for (GuiScaleRule.Row screen : GuiScaleRule.acceptanceMatrix()) {
+            for (int steps : new int[]{1, 3, 5, 6, 12, 20}) {
+                for (boolean claim : new boolean[]{false, true}) {
+                    QuestJournalLayout l = QuestJournalLayout.calculate(screen.scaledWidth(),
+                            screen.scaledHeight(), FONT_LINE_HEIGHT, List.of(steps),
+                            List.of(claim), 0, -1);
+                    for (QuestJournalLayout.Row row : l.rows()) {
+                        if (row.hiddenSteps() == 0) continue;
+                        String where = screen + " steps=" + steps + " claim=" + claim;
+                        boolean rowHadASpareLine = !row.progressRows().isEmpty()
+                                || !row.claimBadge().isEmpty();
+                        assertTrue(!row.hiddenStepsLine().isEmpty() || !rowHadASpareLine,
+                                where + ": the row found room for a step or a badge but not for "
+                                        + "the " + row.hiddenSteps() + " steps it was hiding");
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    void aRowWithOneSpareLineSpendsItOnTheCountRatherThanOnAStep() {
+        // Where the two halves meet, and the clearest statement of the trade. Before, a row with
+        // room for exactly one line below the objective drew one step and wrote the count over it,
+        // so the player saw neither properly. Now it writes the count, and the step it could not
+        // fit is part of what the count is about.
+        int lines = 0;
+        for (int height = 100; height <= 400; height++) {
+            QuestJournalLayout l = QuestJournalLayout.calculate(400, height, FONT_LINE_HEIGHT,
+                    List.of(5), List.of(false), 0, -1);
+            for (QuestJournalLayout.Row row : l.rows()) {
+                if (row.hiddenSteps() == 0 || row.hiddenStepsLine().isEmpty()) continue;
+                lines++;
+                assertEquals(5 - row.progressRows().size(), row.hiddenSteps(),
+                        "the count and the drawn steps disagree at height " + height);
+                assertTrue(row.hiddenStepsLine().y()
+                                >= (row.progressRows().isEmpty()
+                                        ? row.objective().y()
+                                        : row.progressRows().get(row.progressRows().size() - 1).bottom()),
+                        "the count belongs after what it follows, at height " + height);
+            }
+        }
+        assertTrue(lines > 0, "no height in the sweep hid a step, so this proves nothing");
+    }
+
+    @Test
+    void reservingTheLineCostsAStepRatherThanTheCount() {
+        // The trade the contract asks for. A row with room for exactly N step lines and more than N
+        // steps shows N-1 steps and one summary line, never N steps and a silent remainder.
+        QuestJournalLayout l = QuestJournalLayout.calculate(400, 400, FONT_LINE_HEIGHT,
+                List.of(20), List.of(false), 0, -1);
+        QuestJournalLayout.Row row = l.rows().get(0);
+        assertEquals(QuestJournalLayout.MAX_STEPS_PER_ROW, row.progressRows().size(),
+                "a roomy row should still show the full six");
+        assertEquals(20 - QuestJournalLayout.MAX_STEPS_PER_ROW, row.hiddenSteps());
+        assertFalse(row.hiddenStepsLine().isEmpty());
+        assertTrue(row.hiddenStepsLine().y()
+                        >= row.progressRows().get(row.progressRows().size() - 1).bottom(),
+                "the count belongs after the last step, not on top of it");
+    }
 }
