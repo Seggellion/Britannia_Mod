@@ -5,6 +5,7 @@ import com.seggellion.britannia_mod.client.gui.QuestDialogueLayout;
 import com.seggellion.britannia_mod.client.gui.QuestKeyPrompt;
 import com.seggellion.britannia_mod.client.gui.QuestMixingGuideLayout;
 import com.seggellion.britannia_mod.client.gui.QuestNodePresentation;
+import com.seggellion.britannia_mod.client.gui.QuestDialogueTransition;
 import com.seggellion.britannia_mod.client.gui.QuestScreenDraw;
 import com.seggellion.britannia_mod.client.gui.QuestScreenText;
 import com.seggellion.britannia_mod.client.gui.QuestTriggerResultPresentation;
@@ -562,15 +563,31 @@ public class QuestDecisionScreen extends Screen {
     private void handleChoice(QuestChoice choice) {
         this.choiceMade = true;
         this.awaitingServer = true;
+        long askedFrom = QuestDialogueTransition.nodeId(questState);
         QuestClient.sendTransition(questState.quest_id, choice.id, questGiverContext(), newResponse -> {
-            if (newResponse != null && newResponse.error == null) {
-                Minecraft.getInstance().setScreen(
-                        new QuestDecisionScreen(newResponse, this.npcName, this.npcGender, this.npcUuid));
-            } else {
+            if (newResponse == null || newResponse.error != null) {
                 this.onClose();
+                return;
             }
+            // A choice that lands back on the node it was offered from is a dismissal, not a step:
+            // "I will return with the dung." Rails answers it correctly and returns the same node,
+            // because the objective is still live and there is nowhere else to go. Re-opening an
+            // identical screen makes the button look dead -- the player clicks, the pending notice
+            // flickers, and nothing changes -- so close instead and let them walk away.
+            //
+            // Deliberately keyed on the node actually returned rather than on the choice's id: the
+            // wire carries no destination, and the five questline choices that do this are the only
+            // self-loops in the whole content set. A presentation choice never reaches here at all;
+            // onChoicePressed opens its view without sending anything.
+            if (QuestDialogueTransition.isDismissal(askedFrom, newResponse)) {
+                this.onClose();
+                return;
+            }
+            Minecraft.getInstance().setScreen(
+                    new QuestDecisionScreen(newResponse, this.npcName, this.npcGender, this.npcUuid));
         });
     }
+
 
     private JsonObject questGiverContext() {
         JsonObject context = new JsonObject();
