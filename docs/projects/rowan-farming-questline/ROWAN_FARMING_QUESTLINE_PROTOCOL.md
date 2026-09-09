@@ -21,8 +21,13 @@ Rails `claude/rowan-farming-questline-rails` from `release/public` @ `a9425ca`.
   (`quest_states_controller.rb#resolve_player`). Scope is always `(shard, player)`.
 * **Quest state identity**: `quest_state_id` = `player_quest_states.id` (string on the wire, as
   today). One row per `(player_uuid, quest_id)`; a restart reuses the row.
-* **Run token**: `player_quest_states.accepted_at` as integer epoch seconds. It discriminates
-  successive runs of the same row (abandon → restart) without a new column.
+* **Run token**: `player_quest_states.run_uuid` — an opaque, database-generated uuid, unique by
+  index, minted fresh by a restart. It discriminates successive runs of the same row
+  (abandon → restart). It was originally `accepted_at` in integer epoch seconds; whole seconds are
+  not an identity, and a player who abandoned and re-accepted inside one second produced the same
+  token, so a hand-in prepared in the dead run satisfied the live one. NeoForge treats the token as
+  opaque — it appears only inside `transition_key`, which the mod stores and echoes and never
+  parses.
 * **Authentication tiers** (existing):
   * *Legacy quest tier*: `Shard-Name` + `Shard-Secret`, optional HMAC signature
     (`Api::ShardServerAuthentication`, `REQUIRE_SIGNATURE=false`). Used by the existing quest
@@ -89,7 +94,7 @@ advance, whenever the applied effects produced a non-empty `granted_items`. The 
   "delivery_uuid": "6f1d0c8e-3c2f-4d0a-9a9b-2b0f6f5a8e01",
   "quest_id": 41,
   "quest_state_id": "9001",
-  "transition_key": "1757200000:1201:choice:accept",
+  "transition_key": "6f1d0c8e-3c2f-4d0a-9a9b-2b0f6f5a8e01:1201:choice:accept",
   "items": [{"id": "britannia_mod:britannia_shovel", "count": 1, "temporary": false}],
   "state": "pending",
   "created_at": "2026-09-06T21:10:00Z"
@@ -137,7 +142,7 @@ cleanup instead of the item being deleted (M1 conservative migration).
   "player_uuid": "069a79f4-44e9-4726-a5be-fca90e38aaf5",
   "deliveries": [
     {"delivery_uuid": "…", "quest_id": 41, "quest_state_id": "9001",
-     "transition_key": "1757200000:1201:choice:accept",
+     "transition_key": "6f1d0c8e-3c2f-4d0a-9a9b-2b0f6f5a8e01:1201:choice:accept",
      "items": [{"id": "britannia_mod:britannia_shovel", "count": 1, "temporary": false}],
      "created_at": "2026-09-06T21:10:00Z"}
   ]
@@ -224,6 +229,235 @@ Rails: `event=quest_reward_delivery_created|replayed|acknowledged|duplicate|reje
 `delivery_uuid`, `quest_state_id`, `transition_key`, `outcome`, `request_uuid`.
 NeoForge: `event=quest_delivery_recorded|applied|queued|acknowledged|reconciled|rejected` with the
 same identifiers plus `local_state`. Never log item NBT or player names beyond the UUID.
+
+## 1.5 Strict item hand-ins (contract `quest_item_handin`, version 1)
+
+**Rails is implemented. The NeoForge half is not.** Nothing below reaches a player until a mod
+removes items and confirms it, and the release order in 1.5.7 exists to keep that true.
+
+### 1.5.1 The rule
+
+When a quest giver asks for an item, delivery is **permanent**. Successful turn-in removes exactly
+the configured item and quantity from the player's carried inventory and nothing else. A quest
+without an authored hand-in removes nothing at all: an action, location, conversation, harvest or
+escort objective is not a delivery.
+
+The engine must never remove every item a quest touched, tools it granted, unrelated inventory,
+currency that was not itself the requested hand-in, or more than the configured quantity — and it
+must never infer consumption from an action objective. Only carried inventory counts; no ender
+chest, container, house or dropped entity is searched.
+
+### 1.5.2 Authoring
+
+A hand-in hangs off a CHOICE, beside the effects that choice applies:
+
+```json
+"handin": {
+  "requires": [{"item": "britannia_mod:dung", "count": 1}],
+  "missing_message": "Rowan needs 1 dung in your hands before he will take it."
+}
+```
+
+`requires` carries 1–8 entries, each a namespaced item id with a positive integer count, or a typed
+dynamic requirement:
+
+```json
+{"resolver": "awarded_crop_harvest_item", "flag": "awarded_crop", "count": 1}
+```
+
+Rails deliberately never resolves that to an item id. The crop-to-produce mapping lives in the
+mod's `CropRegistry`, and treating a seed as its produce is precisely the mistake this shape
+avoids. Rails carries the question — resolver, flag, and the flag's value **stamped at prepare
+time** — and the mod answers it.
+
+There is **no authorable `returns`**. An earlier draft had one, so an NPC could inspect an item and
+hand it back; authoring it is now a hard validation error. Anything a quest gives a player is
+already a reward effect, where the preview and the delivery ledger know how to describe it.
+Rejecting the key rather than ignoring it means a definition written against the old draft fails
+loudly instead of silently keeping what it promised to return.
+
+The validator refuses invalid or un-namespaced ids, non-positive or non-integer counts, malformed
+arrays and objects, unknown keys, unsupported resolvers, a resolver naming a flag the quest never
+sets, an entry carrying both an item and a resolver, duplicate identities, and a hand-in placed on
+a presentation choice, on a choice with no destination, or on a node rather than a choice. The same
+validation runs at seed time and in the admin form, so editing a quest cannot corrupt a definition.
+
+### 1.5.3 The two-phase transition
+
+A claim on a node carrying a hand-in **does not finish the quest**.
+
+1. **Prepare.** `POST /api/quests/:id/choose` — the player's own claim, the existing endpoint. Under
+   the quest-state row lock Rails creates or adopts a `quest_item_handins` row and answers
+   `handin_required`. The node does not move, no effect runs, no reward is published and the quest
+   is not complete.
+2. **Confirm.** `POST /api/v2/quest_item_handins/:handin_uuid/result` — signed, per-server key. The
+   shard reports whether it removed the full quantity, all or nothing, **and what it actually
+   took**. On success Rails finalizes through the same shared transition every other choice runs.
+3. **Reconcile.** `POST /api/v2/quest_item_handins/reconcile` — read-only. A shard that removed
+   items but never saw a final answer asks what happened; it can never cause a second removal.
+
+Preparation deliberately has no endpoint of its own. A hand-in is minted by the claim the player
+clicks, so a shard cannot mint transactions nobody asked for. Preparation also **fails closed**: a
+hand-in that cannot name the shard and user its compensation would be issued to is refused before
+any shard is told to take anything.
+
+#### Removal proof
+
+`removed: true` must be accompanied by `removed_items`: one concrete entry per requirement, joined
+to it by `requirement_index`.
+
+```json
+"removed_items": [
+  {"item": "britannia_mod:carrot", "count": 1, "requirement_index": 0,
+   "resolver": "awarded_crop_harvest_item", "flag_value": "carrot"}
+]
+```
+
+This is what makes a resolver requirement refundable. Rails cannot name stage five's produce and
+must not try — the crop-to-item mapping is the mod's `CropRegistry`, and the authenticated shard is
+authoritative for it — so the shard reports the concrete item and Rails keeps the snapshot for
+replay and compensation. Rails does not duplicate `CropRegistry`; it checks that the report
+describes *this* hand-in's requirements as they were persisted.
+
+Validation, all of it refusing rather than guessing:
+
+* exactly one entry per requirement — none added, omitted or repeated;
+* a literal requirement is answered by the item and count it named, exactly (an inflated count is
+  refused, not clamped), and never dressed up as a resolver;
+* a resolver requirement is answered at the right index, echoing the resolver and the `flag_value`
+  **pinned at prepare time**, so a flag rewritten since cannot move the goalposts;
+* a resolver requirement whose flag was never resolved is **refused at preparation**. Rails cannot
+  describe what to take, so no shard is asked to take it — publishing that demand left a hand-in
+  with no reachable outcome at all, neither the transition nor a refund;
+* item identifiers are namespaced resource locations, and the list is bounded by the same 1–8 the
+  requirements are;
+* `removed: false` may not carry removal proof at all;
+* a repeated confirmation must present the **same** normalized proof. A report that contradicts the
+  stored one is refused and logged — it is the only way to catch a shard changing its story about
+  what a resolver resolved to, since Rails cannot check that item against anything else.
+
+A report that does not describe the requirements answers `evidence_rejected`
+(`reason: "evidence_mismatch"`); one that contradicts a stored report answers `evidence_rejected`
+(`reason: "evidence_conflict"`). Both are HTTP 409, both leave the hand-in exactly as it was —
+nothing consumed, cancelled or paid — so a shard that garbled a retry can send the true report and
+still be answered properly. Neither is collapsed into the 404 that hides unknown/wrong-shard/
+wrong-player, because a caller reaching them has already proved it owns the transaction.
+
+### 1.5.4 States
+
+| State | Meaning |
+| --- | --- |
+| `pending` | prepared; no shard has reported a removal. The quest is deliberately unfinished. |
+| `consumed` | a shard removed the items and Rails finalized, in one transaction. `response` holds the exact success payload, replayed verbatim on a duplicate confirmation. |
+| `cancelled` | Rails has determined this hand-in can never finalize — abandoned, restarted onto a fresh run token, completed by another path, the state went invalid, or the transition itself was refused at confirm time (`finalization_refused`, which is how an item already removed reaches the refund when a choice or its destination was renamed underneath it). |
+
+`removed_items` records what the shard reported taking; it is written once, at the confirmation
+that reports a removal, and is thereafter immutable.
+
+`confirmed_at` is orthogonal to the state rather than equal to it: it records that a shard reported
+a removal, true of every `consumed` row and of a `cancelled` row that was refunded.
+`cancelled_at IS NOT NULL AND confirmed_at IS NOT NULL` is the audit trail of an item taken for a
+quest that could not be finished, and given back.
+
+Two unique indexes carry the guarantees: `handin_uuid` is the transaction a shard applies at most
+once, and `(player_quest_state_id, transition_key)` is the backstop under the row lock, so a second
+claim click — or a second quest giver — adopts the first row instead of minting another.
+
+### 1.5.5 Refunds are compensation, not content
+
+A late confirmation against a `cancelled` row does not finalize the quest. It returns the removed
+items through the durable reward-delivery ledger, which already holds a grant pending when the pack
+is full. This is the system making good on a transaction it could not complete — it is not an
+authored give-back, and content cannot request it.
+
+**The invariant.** Once a mod has durably removed a hand-in item, the protocol reaches exactly one
+of two ends: the transition completes exactly once, or the exact item and quantity are durably
+refunded exactly once. There is deliberately **no** result meaning "removed, and cannot be
+returned".
+
+Two paths used to mean exactly that, and both are closed:
+
+* *A requirement Rails could not name.* Closed by the removal proof above — the shard reports the
+  concrete item, so a resolver hand-in refunds the produce it actually took.
+* *A journal row that had been deleted.* `Quest` carries `dependent: :destroy` on
+  `player_quest_states`, so deleting a quest left a compensation keyed on the journal row with
+  nothing to attach to. The refund is anchored to `quest_reward_deliveries.quest_item_handin_id`
+  instead. The hand-in survives that deletion — its `player_quest_state_id` is `ON DELETE SET NULL`
+  while `user_id` and `shard_id` are `ON DELETE RESTRICT` — so the anchor is always there when the
+  refund is needed, and a partial unique index on it makes "exactly one refund" a database
+  guarantee rather than a convention.
+
+The compensation is an ordinary pending reward delivery, so it survives reconnects, a full pack,
+repeated reconciliation and a lost response by exactly the machinery every other grant uses. It is
+keyed `handin_refund:<handin_uuid>` and found through its anchor. The key deliberately contains the
+hand-in's identity rather than deriving from its transition key: derived keys collided with an
+authored sibling choice named `<choice>:handin_refund`, and with any two hand-in keys sharing a
+186-character prefix, and the refund then adopted a delivery that was not a refund.
+
+**The one thing Rails takes on trust.** For a resolver requirement Rails checks the resolver, the
+pinned flag value, the index and the count — but it cannot check the concrete item, because not
+knowing that mapping is the entire reason the shape exists. An authenticated shard can therefore
+name any item as the produce it removed, and a cancellation will refund that item. This is the
+owner's decision that the mod is authoritative for `CropRegistry`, and it is bounded rather than
+open: the count must match the requirement exactly, the requirement must exist and be unresolved
+only once per run, and every resolver refund is logged with its concrete item and `handin_uuid` so
+the grant is auditable. It is not a way for a *player* to mint items; it is the shard credential
+being the trust root it already is everywhere else in this protocol.
+
+`confirmed_at` means "a shard reported a removal" and not "the player got the items back", so
+reconciliation answers `cancelled_refunded` from the delivery ledger rather than from the flag.
+
+A confirmed removal that reaches the refund with no record of what was taken raises
+`QuestItemHandins::Confirm::MissingRemovalProof`. That is an internal diagnostic for a corrupt row
+— unreachable through the protocol, since the contract refuses `removed: true` without evidence —
+and never an answer a shard is given.
+
+### 1.5.6 Response states
+
+`handin_required`, `items_missing` (with what the player is short of), `consumed`, `duplicate` (a
+replay of the stored completion), `cancelled` (nothing was taken), `cancelled_refunded` (it was
+taken and given back), `evidence_rejected`, and `rejected`.
+
+For a hand-in whose removal was confirmed, the terminal results reduce to `consumed`/`duplicate`
+with the completed quest response, or `cancelled_refunded` with a durable refund delivery. `pending`
+may persist while reconciliation is outstanding, but it converges on one of those.
+
+Every rejection reason — unknown transaction, wrong shard, wrong player — answers identically, so a
+shard cannot probe another shard's transaction ids by the shape of its own errors. The reason is in
+the log.
+
+Inventory mutation never travels in `client_actions`. Removal is server-authoritative; clients
+render the resulting state and nothing more.
+
+### 1.5.7 Release order
+
+The order matters, and step 2 is the barrier:
+
+1. Deploy the Rails code and migration.
+2. **Do not apply the updated Rowan seed yet.**
+3. Deploy the hand-in-capable mod.
+4. Apply the updated Rowan seed.
+5. Begin live acceptance.
+
+Between steps 1 and 4 no node carries hand-in metadata, so every quest behaves exactly as before.
+
+An old mod meeting a hand-in-enabled node **fails closed**: it receives `handin_required` with
+`completed: false` and no granted items, the node does not move, no delivery row is created and the
+quest does not complete. It cannot obtain a free reward because none is ever created. This is
+asserted, not assumed — see `rowan_farming_questline_play_test.rb`, "an old client that cannot hand
+in gets no reward and no completion".
+
+### 1.5.8 Compatibility
+
+Additive within contract version 1, per the owner's decision. The `handin` key is new on choice
+metadata and the `handin` block is new on a journal entry; an unknown additive field must not change
+existing behaviour, and a node without hand-in metadata takes the identical path it always has,
+pinned by characterization tests over all 1,481 authored choices carrying a destination.
+
+The honest cost of extending v1 in place rather than minting v2: the frozen `quest_contract/v1`
+fixtures no longer describe only what v1 originally shipped, so "v1" alone no longer distinguishes a
+shard that understands hand-ins from one that does not. The release order above is what covers that
+gap, and it is the reason step 2 exists.
 
 ## 2. Action events and objectives (contract `quest_action_event`, version 1)
 

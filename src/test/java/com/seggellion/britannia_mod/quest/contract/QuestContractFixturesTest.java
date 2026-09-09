@@ -59,6 +59,9 @@ class QuestContractFixturesTest {
             "action_event_response_irrelevant.json",
             "action_event_response_stale.json",
             "action_event_response_rejected.json",
+            "handin_result_request.json",
+            "handin_result_response_consumed.json",
+            "handin_result_response_cancelled_refunded.json",
             "journal_entry_stage5.json",
             "node_metadata_stage5.json");
 
