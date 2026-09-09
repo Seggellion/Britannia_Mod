@@ -395,12 +395,18 @@ public final class ManagedExtractionPolicyGameTests {
      *
      * <p>Driven bare-handed for every family and, for the beds, with their own shovel as well,
      * because the exception is one item wide: only the registered Britannia pickaxe makes a
-     * creative player a tester, and the shovel is not it. The one creative guard that used to
-     * refuse these breaks at HIGHEST is gone; this is the assertion that nothing quietly took its
-     * place.
+     * creative player a tester, and the shovel is not it.
+     *
+     * <p>Both halves of the combined rule are asserted in the one sweep, because they differ only
+     * in the block. Ambient crust breaks: a builder who cannot cut a cellar has not been given a
+     * safety feature. A sited deposit cell does not: a vanilla break of one destroys the vein
+     * permanently and silently, with no restoration debt filed to bring it back, so the break is
+     * refused and removal stays an explicit command. What both halves share — and what this test
+     * was always really about — is that neither pays: no yield, no debt, no skill, no tool wear,
+     * and not even a Mining denial spoken on the way through.
      */
     @GameTest(template = TEMPLATE)
-    public static void aCreativeOperatorWithoutThePickaxeRemovesWithoutExtracting(GameTestHelper helper) {
+    public static void aCreativeOperatorNeitherEarnsNorDeletesADeposit(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos absolute = helper.absolutePos(NODE);
         ServerPlayer operator = miner(helper, ItemStack.EMPTY);
@@ -421,9 +427,17 @@ public final class ManagedExtractionPolicyGameTests {
 
                 breakThroughTheEventBus(level, absolute, operator);
 
-                check(!level.getBlockState(absolute).is(subject.block()),
-                        label + " did not break in creative; a managed path is still intercepting an"
-                                + " ordinary creative break");
+                if (subject.depositCell()) {
+                    check(level.getBlockState(absolute).is(subject.block()),
+                            label + " was deleted by a creative click; a sited deposit comes back"
+                                    + " from nothing, so removing one stays an explicit"
+                                    + " /manageddeposit remove or /populateores clear");
+                } else {
+                    check(!level.getBlockState(absolute).is(subject.block()),
+                            label + " did not break in creative; ambient crust must stay"
+                                    + " terraformable and a managed path is still intercepting an"
+                                    + " ordinary creative break");
+                }
                 List<ItemStack> drops = takeDrops(level, absolute);
                 check(drops.isEmpty(),
                         label + " dropped something in creative: " + describe(drops));
@@ -439,6 +453,110 @@ public final class ManagedExtractionPolicyGameTests {
                                 + MiningBreakGate.lastDenialKey(operator));
             }
         }
+        helper.succeed();
+    }
+
+    /**
+     * The refusal is the whole transaction: nothing partial happens on the way to saying no.
+     *
+     * <p>Asserted through a second and third break as well, because the failure worth catching is
+     * a guard that refuses the first click and then lets a repeat through — which is what a
+     * refusal implemented as a one-shot flag, or as a cancel that some later listener re-enacts,
+     * would look like.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void aRefusedCreativeBreakStaysRefusedAndLeavesNoTrace(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos absolute = helper.absolutePos(NODE);
+        helper.setBlock(NODE, BlockRegistry.SILICA_SAND_DEPOSIT.get());
+
+        ServerPlayer operator = miner(helper, shovel());
+        operator.setGameMode(GameType.CREATIVE);
+        int debtBefore = debtCount(level);
+        float skillBefore = SkillManager.getSkill(operator, MiningSkill.SKILL_ID);
+
+        for (int attempt = 1; attempt <= 3; attempt++) {
+            breakThroughTheEventBus(level, absolute, operator);
+            check(level.getBlockState(absolute).is(BlockRegistry.SILICA_SAND_DEPOSIT.get()),
+                    "creative break attempt " + attempt + " removed the silica bed");
+            check(takeDrops(level, absolute).isEmpty(),
+                    "creative break attempt " + attempt + " produced a yield");
+            check(debtCount(level) == debtBefore,
+                    "creative break attempt " + attempt + " filed restoration debt");
+            check(operator.getMainHandItem().getDamageValue() == 0,
+                    "creative break attempt " + attempt + " wore the tool");
+            check(SkillManager.getSkill(operator, MiningSkill.SKILL_ID) == skillBefore,
+                    "creative break attempt " + attempt + " moved Mining");
+        }
+        helper.succeed();
+    }
+
+    /**
+     * The two creative rules coexist, in one pass, for one player.
+     *
+     * <p>This is the reconciliation itself, stated as behaviour. The attacking-hand rule is broad
+     * and about who is earning; the deposit protection is narrow and about what may be silently
+     * destroyed. They read different facts — the hand and the block — so an administrator keeps
+     * every affordance the hand rule gave them on ordinary blocks while a sited deposit is still
+     * refused, and the same player picking the Britannia pickaxe up becomes a tester and extracts
+     * that very deposit through the full ladder.
+     *
+     * <p>An uncatalogued block is included deliberately: the sweep above only exercises resources
+     * the catalogue knows, and "a creative administrator can clear a misplaced ordinary block" has
+     * to hold for the blocks that are not resources at all, which is nearly all of them.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void theDepositRefusalLeavesOrdinaryCreativeBreakingAlone(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos absolute = helper.absolutePos(NODE);
+
+        ServerPlayer administrator = miner(helper, ItemStack.EMPTY);
+        administrator.setGameMode(GameType.CREATIVE);
+        int debtBefore = debtCount(level);
+
+        // An ordinary block the catalogue has never heard of, and ambient crust that it has.
+        // Both are the administrator's to clear.
+        for (Block ordinary : List.of(Blocks.OAK_PLANKS, Blocks.STONE)) {
+            helper.setBlock(NODE, ordinary);
+            takeDrops(level, absolute);
+
+            breakThroughTheEventBus(level, absolute, administrator);
+
+            check(!level.getBlockState(absolute).is(ordinary),
+                    "a creative administrator could not clear " + ordinary.getDescriptionId()
+                            + "; the deposit refusal has spread to ordinary blocks");
+            check(takeDrops(level, absolute).isEmpty(),
+                    "clearing " + ordinary.getDescriptionId() + " in creative minted something");
+        }
+
+        // A sited deposit, in the same hand, on the same tick: refused.
+        helper.setBlock(NODE, BlockRegistry.SILVER_ORE.get());
+        takeDrops(level, absolute);
+
+        breakThroughTheEventBus(level, absolute, administrator);
+
+        check(level.getBlockState(absolute).is(BlockRegistry.SILVER_ORE.get()),
+                "a creative administrator deleted a silver vein by clicking it");
+        check(takeDrops(level, absolute).isEmpty(),
+                "a refused creative break of silver minted something");
+        check(debtCount(level) == debtBefore,
+                "the ordinary breaks or the refused one filed restoration debt");
+
+        // The same player, now a tester, takes that deposit through the whole ladder. The
+        // affordance the local rule added is untouched by the protection this test is about.
+        administrator.setItemInHand(InteractionHand.MAIN_HAND, pickaxe());
+
+        breakThroughTheEventBus(level, absolute, administrator);
+
+        check(level.getBlockState(absolute).isAir(),
+                "a creative tester with the Britannia pickaxe could not extract the very deposit"
+                        + " that was refused to them bare-handed");
+        check(takeDrops(level, absolute).stream().anyMatch(s -> s.getItem() instanceof PurityOreItem),
+                "a creative tester was not paid for the silver they extracted");
+        check(hasDebtAt(level, absolute),
+                "a creative tester's extraction filed no restoration debt, so the vein it removed"
+                        + " would never come back");
+        BrokenBlockDataStorage.get(level).remove(absolute);
         helper.succeed();
     }
 

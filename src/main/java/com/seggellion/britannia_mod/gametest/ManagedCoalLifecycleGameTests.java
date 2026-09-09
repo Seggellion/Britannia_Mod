@@ -359,11 +359,21 @@ public final class ManagedCoalLifecycleGameTests {
     }
 
     /**
-     * A bare-handed Creative break removes the coal like any block and is not an extraction:
-     * nothing minted, nothing filed. Creative without the Britannia pickaxe is administration.
+     * An ordinary Creative break is refused, and the coal survives.
+     *
+     * <p>A curated coal cell is sited by {@code /populateores} exactly as an ore vein is, and it
+     * is a MINERAL — a deposit, not the world's crust. Letting a bare-handed creative click take
+     * it would destroy it permanently and silently: nothing is minted, so nothing files the
+     * restoration debt that would ever bring it back. So the break is refused and the cell stands.
+     *
+     * <p>The other half of the creative rule is unaffected and is asserted next door: attacking
+     * with the Britannia pickaxe makes the same player a tester, and
+     * {@link #creativeTesterWithThePickaxeExtractsTheCoal} takes this very cell through the whole
+     * managed flow. What this test pins is that <em>administering</em> creative earns nothing and
+     * destroys nothing.
      */
     @GameTest(template = TEMPLATE)
-    public static void creativeBareHandedRemovesTheCoalWithoutExtracting(GameTestHelper helper) {
+    public static void creativeBreakingIsRefusedAndTheCoalSurvives(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos cell = plantCoal(helper);
 
@@ -372,12 +382,14 @@ public final class ManagedCoalLifecycleGameTests {
         operator.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         breakThroughTheEventBus(level, cell, operator);
 
-        check(!level.getBlockState(cell).is(coalBlock()),
-                "a bare-handed Creative break left the coal standing; a managed path is still"
-                        + " intercepting an ordinary creative break");
-        check(takeDrops(level, cell).isEmpty(), "a bare-handed Creative break dropped something");
+        check(level.getBlockState(cell).is(coalBlock()),
+                "a Creative break destroyed a managed coal deposit; ordinary breaking is not"
+                        + " administrator deposit removal, which is /manageddeposit remove or"
+                        + " /populateores clear");
+        check(takeDrops(level, cell).stream().noneMatch(drop -> drop.is(Items.COAL)),
+                "a Creative break minted coal");
         check(BrokenBlockDataStorage.get(level).getBrokenBlocks().get(cell) == null,
-                "a bare-handed Creative break filed restoration debt");
+                "a Creative break filed restoration debt");
         helper.succeed();
     }
 

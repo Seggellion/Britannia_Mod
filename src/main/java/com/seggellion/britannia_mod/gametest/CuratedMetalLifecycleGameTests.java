@@ -319,14 +319,16 @@ public final class CuratedMetalLifecycleGameTests {
             check(level.getBlockState(cell).is(block), path + " was mined by a fake player");
             check(takeDrops(level, cell).isEmpty(), path + " paid a fake player");
 
-            // Creative without the Britannia pickaxe: an ordinary creative removal, nothing paid.
+            // Creative without the Britannia pickaxe: an administrator, who earns nothing. A
+            // curated metal is a sited deposit, so the click is refused outright rather than
+            // deleting a vein that nothing would ever restore.
             level.setBlock(cell, block.defaultBlockState(), 2);
             ServerPlayer operator = miner(level, ItemStack.EMPTY);
             operator.setGameMode(GameType.CREATIVE);
             breakThroughTheEventBus(level, cell, operator);
-            check(!level.getBlockState(cell).is(block),
-                    path + " survived a bare-handed Creative break; a managed path is still"
-                            + " intercepting an ordinary creative break");
+            check(level.getBlockState(cell).is(block),
+                    path + " was deleted by a bare-handed Creative click; removing a curated"
+                            + " deposit stays /manageddeposit remove or /populateores clear");
             check(takeDrops(level, cell).isEmpty(), path + " paid a bare-handed Creative operator");
 
             // Creative attacking with the Britannia pickaxe: a tester, and the managed flow runs.
