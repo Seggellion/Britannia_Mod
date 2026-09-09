@@ -92,7 +92,8 @@ public final class QuestItemHandinProtocol {
         }
 
         /**
-         * Whether the transaction is finished, so the local ledger row may go terminal.
+         * Whether Rails' answer would be the same on a retry of the same body, so there is nothing
+         * left to ask.
          *
          * <p>{@link #ITEMS_MISSING} and {@link #EVIDENCE_REJECTED} deliberately are not: Rails
          * leaves the row exactly as it was for both, so a shard that garbled a retry can still send
@@ -101,6 +102,22 @@ public final class QuestItemHandinProtocol {
         public boolean terminal() {
             return this == CONSUMED || this == DUPLICATE || this == CANCELLED_REFUNDED
                     || this == CANCELLED || this == REJECTED;
+        }
+
+        /**
+         * Whether this answer proves the protocol's own invariant for a removal that has already
+         * happened: either the transition completed exactly once, or the exact items are being
+         * durably refunded exactly once.
+         *
+         * <p>Deliberately narrower than {@link #terminal()}, and the difference is the whole point.
+         * {@link #REJECTED} is a settled answer -- Rails holds no such transaction for this shard
+         * and player -- but for a local record that proves a removal it settles nothing: no
+         * completion and no compensation can follow it. A row in that position is preserved for
+         * diagnosis, never closed as though it were finished. {@link #CANCELLED} is the same shape
+         * seen from the other side: it is only ever answered to a report that took nothing.
+         */
+        public boolean settlesRemoval() {
+            return this == CONSUMED || this == DUPLICATE || this == CANCELLED_REFUNDED;
         }
 
         public static Result fromWireName(String value) {

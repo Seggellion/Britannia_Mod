@@ -275,6 +275,16 @@ public final class RailsApiUrlResolver {
          */
         QUEST_ACTION_EVENTS("v2/quest_action_events"),
         /**
+         * Rowan farming questline, strict item hand-ins (protocol section 1.5.3). There is
+         * deliberately no prepare endpoint: a hand-in is minted by the player's own claim on
+         * {@code POST /api/quests/:id/choose}, so a shard cannot mint transactions nobody asked
+         * for. These two are what a shard reports afterwards, and how it recovers an answer it
+         * never saw -- and the reconciliation one is read-only on the Rails side, so no amount of
+         * retrying it can cause a second removal.
+         */
+        QUEST_ITEM_HANDIN_RESULT("v2/quest_item_handins/:handin_uuid/result"),
+        QUEST_ITEM_HANDIN_RECONCILE("v2/quest_item_handins/reconcile"),
+        /**
          * Rowan farming questline M9 item 7: where this server asks for one bounded replacement of
          * a piece of mandatory tutorial equipment, on behalf of a player who lost theirs. The bound
          * lives in Rails -- per player, per quest, per item -- so it survives a reconnect and a
