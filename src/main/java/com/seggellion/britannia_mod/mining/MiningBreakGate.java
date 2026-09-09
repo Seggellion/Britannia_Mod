@@ -198,7 +198,9 @@ public final class MiningBreakGate {
         // any block does in creative, and none of the questions below is asked of them. A creative
         // player attacking with the Britannia pickaxe is a tester and gets every question, ladder
         // included -- that is the whole point of the exception, which exists so the managed flow
-        // can be exercised without leaving creative.
+        // can be exercised without leaving creative. (An administering creative player never
+        // reaches this gate on a sited deposit cell: ManagedResourceCreativeGuard refuses that
+        // break at HIGHEST, so creative never deletes a vein at any skill.)
         //
         // What is deliberately NOT a bypass: operator permission. Op is an administrative
         // capability and the ladder is gameplay progression; because every GameTest builds a

@@ -50,8 +50,10 @@ public class CustomBlockBreakHandler {
         // Creative is decided by the attacking hand (ManagedExtractionPolicy). Without the
         // Britannia pickaxe a creative player is administering: the gate has already stood aside
         // at HIGH, this handler stands aside here, and the break is an ordinary creative removal
-        // that drops nothing -- which is exactly what a creative break of a clay bed has always
-        // done. Attacking WITH the Britannia pickaxe a creative player is a tester, the policy
+        // that drops nothing. On a SITED DEPOSIT CELL that break never gets this far -- the
+        // ManagedResourceCreativeGuard cancels it at HIGHEST, because vanilla-breaking a vein
+        // destroys it permanently with no debt to restore it from -- so what stands aside here is
+        // the ordinary-block case, and no partial transaction is possible on the refused one. Attacking WITH the Britannia pickaxe a creative player is a tester, the policy
         // answers ALLOWED, and the whole flow below runs for them exactly as for a survival miner:
         // that is how mining is exercised without leaving creative. (Operator permission bypasses
         // nothing anywhere -- see MiningBreakGate; op is administration, not progression.)

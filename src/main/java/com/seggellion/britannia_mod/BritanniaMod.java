@@ -246,10 +246,18 @@ CraftableRegistry.init();
         // could invent a managed deposit from the world seed. Deposits are defined by Rails rows
         // and enter the world through /populateores; a chunk generating is not an event that
         // creates economic material, and there is deliberately no listener here that says it is.
-        // The OreVein milestone 6 creative guard that used to be registered here is retired: a
-        // creative player who is not attacking with the Britannia pickaxe now breaks a sited
-        // deposit exactly as any other block breaks in creative, and every managed path stands
-        // aside for them (ManagedExtractionPolicy.bypassesManagedExtraction) instead of refusing.
+        // OreVein milestone 6, reconciled with the attacking-hand creative rule. The two rules
+        // divide cleanly and both stand: the hand decides who is EARNING (a creative player
+        // holding the Britannia pickaxe is a tester and gets the whole ladder; without it every
+        // managed path stands aside -- ManagedExtractionPolicy.bypassesManagedExtraction), and
+        // this guard decides what may be SILENTLY DESTROYED (a sited deposit cell may not). So an
+        // administrator still clears an ordinary misplaced block in creative with no ore, no skill
+        // and no debt, and still cannot delete a vein by clicking it -- that stays an explicit
+        // /manageddeposit remove or /populateores clear. HIGHEST, ahead of everything below,
+        // because each handler under it stands aside for an administering creative player at the
+        // top of its own listener.
+        NeoForge.EVENT_BUS.register(
+                new com.seggellion.britannia_mod.resource.extraction.ManagedResourceCreativeGuard());
         NeoForge.EVENT_BUS.register(
                 new com.seggellion.britannia_mod.deposit.ManagedDepositInteractionHandler());
         // Skill-progression remediation: keeps a CAN_BREAK predicate on every extraction tool —
