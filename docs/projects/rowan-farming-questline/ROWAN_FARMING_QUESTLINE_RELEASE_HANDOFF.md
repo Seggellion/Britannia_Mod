@@ -101,6 +101,15 @@ The 23 mod skips include 6 opt-in live-Rails tests that skip unless credentials 
 
 ## 3. Candidate build
 
+> **Superseded for the Patch 18 release.** The candidate recorded below is `0.1.8a`, which is
+> the version already deployed — a rebuild of it could not be told apart from what is running.
+> The release now goes out as **`0.1.8b`**, and the artifact is
+> `build/libs/britannia_mod-0.1.8b-all.jar`. The dependency-free jar is now named
+> `britannia_mod-0.1.8b-thin.jar` rather than holding the unclassified name, and
+> `./gradlew check` runs `verifyDeployableJar`, which fails the build if the deployable jar
+> has lost GeckoLib or nanohttpd. See "Deploying — which jar" in `README.md`. Everything
+> below stands as the record of what this project built and measured.
+
 Rebuild from the final commit on a clean tree:
 
 ```bash

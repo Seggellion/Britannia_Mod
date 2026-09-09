@@ -7,7 +7,7 @@ Britannia's systems — skills, a player-driven economy, banking, guilds, quests
 travel — on top of Minecraft 1.21.1, backed by a shared UltimaCraft web service that ties
 independent servers ("shards") into one persistent world.
 
-**Current release: Patch 18 (August 2026) — mod version 0.1.8, the newest version of UltimaCraft.**
+**Current release: Patch 18 (August 2026) — mod version 0.1.8b, the newest version of UltimaCraft.**
 
 ## Features
 
@@ -44,11 +44,43 @@ while NeoForge sets up). Other useful tasks:
 ./gradlew runServer                                      # local dedicated dev server
 ./gradlew test                                           # unit test suite
 ./gradlew runGameTestServer --no-configuration-cache     # in-game GameTest suite
+./gradlew artifactIdentity                               # size, SHA-256 and commit of each jar
 ```
 
-To use the mod outside the dev environment, drop `build/libs/Britannia_Mod-<version>-all.jar`
-into the `mods/` folder of a NeoForge 21.1.72 installation for Minecraft 1.21.1 (the `-all`
-jar bundles GeckoLib and other runtime dependencies).
+## Deploying — which jar
+
+`./gradlew build` writes **two** jars, and only one of them can be deployed.
+
+| File | Deploy? | What it is |
+| --- | --- | --- |
+| `build/libs/britannia_mod-<version>-all.jar` | **Yes** | Bundles GeckoLib 4.6.6 and nanohttpd under `META-INF/jarjar/`. |
+| `build/libs/britannia_mod-<version>-thin.jar` | No | No bundled dependencies. Kept for the Maven publication and for consumers that supply their own GeckoLib. |
+
+Drop the **`-all`** jar into the `mods/` folder of a NeoForge 21.1.72 installation for
+Minecraft 1.21.1, then restart the server.
+
+**Do not tell them apart by file size.** They are within a few percent of each other, and the
+thin jar does not announce its own problem: `neoforge.mods.toml` does not declare GeckoLib, so a
+server given the thin jar starts clean, runs, and then throws `NoClassDefFoundError` at the first
+animated render — minutes after the deploy, with nothing in the stack trace about packaging. Go by
+the classifier in the filename, or read the contents:
+
+```bash
+unzip -l build/libs/britannia_mod-0.1.8b-all.jar | grep jarjar
+#   META-INF/jarjar/nanohttpd-2.2.0.jar
+#   META-INF/jarjar/geckolib-neoforge-1.21.1-4.6.6.jar
+#   META-INF/jarjar/metadata.json
+```
+
+`./gradlew check` — and so `./gradlew build`, and CI — runs `verifyDeployableJar`, which fails the
+build if the `-all` jar has lost either bundled dependency or cannot say which commit produced it.
+`-Pdev` deliberately drops GeckoLib from the bundle, so it belongs on `runClient` and nothing else:
+`./gradlew build -Pdev` now fails rather than quietly producing an `-all` jar that is not one.
+
+Every jar also carries `britannia_mod_build.properties` — mod version, git commit, branch, dirty
+flag and build timestamp — which a running server reports through `/grabby env`. That is how a
+deployed file is matched back to a commit; `./gradlew artifactIdentity` prints the same identity,
+plus each jar's size and SHA-256, at build time.
 
 By default the mod points at a local UltimaCraft backend on `127.0.0.1:3000`; single-player
 and development work fine without one, and production shards configure their real endpoint

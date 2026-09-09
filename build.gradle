@@ -217,6 +217,13 @@ tasks.named('processResources') {
 }
 
 tasks.named('jar', Jar) {
+    // The thin jar bundles no dependencies, so it is not deployable: neoforge.mods.toml never
+    // declares GeckoLib, so a server without a separate GeckoLib install boots this file clean
+    // and then throws NoClassDefFoundError at the first animated render. It is still built --
+    // the Maven publication and IDE consumers want a dependency-free jar -- but it no longer
+    // holds the unclassified filename, because that is the name an operator reads as "the
+    // release". Deploy the `-all` jar; verifyDeployableJar is what proves it.
+    archiveClassifier = 'thin'
     exclude 'com/seggellion/britannia_mod/gametest/**'
     exclude 'data/britannia_mod/structure/service_npc_spawn_test_empty.nbt'
 }
@@ -363,7 +370,7 @@ tasks.register('artifactIdentity') {
         // Jar-in-Jar into the -all jar, so that is the one a server without a separate
         // GeckoLib install needs.
         describe(bundledJar.get().asFile, '<- deploy this one unless GeckoLib is installed separately')
-        describe(plainJar.get().asFile, '(no bundled dependencies)')
+        describe(plainJar.get().asFile, '(thin -- no bundled dependencies, NOT deployable)')
         def info = buildInfoFile.get().asFile
         if (info.exists()) {
             println '  build metadata (baked into both):'
@@ -371,4 +378,106 @@ tasks.register('artifactIdentity') {
         }
         println '==================================='
     }
+}
+
+// ---------------------------------------------------------------------------
+// Deployable packaging gate
+// ---------------------------------------------------------------------------
+// A jar that boots and then dies at the first animated render is worse than one that fails to
+// build: the failure surfaces in production, minutes after a deploy, as a NoClassDefFoundError
+// with nothing in it about packaging. neoforge.mods.toml does not declare GeckoLib, so no load-time
+// check notices that it is absent -- the only thing standing between an operator and that outcome
+// is which of the two files in build/libs/ they copied. That is not a gate, it is a coin flip, and
+// this task replaces it with a build failure. It is wired into `check`, so `gradlew build` and CI
+// both run it; a deployable jar that has lost its bundled dependencies can no longer be produced
+// quietly.
+//
+// The required names are the exact Jar-in-Jar entry filenames, derived from the same properties the
+// jarJar block resolves its coordinates from, so a version bump cannot leave the gate asserting a
+// stale filename.
+def deployableBundledDependencies = [
+        "geckolib-neoforge-${minecraft_version}-${geckolib_version}.jar".toString(),
+        'nanohttpd-2.2.0.jar'
+]
+
+tasks.register('verifyDeployableJar') {
+    group = 'verification'
+    description = 'Fails unless the deployable -all jar embeds GeckoLib and nanohttpd under META-INF/jarjar/.'
+    dependsOn tasks.named('jarJar')
+    // Locals only. Reaching for `layout`, `logger` or `project` from inside doLast is what the
+    // configuration cache refuses -- the same reason artifactIdentity above captures everything up
+    // front.
+    def bundledJar = tasks.named('jarJar', Jar).flatMap { it.archiveFile }
+    def required = deployableBundledDependencies
+    def expectedVersion = mod_version
+    def prefix = 'META-INF/jarjar/'
+    inputs.file bundledJar
+    // The whole value of this task is that it ran against the bytes now on disk. An up-to-date
+    // skip would report a verdict about an earlier file.
+    outputs.upToDateWhen { false }
+    doLast {
+        def file = bundledJar.get().asFile
+        if (!file.exists()) {
+            throw new GradleException("Deployable jar was not produced: ${file}")
+        }
+        def zip = new java.util.zip.ZipFile(file)
+        try {
+            def embedded = zip.entries().toList().findAll { entry ->
+                entry.name.startsWith(prefix) && entry.name.endsWith('.jar')
+            }
+            def names = embedded.collect { it.name.substring(prefix.length()) } as Set
+            def missing = required.findAll { !names.contains(it) }
+            if (!missing.isEmpty()) {
+                throw new GradleException(
+                        "${file.name} is NOT deployable: ${prefix} is missing ${missing}; it holds " +
+                        "${names.isEmpty() ? '(nothing)' : names.sort()}. neoforge.mods.toml does not " +
+                        "declare GeckoLib, so a server would load this jar clean and then throw " +
+                        "NoClassDefFoundError at the first animated render. Check the " +
+                        "jarJar { dependencies { ... } } block, and note that -Pdev deliberately " +
+                        "drops GeckoLib -- a -Pdev build is not a release candidate.")
+            }
+            def hollow = embedded.findAll {
+                required.contains(it.name.substring(prefix.length())) && it.size <= 0L
+            }
+            if (!hollow.isEmpty()) {
+                throw new GradleException(
+                        "${file.name} embeds empty dependency jars: ${hollow.collect { it.name }}")
+            }
+            if (zip.getEntry(prefix + 'metadata.json') == null) {
+                throw new GradleException(
+                        "${file.name} has no ${prefix}metadata.json, so NeoForge would never load the " +
+                        "embedded jars even though they are present.")
+            }
+            // Provenance travels in the same file for the same reason: an operator asking "is the
+            // server running the build we think it is" needs the artifact itself to answer.
+            def infoEntry = zip.getEntry('britannia_mod_build.properties')
+            if (infoEntry == null) {
+                throw new GradleException(
+                        "${file.name} carries no britannia_mod_build.properties; generateBuildInfo did not run.")
+            }
+            def info = new Properties()
+            zip.getInputStream(infoEntry).withCloseable { info.load(it) }
+            ['git.head', 'git.branch', 'git.dirty', 'build.timestamp'].each { key ->
+                def value = info.getProperty(key)
+                if (value == null || value.trim().isEmpty() || value.trim() == 'unknown') {
+                    throw new GradleException(
+                            "${file.name} build provenance ${key}='${value}' cannot identify this build.")
+                }
+            }
+            if (info.getProperty('mod.version') != expectedVersion) {
+                throw new GradleException(
+                        "${file.name} records mod.version='${info.getProperty('mod.version')}' but " +
+                        "gradle.properties declares '${expectedVersion}'.")
+            }
+            println "verifyDeployableJar: ${file.name} bundles ${names.sort()}, " +
+                    "built from ${info.getProperty('git.head')} on ${info.getProperty('git.branch')} " +
+                    "(dirty=${info.getProperty('git.dirty')})"
+        } finally {
+            zip.close()
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyDeployableJar')
 }
