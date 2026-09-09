@@ -1,6 +1,8 @@
 // com/seggellion/britannia_mod/player/PlayerDataStore.java
 package com.seggellion.britannia_mod.player;
 
+import com.seggellion.britannia_mod.quest.handin.QuestHandinRemoval;
+import com.seggellion.britannia_mod.quest.handin.QuestHandinRemovalNbt;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -9,6 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public final class PlayerDataStore {
@@ -37,15 +40,147 @@ public final class PlayerDataStore {
         return PlayerData.load(dataTag);
     }
 
+    /**
+     * Rowan farming questline, strict item hand-ins (protocol section 1.5): the bounded list of
+     * hand-in removals whose items have left this player's pack, each carrying the concrete proof
+     * of what was taken.
+     *
+     * <p>It is appended in the same server-thread step as the shrink, so the vanilla player-file
+     * write (temp file, atomic replace) persists the removal and its proof together or not at all.
+     * That is what lets a restart tell "removed and saved" from "removed and lost" -- and, because
+     * each marker carries the whole proof rather than an id, a marker found without its ledger row
+     * is still enough to confirm the transaction and get the player either their quest or their
+     * items back.
+     */
+    public static final String HANDIN_REMOVALS = "handin_removals";
+
+    /**
+     * Bounded like the delivery markers, but never dropped to make room: a marker is removed only
+     * when its transaction has reached an ending, so hitting this bound means the player genuinely
+     * holds that many unfinished hand-ins and the ledger refuses to mint another.
+     */
+    public static final int MAX_HANDIN_REMOVAL_MARKERS = 64;
+
+    private static final String MARKER_HANDIN_UUID = "HandinUuid";
+    private static final String MARKER_REQUEST_UUID = "RequestUuid";
+    private static final String MARKER_REMOVED_AT = "RemovedAt";
+    private static final String MARKER_PROOF = "Proof";
+
     public static void save(ServerPlayer player, PlayerData data) {
         CompoundTag root = player.getPersistentData();
         CompoundTag out = new CompoundTag();
         data.save(out);
-        // The delivery marker is not part of PlayerData; carry it across so a profile save (the
-        // bootstrap writes one at every login) can never drop it.
-        ListTag markers = markerList(root.getCompound(KEY));
+        // Neither marker list is part of PlayerData; carry both across so a profile save (the
+        // bootstrap writes one at every login) can never drop them.
+        CompoundTag existing = root.getCompound(KEY);
+        ListTag markers = markerList(existing);
         if (!markers.isEmpty()) out.put(APPLIED_DELIVERY_UUIDS, markers.copy());
+        ListTag handins = handinList(existing);
+        if (!handins.isEmpty()) out.put(HANDIN_REMOVALS, handins.copy());
         root.put(KEY, out);
+    }
+
+    // --- hand-in removal marker -----------------------------------------------------------------
+
+    /** What one marker records: the transaction, the correlation id, and exactly what was taken. */
+    public record HandinRemovalMarker(UUID handinUuid, UUID requestUuid, long removedAtMillis,
+                                      List<QuestHandinRemoval> proof) {
+        public HandinRemovalMarker {
+            java.util.Objects.requireNonNull(handinUuid, "handinUuid");
+            java.util.Objects.requireNonNull(requestUuid, "requestUuid");
+            proof = List.copyOf(proof);
+            if (proof.isEmpty()) {
+                throw new IllegalArgumentException("a removal marker without its proof proves nothing");
+            }
+        }
+    }
+
+    /**
+     * Records that the hand-in's items have left the pack. Idempotent. Only mutates the in-memory
+     * persistent data: the caller forces the player-file write, in the same step as the shrink.
+     *
+     * @return false when the player already holds the maximum unfinished markers, in which case
+     *         nothing is recorded and the caller must not remove anything
+     */
+    public static boolean markHandinRemoved(ServerPlayer player, HandinRemovalMarker marker) {
+        if (player == null || marker == null) return false;
+        get(player);
+        CompoundTag dataTag = player.getPersistentData().getCompound(KEY);
+        ListTag markers = handinList(dataTag);
+        String value = marker.handinUuid().toString();
+        for (Tag tag : markers) {
+            if (tag instanceof CompoundTag entry
+                    && value.equals(entry.getString(MARKER_HANDIN_UUID))) {
+                return true;
+            }
+        }
+        // Never evicts to make room. A marker is the only durable evidence that this player gave
+        // something up, so the bound refuses a new removal instead of forgetting an old one.
+        if (markers.size() >= MAX_HANDIN_REMOVAL_MARKERS) return false;
+
+        CompoundTag entry = new CompoundTag();
+        entry.putString(MARKER_HANDIN_UUID, value);
+        entry.putString(MARKER_REQUEST_UUID, marker.requestUuid().toString());
+        entry.putLong(MARKER_REMOVED_AT, marker.removedAtMillis());
+        entry.put(MARKER_PROOF, QuestHandinRemovalNbt.toList(marker.proof()));
+        markers.add(entry);
+        dataTag.put(HANDIN_REMOVALS, markers);
+        return true;
+    }
+
+    /** The marker for one transaction, or empty. */
+    public static Optional<HandinRemovalMarker> handinRemoval(ServerPlayer player, UUID handinUuid) {
+        if (player == null || handinUuid == null) return Optional.empty();
+        String value = handinUuid.toString();
+        for (HandinRemovalMarker marker : handinRemovals(player)) {
+            if (marker.handinUuid().toString().equals(value)) return Optional.of(marker);
+        }
+        return Optional.empty();
+    }
+
+    /** Every readable marker, oldest first. A marker this build cannot read names no transaction. */
+    public static List<HandinRemovalMarker> handinRemovals(ServerPlayer player) {
+        List<HandinRemovalMarker> found = new ArrayList<>();
+        if (player == null) return found;
+        for (Tag tag : handinList(player.getPersistentData().getCompound(KEY))) {
+            if (!(tag instanceof CompoundTag entry)) continue;
+            try {
+                found.add(new HandinRemovalMarker(
+                        UUID.fromString(entry.getString(MARKER_HANDIN_UUID)),
+                        UUID.fromString(entry.getString(MARKER_REQUEST_UUID)),
+                        entry.getLong(MARKER_REMOVED_AT),
+                        QuestHandinRemovalNbt.fromList(entry.getList(MARKER_PROOF, Tag.TAG_COMPOUND))));
+            } catch (RuntimeException unreadable) {
+                // Deliberately skipped rather than thrown: one bad marker must not hide the others,
+                // and the ledger row is the second copy of the same fact.
+            }
+        }
+        return found;
+    }
+
+    /**
+     * Forgets one marker, once its transaction has reached an ending.
+     *
+     * <p>Unlike the delivery markers, production does remove these -- an unfinished hand-in is a
+     * bounded, short-lived thing and a marker that outlived its row would look like an orphan worth
+     * confirming. It is removed only <b>after</b> the ledger row is durably settled, so a crash in
+     * between leaves a stale marker whose row already says the transaction is over, which
+     * reconciliation ignores.
+     */
+    public static boolean forgetHandinRemoval(ServerPlayer player, UUID handinUuid) {
+        if (player == null || handinUuid == null) return false;
+        CompoundTag dataTag = player.getPersistentData().getCompound(KEY);
+        ListTag markers = handinList(dataTag);
+        String value = handinUuid.toString();
+        boolean removed = markers.removeIf(tag -> tag instanceof CompoundTag entry
+                && value.equals(entry.getString(MARKER_HANDIN_UUID)));
+        if (removed) dataTag.put(HANDIN_REMOVALS, markers);
+        return removed;
+    }
+
+    private static ListTag handinList(CompoundTag dataTag) {
+        if (dataTag == null || !dataTag.contains(HANDIN_REMOVALS, Tag.TAG_LIST)) return new ListTag();
+        return dataTag.getList(HANDIN_REMOVALS, Tag.TAG_COMPOUND);
     }
 
     // --- reward delivery marker (M3) ------------------------------------------------------------
