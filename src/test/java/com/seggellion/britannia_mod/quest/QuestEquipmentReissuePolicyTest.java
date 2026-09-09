@@ -20,6 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class QuestEquipmentReissuePolicyTest {
 
+    /** The one kit item the questline takes back, at stage three. */
+    private static final String HANDED_IN_BUCKET = "minecraft:bucket";
+
     // ------------------------------------------------------------------ what a stage is owed
 
     @Test
@@ -54,11 +57,31 @@ class QuestEquipmentReissuePolicyTest {
                 stage + " names " + item + ", which is not reissuable equipment")));
     }
 
+    /**
+     * By stage five the player has been given every piece of the kit and still holds all of it --
+     * except the bucket, which stage three's hand-in takes and does not give back.
+     *
+     * <p>That exception is the whole point of the assertion. While the bucket was still listed here,
+     * every conversation with Rowan on stage four or five found it "missing" and either spent a
+     * bounded replacement on an item the questline had deliberately confiscated, or repeated
+     * "limit reached" forever once the bound was gone. It stays reissuable for stage three, which is
+     * the stage that actually needs one.
+     */
     @Test
-    void theFinalStageOwesTheWholeKitAndNoCurrency() {
+    void theFinalStageOwesTheWholeKitExceptTheBucketItHandedIn() {
         List<String> stageFive = QuestEquipmentReissuePolicy.EQUIPMENT_BY_STAGE.get("rowan_farming_5");
-        assertEquals(QuestEquipmentReissuePolicy.REQUIRED_EQUIPMENT.keySet().size(), stageFive.size(),
-            "by stage five the player has been given every piece of equipment");
+
+        assertEquals(QuestEquipmentReissuePolicy.REQUIRED_EQUIPMENT.keySet().size() - 1, stageFive.size(),
+            "stage five owes every piece of equipment but the one it no longer has");
+        assertFalse(stageFive.contains(HANDED_IN_BUCKET),
+            "the bucket stage three consumed must not be reissued afterwards");
+        assertFalse(QuestEquipmentReissuePolicy.EQUIPMENT_BY_STAGE.get("rowan_farming_4")
+            .contains(HANDED_IN_BUCKET), "nor on stage four");
+        assertTrue(QuestEquipmentReissuePolicy.EQUIPMENT_BY_STAGE.get("rowan_farming_3")
+            .contains(HANDED_IN_BUCKET), "but stage three is the stage that fills one, so it keeps it");
+        assertTrue(QuestEquipmentReissuePolicy.reissuable(HANDED_IN_BUCKET),
+            "and a bucket lost before stage three's hand-in is still replaceable");
+
         QuestEquipmentReissuePolicy.CURRENCY_ITEM_IDS.forEach(coin ->
             assertFalse(stageFive.contains(coin), "no stage may owe currency, found " + coin));
     }

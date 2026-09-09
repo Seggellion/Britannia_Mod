@@ -8,10 +8,20 @@ import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferPlayerDurability;
 import com.seggellion.britannia_mod.event.PlayerDataCloneHandler;
 import com.seggellion.britannia_mod.player.PlayerDataStore;
+import com.seggellion.britannia_mod.quest.ClientQuestEntry;
 import com.seggellion.britannia_mod.quest.QuestProxyService;
+import com.seggellion.britannia_mod.quest.RowanQuestlineHooks;
+import com.seggellion.britannia_mod.quest.delivery.QuestRewardDelivery;
+import com.seggellion.britannia_mod.quest.delivery.QuestRewardDeliveryItem;
+import com.seggellion.britannia_mod.quest.delivery.QuestRewardDeliveryLedgerStore;
+import com.seggellion.britannia_mod.quest.delivery.QuestRewardDeliveryService;
+import com.seggellion.britannia_mod.wildresource.WildResourceEntries;
+import com.seggellion.britannia_mod.wildresource.WildResourceQuestScheduling;
+import com.seggellion.britannia_mod.wildresource.WildResourceSavedData;
 import com.seggellion.britannia_mod.quest.handin.QuestHandinLedger;
 import com.seggellion.britannia_mod.quest.handin.QuestHandinLedgerEntry;
 import com.seggellion.britannia_mod.quest.handin.QuestHandinLedgerStore;
+import com.seggellion.britannia_mod.quest.handin.QuestHandinInventory;
 import com.seggellion.britannia_mod.quest.handin.QuestHandinLocalState;
 import com.seggellion.britannia_mod.quest.handin.QuestHandinRemoval;
 import com.seggellion.britannia_mod.quest.handin.QuestItemHandinClient;
@@ -24,7 +34,9 @@ import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -76,6 +88,9 @@ public final class QuestItemHandinGameTests {
     private static final String CARROT_SEEDS = "britannia_mod:carrot_seeds";
     private static final String BUCKET = "minecraft:bucket";
     private static final String WATER_BUCKET = "minecraft:water_bucket";
+    private static final String FERTILIZED_DIRT = "britannia_mod:fertilized_dirt";
+    private static final String FARMING_HOE = "britannia_mod:farming_hoe";
+    private static final String WATERING_CAN = "britannia_mod:watering_can";
 
     private QuestItemHandinGameTests() {}
 
@@ -152,6 +167,39 @@ public final class QuestItemHandinGameTests {
             check(count(player, BUCKET) == 0,
                     "an empty bucket must NOT come back: a hand-in returns nothing, and there is no "
                             + "authorable give-back in the contract at all. " + counts(player));
+        } finally {
+            cleanup(helper, player, handin);
+        }
+        helper.succeed();
+    }
+
+    /**
+     * Stage four: the mix is handed over, and the bowls the recipe gave back are not.
+     *
+     * <p>The bowls are the trap. They come back empty from the mixing recipe, the player needs them
+     * for the next mix, and nothing about "hand over the fertilized dirt" should touch them.
+     */
+    @GameTest(template = TEMPLATE, batch = "handin_takesTheFertilizedDirtAndLeavesTheBowls")
+    public static void takesTheFertilizedDirtAndLeavesTheBowls(GameTestHelper helper) {
+        ServerPlayer player = prepare(helper);
+        Confirmations rails = install();
+        UUID handin = UUID.randomUUID();
+        try {
+            give(player, FERTILIZED_DIRT, 2);
+            give(player, EMPTY_BOWL, 2);
+            give(player, FARMING_HOE, 1);
+            give(player, WATERING_CAN, 1);
+            give(player, SHOVEL, 1);
+
+            begin(player, demand(handin, literal(FERTILIZED_DIRT, 1)));
+
+            check(count(player, FERTILIZED_DIRT) == 1,
+                    "exactly one mix is handed over: " + counts(player));
+            check(count(player, EMPTY_BOWL) == 2,
+                    "the empty bowls the recipe returned are the player's: " + counts(player));
+            check(count(player, FARMING_HOE) == 1 && count(player, WATERING_CAN) == 1
+                            && count(player, SHOVEL) == 1,
+                    "and every permanent tool stays: " + counts(player));
         } finally {
             cleanup(helper, player, handin);
         }
@@ -376,37 +424,6 @@ public final class QuestItemHandinGameTests {
         helper.succeed();
     }
 
-    /**
-     * The dangerous disagreement: the ledger says the items are gone and the player's own file does
-     * not. Confirming would buy a completion or a refund for items the player still holds.
-     */
-    @GameTest(template = TEMPLATE, batch = "handin_aLedgerAheadOfThePlayerFileIsStranded")
-    public static void aLedgerAheadOfThePlayerFileIsStranded(GameTestHelper helper) {
-        ServerPlayer player = prepare(helper);
-        Confirmations rails = install();
-        UUID handin = UUID.randomUUID();
-        try {
-            give(player, DUNG, 1);
-            QuestHandinLedger.record(player.server, QuestHandinLedgerEntry
-                    .prepared(handin, player.getUUID(), "41", "9001", "hand_over", UUID.randomUUID(), 1L)
-                    .withRemovalIntent(List.of(QuestHandinRemoval.literal(0, DUNG, 1)), 1L)
-                    .withRemovedLocally(2L));
-
-            QuestItemHandinReconciler.onLogin(player);
-
-            check(state(player, handin) == QuestHandinLocalState.STRANDED,
-                    "expected stranded, got " + state(player, handin));
-            check(rails.requests.isEmpty(),
-                    "a contradiction is never confirmed: the player keeps the items and nobody is paid");
-            check(count(player, DUNG) == 1, "and the items are still theirs: " + counts(player));
-            check(QuestHandinLedger.find(player.server, handin).orElseThrow().proof().size() == 1,
-                    "the record is preserved for an operator, not deleted");
-        } finally {
-            cleanup(helper, player, handin);
-        }
-        helper.succeed();
-    }
-
     /** A marker whose ledger row is gone is self-sufficient: the transaction still finishes. */
     @GameTest(template = TEMPLATE, batch = "handin_anOrphanMarkerIsAdoptedAndConfirmed")
     public static void anOrphanMarkerIsAdoptedAndConfirmed(GameTestHelper helper) {
@@ -551,7 +568,9 @@ public final class QuestItemHandinGameTests {
             check(state(player, handin).confirmationOutstanding(),
                     "and the row still owes a confirmation, got " + state(player, handin));
 
-            rails.answer = request -> answered(consumed(handin));
+            // Rails had in fact finalized before the response was lost, so the retry meets its own
+            // earlier work and is answered with the stored completion rather than a fresh one.
+            rails.answer = request -> answered(duplicate(handin));
             QuestItemHandinReconciler.onLogin(player);
 
             check(rails.requests.size() == 2, "the sweep retries, got " + rails.requests.size());
@@ -780,6 +799,117 @@ public final class QuestItemHandinGameTests {
         helper.succeed();
     }
 
+    /**
+     * The silent-player-save failure, from the player's side.
+     *
+     * <p>The ledger says the items are gone; the player's own file has no marker, which means the
+     * shrink never reached disk either -- they were written in one step. So the player is still
+     * holding everything, and the only correct outcome is a transaction they can simply claim again.
+     * Stranding it left them staring at a quest stage they could never finish while holding exactly
+     * what it asked for.
+     */
+    @GameTest(template = TEMPLATE, batch = "handin_aRemovalThatNeverReachedDiskIsReclaimable")
+    public static void aRemovalThatNeverReachedDiskIsReclaimable(GameTestHelper helper) {
+        ServerPlayer player = prepare(helper);
+        Confirmations rails = install();
+        UUID handin = UUID.randomUUID();
+        try {
+            give(player, DUNG, 1);
+            // Exactly what a reload after a save that reported success but wrote nothing leaves.
+            QuestHandinLedger.record(player.server, QuestHandinLedgerEntry
+                    .prepared(handin, player.getUUID(), "41", "9001", "hand_over", UUID.randomUUID(), 1L)
+                    .withRemovalIntent(List.of(QuestHandinRemoval.literal(0, DUNG, 1)), 1L)
+                    .withRemovedLocally(2L));
+
+            QuestItemHandinReconciler.onLogin(player);
+
+            check(state(player, handin) == QuestHandinLocalState.ABANDONED,
+                    "nothing was taken, so nothing is owed, got " + state(player, handin));
+            check(rails.requests.isEmpty(),
+                    "and Rails is never told a removal happened that did not");
+            check(count(player, DUNG) == 1, "the dung is still theirs: " + counts(player));
+
+            // And the player can simply hand it in again -- Rails hands back the same transaction id.
+            begin(player, demand(handin, literal(DUNG, 1)));
+
+            check(count(player, DUNG) == 0, "the retry works: " + counts(player));
+            check(state(player, handin) == QuestHandinLocalState.CONSUMED,
+                    "expected consumed, got " + state(player, handin));
+        } finally {
+            cleanup(helper, player, handin);
+        }
+        helper.succeed();
+    }
+
+    /**
+     * A marker whose bytes are damaged is not the same thing as no marker.
+     *
+     * <p>A marker and its shrink are written together, so an entry existing at all is proof the
+     * items really did leave the pack. Reading "unreadable" as "never removed" would offer the
+     * player a second removal for goods they already paid.
+     */
+    @GameTest(template = TEMPLATE, batch = "handin_anUnreadableMarkerIsStrandedNotReOffered")
+    public static void anUnreadableMarkerIsStrandedNotReOffered(GameTestHelper helper) {
+        ServerPlayer player = prepare(helper);
+        Confirmations rails = install();
+        UUID handin = UUID.randomUUID();
+        try {
+            QuestHandinLedger.record(player.server, QuestHandinLedgerEntry
+                    .prepared(handin, player.getUUID(), "41", "9001", "hand_over", UUID.randomUUID(), 1L)
+                    .withRemovalIntent(List.of(QuestHandinRemoval.literal(0, DUNG, 1)), 1L)
+                    .withRemovedLocally(2L));
+            corruptMarker(player, handin);
+            check(PlayerDataStore.handinRemovalRecorded(player, handin),
+                    "precondition: the entry exists");
+            check(PlayerDataStore.handinRemoval(player, handin).isEmpty(),
+                    "precondition: and cannot be read");
+
+            QuestItemHandinReconciler.onLogin(player);
+
+            check(state(player, handin) == QuestHandinLocalState.STRANDED,
+                    "corrupt evidence of a real removal is preserved, got " + state(player, handin));
+            check(rails.requests.isEmpty(), "and never confirmed on evidence this server cannot read");
+        } finally {
+            cleanup(helper, player, handin);
+        }
+        helper.succeed();
+    }
+
+    /**
+     * A refund landing while the player is dead waits instead of being inserted into the corpse.
+     *
+     * <p>{@code PlayerList.respawn} builds a new player and, on an ordinary death, does not copy the
+     * corpse's inventory -- so anything inserted here would be marked applied, acknowledged to
+     * Rails, and thrown away with the body. That is the second half of the promise that a removed
+     * item always comes back, and dying is not an unusual thing to do while a hand-in is in flight.
+     */
+    @GameTest(template = TEMPLATE, batch = "handin_aRefundToADeadPlayerIsQueuedNotBuried")
+    public static void aRefundToADeadPlayerIsQueuedNotBuried(GameTestHelper helper) {
+        ServerPlayer player = prepare(helper);
+        Confirmations rails = install();
+        UUID delivery = UUID.randomUUID();
+        try {
+            player.setHealth(0.0F);
+            check(player.isDeadOrDying(), "precondition: the player is on the death screen");
+
+            QuestRewardDeliveryService.ApplyOutcome outcome = QuestRewardDeliveryService.apply(player,
+                    new QuestRewardDelivery(delivery, 41L, "9001",
+                            "handin_refund:" + UUID.randomUUID(),
+                            List.of(new QuestRewardDeliveryItem(DUNG, 1, false)), "pending", ""),
+                    QuestRewardDeliveryService.Source.PENDING_LISTING);
+
+            check(outcome == QuestRewardDeliveryService.ApplyOutcome.QUEUED,
+                    "a refund to a dead player waits, got " + outcome);
+            check(count(player, DUNG) == 0,
+                    "and is not put into a body that is about to be discarded: " + counts(player));
+        } finally {
+            player.setHealth(player.getMaxHealth());
+            QuestRewardDeliveryLedgerStore.get(helper.getLevel().getServer()).removeForTesting(delivery);
+            cleanup(helper, player);
+        }
+        helper.succeed();
+    }
+
     // --- reconciliation ----------------------------------------------------------------------
 
     /**
@@ -842,25 +972,73 @@ public final class QuestItemHandinGameTests {
         UUID handin = UUID.randomUUID();
         try {
             List<QuestHandinRemoval> proof = List.of(QuestHandinRemoval.literal(0, DUNG, 1));
-            QuestHandinLedger.record(player.server, stranded(player, handin));
+            // A row whose confirmations keep failing -- which is what opens the inquiry -- rather
+            // than a stranded one, whose confirmation has already been refused and would be refused
+            // identically again.
+            QuestHandinLedger.record(player.server, QuestHandinLedgerEntry
+                    .prepared(handin, player.getUUID(), "41", "9001", "hand_over", UUID.randomUUID(), 1L)
+                    .withRemovalIntent(proof, 1L)
+                    .withRemovedLocally(2L)
+                    .withConfirming(3L).withConfirming(3L).withConfirming(3L));
             PlayerDataStore.markHandinRemoved(player, new PlayerDataStore.HandinRemovalMarker(
                     handin, UUID.randomUUID(), 1L, proof));
+            rails.answer = request -> new QuestItemHandinClient.Failure("overall_timeout");
             rails.inquiryAnswer = asked -> List.of(new QuestItemHandinProtocol.ReconcileEntry(
                     handin, QuestItemHandinProtocol.ReconcileOutcome.CANCELLED, List.of(), "abandoned", null));
-            rails.answer = request -> answered(cancelledRefunded(handin));
 
             QuestItemHandinReconciler.onLogin(player);
             check(state(player, handin) == QuestHandinLocalState.REMOVED_LOCAL,
                     "the row is put back where the sweep will confirm it, got " + state(player, handin));
 
+            // Rails only publishes the compensation when the shard confirms: reconciliation cannot,
+            // because only the shard knows it removed.
+            rails.answer = request -> answered(cancelledRefunded(handin));
+            QuestItemHandinReconciler.clear(player.server);
             QuestItemHandinReconciler.onJournalRefreshed(player);
 
-            check(rails.requests.size() == 1,
-                    "the stored proof is sent, which is what buys the refund, got " + rails.requests.size());
-            check(rails.requests.get(0).removed(), "reporting the removal it really made");
+            check(rails.requests.size() == 2,
+                    "the stored proof is sent again, which is what buys the refund, got "
+                            + rails.requests.size());
+            check(rails.requests.get(1).removed(), "reporting the removal it really made");
+            check(textOf(rails.requests.get(0)).equals(textOf(rails.requests.get(1))),
+                    "byte-identical to the attempt that failed");
             check(state(player, handin) == QuestHandinLocalState.REFUNDED,
                     "expected refunded, got " + state(player, handin));
             check(count(player, DUNG) == 0, "and nothing is put back locally: " + counts(player));
+        } finally {
+            cleanup(helper, player, handin);
+        }
+        helper.succeed();
+    }
+
+    /**
+     * A row whose confirmation Rails has already refused is never put back for another one.
+     *
+     * <p>The proof is byte-stable, so a second attempt earns the identical refusal -- and re-queueing
+     * would spin the same removal through confirm-refuse-strand once a minute forever, each lap
+     * force-flushing the whole overworld storage twice. The test is keyed on the state rather than
+     * on why it stranded, which is what the guard now checks.
+     */
+    @GameTest(template = TEMPLATE, batch = "handin_aStrandedRowIsNeverRequeuedForAnotherRefusal")
+    public static void aStrandedRowIsNeverRequeuedForAnotherRefusal(GameTestHelper helper) {
+        ServerPlayer player = prepare(helper);
+        Confirmations rails = install();
+        UUID handin = UUID.randomUUID();
+        try {
+            QuestHandinLedger.record(player.server, stranded(player, handin));
+            PlayerDataStore.markHandinRemoved(player, new PlayerDataStore.HandinRemovalMarker(
+                    handin, UUID.randomUUID(), 1L, List.of(QuestHandinRemoval.literal(0, DUNG, 1))));
+            rails.inquiryAnswer = asked -> List.of(new QuestItemHandinProtocol.ReconcileEntry(
+                    handin, QuestItemHandinProtocol.ReconcileOutcome.CANCELLED, List.of(), "abandoned", null));
+
+            QuestItemHandinReconciler.onLogin(player);
+            QuestItemHandinReconciler.clear(player.server);
+            QuestItemHandinReconciler.onJournalRefreshed(player);
+
+            check(state(player, handin) == QuestHandinLocalState.STRANDED,
+                    "it stays stranded, got " + state(player, handin));
+            check(rails.requests.isEmpty(),
+                    "and no confirmation is sent, got " + rails.requests.size());
         } finally {
             cleanup(helper, player, handin);
         }
@@ -1029,6 +1207,88 @@ public final class QuestItemHandinGameTests {
         helper.succeed();
     }
 
+    /**
+     * A refund arriving into a full pack waits in the delivery ledger rather than being dropped.
+     *
+     * <p>The compensation is an ordinary pending reward delivery, so it inherits that machinery's
+     * full-pack behaviour whole: nothing is inserted, nothing hits the floor, the row is queued and
+     * the retry belongs to the reconciler. This asserts the composition rather than re-testing the
+     * delivery ledger, which has its own suite.
+     */
+    @GameTest(template = TEMPLATE, batch = "handin_aRefundIntoAFullPackStaysPending")
+    public static void aRefundIntoAFullPackStaysPending(GameTestHelper helper) {
+        ServerPlayer player = prepare(helper);
+        Confirmations rails = install();
+        UUID delivery = UUID.randomUUID();
+        try {
+            for (int slot = 0; slot < QuestHandinInventory.MAIN_SLOT_COUNT; slot++) {
+                player.getInventory().setItem(slot, stack("minecraft:cobblestone", 64));
+            }
+            player.getInventory().offhand.set(0, stack("minecraft:cobblestone", 64));
+
+            // Exactly the shape Rails publishes a hand-in refund as: an ordinary delivery, keyed on
+            // the transaction, carrying the items that were taken.
+            QuestRewardDeliveryService.ApplyOutcome outcome = QuestRewardDeliveryService.apply(player,
+                    new QuestRewardDelivery(delivery, 41L, "9001",
+                            "handin_refund:" + UUID.randomUUID(),
+                            List.of(new QuestRewardDeliveryItem(DUNG, 1, false)), "pending", ""),
+                    QuestRewardDeliveryService.Source.PENDING_LISTING);
+
+            check(outcome == QuestRewardDeliveryService.ApplyOutcome.QUEUED,
+                    "a refund into a full pack is queued, got " + outcome);
+            check(count(player, DUNG) == 0, "nothing is forced in: " + counts(player));
+            check(helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                            new net.minecraft.world.phys.AABB(player.blockPosition()).inflate(8.0D)).isEmpty(),
+                    "and nothing is dropped on the floor for someone else to take");
+        } finally {
+            QuestRewardDeliveryLedgerStore.get(helper.getLevel().getServer()).removeForTesting(delivery);
+            player.getInventory().clearContent();
+            cleanup(helper, player);
+        }
+        helper.succeed();
+    }
+
+    /**
+     * Accepting stage four or five brings the world's dung schedule forward, bounded, near whichever
+     * Rowan the player is standing at.
+     *
+     * <p>Stage one always did. Four and five need it just as much -- both send the player round the
+     * gathering loop again -- and a player who has cleared the area would otherwise wait out a 6-12
+     * minute placement window with no way to know that is what they are doing.
+     */
+    @GameTest(template = TEMPLATE, batch = "handin_stageFourAndFiveBringTheDungScheduleForward")
+    public static void stageFourAndFiveBringTheDungScheduleForward(GameTestHelper helper) {
+        ServerPlayer player = prepare(helper);
+        install();
+        ServerLevel level = helper.getLevel();
+        try {
+            for (String stage : List.of(RowanQuestlineHooks.MIX_QUEST_KEY, RowanQuestlineHooks.HARVEST_QUEST_KEY)) {
+                WildResourceSavedData data = WildResourceSavedData.get(level);
+                ChunkPos here = new ChunkPos(player.blockPosition());
+                data.scheduleAttempt(here, WildResourceEntries.DUNG, Long.MAX_VALUE);
+                check(data.nextAttempt(here, WildResourceEntries.DUNG) > level.getGameTime(),
+                        "precondition: the chunk is not due");
+
+                // No quest giver uuid: the schedule centres on the player, who is standing in front
+                // of whichever Rowan this is. Nothing here names a location or a specific NPC.
+                RowanQuestlineHooks.onQuestAccepted(player,
+                        new ClientQuestEntry("9001", "41", stage, "Rowan", stage, "", "", "accepted"), null);
+
+                check(data.nextAttempt(here, WildResourceEntries.DUNG) <= level.getGameTime(),
+                        stage + " must bring the player's own chunk forward");
+                // Bounded: the radius is 2 chunks, so a chunk well outside it is untouched.
+                ChunkPos faraway = new ChunkPos(here.x + WildResourceQuestScheduling.MAX_CHUNK_RADIUS + 3, here.z);
+                check(data.nextAttempt(faraway, WildResourceEntries.DUNG) > level.getGameTime(),
+                        stage + " must not sweep the world: chunk " + faraway + " was brought forward");
+            }
+            check(!RowanQuestlineHooks.expeditesDung("rowan_farming_2"),
+                    "a stage that needs no dung does not schedule any");
+        } finally {
+            cleanup(helper, player);
+        }
+        helper.succeed();
+    }
+
     // --- scaffolding -----------------------------------------------------------------------
 
     /**
@@ -1046,6 +1306,22 @@ public final class QuestItemHandinGameTests {
                 (target, response) -> GSON.toJson(response),
                 (status, answer) -> body.set(answer));
         return body.get();
+    }
+
+    /**
+     * Damages one marker's bytes in place, leaving the entry present but unreadable -- which no live
+     * code path can produce, and which a damaged {@code playerdata} file can.
+     */
+    private static void corruptMarker(ServerPlayer player, UUID handinUuid) {
+        PlayerDataStore.markHandinRemoved(player, new PlayerDataStore.HandinRemovalMarker(
+                handinUuid, UUID.randomUUID(), 1L, List.of(QuestHandinRemoval.literal(0, DUNG, 1))));
+        CompoundTag data = player.getPersistentData().getCompound(PlayerDataStore.PERSISTENT_KEY);
+        for (net.minecraft.nbt.Tag tag : data.getList(PlayerDataStore.HANDIN_REMOVALS, CompoundTag.TAG_COMPOUND)) {
+            if (tag instanceof CompoundTag entry
+                    && handinUuid.toString().equals(entry.getString("HandinUuid"))) {
+                entry.putString("RequestUuid", "not-a-uuid");
+            }
+        }
     }
 
     /** A transaction whose items are gone and whose last answer proved neither ending. */

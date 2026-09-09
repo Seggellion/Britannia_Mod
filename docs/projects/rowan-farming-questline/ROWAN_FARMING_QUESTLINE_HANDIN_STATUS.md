@@ -75,6 +75,8 @@ removal and its proof, or neither**.
 | Rails consumed, reply lost | items gone, marker | `CONFIRMING` | retried; Rails answers `duplicate`; applied once |
 | ledger file lost entirely | items gone, marker | row absent | rebuilt from the marker and confirmed |
 | player dies mid-transaction | items gone, marker | any | the marker survives — `PlayerDataCloneHandler` |
+| player save silently failed | items present, no marker | `REMOVED_LOCAL` | no marker means no removal: settled `ABANDONED` and claimable again |
+| marker present but corrupt | items gone, damaged marker | `REMOVED_LOCAL` | stranded — an entry existing proves the removal, so it is never re-offered |
 
 ### What this does not claim
 
@@ -83,10 +85,14 @@ Two limits, both inherited and both already stated by the machinery this follows
 `PlayerDataStorage#save` catches its own `IOException` and only logs, so a forced player save that
 *reports* success is not proof the bytes reached disk. If that silent failure happens, the ledger
 records `REMOVED_LOCAL` for a player whose file still has the items. That is not left to chance: on
-the next start the marker is absent while the ledger says removed, and this server refuses to act on
-the contradiction. The row is **stranded rather than confirmed** — the player keeps the items,
-nobody is paid twice, and an operator sees it at boot. That is the only outcome of that window, and
-it is the correct direction.
+the next start the marker is absent while the ledger says removed, and the marker wins — the shrink
+and the marker persist together or not at all, so no marker means no removal. The row is settled
+`ABANDONED`, the player keeps the items **and can claim the hand-in again**, and nothing is ever
+confirmed. That is the only outcome of that window, and it is the correct direction.
+
+A damaged marker is the opposite case and is told apart from an absent one: an entry that exists but
+cannot be parsed is proof the removal *did* happen, so that row strands rather than being re-offered.
+Collapsing the two would either trap a player who could simply try again, or charge one twice.
 
 `SavedData#save(File, …)` swallows its own `IOException` too. Every state whose flush could fail is
 one recovered from the player file, which is written first for exactly this reason.
@@ -153,6 +159,91 @@ there is no free reward to obtain.
 
 ---
 
+## Why a valid hand-in cannot become permanently stranded
+
+`STRANDED` is not an ending — no completion, no refund — so the invariant holds only if no ordinary
+gameplay can reach it after a durable removal. Three Rails answers lead there. Each is impossible by
+contract, and the reasons are different.
+
+### `cancelled` — unreachable by construction
+
+`QuestItemHandins::Confirm#late_confirmation` answers `cancelled` **only** when the report says
+`removed: false`; a report that took something takes the `refund` branch and answers
+`cancelled_refunded`. This server confirms only after a durable removal and only ever sends
+`removed: true`, so the branch cannot be entered. The mod handles it defensively and nothing more.
+
+This is also what makes the ugliest race safe: a player abandoning or restarting the quest while a
+confirmation is in flight. Rails cancels the row, the confirmation lands afterwards, and the late
+confirmation publishes the refund.
+
+### `rejected` — Rails does not hold the transaction
+
+Answered when the `handin_uuid` is unknown, belongs to another shard, or resolves to another player.
+Rails itself minted the row inside the player's own claim and never deletes it — `Quest`'s
+`dependent: :destroy` reaches the journal row, not the hand-in, whose `player_quest_state_id` is
+`ON DELETE SET NULL` while `user_id` and `shard_id` are `ON DELETE RESTRICT`. So a `rejected` answer
+means the shard is talking to a Rails that never prepared this transaction: a mis-pointed
+`api_base_url`, a restored-from-backup database, or a credential belonging to a different shard.
+Configuration, not gameplay.
+
+### `evidence_rejected` — the mod would have to contradict itself
+
+The only one the mod could cause on its own, and the only one it cannot recover from: Rails checks
+evidence **before** the consumed/cancelled branches, so a retry earns the identical refusal, and the
+stored proof is byte-stable so the retry is identical.
+
+Both halves are closed structurally, and both are tested:
+
+* **`evidence_mismatch`** — the proof does not describe the requirements. The proof is generated
+  from the demand by `QuestHandinRequirementResolver`: exactly one entry per requirement, carrying
+  that requirement's own index and count, a literal echoing its own item id and a resolver echoing
+  the resolver and the flag value pinned at prepare time. `QuestHandinEvidenceBoundaryTest` checks
+  the generated proof against `RailsEvidenceMatcher`, a line-by-line transcription of
+  `Confirm#matched_proof` and `#requirement_satisfied?`, and separately shows that oracle refusing
+  every malformed shape so the acceptance is not vacuous.
+* **`evidence_conflict`** — a proof contradicting one already stored. The proof is built once, at
+  `REMOVAL_INTENT`, before the mutation, and is never recomputed: every later attempt re-encodes the
+  stored entries, and the recovery paths read the marker's copy, which was written from the same
+  plan. `QuestHandinLedgerStoreTest.theReloadedProofEncodesToTheSameBytesTheFirstAttemptSent` pins
+  that a reload posts the bytes the lost attempt posted.
+
+A resolver requirement whose flag was never pinned would be unanswerable — but Rails refuses to
+prepare one, and `parseDemand` refuses to read one, so the mod never removes for it.
+
+### And a stranded row is still not the end
+
+The read-only reconciliation endpoint re-examines every stranded row about once a minute. If Rails
+ever records the transaction as `consumed` or `cancelled_refunded` — including because an operator
+resolved it there — the mod settles it automatically and the player gets the completion or the
+refund without anyone touching the mod's ledger.
+
+### Operator recovery
+
+A stranded row is logged at every boot with the transaction id, the player, the state, the attempt
+count and the strand reason (`event=quest_handin_outstanding`), and the removal itself is logged with
+the exact items (`event=quest_handin_stranded ... proof=<item>x<count>`).
+
+| Strand reason | What it means | What to do |
+| --- | --- | --- |
+| `handin_rejected` | Rails holds no such transaction | Check the shard's `api_base_url` and server key first — this is almost always a mis-pointed shard. If the configuration is right, the transaction is genuinely gone; issue the items back as a Rails reward delivery. |
+| `marker_unreadable` | the player's file has an entry for this transaction whose bytes are damaged | The items really did leave the pack — an entry exists, and a marker and its shrink are written together. The exact proof is in the boot log; compensate through Rails. |
+| `evidence_*` | Rails refused the proof | Should be unreachable; treat as a defect report. The Rails row is still `pending` with its own stored requirements — compare them with the logged proof. Compensate through Rails. |
+
+A silent player-save failure is deliberately **not** in that table any more. The ledger saying "removed"
+while the player's own file has no entry at all means the shrink never reached disk either — the two
+are written in one step — so the player is still holding everything. That row is settled `ABANDONED`
+and becomes claimable again (`event=quest_handin_removal_did_not_persist`), which is the only outcome
+that leaves the player able to finish the quest with the goods they still have. Stranding it, as an
+earlier revision did, left them staring at a stage they could never complete while holding exactly
+what it asked for.
+
+In every case the compensation is issued **through Rails' own reward-delivery machinery**, which the
+mod already applies durably, survives a full pack and cannot be granted twice. The mod never mints a
+refund, and an operator should never edit its ledger: a stranded row is the audit record of what
+happened, and it is meant to outlive the incident.
+
+---
+
 ## Independent audits
 
 Two read-only adversarial reviews were run against the invariant, one after the durability layer and
@@ -191,6 +282,41 @@ Two residual items were judged acceptable and are recorded rather than fixed:
   asked rows are skipped for the interval, so the remainder is asked on the next sweep.
 * The retry schedules are plain maps mutated from completion callbacks. Correct because every path
   is on the server thread; it would break silently if that ever stopped being true.
+
+### Round three — pre-integration
+
+Three parallel audits: cross-repository protocol, durability and races, gameplay and UI.
+
+The protocol audit found the wire contract clean on every axis — routes, auth, envelopes, bounds,
+result and status vocabularies, reconciliation scoping, and all fifteen fixture digests — and
+independently confirmed that `evidence_rejected`, `cancelled` and `rejected` are unreachable in
+ordinary gameplay, `cancelled` structurally so.
+
+| Finding | Consequence | Resolution |
+| --- | --- | --- |
+| A silently-failed player save stranded the row, blocking any re-claim | the player kept the items and could never finish the stage | no marker means no removal: settled `ABANDONED` and claimable again |
+| A corrupt marker was indistinguishable from an absent one | with the fix above, would have offered a second removal for goods already paid | `handinRemovalRecorded` tells "present but unreadable" from "absent"; the former strands |
+| A `cancelled` inquiry re-queued a stranded row | confirm → refuse → strand → repeat every 60s, flushing the whole overworld storage twice a lap | only a row whose confirmation has not already been refused is re-queued — keyed on the state, not on a reason string |
+| A refund inserted into a player on the death screen | `PlayerList.respawn` discards the corpse's inventory: items acknowledged to Rails and thrown away | queued instead, which the reconciler already retries |
+| A shortfall re-armed the abandon-on-close guard | Escape after "you are still short" silently abandoned the quest stage | `choiceMade` stays set; it gates the abandon guard, not clicking |
+| Stage 4/5 guidance demanded a Water Bucket the mix never uses | sent every player after an item stage 3 had confiscated | the chain fills a bowl at a water source; the bucket is gone from the list |
+| The reissue kit still required that bucket on stages 4 and 5 | every conversation with Rowan spent a bounded replacement, then repeated "limit reached" forever | no bucket past stage three, where it is still reissuable |
+| The status block could overlap the body and silently drop its heading | a shortfall list drawn over the dialogue, unlabelled | fitted to the room available; the tail is dropped, never the heading |
+| The body's last lines were unscrollable while a status line showed | the end of what Rowan said was unreachable | the scroll range accounts for the status block |
+| A response arriving after the screen closed re-opened or closed the wrong screen | a quest dialogue popping over whatever the player was doing | the callback returns unless this screen is still current |
+| "Waiting for confirmation" shown while only re-checking the inventory | the two lines exist to be told apart | a re-attempt after a known shortfall says "Checking what you are carrying" |
+| Guidance ignored a mix the player already held | told to gather dung for fertilized dirt in their own hands | the finished good short-circuits the list |
+| Rails' shortfall list can use the ledger's `id` spelling | a well-formed answer would have been read as malformed and retried forever | read under either spelling, as Rails' own inbound contract does |
+
+Latent only — the mod never sends `removed: false`, so Rails cannot reach `items_missing` — but the
+last one is a real divergence one behavioural change away from an infinite retry, and neither side
+had coverage.
+
+Two further items were judged acceptable and recorded rather than fixed: a re-application window
+between applying a completion and marking the row settled (every sub-effect is individually
+idempotent), and two pre-existing callers that hand a screen-space width to `font.split`, which
+measures in font units — outside this feature's diff, and the cause of a mild pre-existing
+under-count of wrapped lines.
 
 ## Open items for the owner
 

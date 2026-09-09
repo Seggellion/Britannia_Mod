@@ -46,6 +46,7 @@ class RowanFarmingMaterialsTest {
             assertEquals(1, tally.get(RowanFarmingMaterials.DUNG), stage);
             assertEquals(1, tally.get(RowanFarmingMaterials.DIRT), stage);
             assertEquals(2, tally.get(RowanFarmingMaterials.EMPTY_BOWL), stage);
+            assertEquals(3, tally.size(), stage + " asks for dung, dirt and bowls, and nothing else");
             assertTrue(RowanFarmingMaterials.needsDung(stage), stage);
         }
     }
@@ -55,8 +56,33 @@ class RowanFarmingMaterialsTest {
         assertTrue(RowanFarmingMaterials.outstanding(RowanQuestlineHooks.MIX_QUEST_KEY, Map.of(
                 RowanFarmingMaterials.DUNG, 1,
                 RowanFarmingMaterials.DIRT, 1,
-                RowanFarmingMaterials.EMPTY_BOWL, 2,
-                RowanFarmingMaterials.WATER_BUCKET, 1)).isEmpty());
+                RowanFarmingMaterials.EMPTY_BOWL, 2)).isEmpty());
+    }
+
+    /**
+     * No bucket is ever asked for.
+     *
+     * <p>The fertilized-dirt chain fills a bowl at a water source and never touches one -- and stage
+     * three's hand-in takes the player's bucket and returns nothing, so asking for it sent every
+     * player looking for an item they neither need nor can still have.
+     */
+    @Test
+    void noStageAsksForABucketTheChainNeverUses() {
+        for (String stage : List.of(RowanQuestlineHooks.MIX_QUEST_KEY, RowanQuestlineHooks.HARVEST_QUEST_KEY)) {
+            assertEquals(0, byId(RowanFarmingMaterials.outstanding(stage, Map.of()),
+                    "minecraft:water_bucket"), stage);
+            assertEquals(0, byId(RowanFarmingMaterials.outstanding(stage, Map.of()),
+                    "minecraft:bucket"), stage);
+            assertFalse(RowanFarmingMaterials.tally(stage).containsKey("minecraft:water_bucket"), stage);
+        }
+    }
+
+    /** The finished good short-circuits the list: nothing to gather if it is already mixed. */
+    @Test
+    void aPlayerAlreadyHoldingFertilizedDirtIsToldNothing() {
+        assertTrue(RowanFarmingMaterials.outstanding(RowanQuestlineHooks.HARVEST_QUEST_KEY,
+                Map.of(RowanFarmingMaterials.FERTILIZED_DIRT, 1)).isEmpty(),
+                "telling a player to find dung for a mix they are holding is telling them to redo it");
     }
 
     @Test
@@ -64,8 +90,7 @@ class RowanFarmingMaterialsTest {
         List<RowanFarmingMaterials.Requirement> outstanding = RowanFarmingMaterials.outstanding(
                 RowanQuestlineHooks.HARVEST_QUEST_KEY, Map.of(
                         RowanFarmingMaterials.DUNG, 3,
-                        RowanFarmingMaterials.EMPTY_BOWL, 2,
-                        RowanFarmingMaterials.WATER_BUCKET, 1));
+                        RowanFarmingMaterials.EMPTY_BOWL, 2));
 
         assertEquals(1, outstanding.size());
         assertEquals(RowanFarmingMaterials.DIRT, outstanding.get(0).itemId());
@@ -84,19 +109,10 @@ class RowanFarmingMaterialsTest {
     }
 
     @Test
-    void anEmptyBucketCountsForTheWaterStepBecauseTheWellFillsIt() {
-        assertEquals(0, byId(RowanFarmingMaterials.outstanding(RowanQuestlineHooks.MIX_QUEST_KEY,
-                        Map.of(RowanFarmingMaterials.BUCKET, 1)), RowanFarmingMaterials.WATER_BUCKET),
-                "the step is bring water, and the container is the same object either side of it");
-        assertEquals(1, byId(RowanFarmingMaterials.outstanding(RowanQuestlineHooks.MIX_QUEST_KEY,
-                Map.of()), RowanFarmingMaterials.WATER_BUCKET));
-    }
-
-    @Test
     void anEmptyPackIsToldTheWholeList() {
-        assertEquals(4, RowanFarmingMaterials.outstanding(
+        assertEquals(3, RowanFarmingMaterials.outstanding(
                 RowanQuestlineHooks.HARVEST_QUEST_KEY, Map.of()).size());
-        assertEquals(4, RowanFarmingMaterials.outstanding(
+        assertEquals(3, RowanFarmingMaterials.outstanding(
                 RowanQuestlineHooks.HARVEST_QUEST_KEY, null).size());
     }
 

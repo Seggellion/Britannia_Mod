@@ -206,6 +206,30 @@ public final class QuestRewardDeliveryService {
         long now = now();
         boolean wasQueued = entry.localState() == QuestRewardDeliveryLocalState.QUEUED;
 
+        // A player on the death screen still has a live inventory object, and the reconciler still
+        // sweeps them -- but `PlayerList.respawn` builds a NEW ServerPlayer and, on an ordinary
+        // death, does not copy the corpse's inventory. Anything inserted here would be marked
+        // applied, acknowledged to Rails, and then thrown away with the body. Queueing is exactly
+        // the shape for "cannot place it right now", and the reconciler already retries a queued
+        // delivery on the next inventory change and every thirty seconds.
+        //
+        // This matters most for a hand-in refund: it is the second half of the promise that a
+        // removed item always comes back, and dying is not an unusual thing to do while one is in
+        // flight.
+        if (player.isRemoved() || player.isDeadOrDying()) {
+            Optional<QuestRewardDeliveryLedgerEntry> held = QuestRewardDeliveryLedger.transition(server, uuid,
+                current -> current.localState() == QuestRewardDeliveryLocalState.QUEUED ? current : current.withQueued(now));
+            if (held.isPresent()) {
+                LOGGER.info("event=quest_delivery_queued delivery_uuid={} player_uuid={} quest_state_id={} "
+                        + "transition_key={} outcome=queued local_state={} request_uuid={} source={} reason=player_not_alive",
+                    uuid, player.getStringUUID(), entry.questStateId(), entry.transitionKey(),
+                    QuestRewardDeliveryLocalState.QUEUED.wireName(), requestUuid, source);
+            }
+            QuestRewardDeliveryReconciler.noteQueued(player);
+            acknowledge(server, uuid, respectAckSchedule);
+            return ApplyOutcome.QUEUED;
+        }
+
         if (!QuestRewardDeliveryInventoryInsertion.insertAll(player.getInventory(), stacks)) {
             Optional<QuestRewardDeliveryLedgerEntry> queued = QuestRewardDeliveryLedger.transition(server, uuid,
                 current -> current.localState() == QuestRewardDeliveryLocalState.QUEUED ? current : current.withQueued(now));

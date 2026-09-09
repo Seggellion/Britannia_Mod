@@ -1,6 +1,7 @@
 // com/seggellion/britannia_mod/player/PlayerDataStore.java
 package com.seggellion.britannia_mod.player;
 
+import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.quest.handin.QuestHandinRemoval;
 import com.seggellion.britannia_mod.quest.handin.QuestHandinRemovalNbt;
 import net.minecraft.nbt.CompoundTag;
@@ -8,6 +9,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +17,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public final class PlayerDataStore {
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     private PlayerDataStore() {}
     private static final String KEY = "britannia_player";
 
@@ -138,6 +142,27 @@ public final class PlayerDataStore {
         return true;
     }
 
+    /**
+     * Whether the player's own file records a removal for this transaction <b>at all</b>, readable
+     * or not.
+     *
+     * <p>The distinction matters more than it looks. A marker and the shrink that produced it are
+     * written in one in-memory step, so an entry existing is proof the items left the pack, whatever
+     * state its bytes are in. Absence means the mutation never reached disk and the player still has
+     * everything; a corrupt entry means the opposite. Collapsing the two would either strand a
+     * player who could simply hand in again, or offer a second removal to one who already paid.
+     */
+    public static boolean handinRemovalRecorded(ServerPlayer player, UUID handinUuid) {
+        if (player == null || handinUuid == null) return false;
+        String value = handinUuid.toString();
+        for (Tag tag : handinList(player.getPersistentData().getCompound(KEY))) {
+            if (tag instanceof CompoundTag entry && value.equals(entry.getString(MARKER_HANDIN_UUID))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** The marker for one transaction, or empty. */
     public static Optional<HandinRemovalMarker> handinRemoval(ServerPlayer player, UUID handinUuid) {
         if (player == null || handinUuid == null) return Optional.empty();
@@ -161,8 +186,12 @@ public final class PlayerDataStore {
                         entry.getLong(MARKER_REMOVED_AT),
                         QuestHandinRemovalNbt.fromList(entry.getList(MARKER_PROOF, Tag.TAG_COMPOUND))));
             } catch (RuntimeException unreadable) {
-                // Deliberately skipped rather than thrown: one bad marker must not hide the others,
-                // and the ledger row is the second copy of the same fact.
+                // Skipped rather than thrown: one bad marker must not hide the others. It is NOT
+                // treated as absent, though -- see handinRemovalRecorded. An entry existing at all
+                // proves the shrink happened, because the two were written in one step, so reading
+                // "unreadable" as "never removed" would offer the player a second removal.
+                LOGGER.warn("event=quest_handin_marker_unreadable player_uuid={} detail={}",
+                        player.getStringUUID(), unreadable.toString());
             }
         }
         return found;

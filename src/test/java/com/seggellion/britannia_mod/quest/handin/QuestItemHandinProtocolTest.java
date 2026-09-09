@@ -259,6 +259,30 @@ class QuestItemHandinProtocolTest {
         assertEquals("britannia_mod:dung", response.missingItems().get(0).itemId());
     }
 
+    /**
+     * The shortfall list is read under either spelling.
+     *
+     * <p>Two vocabularies meet on this one field. Everything Rails publishes says {@code item}, but
+     * its shortfall list is built in the ledger's own vocabulary and rendered untranslated, so an
+     * {@code id}-keyed row can reach the wire. Refusing it would turn a well-formed answer into
+     * {@code malformed_response}, and a transaction whose items are already gone would retry that
+     * exchange forever. Rails' own inbound contract is lenient about exactly this field, so this
+     * side is too.
+     */
+    @Test
+    void aShortfallIsReadUnderEitherSpellingOfItsItemId() {
+        for (String key : List.of("item", "id")) {
+            QuestItemHandinProtocol.ConfirmationResponse response = QuestItemHandinProtocol.parseConfirmation(
+                    """
+                    {"protocol_version": 1, "result": "items_missing", "handin_uuid": "%s",
+                     "state": "pending", "missing_items": [{"%s": "britannia_mod:dung", "count": 1}]}
+                    """.formatted(HANDIN, key).getBytes(StandardCharsets.UTF_8));
+
+            assertEquals(1, response.missingItems().size(), key);
+            assertEquals("britannia_mod:dung", response.missingItems().get(0).itemId(), key);
+        }
+    }
+
     @Test
     void anEnvelopeFromAProtocolThisBuildDoesNotImplementIsRefused() {
         String v2 = fixture("handin_result_response_consumed.json")

@@ -122,8 +122,13 @@ public final class QuestEquipmentReissuePolicy {
         byStage.put("rowan_farming_1", List.of("britannia_mod:britannia_shovel"));
         byStage.put("rowan_farming_2", List.of("britannia_mod:britannia_shovel"));
         byStage.put("rowan_farming_3", List.of("britannia_mod:britannia_shovel", "britannia_mod:empty_bowl", "minecraft:bucket"));
-        byStage.put("rowan_farming_4", List.of("britannia_mod:britannia_shovel", "britannia_mod:empty_bowl", "minecraft:bucket", "britannia_mod:watering_can"));
-        byStage.put("rowan_farming_5", List.of("britannia_mod:britannia_shovel", "britannia_mod:empty_bowl", "minecraft:bucket", "britannia_mod:watering_can", "britannia_mod:farming_hoe"));
+        // No bucket past stage three: that stage's hand-in takes the filled one and returns
+        // nothing, by design. Leaving it on the list made every later conversation with Rowan either
+        // spend a bounded replacement on an item the questline deliberately confiscated, or -- once
+        // the bound was gone -- repeat "limit reached" forever. The watering can is what these
+        // stages actually water with.
+        byStage.put("rowan_farming_4", List.of("britannia_mod:britannia_shovel", "britannia_mod:empty_bowl", "britannia_mod:watering_can"));
+        byStage.put("rowan_farming_5", List.of("britannia_mod:britannia_shovel", "britannia_mod:empty_bowl", "britannia_mod:watering_can", "britannia_mod:farming_hoe"));
         EQUIPMENT_BY_STAGE = Map.copyOf(byStage);
     }
 

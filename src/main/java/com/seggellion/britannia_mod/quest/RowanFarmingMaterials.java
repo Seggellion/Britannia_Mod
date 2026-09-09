@@ -29,8 +29,7 @@ public final class RowanFarmingMaterials {
     public static final String DUNG = "britannia_mod:dung";
     public static final String DIRT = "britannia_mod:dirt";
     public static final String EMPTY_BOWL = "britannia_mod:empty_bowl";
-    public static final String WATER_BUCKET = "minecraft:water_bucket";
-    public static final String BUCKET = "minecraft:bucket";
+    public static final String FERTILIZED_DIRT = "britannia_mod:fertilized_dirt";
 
     /** One material and how many of it a stage needs. */
     public record Requirement(String itemId, int count) {
@@ -55,17 +54,15 @@ public final class RowanFarmingMaterials {
         if (questKey == null) return List.of();
         return switch (questKey) {
             // Mix Fertilized Dirt, from scratch: a bowl of dirt, a bowl of water, and dung.
-            case RowanQuestlineHooks.MIX_QUEST_KEY -> List.of(
+            //
+            // No bucket. The chain is bowl + dirt, bowl + dung, bowl filled at a water source, then
+            // the two bowls mixed -- the bucket is never touched, and stage three's hand-in took it
+            // anyway. Listing it sent every player looking for something they neither need nor can
+            // still have, which is how a guidance message teaches people to ignore guidance.
+            case RowanQuestlineHooks.MIX_QUEST_KEY, RowanQuestlineHooks.HARVEST_QUEST_KEY -> List.of(
                     new Requirement(DUNG, 1),
                     new Requirement(DIRT, 1),
-                    new Requirement(EMPTY_BOWL, 2),
-                    new Requirement(WATER_BUCKET, 1));
-            // Plant and Harvest: the whole loop again, because the plot needs fertilized dirt.
-            case RowanQuestlineHooks.HARVEST_QUEST_KEY -> List.of(
-                    new Requirement(DUNG, 1),
-                    new Requirement(DIRT, 1),
-                    new Requirement(EMPTY_BOWL, 2),
-                    new Requirement(WATER_BUCKET, 1));
+                    new Requirement(EMPTY_BOWL, 2));
             default -> List.of();
         };
     }
@@ -87,15 +84,15 @@ public final class RowanFarmingMaterials {
      */
     public static List<Requirement> outstanding(String questKey, Map<String, Integer> carried) {
         Map<String, Integer> held = carried == null ? Map.of() : carried;
+        // The finished good short-circuits the whole list. A player who already has fertilized dirt
+        // -- because they mixed a spare, or because stage five follows stage four immediately -- has
+        // nothing to gather, and telling them to find dung is telling them to redo work they can see
+        // in their own hands.
+        if (held.getOrDefault(FERTILIZED_DIRT, 0) > 0) return List.of();
+
         List<Requirement> missing = new ArrayList<>();
         for (Requirement requirement : requirementsFor(questKey)) {
             int have = held.getOrDefault(requirement.itemId(), 0);
-            // A filled bucket the player already has counts, and so does an empty one they can
-            // fill at the well -- the step is "bring water", and the container is the same object
-            // either side of it.
-            if (WATER_BUCKET.equals(requirement.itemId())) {
-                have += held.getOrDefault(BUCKET, 0);
-            }
             int short_ = requirement.count() - Math.max(0, have);
             if (short_ > 0) missing.add(new Requirement(requirement.itemId(), short_));
         }

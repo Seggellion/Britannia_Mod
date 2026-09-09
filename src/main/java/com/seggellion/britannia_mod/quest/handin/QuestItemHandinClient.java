@@ -204,8 +204,10 @@ public final class QuestItemHandinClient {
      * <p>200 and 409 are both real answers about the transaction and are parsed the same way: a 409
      * is {@code evidence_rejected}, which Rails is careful to keep out of the 404 precisely because
      * a caller reaching it has already proved it owns the transaction and can still send a true
-     * report. A 400 is a body this build should never have produced -- retrying identical bytes
-     * cannot change it -- so it is a {@link Failure} the caller stops on rather than loops over.
+     * report. A 400 is a body this build should never have produced, and retrying identical bytes
+     * cannot change it -- but it is still only a {@link Failure}, and the caller deliberately keeps
+     * retrying every failure rather than closing a row: the items are already gone, and an
+     * unprovable outcome is never an ending. A wasteful retry is the cheaper mistake.
      */
     static ConfirmResult classifyConfirm(int status, byte[] body) {
         if (status == 200 || status == 409) {

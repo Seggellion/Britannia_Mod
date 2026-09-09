@@ -460,7 +460,7 @@ public final class QuestItemHandinProtocol {
             }
             JsonObject row = raw.getAsJsonObject();
             try {
-                missing.add(new MissingItem(requireString(row, "item"), requireInt(row, "count")));
+                missing.add(new MissingItem(requireItemId(row), requireInt(row, "count")));
             } catch (IllegalArgumentException invalid) {
                 throw new MalformedHandinException(invalid.getMessage());
             }
@@ -526,6 +526,24 @@ public final class QuestItemHandinProtocol {
             throw new MalformedHandinException(key + " is outside its size bound");
         }
         return value;
+    }
+
+    /**
+     * An item id under either spelling.
+     *
+     * <p>Two vocabularies meet on this field. Everything Rails <i>publishes</i> says {@code item};
+     * its ledger says {@code id}, because {@code quest_reward_deliveries.items} does and a hand-in
+     * and its refund have to be comparable without translating one first. The shortfall list is the
+     * one place the ledger spelling can reach the wire untranslated, so this reads either -- exactly
+     * as Rails' own {@code ResultContract} does for the same field on the way in.
+     *
+     * <p>Being strict here would have cost more than it bought: a well-formed answer this parser
+     * refused would become {@code malformed_response}, and a transaction whose items are already
+     * gone retries a malformed-looking exchange forever.
+     */
+    static String requireItemId(JsonObject parent) {
+        if (parent.has("item")) return requireString(parent, "item");
+        return requireString(parent, "id");
     }
 
     /** A present, non-blank string, or {@code ""}. Never throws on absence. */

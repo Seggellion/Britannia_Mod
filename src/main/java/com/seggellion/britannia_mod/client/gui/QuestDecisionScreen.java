@@ -77,6 +77,14 @@ public class QuestDecisionScreen extends Screen {
      */
     private QuestHandinPresentation handin = QuestHandinPresentation.ABSENT;
 
+    /**
+     * How many lines the status block will take, computed at {@link #init} so the scroll range can
+     * account for it. The layout is calculated before the block is known, so the body's own
+     * {@code scrollMax} does not include it -- without this the last line or two of what the quest
+     * giver just said became unreachable while a shortfall was on screen.
+     */
+    private int statusLines;
+
     private Component bodyComponent;
     private QuestDialogueLayout layout;
     private QuestMixingGuideLayout guideLayout;
@@ -141,7 +149,8 @@ public class QuestDecisionScreen extends Screen {
                 stage().known(), choices.size(), bodyLines,
                 rewardsOnAccept().size(), rewardsOnComplete().size(), keepItems().size());
 
-        this.bodyScroll = clamp(this.bodyScroll, 0, layout.body().scrollMax());
+        this.statusLines = statusLines().size();
+        this.bodyScroll = clamp(this.bodyScroll, 0, layout.body().scrollMax() + this.statusLines);
         this.choiceScroll = clamp(this.choiceScroll, 0, layout.choices().scrollMax());
 
         QuestDialogueLayout.ChoiceBlock block = layout.choices();
@@ -265,8 +274,17 @@ public class QuestDecisionScreen extends Screen {
         // not scroll, which read as the parchment being corrupt rather than as a message.
         ScreenRect bodyBounds = layout.body().bounds();
         int line = QuestScreenDraw.lineHeight(this.font);
+        int hint = layout.body().scrolls() ? 1 : 0;
+        // Fitted, not merely reserved. A hand-in may name up to eight requirements, and on a small
+        // window the block asked for more rows than the box has: the old arithmetic floored the text
+        // area at one line and then drew the status over it, and any line that landed above the box
+        // was silently dropped -- which for a shortfall meant losing the "You are still short:"
+        // heading and leaving an unlabelled list. The tail is dropped instead of the head, and the
+        // body always keeps a line.
+        int room = Math.max(0, (bodyBounds.height() / Math.max(1, line)) - 1 - hint);
         List<Component> status = statusLines();
-        int reserved = (layout.body().scrolls() ? line : 0) + (status.size() * line);
+        if (status.size() > room) status = status.subList(0, room);
+        int reserved = (hint + status.size()) * line;
         ScreenRect textArea = reserved == 0 ? bodyBounds
                 : new ScreenRect(bodyBounds.x(), bodyBounds.y(), bodyBounds.width(),
                         Math.max(line, bodyBounds.height() - reserved));
@@ -477,8 +495,12 @@ public class QuestDecisionScreen extends Screen {
         if (awaitingServer) {
             // Two different waits, and telling them apart is the difference between "the game is
             // busy" and "the game is deciding whether you have the goods".
-            lines.add(QuestScreenDraw.text(handin.present()
-                    ? QuestScreenText.PENDING_CONFIRMATION : QuestScreenText.HANDIN_CHECKING));
+            // Only a re-attempt after a known shortfall is certainly another inventory check. On a
+            // first click this screen cannot know whether the node carries a hand-in at all, and
+            // the generic line is the honest one for every other quest in the game.
+            lines.add(QuestScreenDraw.text(
+                    handin.state() == QuestHandinPresentation.State.ITEMS_MISSING
+                            ? QuestScreenText.HANDIN_CHECKING : QuestScreenText.PENDING_CONFIRMATION));
             return lines;
         }
         switch (handin.state()) {
@@ -658,6 +680,11 @@ public class QuestDecisionScreen extends Screen {
         long askedFrom = QuestDialogueTransition.nodeId(questState);
         QuestClient.sendTransition(questState.quest_id, choice.id, questGiverContext(), newResponse -> {
             this.awaitingServer = false;
+            // The player may have walked away while the round trip was in flight, and a hand-in's is
+            // longer than most: a claim, a removal and a confirmation. Acting now would pop a quest
+            // dialogue back over whatever they are doing, or close whatever they have since opened.
+            // The server has already applied everything authoritative; this callback only paints.
+            if (Minecraft.getInstance().screen != this) return;
             if (newResponse == null || newResponse.error != null) {
                 this.onClose();
                 return;
@@ -671,7 +698,11 @@ public class QuestDecisionScreen extends Screen {
             QuestHandinPresentation answer = QuestHandinPresentation.from(newResponse);
             if (answer.keepsDialogueOpen()) {
                 this.handin = answer;
-                this.choiceMade = false;
+                // choiceMade deliberately stays true. It does not gate clicking -- it gates the
+                // abandon-on-close guard in onClose -- so resetting it meant a player who was told
+                // "you are still short: Dung x1" and pressed Escape to go and find one had the quest
+                // stage silently abandoned out of their journal. Worse on an `unavailable` answer,
+                // where the items are already gone.
                 rebuild();
                 return;
             }

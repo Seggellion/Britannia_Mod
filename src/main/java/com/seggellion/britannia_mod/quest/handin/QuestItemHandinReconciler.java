@@ -330,11 +330,17 @@ public final class QuestItemHandinReconciler {
                     settle(player, entry, QuestHandinLocalState.ABANDONED, now);
                     return;
                 }
-                // A refusal of the evidence is not a transaction waiting for a refund, it is one
-                // Rails will refuse identically every time. Requeueing it would undo the strand and
-                // spin the same removal through confirm-refuse-strand once a minute forever, each
-                // lap flushing the whole overworld storage twice.
-                if (entry.lastError().startsWith("evidence_")) {
+                // Only a row whose confirmation has NOT already been refused. A stranded row got
+                // here because Rails answered its confirmation with something that settled nothing,
+                // and the proof is byte-stable, so sending it again earns the identical answer --
+                // undoing the strand and spinning the same removal through confirm-refuse-strand
+                // once a minute forever, each lap flushing the whole overworld storage twice. The
+                // way out of a strand is Rails recording the transaction, which the next inquiry
+                // then sees as `consumed` or `cancelled_refunded`.
+                //
+                // Testing the state rather than the reason on purpose: an allow-by-default check on
+                // one reason string is one new strand reason away from being wrong again.
+                if (entry.localState() == QuestHandinLocalState.STRANDED) {
                     LOGGER.info("event=quest_handin_requeue_refused handin_uuid={} reason={}",
                             row.handinUuid(), entry.lastError());
                     return;
@@ -452,14 +458,29 @@ public final class QuestItemHandinReconciler {
             }
             case REMOVED_LOCAL, CONFIRMING -> {
                 if (marked) return entry;
-                // The ledger says the items are gone and the player's own file does not. The only
-                // way here is a player save that failed silently -- vanilla catches its own IO
-                // errors and never rethrows -- so this server refuses to confirm rather than buy a
-                // completion or a refund for items the player still holds. Preserved, not closed.
-                LOGGER.error("event=quest_handin_marker_missing handin_uuid={} player_uuid={} state={}",
+                // The ledger says the items are gone and the player's own file does not. Either way
+                // this server will not confirm -- that would buy a completion or a refund for items
+                // the player may still be holding -- but the two reasons end differently, and the
+                // difference is the player's whole recovery.
+                if (PlayerDataStore.handinRemovalRecorded(player, entry.handinUuid())) {
+                    // An entry exists and could not be read. A marker and its shrink are written in
+                    // one step, so the entry existing is proof the items really did leave the pack:
+                    // corrupt evidence of a real removal. Preserved for an operator, never re-offered.
+                    LOGGER.error("event=quest_handin_marker_unreadable handin_uuid={} player_uuid={} state={}",
+                            entry.handinUuid(), player.getStringUUID(), entry.localState());
+                    QuestHandinLedger.transition(server, entry.handinUuid(),
+                            row -> row.withStranded("marker_unreadable", now));
+                    return null;
+                }
+                // No entry at all. The shrink and the marker persist together or not at all, so the
+                // mutation never reached disk and the player still has everything. Nothing was
+                // taken, so nothing is owed -- and the row goes back to a state the player can claim
+                // again, rather than leaving them holding the items in front of a quest they can
+                // never finish. This is the only silent-player-save-failure outcome.
+                LOGGER.error("event=quest_handin_removal_did_not_persist handin_uuid={} player_uuid={} state={}",
                         entry.handinUuid(), player.getStringUUID(), entry.localState());
                 QuestHandinLedger.transition(server, entry.handinUuid(),
-                        row -> row.withStranded("marker_missing", now));
+                        row -> row.withSettled(QuestHandinLocalState.ABANDONED, now));
                 return null;
             }
             default -> {
