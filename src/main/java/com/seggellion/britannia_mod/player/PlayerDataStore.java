@@ -19,6 +19,16 @@ public final class PlayerDataStore {
     private static final String KEY = "britannia_player";
 
     /**
+     * The compound this mod keeps inside {@code player.getPersistentData()}.
+     *
+     * <p>Public because a respawn does not carry it: {@code ServerPlayer#restoreFrom} copies only
+     * the {@code PlayerPersisted} sub-tag, so {@code PlayerDataCloneHandler} has to move this one
+     * across by hand. Both durable markers below live in here, and losing either to a death is how
+     * a player loses an item.
+     */
+    public static final String PERSISTENT_KEY = KEY;
+
+    /**
      * Rowan farming questline M3 (protocol section 1.8): the bounded list of reward deliveries
      * whose items this player received, kept in the same persistent compound as the rest of the
      * player's mod data. It is appended in the same server-thread step as the item insertion, so

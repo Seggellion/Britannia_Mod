@@ -47,9 +47,23 @@ public final class QuestItemHandinService {
     public static final String STATE_REFUNDED = "refunded";
     public static final String STATE_UNAVAILABLE = "unavailable";
 
-    private static QuestItemHandinClient client = new QuestItemHandinClient();
+    private static Confirmer confirmer = new QuestItemHandinClient()::confirm;
 
     private QuestItemHandinService() {}
+
+    /**
+     * Where a confirmation actually goes.
+     *
+     * <p>An interface rather than the client itself, so a test can script Rails without a socket --
+     * the same seam {@code QuestRewardDeliveryService} uses for its acknowledger, and for the same
+     * reason: everything worth asserting about this feature is what happens on <b>this</b> side of
+     * the answer.
+     */
+    @FunctionalInterface
+    public interface Confirmer {
+        java.util.concurrent.CompletableFuture<QuestItemHandinClient.ConfirmResult> confirm(
+                MinecraftServer server, QuestItemHandinProtocol.ConfirmationRequest request);
+    }
 
     /** Sends one answer back to the screen that asked. Called exactly once per {@link #begin}. */
     @FunctionalInterface
@@ -72,12 +86,18 @@ public final class QuestItemHandinService {
     }
 
     /** Test seam, mirroring the repository's established service clients. */
-    public static void useClientForTesting(QuestItemHandinClient testClient) {
-        client = Objects.requireNonNull(testClient, "testClient");
+    public static void installConfirmer(Confirmer testConfirmer) {
+        confirmer = Objects.requireNonNull(testConfirmer, "testConfirmer");
     }
 
-    public static void resetClientForTesting() {
-        client = new QuestItemHandinClient();
+    /** Always call this in test teardown: the slot is process-wide. */
+    public static void resetConfirmer() {
+        confirmer = new QuestItemHandinClient()::confirm;
+    }
+
+    /** The confirmer in force, so the reconciler sends through the same seam this service does. */
+    static Confirmer confirmer() {
+        return confirmer;
     }
 
     /** Whether this transition envelope is a hand-in demand rather than an ordinary answer. */
@@ -113,7 +133,7 @@ public final class QuestItemHandinService {
 
         MinecraftServer server = player.server;
         Optional<QuestHandinLedgerEntry> existing = QuestHandinLedger.find(server, demand.handinUuid());
-        if (existing.isPresent() && existing.get().localState() != QuestHandinLocalState.PREPARED) {
+        if (existing.isPresent() && !reclaimable(existing.get())) {
             // A second claim on a transaction already under way. Rails adopted the same row, so the
             // same transaction id arrived twice; the items are taken at most once because this is
             // where the second attempt stops.
@@ -122,6 +142,18 @@ public final class QuestItemHandinService {
         }
 
         UUID requestUuid = existing.map(QuestHandinLedgerEntry::requestUuid).orElseGet(UUID::randomUUID);
+        if (existing.isPresent() && existing.get().localState() == QuestHandinLocalState.ABANDONED) {
+            // Reopened rather than refused. Rails keys a hand-in on the transition, so a second
+            // claim adopts the same row and hands back the same transaction id forever: a local row
+            // closed for a reason that has since passed -- the crop registry was not ready, or the
+            // player walked away for a day -- would otherwise make the quest permanently
+            // unfinishable, with a dialogue insisting the transaction was still in flight. Nothing
+            // was ever taken from an abandoned row, by definition of the state, so reopening it
+            // costs nothing.
+            LOGGER.info("event=quest_handin_reopened handin_uuid={} player_uuid={}",
+                    demand.handinUuid(), player.getStringUUID());
+            QuestHandinLedger.transition(server, demand.handinUuid(), QuestHandinLedgerEntry::withPrepared);
+        }
         if (existing.isEmpty()) {
             QuestHandinLedgerEntry prepared = QuestHandinLedgerEntry.prepared(demand.handinUuid(),
                     player.getUUID(), string(railsRoot, "quest_id"), string(railsRoot, "quest_state_id"),
@@ -140,8 +172,14 @@ public final class QuestItemHandinService {
 
         QuestHandinResolution resolution = QuestHandinRequirementResolver.resolve(demand);
         if (resolution instanceof QuestHandinResolution.Refused refused) {
-            QuestHandinLedger.transition(server, demand.handinUuid(),
-                    entry -> entry.withSettled(QuestHandinLocalState.ABANDONED, System.currentTimeMillis()));
+            // A registry that was not ready yet is a refusal that stops being true on its own, so
+            // the row is left prepared and the next click simply works. Every other refusal is a
+            // property of the demand itself and will not change, so the row is closed -- and, since
+            // an abandoned row is re-claimable, closing it is a tidy-up rather than a dead end.
+            if (!QuestHandinResolution.REGISTRY_UNAVAILABLE.equals(refused.reason())) {
+                QuestHandinLedger.transition(server, demand.handinUuid(),
+                        entry -> entry.withSettled(QuestHandinLocalState.ABANDONED, System.currentTimeMillis()));
+            }
             once.send(200, unavailable(railsRoot, refused.reason(), List.of()));
             return;
         }
@@ -239,12 +277,45 @@ public final class QuestItemHandinService {
             return;
         }
         UUID connectedPlayerId = player.getUUID();
-        client.confirm(server, entry.confirmation()).whenComplete((result, failure) -> server.execute(() -> {
+        // The same reservation the reconciler takes. Without it the periodic sweep -- which runs a
+        // second after this one starts -- finds the row CONFIRMING with its marker present and posts
+        // a second, concurrent, byte-identical confirmation for every hand-in whose round trip takes
+        // longer than a second. Nothing local applied twice, but "exactly once" would have rested
+        // entirely on Rails serialising two simultaneous requests.
+        if (!QuestItemHandinReconciler.reserve(server, handinUuid)) {
+            reply.send(200, unavailable(railsRoot, "handin_in_flight", entry.proof()));
+            return;
+        }
+        confirmer.confirm(server, entry.confirmation()).whenComplete((result, failure) -> server.execute(() -> {
+            QuestItemHandinReconciler.release(server, handinUuid);
             ServerPlayer live = server.getPlayerList().getPlayer(connectedPlayerId);
             QuestHandinLedgerEntry stored = QuestHandinLedger.find(server, handinUuid).orElse(entry);
-            String body = settle(live == null ? player : live, stored, result, failure, railsRoot, applier);
-            if (live != null) reply.send(200, body);
+            if (live == null) {
+                // Nothing is applied to a player who is gone. Applying a completion to a removed
+                // entity syncs a journal down a dead connection, force-saves a stale snapshot that
+                // can land after a reconnect has already loaded the real one, and then closes the
+                // row -- so a transaction that really did complete would look finished with none of
+                // its effects. The row keeps its proof and the next login sweeps it.
+                QuestHandinLedger.note(server, handinUuid,
+                        row -> row.withAttemptFailure("player_disconnected"));
+                LOGGER.info("event=quest_handin_answer_deferred handin_uuid={} reason=player_disconnected",
+                        handinUuid);
+                return;
+            }
+            reply.send(200, settle(live, stored, result, failure, railsRoot, applier));
         }));
+    }
+
+    /**
+     * Whether a new claim may take this transaction over.
+     *
+     * <p>Only a row that has never taken anything: prepared, or abandoned and therefore equally
+     * empty-handed. Anything at or past {@code REMOVAL_INTENT} is refused, so no second claim can
+     * ever reach the mutation.
+     */
+    private static boolean reclaimable(QuestHandinLedgerEntry entry) {
+        return entry.localState() == QuestHandinLocalState.PREPARED
+                || entry.localState() == QuestHandinLocalState.ABANDONED;
     }
 
     /**
@@ -306,12 +377,14 @@ public final class QuestItemHandinService {
             }
             case EVIDENCE_REJECTED -> {
                 // Rails refused the report and changed nothing: not consumed, not cancelled, not
-                // paid. Retrying identical bytes cannot help, so this stops rather than loops -- but
-                // the row stays open with its proof, because the items really did leave the pack.
+                // paid. The proof this server would resend is stored and byte-stable, so every
+                // retry earns the identical refusal -- which makes this the same fact as a rejection
+                // and it takes the same ending. Stranded, never closed, never re-removed: the row
+                // and its exact proof survive for an operator, and the reconciler stops asking a
+                // question that can only be answered the same way.
                 LOGGER.error("event=quest_handin_evidence_rejected handin_uuid={} player_uuid={} reason={}",
                         entry.handinUuid(), player.getStringUUID(), answer.reason());
-                QuestHandinLedger.transition(server, entry.handinUuid(),
-                        row -> row.withAttemptFailure("evidence_" + answer.reason()));
+                strand(player, entry, "evidence_" + answer.reason());
                 return unavailable(railsRoot, "evidence_rejected", entry.proof());
             }
             case ITEMS_MISSING -> {
@@ -340,9 +413,13 @@ public final class QuestItemHandinService {
      */
     private static String applyOnce(ServerPlayer player, QuestHandinLedgerEntry entry,
                                     JsonObject response, CompletionApplier applier) {
-        if (entry.localState() == QuestHandinLocalState.CONSUMED) {
-            LOGGER.info("event=quest_handin_completion_already_applied handin_uuid={} player_uuid={}",
-                    entry.handinUuid(), player.getStringUUID());
+        // Every settled state, not only CONSUMED: a row this server has already finished by any
+        // route has already run the journal, reward and achievement work, and running it again on a
+        // duplicate answer would re-add a completed quest to the journal mirror and re-fire the
+        // accept-time hooks.
+        if (entry.localState().settled()) {
+            LOGGER.info("event=quest_handin_completion_already_applied handin_uuid={} player_uuid={} state={}",
+                    entry.handinUuid(), player.getStringUUID(), entry.localState());
             return GSON.toJson(response);
         }
         return applier.apply(player, response);
@@ -354,7 +431,14 @@ public final class QuestItemHandinService {
         // between leaves a stale marker whose row already says the transaction is over.
         QuestHandinLedger.transition(player.server, entry.handinUuid(),
                 row -> row.withSettled(state, System.currentTimeMillis()));
-        PlayerDataStore.forgetHandinRemoval(player, entry.handinUuid());
+        // And the drop is forced to disk, exactly as the write was. An in-memory-only removal is
+        // lost by any crash before the next autosave, and a marker that outlives its row is read as
+        // an orphan worth confirming again -- which, once the settled row is eventually pruned,
+        // replays a completed transition. Leaked markers also count against the per-player marker
+        // bound, and a player at that bound can never hand anything in again.
+        if (PlayerDataStore.forgetHandinRemoval(player, entry.handinUuid())) {
+            BankTransferPlayerDurability.forceSave(player);
+        }
     }
 
     private static void strand(ServerPlayer player, QuestHandinLedgerEntry entry, String reason) {

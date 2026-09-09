@@ -47,12 +47,51 @@ public final class QuestItemHandinReconciler {
     /** At most this many confirmations in flight per player, so a sweep cannot flood the pool. */
     private static final int MAX_IN_FLIGHT_PER_PLAYER = 4;
 
+    /** How often one player's unresolved transactions are asked about. */
+    static final long INQUIRY_INTERVAL_MILLIS = 60_000L;
+
+    /**
+     * How long a prepared transaction is left alone before Rails is asked whether it still exists.
+     *
+     * <p>Long enough that a player who clicked, saw a shortfall and walked off to find the item is
+     * never interrupted; short enough that a transaction whose run is gone does not sit in the
+     * ledger for a day first.
+     */
+    static final long PREPARED_INQUIRY_AFTER_MILLIS = 5L * 60L * 1000L;
+
+    /** After this many failed confirmations, asking what happened is cheaper than asking again. */
+    private static final int INQUIRE_AFTER_ATTEMPTS = 3;
+
     private static final Map<MinecraftServer, Integer> TICKS = new ConcurrentHashMap<>();
     private static final Map<MinecraftServer, Map<UUID, Long>> NEXT_ATTEMPT_AT = new ConcurrentHashMap<>();
     private static final Map<MinecraftServer, Set<UUID>> IN_FLIGHT = new ConcurrentHashMap<>();
+    private static final Map<MinecraftServer, Map<UUID, Long>> NEXT_INQUIRY_AT = new ConcurrentHashMap<>();
 
-    private static QuestItemHandinClient client = new QuestItemHandinClient();
     private static QuestItemHandinService.CompletionApplier applier = (player, response) -> "";
+    private static Inquiry inquiry = new QuestItemHandinClient()::reconcile;
+
+    /**
+     * Asking Rails what happened to transactions this server has no final answer for.
+     *
+     * <p>Read-only on the Rails side by design, which is the property that makes it safe to retry at
+     * all: nothing it can answer causes a second removal. It is the only way to resolve a row that
+     * confirmation alone cannot -- a completion whose response was lost, or a cancellation this
+     * server has not yet been told about.
+     */
+    @FunctionalInterface
+    public interface Inquiry {
+        java.util.concurrent.CompletableFuture<QuestItemHandinClient.ReconcileResult> reconcile(
+                MinecraftServer server, UUID playerUuid, List<UUID> handinUuids);
+    }
+
+    public static void installInquiry(Inquiry testInquiry) {
+        inquiry = Objects.requireNonNull(testInquiry, "testInquiry");
+    }
+
+    /** Always call this in test teardown: the slot is process-wide. */
+    public static void resetInquiry() {
+        inquiry = new QuestItemHandinClient()::reconcile;
+    }
 
     private QuestItemHandinReconciler() {}
 
@@ -65,14 +104,6 @@ public final class QuestItemHandinReconciler {
      */
     public static void useCompletionApplier(QuestItemHandinService.CompletionApplier completionApplier) {
         applier = Objects.requireNonNull(completionApplier, "completionApplier");
-    }
-
-    public static void useClientForTesting(QuestItemHandinClient testClient) {
-        client = Objects.requireNonNull(testClient, "testClient");
-    }
-
-    public static void resetClientForTesting() {
-        client = new QuestItemHandinClient();
     }
 
     /**
@@ -118,7 +149,27 @@ public final class QuestItemHandinReconciler {
     public static void clear(MinecraftServer server) {
         TICKS.remove(server);
         NEXT_ATTEMPT_AT.remove(server);
+        NEXT_INQUIRY_AT.remove(server);
         IN_FLIGHT.remove(server);
+    }
+
+    /**
+     * Claims the right to confirm one transaction, or answers false because someone already has it.
+     *
+     * <p>Shared with the live path deliberately. A confirmation posted by the dialogue and one
+     * posted by the sweep are the same request for the same transaction, and the sweep runs a second
+     * after the click: without one guard covering both, every hand-in whose round trip outlasts a
+     * second is confirmed twice, concurrently, and "exactly once" rests on Rails serialising them
+     * rather than on anything this side does.
+     */
+    public static boolean reserve(MinecraftServer server, UUID handinUuid) {
+        return IN_FLIGHT.computeIfAbsent(server, key -> ConcurrentHashMap.newKeySet()).add(handinUuid);
+    }
+
+    /** Releases a reservation. Always called from the completion callback, on the server thread. */
+    public static void release(MinecraftServer server, UUID handinUuid) {
+        Set<UUID> inFlight = IN_FLIGHT.get(server);
+        if (inFlight != null) inFlight.remove(handinUuid);
     }
 
     /**
@@ -138,6 +189,7 @@ public final class QuestItemHandinReconciler {
         rows.forEach(entry -> known.add(entry.handinUuid()));
 
         adoptOrphanMarkers(player, known, trigger);
+        reapSettledMarkers(player, store);
 
         long now = System.currentTimeMillis();
         int started = 0;
@@ -149,6 +201,130 @@ public final class QuestItemHandinReconciler {
             if (repaired == null || !repaired.localState().confirmationOutstanding()) continue;
             if (started >= MAX_IN_FLIGHT_PER_PLAYER) break;
             if (attemptConfirmation(player, repaired, now)) started++;
+        }
+        inquire(player, now);
+    }
+
+    /**
+     * Asks Rails what happened to the transactions this server cannot resolve on its own.
+     *
+     * <p>Three kinds of row reach here, and none of them can be finished by confirming again.
+     *
+     * <ul>
+     *   <li>A <b>stranded</b> row: the items are gone and the last answer proved neither ending. If
+     *       Rails in fact recorded the transaction, this is what finds out -- and a stranded row
+     *       resolved this way stops being an operator's problem.</li>
+     *   <li>A <b>prepared</b> row that has sat unclaimed: nothing was taken, so learning that its run
+     *       is gone simply lets it be closed instead of waiting out a day.</li>
+     *   <li>A row whose <b>confirmations keep failing</b>: after a few attempts, asking what happened
+     *       is cheaper and more informative than asking the same question again.</li>
+     * </ul>
+     *
+     * <p>Bounded by the Rails limit and rate-limited per player, and it never removes anything: the
+     * one thing that must not happen to a shard that has already removed is a second removal, and
+     * the endpoint this calls cannot cause one.
+     */
+    private static void inquire(ServerPlayer player, long now) {
+        MinecraftServer server = player.server;
+        Map<UUID, Long> schedule = NEXT_INQUIRY_AT.computeIfAbsent(server, key -> new HashMap<>());
+        List<UUID> ask = new ArrayList<>();
+        for (QuestHandinLedgerEntry entry : QuestHandinLedgerStore.get(server).entriesFor(player.getUUID())) {
+            if (!worthAsking(entry, now)) continue;
+            Long due = schedule.get(entry.handinUuid());
+            if (due != null && due > now) continue;
+            ask.add(entry.handinUuid());
+            if (ask.size() >= QuestItemHandinProtocol.MAX_RECONCILE_UUIDS) break;
+        }
+        if (ask.isEmpty()) return;
+        ask.forEach(uuid -> schedule.put(uuid, now + INQUIRY_INTERVAL_MILLIS));
+
+        UUID connectedPlayerId = player.getUUID();
+        inquiry.reconcile(server, connectedPlayerId, ask)
+                .whenComplete((result, failure) -> server.execute(() -> {
+                    ServerPlayer live = server.getPlayerList().getPlayer(connectedPlayerId);
+                    if (live == null || failure != null
+                            || !(result instanceof QuestItemHandinClient.Reconciled reconciled)) {
+                        return;
+                    }
+                    reconciled.response().handins().forEach(row -> applyInquiry(live, row));
+                }));
+    }
+
+    private static boolean worthAsking(QuestHandinLedgerEntry entry, long now) {
+        return switch (entry.localState()) {
+            case STRANDED -> true;
+            case PREPARED -> now - entry.recordedAtMillis() > PREPARED_INQUIRY_AFTER_MILLIS;
+            case REMOVED_LOCAL, CONFIRMING -> entry.attempts() >= INQUIRE_AFTER_ATTEMPTS;
+            default -> false;
+        };
+    }
+
+    /**
+     * What Rails' answer means for one local row.
+     *
+     * <p>The interesting case is {@code cancelled}: Rails has given up on the transaction and has no
+     * record of a removal, but this server's own ledger says otherwise. Confirming with the stored
+     * proof is what publishes the compensation -- reconciliation cannot do it, because only the
+     * shard knows it removed. So the row is put back where the confirmation sweep will pick it up,
+     * and only when the player's own file still vouches for the removal.
+     */
+    private static void applyInquiry(ServerPlayer player, QuestItemHandinProtocol.ReconcileEntry row) {
+        MinecraftServer server = player.server;
+        QuestHandinLedgerEntry entry = QuestHandinLedger.find(server, row.handinUuid()).orElse(null);
+        if (entry == null || entry.localState().settled()) return;
+        long now = System.currentTimeMillis();
+        // A row that took nothing cannot be settled into a state that means the items are gone --
+        // the record refuses to represent one, and an exception here would escape into the server
+        // tick loop. It also would not be true: an answer about a transaction this server never
+        // removed for is an answer about somebody else's removal, and all it means locally is that
+        // there is nothing left to do.
+        boolean removedHere = entry.localState().itemsRemoved();
+        switch (row.outcome()) {
+            case CONSUMED -> {
+                if (row.response() != null && removedHere) {
+                    applier.apply(player, row.response());
+                }
+                LOGGER.info("event=quest_handin_resolved_by_inquiry handin_uuid={} outcome=consumed removed_here={}",
+                        row.handinUuid(), removedHere);
+                settle(player, entry, removedHere
+                        ? QuestHandinLocalState.CONSUMED : QuestHandinLocalState.ABANDONED, now);
+            }
+            case CANCELLED_REFUNDED -> {
+                LOGGER.info("event=quest_handin_resolved_by_inquiry handin_uuid={} outcome=refunded removed_here={}",
+                        row.handinUuid(), removedHere);
+                settle(player, entry, removedHere
+                        ? QuestHandinLocalState.REFUNDED : QuestHandinLocalState.ABANDONED, now);
+            }
+            case CANCELLED -> {
+                if (!removedHere) {
+                    settle(player, entry, QuestHandinLocalState.ABANDONED, now);
+                    return;
+                }
+                if (PlayerDataStore.handinRemoval(player, row.handinUuid()).isEmpty()) return;
+                // Removed here, unknown to Rails. Its confirmation is what publishes the refund.
+                LOGGER.info("event=quest_handin_requeued_for_refund handin_uuid={}", row.handinUuid());
+                QuestHandinLedger.transition(server, row.handinUuid(),
+                        stored -> stored.withRemovedLocally(now));
+            }
+            case UNKNOWN -> {
+                // Rails holds no such transaction. Nothing taken means nothing owed; something taken
+                // stays exactly where it was, preserved for an operator.
+                if (!removedHere) {
+                    settle(player, entry, QuestHandinLocalState.ABANDONED, now);
+                }
+            }
+            case PENDING -> {
+                // Still open on both sides. A prepared row is simply waiting for the player.
+            }
+        }
+    }
+
+    private static void settle(ServerPlayer player, QuestHandinLedgerEntry entry,
+                               QuestHandinLocalState state, long now) {
+        QuestHandinLedger.transition(player.server, entry.handinUuid(),
+                stored -> stored.withSettled(state, now));
+        if (PlayerDataStore.forgetHandinRemoval(player, entry.handinUuid())) {
+            com.seggellion.britannia_mod.bank.transfer.BankTransferPlayerDurability.forceSave(player);
         }
     }
 
@@ -175,6 +351,28 @@ public final class QuestItemHandinReconciler {
     }
 
     /**
+     * Drops markers whose transaction has finished.
+     *
+     * <p>The settle path already forces this to disk, so reaching one here means a crash landed in
+     * the window between the two. It matters because markers are bounded and never evicted to make
+     * room: a leaked one occupies a slot forever, and a player whose slots are full can never hand
+     * anything in again. Safe by construction -- only a settled row's marker is taken, and a settled
+     * row is one this server has already finished.
+     */
+    private static void reapSettledMarkers(ServerPlayer player, QuestHandinLedgerStore store) {
+        boolean dropped = false;
+        for (PlayerDataStore.HandinRemovalMarker marker : PlayerDataStore.handinRemovals(player)) {
+            Optional<QuestHandinLedgerEntry> row = store.find(marker.handinUuid());
+            if (row.isEmpty() || !row.get().localState().settled()) continue;
+            dropped |= PlayerDataStore.forgetHandinRemoval(player, marker.handinUuid());
+        }
+        if (dropped) {
+            com.seggellion.britannia_mod.bank.transfer.BankTransferPlayerDurability.forceSave(player);
+            LOGGER.info("event=quest_handin_markers_reaped player_uuid={}", player.getStringUUID());
+        }
+    }
+
+    /**
      * Brings one row level with what the player's own file says, and answers with the repaired row
      * (or null when it is finished).
      */
@@ -186,10 +384,15 @@ public final class QuestItemHandinReconciler {
         switch (entry.localState()) {
             case PREPARED -> {
                 if (marked) {
-                    // Cannot normally happen -- a marker is only written with an intent recorded --
-                    // but the player's file is the authority on the mutation either way.
+                    // Reachable, and the case is worth naming: the forced player save reported a
+                    // failure after vanilla had in fact already written the file, so the removal was
+                    // rolled back in memory and the row returned to prepared while the disk kept
+                    // both the shrink and its marker. The player's own file is the authority on
+                    // whether the mutation happened, so it wins.
                     return promoteFromMarker(player, entry, trigger);
                 }
+                // The long stop, for a shard that could never reach Rails to ask. Nothing was
+                // taken, so retiring it costs nothing -- and an abandoned row is re-claimable.
                 if (now - entry.recordedAtMillis() > PREPARED_RETIREMENT_MILLIS) {
                     LOGGER.info("event=quest_handin_prepared_retired handin_uuid={} player_uuid={}",
                             entry.handinUuid(), player.getStringUUID());
@@ -244,12 +447,11 @@ public final class QuestItemHandinReconciler {
     /** Sends the stored proof again, at most one attempt per transaction at a time. */
     private static boolean attemptConfirmation(ServerPlayer player, QuestHandinLedgerEntry entry, long now) {
         MinecraftServer server = player.server;
-        Set<UUID> inFlight = IN_FLIGHT.computeIfAbsent(server, key -> ConcurrentHashMap.newKeySet());
         Map<UUID, Long> schedule = NEXT_ATTEMPT_AT.computeIfAbsent(server, key -> new HashMap<>());
-        if (!inFlight.add(entry.handinUuid())) return false;
+        if (!reserve(server, entry.handinUuid())) return false;
         Long due = schedule.get(entry.handinUuid());
         if (due != null && due > now) {
-            inFlight.remove(entry.handinUuid());
+            release(server, entry.handinUuid());
             return false;
         }
 
@@ -257,14 +459,19 @@ public final class QuestItemHandinReconciler {
         UUID handinUuid = entry.handinUuid();
         QuestHandinLedger.transition(server, handinUuid, row -> row.withConfirming(now));
         QuestHandinLedgerEntry sending = QuestHandinLedger.find(server, handinUuid).orElse(entry);
-        client.confirm(server, sending.confirmation()).whenComplete((result, failure) -> server.execute(() -> {
-            inFlight.remove(handinUuid);
+        // The service's own seam, deliberately: a recovered confirmation must go exactly where a
+        // live one goes, or a test could prove the live path and miss the recovery path entirely.
+        QuestItemHandinService.confirmer().confirm(server, sending.confirmation())
+                .whenComplete((result, failure) -> server.execute(() -> {
+            release(server, handinUuid);
             ServerPlayer live = server.getPlayerList().getPlayer(connectedPlayerId);
             QuestHandinLedgerEntry stored = QuestHandinLedger.find(server, handinUuid).orElse(sending);
             if (live == null) {
                 // Nothing is applied to a player who is gone; the row keeps its proof and the next
-                // login sweeps it again.
-                backOff(schedule, handinUuid, stored.attempts());
+                // login sweeps it again. The schedule entry is dropped rather than backed off, so
+                // this cannot write a ten-minute delay a moment after logout cleared one -- which
+                // would be served out on the next login, exactly what the clear existed to avoid.
+                schedule.remove(handinUuid);
                 return;
             }
             QuestItemHandinService.settle(live, stored, result, failure, new com.google.gson.JsonObject(), applier);
