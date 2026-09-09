@@ -1,5 +1,22 @@
 # Patch 18 weapon integration
 
+> **Historical implementation record — September 6, 2026. Not a release document, and its build
+> facts are no longer current.** This work was completed on the public lineage, which the
+> reconciliation merge `c00d5087` brought into the release lineage on 2026-09-09. Two things below
+> have gone stale and are deliberately left unaltered as a record of what was done at the time:
+>
+> * The mod version is recorded as **`0.1.8a`**. The current version is **`0.1.8b`**.
+> * The built jar is recorded at
+>   `C:\projects\britannia\mod\Britannia_Mod\build\libs\britannia_mod-0.1.8a-all.jar`
+>   (34,602,148 B, SHA-256 `1d47325d…`). **A file of that name still exists at that path, but it is
+>   not this one** — it is now a different, later, dirty-tree build (35,044,450 B, from `57136c93`).
+>   Do not use the digest below to validate whatever is sitting there today.
+>
+> **Nothing here identifies a release candidate.** For the deployable artifact and the current
+> candidate, see `docs/projects/rowan-farming-questline/ROWAN_FARMING_QUESTLINE_RELEASE_HANDOFF.md`
+> §3. The test totals, asset inventory and verification steps below remain an accurate record of
+> this integration.
+
 Source: `C:\projects\britannia\raw fiels\weapons` (intentional spelling). All 17 files were inspected recursively. There are six distinct items, with no animations, alternate weapon variants, or backups. The five `.bbmodel` projects are authoring counterparts of the supplied JSON exports, not additional items. All embedded Blockbench texture pixels match the corresponding exported PNGs (their PNG compression differs). The source folder is unchanged; its SHA-256 inventory is in [PATCH18_WEAPON_ASSETS.json](PATCH18_WEAPON_ASSETS.json). The importer itself regenerates and verifies the portable copy at [tools/new-assets/patch18_weapon_assets.json](../../tools/new-assets/patch18_weapon_assets.json), whose `source_root` is the relative label `weapons` so `--check` can run on any machine; the copy beside this document keeps the absolute authoring path for the record. `Patch18WeaponAssetsTest` holds the seventeen file hashes in the two copies identical.
 
 Implementation started from clean `patch-18` at `a2f6391c`. No isolation was needed. Changes remain uncommitted on that branch; no push, deployment, Fabric, or Rails changes. No applicable `AGENTS.md` was found in the repository or its parent directories.
