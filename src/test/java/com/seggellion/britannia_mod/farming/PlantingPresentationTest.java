@@ -46,4 +46,20 @@ class PlantingPresentationTest {
             assertEquals(malformed < 0 ? 0 : 12, WateringCanItem.getWaterCharges(stack));
         }
     }
+
+    @Test void fullCanOverrideResolvesToAReplaceableResourceWithoutRecursion() throws Exception {
+        var assets = Path.of(System.getProperty("britannia.projectDir", "."))
+                .resolve("src/main/resources/assets/britannia_mod");
+        var base = JsonParser.parseString(Files.readString(assets.resolve("models/item/watering_can.json"))).getAsJsonObject();
+        var overrides = base.getAsJsonArray("overrides");
+        assertNotNull(overrides, "full-state property needs an item model override");
+        var fullOverride = overrides.get(overrides.size() - 1).getAsJsonObject();
+        assertEquals(1f, fullOverride.getAsJsonObject("predicate").get("britannia_mod:full").getAsFloat());
+        assertEquals("britannia_mod:item/watering_can_full", fullOverride.get("model").getAsString());
+        var full = JsonParser.parseString(Files.readString(assets.resolve("models/item/watering_can_full.json"))).getAsJsonObject();
+        assertFalse(full.has("overrides"), "full model must not override itself");
+        assertEquals("britannia_mod:item/watering_can_full", full.getAsJsonObject("textures").get("2").getAsString());
+        assertNotNull(javax.imageio.ImageIO.read(assets.resolve("textures/item/watering_can_full.png").toFile()),
+                "replaceable full texture must be a readable image");
+    }
 }

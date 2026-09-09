@@ -2,8 +2,8 @@
 	"format_version": "1.21.11",
 	"credit": "Seggellion from Ultimacraft.com",
 	"textures": {
-		"2": "britannia_mod:item/watering_can",
-		"particle": "britannia_mod:item/watering_can"
+		"2": "britannia_mod:item/watering_can_full",
+		"particle": "britannia_mod:item/watering_can_full"
 	},
 	"elements": [
 		{
@@ -142,11 +142,5 @@
 			"translation": [5.25, 23, -0.75],
 			"scale": [3.4, 3.4, 3.4]
 		}
-	},
-	"overrides": [
-		{
-			"predicate": {"britannia_mod:full": 1.0},
-			"model": "britannia_mod:item/watering_can_full"
-		}
-	]
+	}
 }
