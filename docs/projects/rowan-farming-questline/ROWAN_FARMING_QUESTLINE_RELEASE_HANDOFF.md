@@ -1,5 +1,12 @@
 # Rowan the Farmer — From Soil to Supper: release handoff
 
+> **Read §5 before deploying anything.** This document was written for the earlier
+> reward-delivery release and revised on 2026-09-09 for **strict item hand-in**. §1 and §2
+> are a historical record of that earlier integration and are marked where they no longer
+> describe what is being released; §3, §5 and §9 have been corrected. The authoritative
+> release order is `ROWAN_FARMING_QUESTLINE_PROTOCOL.md` §1.5.7, reproduced in §5. The mod
+> half of the hand-in work is recorded in `ROWAN_FARMING_QUESTLINE_HANDIN_STATUS.md`.
+
 **Status: engineering complete and locally integrated, live acceptance not started.** Every
 milestone from M0 to M11 passed its gates, and a later integration milestone merged both feature
 branches into their local target branches: `patch-18` in the mod, `release/public` in Rails.
@@ -52,7 +59,13 @@ integration added around it.
 
 ## 2. Test totals at the integrated commit
 
-Measured on the integrated tree at `2c63b207`, not on the feature branch.
+> **Superseded — these are not the gate results for the release.** They were measured on the
+> integration commit `2c63b207`, which **predates the entire strict item hand-in half of this
+> release**: 18 commits and 64 source files later (§3). Read this section as a record of the
+> reward-delivery integration and nothing more. The hand-in gates are in
+> `ROWAN_FARMING_QUESTLINE_HANDIN_STATUS.md`.
+
+Measured on the integration commit, not on the feature branch.
 
 | Suite | Result |
 | --- | --- |
@@ -101,60 +114,87 @@ The 23 mod skips include 6 opt-in live-Rails tests that skip unless credentials 
 
 ## 3. Candidate build
 
-> **Superseded for the Patch 18 release.** The candidate recorded below is `0.1.8a`, which is
-> the version already deployed — a rebuild of it could not be told apart from what is running.
+> **Superseded for the Patch 18 release.** This section used to record a `0.1.8a` candidate —
+> the version already deployed, so a rebuild of it could not be told apart from what is running.
 > The release now goes out as **`0.1.8b`**, and the artifact is
 > `build/libs/britannia_mod-0.1.8b-all.jar`. The dependency-free jar is now named
 > `britannia_mod-0.1.8b-thin.jar` rather than holding the unclassified name, and
 > `./gradlew check` runs `verifyDeployableJar`, which fails the build if the deployable jar
-> has lost GeckoLib or nanohttpd. See "Deploying — which jar" in `README.md`. Everything
-> below stands as the record of what this project built and measured.
-
-Rebuild from the final commit on a clean tree:
-
-```bash
-"C:/Users/dusti/.gradle/wrapper/dists/gradle-8.9-bin/90cnw93cvbtalezasaz0blq0a/gradle-8.9/bin/gradle.bat" build -x test --no-configuration-cache --console=plain --gradle-user-home C:/Users/dusti/.gradle
-```
+> has lost GeckoLib or nanohttpd. See "Deploying — which jar" in `README.md`.
+>
+> The artifact table below has been corrected to `0.1.8b`. The pinned candidate identity that
+> used to follow it has been **removed rather than refreshed** — that candidate was built
+> before the hand-in work existed, and the jar is not byte-reproducible, so no digest written
+> here would survive a rebuild.
 
 | Artifact | Value |
 | --- | --- |
-| Jar | `build/libs/britannia_mod-0.1.8a.jar` |
-| Fat jar | `build/libs/britannia_mod-0.1.8a-all.jar` |
-| Mod version | `0.1.8a` (unchanged by this project) |
+| **Deployable jar** | `build/libs/britannia_mod-0.1.8b-all.jar` — **deploy this one** |
+| Thin jar | `build/libs/britannia_mod-0.1.8b-thin.jar` — **NOT deployable.** No bundled GeckoLib or nanohttpd; it boots clean and then throws `NoClassDefFoundError` at the first animated render |
+| Mod version | `0.1.8b` — bumped from `0.1.8a` by the release commit, so a rebuild can be told apart from what is already running |
 | Mod id / display name | `britannia_mod` / Britannia |
-| Build metadata | `britannia_mod_build.properties` records `git.head`, `git.branch`, `git.dirty` |
+| Build metadata | `britannia_mod_build.properties` records `mod.version`, `git.head`, `git.branch`, `git.dirty`, `build.timestamp` |
 
-**The candidate.** Built clean-tree from `2c63b207`, the integrated commit both gates above ran
-against. This supersedes the earlier feature-branch build at `402f5585`; that jar is no longer the
-candidate.
+Go by the **`-all`** classifier in the filename, never by file size: the two jars are within a few
+percent of each other. `./gradlew check` runs `verifyDeployableJar`, which fails the build if the
+`-all` jar has lost either bundled dependency or cannot say which commit produced it.
 
-| Property | Value |
-| --- | --- |
-| `git.head` | `2c63b2075ad7b8ecd6ca15bf4bbc2eb5708d9a53` |
-| `git.branch` | `integration/rowan-patch18` |
-| `git.dirty` | `false` |
-| Build timestamp | 2026-09-08T15:51:00Z |
-| `britannia_mod-0.1.8a.jar` | 34,353,735 bytes, SHA-256 `df77ad0e56373201b5a91745f25bbcf871aef11f1027d2d13b695b4a009f56cb` |
-| `britannia_mod-0.1.8a-all.jar` | 34,925,373 bytes, SHA-256 `3f654f4e85a037aac98272858d00d3cc65038cc998098cd4f23854b9e06f3804` |
+### There is no standing candidate. Do not deploy the `2c63b207` jar.
 
-Two things about that table are worth stating plainly rather than leaving to be noticed.
+The candidate this section used to pin — built clean-tree from `2c63b207` on
+`integration/rowan-patch18` — **must not be deployed.** Its `git.head`, branch, timestamp, sizes
+and SHA-256 digests have been deleted rather than replaced; see "not byte-reproducible" below for
+why no new digest is pinned in their place.
 
-`git.branch` reads `integration/rowan-patch18` and not `patch-18`. It names the branch the build ran
-from, and it had to: `git.dirty` is computed from `git status --porcelain`, which counts untracked
-files, and the canonical checkout permanently holds five untracked owner playbooks that must be
-preserved. A build there would stamp `git.dirty=true`, and a dirty build is not a release candidate.
-`git.head` is the authoritative field, and it is an ancestor of `patch-18` — verifiable with
-`git merge-base --is-ancestor 2c63b207 patch-18`.
+**The claim that made that jar look safe was false.** This document previously stated that
+`git diff 2c63b207 patch-18 -- src/` was empty and that the single commit after `2c63b207` was
+"this documentation record and nothing else". Re-verified 2026-09-09 with Windows git:
 
-`git.head` is `2c63b207` while `patch-18`'s tip is one commit further along. That one commit is this
-documentation record and nothing else; `git diff 2c63b207 patch-18 -- src/` is empty. The candidate
-is built from the exact tree both gates ran against, which is the property that matters.
+| Check | Recorded here before | Actual |
+| --- | --- | --- |
+| Commits in `2c63b207..patch-18` | "one commit … documentation" | **18 commits** |
+| `git diff --stat 2c63b207 patch-18 -- src/` | "is empty" | **64 files changed, 8,677 insertions, 155 deletions** |
+| `git diff --stat 2c63b207 96948296 -- src/` (release-prep tip) | — | **65 files changed, 8,878 insertions, 155 deletions** (20 commits) |
 
-**The jar is not byte-reproducible** on this project — a known property of this build. An earlier
-build of the identical source, differing only in that one documentation file was uncommitted,
-produced a jar one byte larger with a completely different digest. Verify a candidate by reading
-`git.head` and `git.dirty` from `britannia_mod_build.properties` inside the jar, not by comparing
-digests across machines or rebuilds.
+Those 18 commits are the **entire strict item hand-in half of this release**, `1e298361` through
+`57136c93`: the hand-in contract and its mirrored fixtures, signed transport for both hand-in
+endpoints, the hand-in ledger across the mutation boundary, taking the item and never losing it
+afterwards, the dialogue that says what happened to the player's goods, and three rounds of audit
+fixes. **A `2c63b207` jar cannot perform a hand-in at all.** An operator who trusted the old text
+would deploy a pre-hand-in jar; combined with the wrong deployment order this document also used
+to carry, that is precisely the progression-losing window §5 exists to close.
+
+**Build the candidate from the release branch tip, after these documents are committed**, so the
+`git.head` baked into the artifact names the final commit rather than an ancestor of it.
+
+```bash
+"C:/Users/dusti/.gradle/wrapper/dists/gradle-8.9-bin/90cnw93cvbtalezasaz0blq0a/gradle-8.9/bin/gradle.bat" build artifactIdentity --no-configuration-cache --console=plain --gradle-user-home C:/Users/dusti/.gradle
+```
+
+**How a candidate is verified — by identity, not by digest.** Read `git.head` and `git.dirty`
+from `britannia_mod_build.properties` inside the jar; a running server reports both through
+`/grabby env`, which is how a deployed file is matched back to a commit. A candidate is valid when
+`git.head` is the commit you intended to release and `git.dirty` is `false`. `./gradlew
+artifactIdentity` prints that same identity for both jars, marks which one is deployable, and
+depends on `verifyDeployableJar`, so the identity is only ever printed for an artifact that passed
+the packaging gate.
+
+**Build from a worktree, not the canonical checkout.** `git.dirty` is computed from
+`git status --porcelain`, which counts untracked files, and the canonical checkout permanently
+holds untracked owner playbooks that must be preserved. A build there stamps `git.dirty=true`, and
+a dirty build is not a release candidate. `git.branch` will then name the worktree's branch rather
+than `patch-18`; that is expected and harmless, because `git.head` is the authoritative field —
+confirm the relationship with `git merge-base --is-ancestor <git.head> patch-18` if it matters.
+
+**The jar is not byte-reproducible** on this project — a known property of this build.
+`generateBuildInfo` is deliberately never up to date, so every invocation stamps a fresh
+`build.timestamp` and therefore yields a different digest; an earlier build of identical source,
+differing only in one uncommitted documentation file, produced a jar one byte larger with a
+completely different SHA-256. That is why **no size or digest is pinned in this document**: any
+value written here goes stale on the next rebuild, and a stale digest sitting beside the words
+"the candidate" is worse than no digest, because it reads as proof. Take the SHA-256 from the same
+`artifactIdentity` invocation you deploy from, and use it only to confirm the file survived the
+copy to the server.
 
 ---
 
@@ -172,7 +212,9 @@ Schema stamp `2026_09_07_130000`. Each was proven reversible and re-appliable on
 database, with an in-memory dumper comparison against the hand-edited `db/schema.rb`. **Never
 re-dump `schema.rb`** on this PostgreSQL version.
 
-**Seed, run once per shard after migration:**
+**Seed, run once per shard — after migration *and* after the hand-in-capable jar is deployed and
+the server restarted. Not before.** See §5; this is step 4 of five, and running it early is the
+one ordering mistake that costs players progression.
 
 ```bash
 ROWAN_QUESTLINE_SHARD="Britannia" bin/rails db:seed:rowan_farming_questline
@@ -198,15 +240,47 @@ The world bootstrap gains an additive `pending_reward_deliveries` array.
 
 ## 5. Deployment order and rollback
 
-**Order matters.** Rails is backward compatible with the current mod; the new mod is *not* useful
+**The authoritative order is `ROWAN_FARMING_QUESTLINE_PROTOCOL.md` §1.5.7, and step 2 is the
+barrier.** It is reproduced below; where this document and the protocol disagree, the protocol
+wins. Rails is backward compatible with the currently deployed mod; the new mod is *not* useful
 without the new Rails.
 
-1. **Deploy Rails first.** The release phase migrates. Old mod builds keep working: the reward
-   delivery is additive (they read `granted_items` as before), the new endpoints are simply unused,
-   and the journal gains fields old clients ignore.
-2. **Seed the questline** per shard. Until Rowan is placed, nothing is reachable by players.
-3. **Deploy the mod jar**, then restart the Minecraft server.
-4. **Place Rowan** through the existing quest-giver spawn block (§6).
+1. **Deploy the Rails code and migrations.** The release phase migrates (§4 — never run
+   `db:migrate` by hand). Old mod builds keep working: the reward delivery is additive (they read
+   `granted_items` as before), the new endpoints are simply unused, and the journal gains fields
+   old clients ignore.
+2. **Withhold the Rowan seed.** Do **not** apply it yet. Until it lands, no node carries hand-in
+   metadata and every quest behaves exactly as it did before.
+3. **Deploy the hand-in-capable mod jar** — `britannia_mod-0.1.8b-all.jar` (§3) — then restart
+   the Minecraft server.
+4. **Apply the Rowan seed**, once per shard (§4).
+5. **Live acceptance** (§9).
+
+**Why step 2 is a barrier and not a convenience.** An earlier version of this section prescribed
+Rails → seed → mod jar → place Rowan. **That order is wrong and has been removed.** Seeding
+before the jar is deployed opens the exact window the barrier exists to close: hand-in nodes go
+live while the server still runs a mod that cannot perform a hand-in, and every player who reaches
+Rowan in that gap silently loses progression.
+
+The failure is *contained*, not harmless. An old mod meeting a hand-in-enabled node **fails
+closed**: it receives `handin_required` with `completed: false` and no granted items, the node does
+not move, no delivery row is created and the quest does not complete. No free reward can be
+obtained, because none is ever created — asserted, not assumed, by
+`rowan_farming_questline_play_test.rb`, "an old client that cannot hand in gets no reward and no
+completion". But a player who walks away from a questline that silently refuses to advance is a
+real cost, and keeping the order above avoids it entirely.
+
+**Open question for the owner — where does "place Rowan" belong?** The four-step order this
+section used to carry ended with "Place Rowan through the quest-giver spawn block". The canonical
+five-step order in §1.5.7 has no such step, because it is a Rails/mod *release* order and placing
+Rowan is an in-world operator action rather than a deploy action. It must happen after step 4 —
+the seed installs the questline content the spawner's archetype resolves against — and before any
+acceptance walkthrough can begin, which puts it at the head of **step 5**, where §9's
+live-acceptance prerequisites already list "Two Rowans placed" and §6 gives the full placement and
+infrastructure procedure. **This document therefore treats placement as the first action inside
+step 5, but that is a reading, not a ruling — whether §1.5.7 should gain an explicit placement
+step is the owner's call.** §1.5.7 was deliberately not edited: it is mirrored byte-for-byte into
+the Rails repository and cannot be changed from one side.
 
 **Rollback.**
 
@@ -313,15 +387,18 @@ for:
 ## 9. Live acceptance prerequisites
 
 Before starting `ROWAN_FARMING_QUESTLINE_ACCEPTANCE_DRAFT.md` — **58 items, all still unchecked,
-because no live acceptance has been performed**:
+because no live acceptance has been performed**. These restate §5's order and are not an order of
+their own — in particular, the jar precedes the seed:
 
-1. Rails deployed and migrated; the questline seeded on the target shard.
-2. The candidate jar deployed and the Minecraft server restarted.
-3. Two Rowans placed in different locations, with the infrastructure of §6 near each. Record both
+1. Rails deployed and migrated (§5 step 1).
+2. The `0.1.8b` `-all` jar deployed and the Minecraft server restarted (§5 step 3) — **before**
+   the seed, never after it.
+3. The questline seeded on the target shard (§5 step 4).
+4. Two Rowans placed in different locations, with the infrastructure of §6 near each. Record both
    positions.
-4. A test account that is **not** an operator, starting with an empty inventory.
-5. `randomTickSpeed` and the region's climate recorded, since crop growth depends on both.
-6. Rowan configured as `male`, so the existing `portraits/male/Rowan.png` resolves. Nothing to
+5. A test account that is **not** an operator, starting with an empty inventory.
+6. `randomTickSpeed` and the region's climate recorded, since crop growth depends on both.
+7. Rowan configured as `male`, so the existing `portraits/male/Rowan.png` resolves. Nothing to
    upload.
 
 Record observed inventory accounting, coordinates, timings, screenshots, logs and persistence
