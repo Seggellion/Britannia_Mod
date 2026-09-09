@@ -117,6 +117,9 @@ public final class QuestJournalRefresh {
                 player.getStringUUID(), quests.get().size());
             // M3: a journal refresh is one of the delivery reconciliation triggers (protocol 1.8).
             QuestRewardDeliveryReconciler.onJournalRefreshed(player);
+            // And of the hand-in ones (protocol 1.5.3): a player who opens their journal after a
+            // dialogue that went quiet is asking the same question the sweep answers.
+            com.seggellion.britannia_mod.quest.handin.QuestItemHandinReconciler.onJournalRefreshed(player);
         } else {
             // A failed refresh must not become a hot loop against a service that is already
             // struggling; the player's next action after the cooldown tries again.
