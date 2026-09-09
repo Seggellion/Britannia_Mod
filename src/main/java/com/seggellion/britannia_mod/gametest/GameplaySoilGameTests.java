@@ -41,12 +41,16 @@ public final class GameplaySoilGameTests {
         long now = h.getLevel().getGameTime();
         for (int moisture = 0; moisture <= 7; moisture++) {
             BlockState prior = Blocks.FARMLAND.defaultBlockState().setValue(FarmBlock.MOISTURE, moisture);
-            for (int elapsed : new int[]{1199, 1200, 1201}) {
+            for (long elapsed : new long[]{
+                    FarmingBlockEntity.COMMUNITY_SEED_WINDOW_TICKS - 1,
+                    FarmingBlockEntity.COMMUNITY_SEED_WINDOW_TICKS,
+                    FarmingBlockEntity.COMMUNITY_SEED_WINDOW_TICKS + 1}) {
                 var soil = fertile(h);
                 soil.beginFertilizerApplication(prior, 0, UUID.randomUUID(), now - elapsed);
                 soil.consumeSuccessfulFertileHarvest();
                 boolean expired = soil.expireEmptySoil(h.getLevel());
-                h.assertTrue(expired == (elapsed >= 1200), "wrong deadline boundary");
+                h.assertTrue(expired == (elapsed >= FarmingBlockEntity.COMMUNITY_SEED_WINDOW_TICKS),
+                        "wrong deadline boundary");
                 if (expired) {
                     h.assertTrue(h.getBlockState(P).equals(prior), "prior farmland moisture changed");
                     h.assertTrue(h.getLevel().getBlockEntity(h.absolutePos(P)) == null, "fertilizer entitlement survived expiry");
@@ -66,7 +70,8 @@ public final class GameplaySoilGameTests {
         equipFertilizer(player);
         h.assertTrue(FertilizedSoilService.apply(h.getLevel(), h.absolutePos(P), player, player.getMainHandItem()).consumesAction(), "community fertilization denied");
         var soil = (FarmingBlockEntity) h.getBlockEntity(P);
-        h.assertTrue(soil.getSeedableUntilGameTime() == now + 1200 && soil.getHydration() == 1, "application deadline/moisture drifted");
+        h.assertTrue(soil.getSeedableUntilGameTime() == now + FarmingBlockEntity.COMMUNITY_SEED_WINDOW_TICKS
+                && soil.getHydration() == 1, "application deadline/moisture drifted");
         CompoundTag saved = soil.saveWithoutMetadata(h.getLevel().registryAccess());
         saved.putLong("SeedableUntilGameTime", now);
         soil.loadWithComponents(saved, h.getLevel().registryAccess());
@@ -89,7 +94,8 @@ public final class GameplaySoilGameTests {
         long now = h.getLevel().getGameTime();
         soil.beginFertilizerApplication(prior, 0, UUID.randomUUID(), now);
         CompoundTag saved = soil.saveWithoutMetadata(h.getLevel().registryAccess());
-        h.assertTrue(saved.getLong("SeedableUntilGameTime") == now + 1200, "wrong saved clock");
+        h.assertTrue(saved.getLong("SeedableUntilGameTime")
+                == now + FarmingBlockEntity.COMMUNITY_SEED_WINDOW_TICKS, "wrong saved clock");
         // Simulate an overdue persisted deadline; exercise the registered BE ticker, not randomTick.
         saved.putLong("SeedableUntilGameTime", now);
         h.getLevel().removeBlockEntity(h.absolutePos(P));
@@ -111,11 +117,13 @@ public final class GameplaySoilGameTests {
         var snapshot = soil.exportFlowerConversionSnapshot(h.getBlockState(P));
         h.assertTrue(snapshot.soil().communitySeedableUntilGameTime() == 0, "flower retained empty deadline");
         soil.restoreFlowerConversionSnapshot(snapshot);
-        h.assertTrue(soil.getSeedableUntilGameTime() == now + 1200 && soil.getRemainingFertileHarvests() == 4, "rollback changed deadline/uses");
+        h.assertTrue(soil.getSeedableUntilGameTime() == now + FarmingBlockEntity.COMMUNITY_SEED_WINDOW_TICKS
+                && soil.getRemainingFertileHarvests() == 4, "rollback changed deadline/uses");
         soil.restoreUprootedCommunityFlowerSoil(snapshot.soil());
         h.assertTrue(soil.getSeedableUntilGameTime() == 0 && soil.getRemainingFertileHarvests() == 4, "uproot resurrected timer or reset uses");
         UUID owner = UUID.randomUUID();
-        soil.beginFertilizerApplication(Blocks.FARMLAND.defaultBlockState(), 0, owner, now - 1199);
+        soil.beginFertilizerApplication(Blocks.FARMLAND.defaultBlockState(), 0, owner,
+                now - FarmingBlockEntity.COMMUNITY_SEED_WINDOW_TICKS + 1);
         var privateSnapshot = soil.exportFlowerConversionSnapshot(h.getBlockState(P));
         var persistedSoil = FlowerSoilSnapshot.fromTag(privateSnapshot.soil().withHydration(2).toTag());
         soil.restoreUprootedFlowerSoil(persistedSoil);

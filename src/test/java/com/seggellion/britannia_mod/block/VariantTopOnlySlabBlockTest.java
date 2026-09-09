@@ -125,20 +125,30 @@ class VariantTopOnlySlabBlockTest {
     }
 
     @Test
-    void itemInteractionDelegatesToTheSharedVariantCycle() {
+    void offhandItemInteractionDelegatesToTheSharedVariantCycle() {
         DelegationProbe block = new DelegationProbe();
         ItemStack stack = ItemStack.EMPTY;
         BlockState state = block.defaultBlockState();
         BlockPos pos = BlockPos.ZERO;
 
         ItemInteractionResult result = block.useItemOn(
-                stack, state, null, pos, null, InteractionHand.MAIN_HAND, null);
+                stack, state, null, pos, null, InteractionHand.OFF_HAND, null);
 
         assertTrue(block.called);
         assertEquals(ItemInteractionResult.FAIL, result);
         assertSame(stack, block.stack);
         assertSame(state, block.state);
         assertSame(pos, block.pos);
+    }
+
+    @Test
+    void mainHandPassesThroughToTheDecoratorItemWithoutCycling() {
+        DelegationProbe block = new DelegationProbe();
+        ItemInteractionResult result = block.useItemOn(ItemStack.EMPTY, block.defaultBlockState(),
+                null, BlockPos.ZERO, null, InteractionHand.MAIN_HAND, null);
+
+        assertFalse(block.called);
+        assertEquals(ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION, result);
     }
 
     private static VariantTopOnlySlabBlock block() {

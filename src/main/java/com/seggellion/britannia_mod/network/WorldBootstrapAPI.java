@@ -12,6 +12,8 @@ import com.seggellion.britannia_mod.server.http.CancellableHttpRequest;
 import com.seggellion.britannia_mod.server.http.RailsApiUrlResolver.Endpoint;
 import com.seggellion.britannia_mod.quest.ClientQuestEntry;
 import com.seggellion.britannia_mod.quest.QuestEntryParser;
+import com.seggellion.britannia_mod.quest.delivery.QuestRewardDelivery;
+import com.seggellion.britannia_mod.quest.delivery.QuestRewardDeliveryParser;
 import com.seggellion.britannia_mod.service.ServiceNpcAssignmentsParser;
 import com.seggellion.britannia_mod.service.ServiceNpcAssignmentsSnapshot;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistryParser;
@@ -121,6 +123,7 @@ public final class WorldBootstrapAPI {
                         core.shardUser(),
                         core.cities(),
                         core.acceptedQuests(),
+                        core.pendingRewardDeliveries(),
                         core.serviceNpcRegistry(),
                         serviceNpcAssignments,
                         grapesList,
@@ -159,6 +162,8 @@ public final class WorldBootstrapAPI {
             ShardUserData shardUser,
             List<CityBootstrapData> cities,
             List<ClientQuestEntry> acceptedQuests,
+            /** M3 (protocol 1.6): Rails' still-pending reward deliveries for this player; empty on an old Rails. */
+            List<QuestRewardDelivery> pendingRewardDeliveries,
             ServiceNpcRegistrySnapshot serviceNpcRegistry,
             ServiceNpcAssignmentsSnapshot serviceNpcAssignments,
             List<com.seggellion.britannia_mod.winery.GrapeVariety> grapes,
@@ -181,6 +186,7 @@ public final class WorldBootstrapAPI {
                     Map.of(),
                     List.of(),
                     null,
+                    List.of(),
                     List.of(),
                     List.of(),
                     ServiceNpcRegistrySnapshot.empty(),
@@ -230,6 +236,7 @@ public final class WorldBootstrapAPI {
             ShardUserData shardUser,
             List<CityBootstrapData> cities,
             List<ClientQuestEntry> acceptedQuests,
+            List<QuestRewardDelivery> pendingRewardDeliveries,
             ServiceNpcRegistrySnapshot serviceNpcRegistry,
             ServiceNpcAssignmentsSnapshot serviceNpcAssignments
     ) {}
@@ -244,6 +251,8 @@ public final class WorldBootstrapAPI {
 
         ShardUserData shardUser = parseShardUser(root);
         List<ClientQuestEntry> acceptedQuests = QuestEntryParser.parseAcceptedQuests(root);
+        // M3: same element shape as the v2 pending listing; per-entry tolerant like every other section.
+        List<QuestRewardDelivery> pendingRewardDeliveries = QuestRewardDeliveryParser.parseBootstrapPending(root);
         ServiceNpcRegistryParser.ParseResult serviceNpcRegistry =
                 ServiceNpcRegistryParser.parseBootstrapRoot(root);
         if (serviceNpcRegistry.status() == ServiceNpcRegistryParser.ParseStatus.REJECTED) {
@@ -268,6 +277,7 @@ public final class WorldBootstrapAPI {
                 shardUser,
                 List.copyOf(cities),
                 List.copyOf(acceptedQuests),
+                List.copyOf(pendingRewardDeliveries),
                 serviceNpcRegistry.snapshot(),
                 serviceNpcAssignments.snapshot()
         );

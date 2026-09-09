@@ -1,5 +1,8 @@
 package com.seggellion.britannia_mod.bowlpreparation;
 
+import com.seggellion.britannia_mod.client.gui.QuestScreenText;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -28,7 +31,10 @@ public final class BowlPreparationOutput {
                 inventory.items.set(slot, remaining.split(Math.min(remaining.getCount(), inventory.getMaxStackSize(remaining))));
             }
         }
-        if (!remaining.isEmpty()) player.drop(remaining, false);
+        if (!remaining.isEmpty()) {
+            announceDrop(player, remaining);
+            player.drop(remaining, false);
+        }
         inventory.setChanged();
     }
 
@@ -38,6 +44,13 @@ public final class BowlPreparationOutput {
         int count = Math.min(remaining.getCount(), Math.max(0, inventory.getMaxStackSize(target) - target.getCount()));
         target.grow(count);
         remaining.shrink(count);
+    }
+
+    /** Names the item that fell, because "your pack is full" alone does not say what was lost. */
+    private static void announceDrop(ServerPlayer player, ItemStack output) {
+        player.displayClientMessage(
+                Component.translatable(QuestScreenText.INVENTORY_FULL_DROPPED, output.getHoverName())
+                        .withStyle(ChatFormatting.YELLOW), true);
     }
 
     static boolean hasSufficientCapacity(Inventory inventory, ItemStack stack) {

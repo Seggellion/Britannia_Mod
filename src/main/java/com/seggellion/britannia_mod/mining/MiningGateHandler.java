@@ -43,11 +43,18 @@ import java.util.Optional;
  * through the same {@code BreakEvent} chain a survival dig ends in. Both listeners therefore ask
  * {@link ManagedExtractionPolicy#bypassesManagedExtraction} before anything else and stand aside
  * for a creative player who is not attacking with the Britannia pickaxe — no house or city
- * question, no evaluation, no denial, no resync — so catalogued stone and sited deposits break for
- * them exactly as every other block does in creative. A creative player attacking with the
- * Britannia pickaxe is a tester and gets the full gate, ladder included, so the managed flow can
- * be exercised without leaving creative. The decision is read from live server state at both
- * moments, never remembered from the first.
+ * question, no evaluation, no denial, no resync — so catalogued stone breaks for them exactly as
+ * every other block does in creative. A creative player attacking with the Britannia pickaxe is a
+ * tester and gets the full gate, ladder included, so the managed flow can be exercised without
+ * leaving creative. The decision is read from live server state at both moments, never remembered
+ * from the first.
+ *
+ * <p>A <em>sited deposit cell</em> never reaches either listener in the administering-creative
+ * case: {@code ManagedResourceCreativeGuard} cancels that break at HIGHEST, above this class,
+ * because letting vanilla take it would destroy the vein permanently and silently. This class is
+ * deliberately not where that lives — the rule has to hold for the sediment beds too, which these
+ * listeners exclude by design — and standing aside here therefore stays exactly as broad as it
+ * reads: a cancelled event never arrives.
  *
  * <h2>City bounds</h2>
  * Forcing adventure inside city bounds used to make in-city mining impossible as a side effect —

@@ -15,7 +15,10 @@ non-OP** player (to make the gesture).
 
 ## Steps
 
-1. Deploy the new JAR to the dedicated server.
+1. Deploy the new JAR to the dedicated server: `build/libs/britannia_mod-<version>-all.jar`,
+   the one carrying the `-all` classifier. The `-thin` jar beside it bundles no dependencies
+   and is not deployable — it starts clean and dies at the first animated render. See
+   "Deploying — which jar" in `README.md`.
 2. **Restart the server.** Not `/reload` — see "Restart required" below.
 3. In the startup log, find the block beginning `[grabby-hands][env]`. If a line at **ERROR** level
    says spawn protection is ARMED, note the radius.

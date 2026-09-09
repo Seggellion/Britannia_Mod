@@ -1,0 +1,16 @@
+{
+  "protocol_version": 1,
+  "player_uuid": "069a79f4-44e9-4726-a5be-fca90e38aaf5",
+  "deliveries": [
+    {
+      "delivery_uuid": "6f1d0c8e-3c2f-4d0a-9a9b-2b0f6f5a8e01",
+      "quest_id": 41,
+      "quest_state_id": "9001",
+      "transition_key": "1757200000:1201:choice:accept",
+      "items": [
+        {"id": "britannia_mod:britannia_shovel", "count": 1, "temporary": false}
+      ],
+      "created_at": "2026-09-06T21:10:00Z"
+    }
+  ]
+}

@@ -161,6 +161,27 @@ public final class ServerQuestTable {
      */
     public static void updateTriggers(ServerPlayer player, String questStateId,
                                       QuestObjectiveTriggers triggers) {
+        updateJournal(player, questStateId, triggers, null);
+    }
+
+    /**
+     * Replaces one quest's objectives <b>and</b> the journal detail the client sees, from the same
+     * authoritative response.
+     *
+     * <p>{@link #updateTriggers} wrote {@code withTriggers} and left {@code detail} alone, so the
+     * mirror kept the objective, the progress flags and the claim-pending state from <i>before</i>
+     * the advance. Anything reading the journal between an advance and the next full sync -- a
+     * quiet objective notice, the journal screen, a sync triggered by something else -- was
+     * therefore told the step the player had just finished was still the next one to do.
+     *
+     * @param detail the journal detail Rails published with the advance, or {@code null} to leave
+     *               the entry's existing detail in place. Null means "this response carried no
+     *               journal entry", not "the journal entry is empty": overwriting with
+     *               {@code JournalDetail.NONE} would blank a journal the mirror already had.
+     */
+    public static void updateJournal(ServerPlayer player, String questStateId,
+                                     QuestObjectiveTriggers triggers,
+                                     ClientQuestEntry.JournalDetail detail) {
         if (player == null) return;
         String key = clean(questStateId);
         if (key.isBlank()) return;
@@ -168,8 +189,12 @@ public final class ServerQuestTable {
         QUESTS_BY_PLAYER.computeIfPresent(player.getUUID(), (uuid, existing) -> {
             ClientQuestEntry entry = existing.get(key);
             if (entry == null) return existing;
+            ClientQuestEntry updated = entry.withTriggers(triggers);
+            if (detail != null) {
+                updated = updated.withDetail(detail);
+            }
             Map<String, ClientQuestEntry> quests = new LinkedHashMap<>(existing);
-            quests.put(key, entry.withTriggers(triggers));
+            quests.put(key, updated);
             return quests;
         });
     }

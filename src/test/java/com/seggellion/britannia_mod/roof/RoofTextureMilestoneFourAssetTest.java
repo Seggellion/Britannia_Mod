@@ -29,7 +29,7 @@ class RoofTextureMilestoneFourAssetTest {
     private static final Path ROOF_TEXTURES = PROJECT.resolve(
             "src/main/resources/assets/britannia_mod/textures/block/roof");
     private static final Path MANIFEST = PROJECT.resolve(
-            "docs/projects/stone-slate-roofs/M4_TEXTURE_MANIFEST.json");
+            "src/test/resources/roof/M4_TEXTURE_MANIFEST.json");
     private static final Set<String> EXPECTED_FILES = expectedFiles();
 
     @Test
@@ -74,6 +74,30 @@ class RoofTextureMilestoneFourAssetTest {
         assertEquals(5, uniqueHashes(hashes, "sandstone").size());
         assertEquals(6, uniqueHashes(hashes, "limestone").size());
         assertEquals(11, new HashSet<>(hashes.values()).size());
+    }
+
+    /**
+     * Merge regression, 2026-09-09 (public patch-18 lineage into the Rowan lineage).
+     *
+     * <p>Both lineages added this test file independently, and each checked its own copy of the
+     * M4 manifest in at a different path: {@code src/test/resources/roof/} on the public side,
+     * {@code docs/projects/stone-slate-roofs/} on the Rowan side. The two files were byte for
+     * byte identical, so the merge kept both and pointed {@link #MANIFEST} at the fixture copy,
+     * which is where a test fixture belongs. That leaves the documentation copy read by nothing:
+     * it can be edited, or the fixture regenerated, and every assertion in this class would keep
+     * passing against a manifest the project documentation no longer describes. Neither side had
+     * a reason to prove the two agree, because neither side had two. This is that proof.
+     */
+    @Test
+    void bothCheckedInCopiesOfTheManifestStillCarryTheSameContent() throws Exception {
+        Path documented = PROJECT.resolve("docs/projects/stone-slate-roofs/M4_TEXTURE_MANIFEST.json");
+        assertTrue(Files.isRegularFile(documented),
+                documented + " is missing; the manifest is documented in two places and this is one");
+        assertEquals(
+                JsonParser.parseString(Files.readString(MANIFEST)),
+                JsonParser.parseString(Files.readString(documented)),
+                "the documented M4 manifest has drifted from the fixture every other assertion in"
+                        + " this class runs against; regenerate both from the same source");
     }
 
     @Test

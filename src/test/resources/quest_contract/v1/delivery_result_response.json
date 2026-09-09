@@ -1,0 +1,7 @@
+{
+  "protocol_version": 1,
+  "delivery_uuid": "6f1d0c8e-3c2f-4d0a-9a9b-2b0f6f5a8e01",
+  "state": "acknowledged",
+  "outcome": "applied",
+  "duplicate": false
+}

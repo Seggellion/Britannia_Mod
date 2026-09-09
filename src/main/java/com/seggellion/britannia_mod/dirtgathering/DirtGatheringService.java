@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.dirtgathering;
 
+import com.seggellion.britannia_mod.quest.action.QuestActionEvents;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.registry.ToolRegistry;
 import net.minecraft.ChatFormatting;
@@ -49,6 +50,8 @@ public final class DirtGatheringService {
         DirtGatheringCooldown.claim(player);
 
         ItemStack output = new ItemStack(ItemRegistry.DIRT.get());
+        // Read the identity before delivering it: Inventory#add EMPTIES the stack it consumed.
+        String outputItemId = QuestActionEvents.itemId(output);
         if (!player.getInventory().add(output)) {
             player.drop(output, false);
         }
@@ -57,6 +60,10 @@ public final class DirtGatheringService {
                 Component.translatable("message.britannia_mod.dirt_gather.success")
                         .withStyle(ChatFormatting.GREEN),
                 true);
+        // Rowan questline M5 (protocol section 2.1): the authoritative success point. Every earlier
+        // return -- not ours, denied, still on cooldown -- has already left, so nothing that failed
+        // can reach this line, and the dirt is in the player's hands before it is reported.
+        QuestActionEvents.dirtGather(player, level, position, outputItemId, tool);
         return Result.GATHERED;
     }
 

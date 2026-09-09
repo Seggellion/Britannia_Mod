@@ -15,6 +15,13 @@ public final class FertileDirtMixingItem extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-        return HandRecipeInteraction.use(level, player, hand);
+        ItemStack held = player.getItemInHand(hand);
+        InteractionResultHolder<ItemStack> result = HandRecipeInteraction.use(level, player, hand);
+        if (result.getResult().consumesAction()) return result;
+        if (hand == InteractionHand.MAIN_HAND && !level.isClientSide) {
+            BowlMixingMessages.send(player,
+                    FertileDirtMixingService.diagnose(held, player.getOffhandItem()));
+        }
+        return result;
     }
 }

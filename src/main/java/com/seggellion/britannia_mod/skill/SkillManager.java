@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.skill;
 
 import com.google.gson.*;
 import com.mojang.logging.LogUtils;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -66,6 +67,23 @@ public enum SkillDataState {
 }
 
 public record SkillSnapshot(SkillDataState state, float value) {
+
+    /**
+     * Whether {@link #value} means anything (M9 item 4).
+     *
+     * <p>{@code getSkill} returns {@code 0f} both for a player who genuinely has 0 and for a player
+     * whose data never arrived, so the float alone can never tell the two apart -- only the state
+     * can. This is the accessor that says so out loud, so a caller cannot read the number without
+     * having been shown the question.
+     */
+    public boolean valueKnown() {
+        return state == SkillDataState.AVAILABLE;
+    }
+
+    /** The value, present only when it is a real one. An authoritative 0 is present and is 0. */
+    public java.util.OptionalDouble knownValue() {
+        return valueKnown() ? java.util.OptionalDouble.of(value) : java.util.OptionalDouble.empty();
+    }
 }
 
 
@@ -268,6 +286,7 @@ private static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent e) {
                 if (!isCurrentConnectedPlayer(sp)) return;
                 PLAYER_SKILLS.put(sp.getUUID(), loaded);
                 PLAYER_SKILL_STATES.put(sp.getUUID(), SkillDataState.AVAILABLE);
+                noteSkillFetchSuccess(sp.getUUID());
                 sendSkillSync(sp);
                 LOGGER.info("✅ Loaded {} skills for {}", loaded.size(), sp.getScoreboardName());
             });
@@ -283,6 +302,10 @@ private static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent e) {
         PLAYER_SKILL_STATES.remove(e.getEntity().getUUID());
         PLAYER_SKILL_REVISIONS.remove(e.getEntity().getUUID());
         ANNOUNCED_SKILL_VALUES.remove(e.getEntity().getUUID());
+        // The retry budget is per session, like every other map here: a reconnect gets a fresh
+        // login fetch and, if that fails too, a fresh bounded schedule.
+        SKILL_RETRIES.remove(e.getEntity().getUUID());
+        SKILL_FETCH_IN_FLIGHT.remove(e.getEntity().getUUID());
     }
 
     private static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
@@ -311,8 +334,180 @@ private static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent e) {
     private static void markSkillDataUnavailable(ServerPlayer player) {
         if (isCurrentConnectedPlayer(player)) {
             PLAYER_SKILL_STATES.put(player.getUUID(), SkillDataState.UNAVAILABLE);
+            // M9 item 4 / discovery D11: a failed load used to be the end of it for the session.
+            // Book the next bounded attempt instead.
+            noteSkillFetchFailure(player.getUUID());
             sendSkillSync(player);
         }
+    }
+
+    /* =====  Bounded skill-data retry (M9 item 4, discovery D11)  ===== */
+
+    /** Failed attempts and the earliest time the next one may run, per connected player. */
+    private static final Map<UUID, RetrySchedule> SKILL_RETRIES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** In-flight guard, so a tick and a plant attempt cannot both fire the same fetch. */
+    private static final java.util.Set<UUID> SKILL_FETCH_IN_FLIGHT =
+            java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /** Wall clock, replaceable so a test does not have to sleep through a five-minute backoff. */
+    private static java.util.function.LongSupplier retryClock = System::currentTimeMillis;
+
+    /** Once a second, matching the action outbox it shares a tick handler with. */
+    private static final int RETRY_TICK_INTERVAL = 20;
+
+    private record RetrySchedule(int failedAttempts, long nextAttemptMillis, long lastManualMillis) {
+    }
+
+    /** Test seam. */
+    static void installRetryClock(java.util.function.LongSupplier clock) {
+        retryClock = Objects.requireNonNull(clock, "Retry clock is required");
+    }
+
+    /** Test seam. */
+    static void resetRetryClock() {
+        retryClock = System::currentTimeMillis;
+    }
+
+    /** Test seam: how many automatic attempts this player has already burned. */
+    static int failedSkillFetchAttempts(UUID playerId) {
+        RetrySchedule schedule = SKILL_RETRIES.get(playerId);
+        return schedule == null ? 0 : schedule.failedAttempts();
+    }
+
+    /** Test seam. */
+    static void forgetSkillRetries() {
+        SKILL_RETRIES.clear();
+        SKILL_FETCH_IN_FLIGHT.clear();
+    }
+
+    private static void noteSkillFetchFailure(UUID playerId) {
+        SKILL_RETRIES.compute(playerId, (id, previous) -> {
+            int attempts = (previous == null ? 0 : previous.failedAttempts()) + 1;
+            long last = previous == null ? 0L : previous.lastManualMillis();
+            return new RetrySchedule(attempts,
+                    retryClock.getAsLong() + SkillDataBackoff.delayMillis(attempts), last);
+        });
+    }
+
+    private static void noteSkillFetchSuccess(UUID playerId) {
+        SKILL_RETRIES.remove(playerId);
+    }
+
+    /**
+     * Whether an automatic retry is due for this player right now: the data really is missing, the
+     * bound has not been spent, and the backoff has elapsed.
+     */
+    static boolean automaticRetryDue(UUID playerId, long nowMillis) {
+        if (PLAYER_SKILL_STATES.getOrDefault(playerId, SkillDataState.NOT_LOADED) != SkillDataState.UNAVAILABLE) {
+            return false;
+        }
+        RetrySchedule schedule = SKILL_RETRIES.get(playerId);
+        if (schedule == null || SkillDataBackoff.exhausted(schedule.failedAttempts())) {
+            return false;
+        }
+        return nowMillis >= schedule.nextAttemptMillis();
+    }
+
+    /**
+     * Runs any skill-data retry whose backoff has elapsed. Called once a second from the game bus.
+     *
+     * <p>Only players whose state is {@code UNAVAILABLE} are candidates, so a healthy server does
+     * no work here at all.
+     */
+    public static void tickSkillDataRetries(MinecraftServer server) {
+        if (server == null || server.getTickCount() % RETRY_TICK_INTERVAL != 0) {
+            return;
+        }
+        long now = retryClock.getAsLong();
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            if (automaticRetryDue(player.getUUID(), now)) {
+                beginSkillDataFetch(player);
+            }
+        }
+    }
+
+    /**
+     * Asks for one more attempt because the player just tried to do something that needs the data
+     * (M9 item 4). Rate-limited by {@link SkillDataBackoff#MANUAL_RETRY_COOLDOWN_MILLIS} and
+     * ignored once the automatic bound is spent, so the retry stays bounded however hard a player
+     * clicks. Returns whether a fetch was started.
+     */
+    public static boolean requestSkillDataRetry(ServerPlayer player) {
+        if (player == null) {
+            return false;
+        }
+        UUID playerId = player.getUUID();
+        SkillDataState state = PLAYER_SKILL_STATES.getOrDefault(playerId, SkillDataState.NOT_LOADED);
+        if (state == SkillDataState.AVAILABLE || state == SkillDataState.LOADING) {
+            return false;
+        }
+        long now = retryClock.getAsLong();
+        RetrySchedule schedule = SKILL_RETRIES.get(playerId);
+        if (schedule != null) {
+            if (SkillDataBackoff.exhausted(schedule.failedAttempts())
+                    || now - schedule.lastManualMillis() < SkillDataBackoff.MANUAL_RETRY_COOLDOWN_MILLIS) {
+                return false;
+            }
+            SKILL_RETRIES.put(playerId, new RetrySchedule(
+                    schedule.failedAttempts(), schedule.nextAttemptMillis(), now));
+        } else {
+            SKILL_RETRIES.put(playerId, new RetrySchedule(0, now, now));
+        }
+        return beginSkillDataFetch(player);
+    }
+
+    /**
+     * One attempt at re-loading a player's skills, off the server thread, applying the result on it.
+     *
+     * <p>Deliberately the same shape as the login bootstrap, and deliberately not a second cache:
+     * success installs the values and flips the state to {@code AVAILABLE}, which is all
+     * {@code FarmingCultivationGate} was ever waiting for -- so the player plants without relogging.
+     */
+    private static boolean beginSkillDataFetch(ServerPlayer player) {
+        UUID playerId = player.getUUID();
+        if (!SKILL_FETCH_IN_FLIGHT.add(playerId)) {
+            return false;
+        }
+        try {
+            ServerHttpExecutor.run(player.server, () -> {
+                PlayerSkills loaded = null;
+                try {
+                    loaded = fetchPlayerSkillsAsync(player);
+                } catch (Exception failure) {
+                    LOGGER.warn("Skill data retry failed for {}: {}",
+                            player.getScoreboardName(), failure.toString());
+                }
+                PlayerSkills result = loaded;
+                player.server.execute(() -> {
+                    SKILL_FETCH_IN_FLIGHT.remove(playerId);
+                    if (!isCurrentConnectedPlayer(player)) {
+                        SKILL_RETRIES.remove(playerId);
+                        return;
+                    }
+                    if (result == null) {
+                        noteSkillFetchFailure(playerId);
+                        PLAYER_SKILL_STATES.put(playerId, SkillDataState.UNAVAILABLE);
+                        sendSkillSync(player);
+                        return;
+                    }
+                    int burned = failedSkillFetchAttempts(playerId);
+                    PLAYER_SKILLS.put(playerId, result);
+                    PLAYER_SKILL_STATES.put(playerId, SkillDataState.AVAILABLE);
+                    noteSkillFetchSuccess(playerId);
+                    sendSkillSync(player);
+                    LOGGER.info("Skill data recovered for {} after {} failed attempt(s)",
+                            player.getScoreboardName(), burned);
+                });
+            });
+        } catch (RuntimeException rejected) {
+            // The HTTP pool is bounded and refuses work when saturated; that is a failed attempt
+            // like any other, not a reason to leak the in-flight guard.
+            SKILL_FETCH_IN_FLIGHT.remove(playerId);
+            noteSkillFetchFailure(playerId);
+            return false;
+        }
+        return true;
     }
 
     private static void sendSkillSync(ServerPlayer player) {

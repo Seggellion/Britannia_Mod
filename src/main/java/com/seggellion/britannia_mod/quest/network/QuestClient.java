@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.client.quest.QuestClientActions;
 import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.network.payload.QuestActionC2SPayload;
 import com.seggellion.britannia_mod.network.payload.QuestActionResultS2CPayload;
@@ -107,6 +108,13 @@ public final class QuestClient {
         if (response.success) {
             QuestManager.getInstance().setCurrentQuestState(response);
             syncQuestJournalFromResponse(response, acceptedQuests);
+            // Rowan farming questline M10. The claim that ends a questline is a turn-in, and its
+            // response comes back HERE, not through QuestTriggerResultS2CPayload -- so the
+            // achievement client action authored on quest 5's claim since M7 had nothing rendering
+            // it. Nothing is decided here: the server has already granted the advancement at the
+            // authoritative boundary and removed any announcement this player had earned before,
+            // so what arrives is exactly what should be shown, exactly once.
+            QuestClientActions.present(response.client_actions, response.quest_id, "");
         }
         pending.callback.accept(response);
     }

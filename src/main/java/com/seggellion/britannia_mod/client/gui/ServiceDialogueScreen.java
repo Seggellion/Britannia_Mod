@@ -36,12 +36,17 @@ public final class ServiceDialogueScreen extends Screen {
         String body = statusMessage == null ? view.body() : statusMessage;
         bodyComponent = DialoguePresentation.text(body);
 
+        // M11: the layout is told whether there is a portrait at all, so a narrow screen can drop
+        // that column instead of wrapping the body to a negative width. Both passes must agree, or
+        // the line count would be measured against a width the second pass does not use.
+        boolean hasPortrait = !view.npcName().isEmpty();
         DialogueLayout initialLayout = DialogueLayout.calculate(
                 width,
                 1,
                 view.options().size(),
                 font.lineHeight,
-                !view.professionLabel().isBlank()
+                !view.professionLabel().isBlank(),
+                hasPortrait
         );
         int textLineCount = font.split(bodyComponent, initialLayout.maxTextWidth()).size();
         layout = DialogueLayout.calculate(
@@ -49,7 +54,8 @@ public final class ServiceDialogueScreen extends Screen {
                 textLineCount,
                 view.options().size(),
                 font.lineHeight,
-                !view.professionLabel().isBlank()
+                !view.professionLabel().isBlank(),
+                hasPortrait
         );
 
         for (int index = 0; index < view.options().size(); index++) {

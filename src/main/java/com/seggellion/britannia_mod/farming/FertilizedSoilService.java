@@ -6,8 +6,11 @@ import com.seggellion.britannia_mod.block.entity.CommunityFarmBlockEntity;
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.quest.action.QuestActionEvents;
 import com.seggellion.britannia_mod.structure.HouseBuildRights;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -44,12 +47,22 @@ public final class FertilizedSoilService {
             return state.is(Blocks.FARMLAND) || state.getBlock() instanceof CommunityHoedFarmBlock
                     ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL;
         }
-        if (!eligible(level, pos, player)
+        if (player == null || player.isSpectator() || !level.mayInteract(player, pos)
                 || (player.getMainHandItem() != stack && player.getOffhandItem() != stack)) {
             return ItemInteractionResult.FAIL;
         }
         BlockState prior = level.getBlockState(pos);
         CommunityFarmBlockEntity prepared = level.getBlockEntity(pos) instanceof CommunityFarmBlockEntity be ? be : null;
+        if (prior.getBlock() instanceof CommunityHoedFarmBlock && prepared != null
+                && prepared.preparationExpired(level)) {
+            prepared.clearPreparedExpiry();
+            level.setBlock(pos, BlockRegistry.COMMUNITY_FARM_BLOCK.get().defaultBlockState(), 3);
+            player.displayClientMessage(Component.translatable(
+                    com.seggellion.britannia_mod.client.gui.QuestScreenText.PLOT_EXPIRED)
+                    .withStyle(ChatFormatting.YELLOW), true);
+            return ItemInteractionResult.SUCCESS;
+        }
+        if (!eligible(level, pos, player)) return ItemInteractionResult.FAIL;
         long budget = prepared == null ? 0 : prepared.remainingPreparationTicks(level.getGameTime());
         var previousData = prepared == null ? null : prepared.saveWithoutMetadata(level.registryAccess());
         BlockState fertile = BlockRegistry.FARMING_BLOCK.get().defaultBlockState().setValue(FarmingBlock.HYDRATION, 1);
@@ -63,11 +76,17 @@ public final class FertilizedSoilService {
         }
         soil.beginFertilizerApplication(prior, budget, player.getUUID(), level.getGameTime());
         soil.setHydration(1);
-        if (prepared != null) player.displayClientMessage(net.minecraft.network.chat.Component.literal(
-                "Public plot fertilized. Plant seeds within 60 seconds.").withStyle(net.minecraft.ChatFormatting.GREEN), true);
+        if (prepared != null) {
+            FarmingBlock.scheduleCommunitySeedWindow(level, pos, soil.getSeedableUntilGameTime());
+            player.displayClientMessage(Component.translatable(
+                            "message.britannia_mod.quest.plot.fertilized_countdown",
+                            FarmingBlockEntity.COMMUNITY_SEED_WINDOW_TICKS / 20L)
+                    .withStyle(ChatFormatting.GREEN), true);
+        }
         if (!player.getAbilities().instabuild) stack.shrink(1);
         level.playSound(null, pos, SoundEvents.GRAVEL_PLACE, SoundSource.BLOCKS, 1.0f, 1.0f);
         if (player instanceof ServerPlayer serverPlayer) FarmingSkill.award(serverPlayer, FarmingActionType.TOOL, 1, 1.0f);
+        if (prepared != null) QuestActionEvents.plotFertilize(player, level, pos);
         return ItemInteractionResult.CONSUME;
     }
 }

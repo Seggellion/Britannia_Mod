@@ -51,11 +51,16 @@ import net.neoforged.neoforge.event.level.BlockEvent;
  *
  * <p>A creative player who is not attacking with the Britannia pickaxe is administering, not
  * digging, and the break listener stands aside for them the same way every managed path does
- * ({@link ManagedExtractionPolicy#bypassesManagedExtraction}): the bed is removed as an ordinary
- * creative break, with no yield, no debt and no message. A creative player attacking with the
- * Britannia pickaxe is a tester and is taken through the real refusal chain, where the pickaxe is
- * the wrong tool for a bed and is told so. The block has no loot table, so a cancelled break
- * cannot drop anything either way.
+ * ({@link ManagedExtractionPolicy#bypassesManagedExtraction}): no yield, no debt and no message
+ * from this handler. A creative player attacking with the Britannia pickaxe is a tester and is
+ * taken through the real refusal chain, where the pickaxe is the wrong tool for a bed and is told
+ * so. The block has no loot table, so a cancelled break cannot drop anything either way.
+ *
+ * <p>A bed is a sited deposit cell, so in the administering-creative case the break has already
+ * been refused above this handler by {@code ManagedResourceCreativeGuard} and the bed stands: a
+ * vanilla break would have deleted an administrator-sited bed with nothing filed to bring it back.
+ * Standing aside here is still the right instruction for this handler — it must mint nothing for a
+ * non-earning actor — and it simply is not the class that decides whether the bed survives.
  *
  * <p>{@link EventPriority#HIGH} for the same reason the Mining gate uses it: it must land before
  * {@code CustomBlockBreakHandler}, which mutates the world inside its NORMAL-priority listener.

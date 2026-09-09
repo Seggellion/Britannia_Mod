@@ -62,13 +62,25 @@ import java.util.UUID;
  * A creative swing is one packet: the server fires {@code LeftClickBlock} and, unless something
  * cancelled it, destroys the block at once through the same {@code BreakEvent} chain a survival
  * dig ends in. The Mining gate cancelled that first event for anyone whose main hand was not an
- * authorised pickaxe (WRONG_TOOL) or whose Mining was below the block's requirement, and a
- * creative guard cancelled every creative break of a sited deposit outright — so an
- * administrator in creative could not dig through stone with an empty hand, and could not clear
- * a misplaced vein at all. The rule now is that a creative player who is not attacking with the
- * Britannia pickaxe is administering, every managed path stands aside, and the block breaks as
- * vanilla creative breaks it; a creative player attacking with the Britannia pickaxe is a tester
- * and gets the whole managed flow, ladder included.
+ * authorised pickaxe (WRONG_TOOL) or whose Mining was below the block's requirement — so an
+ * administrator in creative could not dig through stone with an empty hand. The rule now is that
+ * a creative player who is not attacking with the Britannia pickaxe is administering, every
+ * managed path stands aside, and the block breaks as vanilla creative breaks it; a creative
+ * player attacking with the Britannia pickaxe is a tester and gets the whole managed flow, ladder
+ * included.
+ *
+ * <h2>The one block that is still refused</h2>
+ * A <em>sited deposit cell</em> — an ore, a curated coal cell, a sediment bed, a bespoke rock —
+ * is the exception, and it is an exception about the block rather than about the hand. Letting
+ * vanilla take one destroys the vein permanently and silently: nothing is minted, so nothing
+ * files the restoration debt that would bring it back. {@code ManagedResourceCreativeGuard}
+ * refuses that break and names the supported route instead.
+ *
+ * <p>That takes nothing away from the rule above, and these tests are arranged to prove it: the
+ * administrator still clears ambient crust and ordinary blocks with any hand, the tester still
+ * gets the whole ladder, and a refused deposit is refused as an <em>administrator</em> — the
+ * deposit message, and no Mining denial recorded — which is a different outcome from the
+ * skill refusal a tester would have received on the same block.
  *
  * <h2>How these tests drive it</h2>
  * The creative rows call {@code ServerPlayerGameMode.handleBlockBreakAction} with
@@ -98,6 +110,8 @@ public final class CreativeMiningBypassGameTests {
     private static final String INSUFFICIENT = "message.britannia_mod.mining.insufficient";
     private static final String MINING_WRONG_TOOL = "message.britannia_mod.mining.wrong_tool";
     private static final String DEPOSIT_WRONG_TOOL = "message.britannia_mod.deposit.wrong_tool";
+    private static final String DEPOSIT_CREATIVE_REFUSED =
+            "message.britannia_mod.deposit.creative_refused";
 
     private static int sequence = 1;
 
@@ -263,14 +277,54 @@ public final class CreativeMiningBypassGameTests {
                         + MiningBreakGate.lastDenialKey(rig.player()));
     }
 
+    /**
+     * The whole ledger of a refused creative break of a sited deposit: standing, silent of any
+     * <em>Mining</em> opinion, unaccounted — and told exactly one thing, which is where the
+     * deposit went instead.
+     *
+     * <p>The last two checks are what separate this from a tester's refusal. A creative player
+     * attacking with the Britannia pickaxe who lacked the skill would be refused on the same
+     * block by the Mining gate, which speaks {@code mining.insufficient} and arms the denial
+     * cooldown. An administrator is refused by the deposit guard, which speaks its own line and
+     * never touches that state. Asserting both is how these tests keep proving the rule turns on
+     * the hand even where the two answers agree that the block survives.
+     */
+    private static void assertRefusedCreativeBreak(GameTestHelper helper, Rig rig, Block block,
+            BlockPos absolute, int debtBefore, float skillBefore, String priorDenialKey,
+            String label) {
+        ServerLevel level = helper.getLevel();
+        check(level.getBlockState(absolute).is(block),
+                label + ": a creative click deleted " + block.getDescriptionId()
+                        + "; a sited deposit comes back from nothing, so removing one stays an"
+                        + " explicit /manageddeposit remove or /populateores clear");
+        List<ItemStack> drops = takeDrops(level, absolute);
+        check(drops.isEmpty(), label + ": a refused creative break dropped " + drops);
+        check(debtCount(level) == debtBefore && !hasDebtAt(level, absolute),
+                label + ": a refused creative break filed restoration debt");
+        check(SkillManager.getSkill(rig.player(), MiningSkill.SKILL_ID) == skillBefore,
+                label + ": a refused creative break moved Mining");
+        List<String> said = rig.said();
+        check(said.equals(List.of(DEPOSIT_CREATIVE_REFUSED)),
+                label + ": the administrator should have been told once where the deposit goes"
+                        + " instead, and was told " + said);
+        check(MiningBreakGate.lastDenialKey(rig.player()).equals(priorDenialKey),
+                label + ": the deposit refusal recorded a Mining denial, so it was the ladder"
+                        + " refusing a tester rather than the guard refusing an administrator");
+    }
+
     /* ------------------------------------------------------------------ */
     /*  Creative without the Britannia pickaxe                             */
     /* ------------------------------------------------------------------ */
 
     /**
-     * Empty hand, an ordinary item, another pickaxe — on a sited ore, the ladder's top rung,
-     * ambient stone, managed coal and a sediment bed — at Mining 0.0, where every one of those
-     * would have refused a miner. All of it breaks, silently, and nothing is minted or filed.
+     * Empty hand, an ordinary item, another pickaxe — on the catalogued ambient crust, at Mining
+     * 0.0, where every one of those would have refused a miner. All of it breaks, silently, and
+     * nothing is minted or filed.
+     *
+     * <p>Ambient crust is the whole of what a creative administrator most needs to break: stone,
+     * granite and deepslate are what a cellar, a plot or a terraforming pass is cut out of, and
+     * they are catalogued resources that yield graded stone, so they exercise the managed path
+     * fully. The sited deposits are swept next door, where the outcome differs.
      */
     @GameTest(template = TEMPLATE, batch = BATCH)
     public static void creativeWithoutThePickaxeBreaksEveryMineableLikeAnyBlock(GameTestHelper helper) {
@@ -283,9 +337,7 @@ public final class CreativeMiningBypassGameTests {
                 new Hand("empty hand", ItemStack.EMPTY),
                 new Hand("a stick", new ItemStack(Items.STICK)),
                 new Hand("a diamond pickaxe", new ItemStack(Items.DIAMOND_PICKAXE)));
-        List<Block> targets = List.of(
-                BlockRegistry.SILVER_ORE.get(), BlockRegistry.VALORITE_ORE.get(), Blocks.STONE,
-                managedCoal(), BlockRegistry.CLAY_DEPOSIT.get());
+        List<Block> targets = List.of(Blocks.STONE, Blocks.GRANITE, Blocks.DEEPSLATE);
 
         for (Hand hand : hands) {
             for (Block target : targets) {
@@ -302,6 +354,50 @@ public final class CreativeMiningBypassGameTests {
         helper.succeed();
     }
 
+    /**
+     * The same three hands on the sited deposits: refused, and refused as an administrator.
+     *
+     * <p>A sited ore, the ladder's top rung, a curated coal cell and a sediment bed — one from
+     * each family that counts as economy somebody placed. None of them is deleted by a click, and
+     * none of them pays: the administrator leaves with no ore, no skill, no debt and no worn tool,
+     * exactly as they would have from the ambient crust next door. The only difference between
+     * the two sweeps is whether the block is still there afterwards, which is the whole of what
+     * this protection adds.
+     */
+    @GameTest(template = TEMPLATE, batch = BATCH)
+    public static void creativeWithoutThePickaxeIsRefusedEverySitedDeposit(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        Rig rig = join(level, "creative-deposit-clicker", GameType.CREATIVE).mining(0.0f);
+
+        record Hand(String label, ItemStack stack) {
+        }
+        List<Hand> hands = List.of(
+                new Hand("empty hand", ItemStack.EMPTY),
+                new Hand("a stick", new ItemStack(Items.STICK)),
+                new Hand("a diamond pickaxe", new ItemStack(Items.DIAMOND_PICKAXE)));
+        List<Block> targets = List.of(
+                BlockRegistry.SILVER_ORE.get(), BlockRegistry.VALORITE_ORE.get(),
+                managedCoal(), BlockRegistry.CLAY_DEPOSIT.get());
+
+        for (Hand hand : hands) {
+            for (Block target : targets) {
+                rig.holding(hand.stack().copy());
+                BlockPos absolute = plant(helper, rig, target);
+                int debtBefore = debtCount(level);
+                String denialBefore = MiningBreakGate.lastDenialKey(rig.player());
+
+                swing(rig, absolute);
+
+                assertRefusedCreativeBreak(helper, rig, target, absolute, debtBefore, 0.0f,
+                        denialBefore,
+                        "creative with " + hand.label() + " on " + target.getDescriptionId());
+                check(rig.player().getMainHandItem().getDamageValue() == 0,
+                        "a refused creative break wore " + hand.label());
+            }
+        }
+        helper.succeed();
+    }
+
     /** A Britannia pickaxe anywhere but the attacking hand is not the testing exception. */
     @GameTest(template = TEMPLATE, batch = BATCH)
     public static void aPickaxeInTheOffhandOrTheInventoryDoesNotMakeATester(GameTestHelper helper) {
@@ -309,25 +405,39 @@ public final class CreativeMiningBypassGameTests {
         Rig rig = join(level, "creative-offhand", GameType.CREATIVE).mining(0.0f);
         Block silver = BlockRegistry.SILVER_ORE.get();
 
+        // Silver is a sited deposit, so the break is refused either way -- but an administrator
+        // and a tester are refused by different authorities, and assertRefusedCreativeBreak pins
+        // which one answered: the deposit line, and no Mining denial armed. A tester at Mining 0.0
+        // would have been told "insufficient" by the ladder and armed the cooldown.
+        String denialBefore = MiningBreakGate.lastDenialKey(rig.player());
+
         rig.holding(ItemStack.EMPTY).offhand(pickaxe());
         BlockPos absolute = plant(helper, rig, silver);
         int debtBefore = debtCount(level);
         swing(rig, absolute);
-        assertPlainCreativeRemoval(helper, rig, silver, absolute, debtBefore, 0.0f,
+        assertRefusedCreativeBreak(helper, rig, silver, absolute, debtBefore, 0.0f, denialBefore,
                 "empty main hand, Britannia pickaxe in the offhand");
 
         rig.holding(new ItemStack(Items.STICK));
         absolute = plant(helper, rig, silver);
         swing(rig, absolute);
-        assertPlainCreativeRemoval(helper, rig, silver, absolute, debtBefore, 0.0f,
+        assertRefusedCreativeBreak(helper, rig, silver, absolute, debtBefore, 0.0f, denialBefore,
                 "a stick in the main hand, Britannia pickaxe in the offhand");
 
         rig.holding(ItemStack.EMPTY).offhand(ItemStack.EMPTY);
         rig.player().getInventory().setItem(5, pickaxe());
         absolute = plant(helper, rig, silver);
         swing(rig, absolute);
-        assertPlainCreativeRemoval(helper, rig, silver, absolute, debtBefore, 0.0f,
+        assertRefusedCreativeBreak(helper, rig, silver, absolute, debtBefore, 0.0f, denialBefore,
                 "empty hands, Britannia pickaxe in the hotbar");
+
+        // And the same three hands still clear ambient crust, so what refused them above was the
+        // block and not the hand.
+        absolute = plant(helper, rig, Blocks.STONE);
+        debtBefore = debtCount(level);
+        swing(rig, absolute);
+        assertPlainCreativeRemoval(helper, rig, Blocks.STONE, absolute, debtBefore, 0.0f,
+                "empty hands, Britannia pickaxe in the hotbar, on ambient stone");
         helper.succeed();
     }
 
@@ -338,6 +448,13 @@ public final class CreativeMiningBypassGameTests {
      * <p>Depletion in this implementation replaces the worked cell with air, so there is no
      * "depleted block" to break; the nearest live state is a cell whose restoration is still
      * pending, which is what the middle case plants.
+     *
+     * <p>Driven on deepslate, which wants Mining 30.0 and is ambient crust. The block is chosen
+     * so the question stays the one the test is asking — whether anything a miner would be
+     * stopped by also stops an administrator — rather than becoming a question about sited
+     * deposits, which are refused for a reason that has nothing to do with skill, debt or
+     * cooldowns. That refusal is swept over its own four families in
+     * {@link #creativeWithoutThePickaxeIsRefusedEverySitedDeposit}, at this same Mining 0.0.
      */
     @GameTest(template = TEMPLATE, batch = BATCH)
     public static void skillDepletionAndCooldownCannotBlockTheBypass(GameTestHelper helper) {
@@ -345,17 +462,16 @@ public final class CreativeMiningBypassGameTests {
         Rig rig = join(level, "creative-blocked-by-nothing", GameType.CREATIVE)
                 .mining(0.0f).holding(ItemStack.EMPTY);
 
-        // Valorite wants 99.0; this player has 0.0.
-        Block valorite = BlockRegistry.VALORITE_ORE.get();
-        BlockPos absolute = plant(helper, rig, valorite);
+        // Deepslate wants 30.0; this player has 0.0.
+        Block crust = Blocks.DEEPSLATE;
+        BlockPos absolute = plant(helper, rig, crust);
         int debtBefore = debtCount(level);
         swing(rig, absolute);
-        assertPlainCreativeRemoval(helper, rig, valorite, absolute, debtBefore, 0.0f,
-                "Mining 0.0 on valorite");
+        assertPlainCreativeRemoval(helper, rig, crust, absolute, debtBefore, 0.0f,
+                "Mining 0.0 on deepslate");
 
         // A cell with a restoration already owed on it, and a block standing there anyway.
-        Block silver = BlockRegistry.SILVER_ORE.get();
-        absolute = plant(helper, rig, silver);
+        absolute = plant(helper, rig, crust);
         BlockState standing = level.getBlockState(absolute);
         BrokenBlockTracker.recordBrokenBlock(level, absolute, standing, UUID.randomUUID());
         int debtWithPending = debtCount(level);
@@ -371,7 +487,7 @@ public final class CreativeMiningBypassGameTests {
 
         // Arm the denial cooldown as a survival miner would, then come back to creative.
         rig.mode(GameType.SURVIVAL);
-        absolute = plant(helper, rig, silver);
+        absolute = plant(helper, rig, crust);
         check(firstSwingRefused(rig, absolute), "precondition: survival bare-handed is refused");
         String armed = MiningBreakGate.lastDenialKey(rig.player());
         check(!armed.isEmpty(), "precondition: the refusal armed the denial cooldown");
@@ -491,17 +607,20 @@ public final class CreativeMiningBypassGameTests {
     public static void theDecisionIsReadFreshAtEverySwingAndEveryBreak(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         Block silver = BlockRegistry.SILVER_ORE.get();
+        // Ambient crust with a real threshold (30.0), so the plain-removal segments below are
+        // about the mode and the hand rather than about the deposit protection.
+        Block crust = Blocks.DEEPSLATE;
         Rig rig = join(level, "mode-switcher", GameType.SURVIVAL).mining(100.0f).holding(pickaxe());
 
         // A permitted survival start...
-        BlockPos absolute = plant(helper, rig, silver);
+        BlockPos absolute = plant(helper, rig, crust);
         check(!firstSwingRefused(rig, absolute), "precondition: a qualified survival start is permitted");
         // ...completed by a creative player with an empty hand.
         rig.mode(GameType.CREATIVE).holding(ItemStack.EMPTY);
         rig.said();
         int debtBefore = debtCount(level);
         rig.player().gameMode.destroyBlock(absolute);
-        assertPlainCreativeRemoval(helper, rig, silver, absolute, debtBefore, 100.0f,
+        assertPlainCreativeRemoval(helper, rig, crust, absolute, debtBefore, 100.0f,
                 "a dig started in survival and completed in creative bare-handed");
 
         // The same player, pickaxe back in hand: a tester, paid and filed.
@@ -517,9 +636,9 @@ public final class CreativeMiningBypassGameTests {
 
         // A tester refused for skill, then the hand emptied: the next swing breaks plainly.
         rig.mining(0.0f);
-        absolute = plant(helper, rig, silver);
+        absolute = plant(helper, rig, crust);
         swing(rig, absolute);
-        check(level.getBlockState(absolute).is(silver), "precondition: the tester is refused at 0.0");
+        check(level.getBlockState(absolute).is(crust), "precondition: the tester is refused at 0.0");
         rig.holding(ItemStack.EMPTY);
         rig.said();
         // The refusal just above legitimately recorded a denial; the plain removal must not add one.
@@ -533,6 +652,26 @@ public final class CreativeMiningBypassGameTests {
         check(rig.said().isEmpty(), "the plain removal after a refusal was spoken to");
         check(MiningBreakGate.lastDenialKey(rig.player()).equals(recorded),
                 "the plain removal after a refusal recorded a new denial");
+
+        // The same switch over a sited deposit. Both hands are refused there, so what proves the
+        // read is fresh is WHO refused: the ladder tells a tester their skill is short and arms
+        // the cooldown, and the guard tells an administrator where deposits go and touches
+        // neither. A remembered decision would have spoken the same line twice.
+        rig.holding(pickaxe());
+        absolute = plant(helper, rig, silver);
+        swing(rig, absolute);
+        check(level.getBlockState(absolute).is(silver),
+                "precondition: a tester at Mining 0.0 is refused silver");
+        check(rig.said().equals(List.of(INSUFFICIENT)),
+                "precondition: the ladder refuses the tester in as many words");
+        String testerDenial = MiningBreakGate.lastDenialKey(rig.player());
+        check(!testerDenial.isEmpty(), "precondition: the tester's refusal armed the cooldown");
+
+        rig.holding(ItemStack.EMPTY);
+        debtBefore = debtCount(level);
+        swing(rig, absolute);
+        assertRefusedCreativeBreak(helper, rig, silver, absolute, debtBefore, 0.0f, testerDenial,
+                "emptying the hand turned the tester into an administrator at the same deposit");
         helper.succeed();
     }
 

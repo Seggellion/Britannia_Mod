@@ -1,0 +1,45 @@
+{
+  "id": "9005",
+  "quest_state_id": "9005",
+  "quest_id": "45",
+  "quest_key": "rowan_farming_5",
+  "name": "From Soil to Supper (5 of 5): Plant and Harvest",
+  "brief_description": "Hoe a public plot, fertilize it, plant your seed, water it, and harvest your crop.",
+  "accepted_at": "2026-09-06T21:30:00Z",
+  "status": "accepted",
+  "stage": {"questline_key": "rowan_farming", "index": 5, "count": 5, "label": "Quest 5 of 5"},
+  "quest_giver": {"name": "Rowan", "profession": "Farmer"},
+  "objective": "Hoe a public plot with your Farming Hoe, fertilize it, plant your seed, water it, then harvest your crop.",
+  "progress": [
+    {"key": "plot_hoed", "label": "Prepare a public plot", "done": true},
+    {"key": "plot_fertilized", "label": "Fertilize it", "done": true},
+    {"key": "crop_planted", "label": "Plant your seed", "done": true},
+    {"key": "crop_watered", "label": "Water it", "done": true},
+    {"key": "crop_harvested", "label": "Harvest your crop", "done": false}
+  ],
+  "rewards_preview": {
+    "on_accept": [],
+    "on_complete": [{"id": "britannia_mod:gold_coin", "count": 5}],
+    "achievements": [{"key": "first_harvest", "title": "First Harvest"}]
+  },
+  "keep_items": [{"id": "britannia_mod:fertilized_dirt", "count": 1}],
+  "claim_pending": false,
+  "triggers": {
+    "action": {
+      "trigger_key": "crop_harvested",
+      "label": "Harvest your crop",
+      "action": "crop_harvest",
+      "match": {"crop_id": "carrot", "require_planter": true},
+      "require_bound": {
+        "plot_key": "minecraft:overworld:1203:64:-488",
+        "crop_cycle_uuid": "b1b3d4a0-1f7e-4c0d-8f4c-6a2e9c1f0a11"
+      }
+    },
+    "steps": [
+      {"key": "plot_hoed", "action": "plot_hoe", "match": {"community_plot": true}, "bind": ["plot_key"], "done": true},
+      {"key": "plot_fertilized", "action": "plot_fertilize", "require_bound": {"plot_key": "minecraft:overworld:1203:64:-488"}, "deadline": {"after": "plot_hoed", "seconds": 600}, "done": true},
+      {"key": "crop_planted", "action": "crop_plant", "match": {"crop_id": "carrot"}, "require_bound": {"plot_key": "minecraft:overworld:1203:64:-488"}, "bind": ["crop_cycle_uuid"], "deadline": {"after": "plot_fertilized", "seconds": 300}, "done": true},
+      {"key": "crop_watered", "action": "crop_water", "require_bound": {"plot_key": "minecraft:overworld:1203:64:-488", "crop_cycle_uuid": "b1b3d4a0-1f7e-4c0d-8f4c-6a2e9c1f0a11"}, "done": true}
+    ]
+  }
+}

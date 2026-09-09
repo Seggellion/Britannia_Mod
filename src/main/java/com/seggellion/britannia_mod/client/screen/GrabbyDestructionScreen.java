@@ -64,11 +64,13 @@ public class GrabbyDestructionScreen extends Screen {
                         new DialogueOptionViewModel(OPTION_NO,
                                 Component.translatable("screen.britannia_mod.grabby.destroy.no").getString(), false)));
 
+        // No quest giver, so no portrait column: the confirmation gets the whole width for its
+        // sentence rather than a column reserved for a picture this screen never draws.
         DialogueLayout initial = DialogueLayout.calculate(
-                this.width, 1, dialogueView.options().size(), this.font.lineHeight, false);
+                this.width, 1, dialogueView.options().size(), this.font.lineHeight, false, false);
         int lineCount = this.font.split(bodyComponent, initial.maxTextWidth()).size();
         this.dialogueLayout = DialogueLayout.calculate(
-                this.width, lineCount, dialogueView.options().size(), this.font.lineHeight, false);
+                this.width, lineCount, dialogueView.options().size(), this.font.lineHeight, false, false);
 
         for (int index = 0; index < dialogueView.options().size(); index++) {
             addRenderableWidget(DialoguePresentation.optionButton(

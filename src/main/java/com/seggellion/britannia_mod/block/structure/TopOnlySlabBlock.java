@@ -88,14 +88,10 @@ public InteractionResult useWithoutItem(BlockState state,
 
     if (level.getBlockEntity(pos) instanceof AdaptiveRoofBlockEntity be) {
 
-        // On the logical **server**: mutate data and broadcast it
+        // The server owns stored decoration; its update packet refreshes client model data.
         if (!level.isClientSide) {
-            be.setBottomTexture(texture);     // triggers packet we fixed earlier
-            return InteractionResult.SUCCESS;
+            be.setBottomTexture(texture);
         }
-
-        // On the **client**: update immediately so the player sees it at once
-        be.setBottomTexture(texture);
         return InteractionResult.SUCCESS;
     }
     return InteractionResult.PASS;
@@ -165,6 +161,11 @@ protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockSt
 
         if (item == Items.OAK_PLANKS) return ResourceLocation.fromNamespaceAndPath("minecraft", "block/oak_planks");
         if (item == Items.SPRUCE_PLANKS) return ResourceLocation.fromNamespaceAndPath("minecraft", "block/spruce_planks");
+
+        if (item == Item.byBlock(BlockRegistry.CUSTOM_SANDSTONE_BRICK.get())) {
+            // Match the registered block item's canonical model (variant 0, bottom row).
+            return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/structure/sandstone/custom_sandstone_brick_0");
+        }
      
              if (item == Item.byBlock(BlockRegistry.THATCH_ROOF.get())) {
                 return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/roof/thatch_roof_flat");

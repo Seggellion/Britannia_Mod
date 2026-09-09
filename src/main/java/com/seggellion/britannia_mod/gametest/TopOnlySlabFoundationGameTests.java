@@ -121,9 +121,9 @@ public final class TopOnlySlabFoundationGameTests {
                 InteractionResult decoratorResult = acquired.useWithoutItem(
                         helper.getLevel(), player, hit);
                 check(decoratorResult == InteractionResult.PASS,
-                        "base roof consumed the decorator as a clear-bottom tool");
+                        "base fallback must leave decorator handling to the item");
                 check(STONE_TEXTURE.equals(blockEntity.getBottomTexture()),
-                        "decorator erased acquired adaptive data from a base roof");
+                        "base fallback changed data before the decorator item could run");
 
                 player.setItemInHand(
                         InteractionHand.MAIN_HAND, new ItemStack(Items.WOODEN_AXE));
@@ -195,7 +195,7 @@ public final class TopOnlySlabFoundationGameTests {
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
         try {
             ItemStack decorator = new ItemStack(ItemRegistry.INTERIOR_DECORATOR_TOOL.get());
-            player.setItemInHand(InteractionHand.MAIN_HAND, decorator);
+            player.setItemInHand(InteractionHand.OFF_HAND, decorator);
             BlockHitResult hit = new BlockHitResult(
                     Vec3.atCenterOf(absolute), Direction.UP, absolute, false);
 
@@ -205,7 +205,7 @@ public final class TopOnlySlabFoundationGameTests {
                         decorator,
                         helper.getLevel(),
                         player,
-                        InteractionHand.MAIN_HAND,
+                        InteractionHand.OFF_HAND,
                         hit);
                 BlockState after = helper.getBlockState(target);
 

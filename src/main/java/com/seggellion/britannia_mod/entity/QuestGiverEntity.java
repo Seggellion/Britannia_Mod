@@ -32,6 +32,27 @@ public class QuestGiverEntity extends CitizenEntity {
         net.minecraft.network.syncher.SynchedEntityData.defineId(
             QuestGiverEntity.class, net.minecraft.network.syncher.EntityDataSerializers.STRING);
 
+    /**
+     * Where this <em>particular</em> quest giver's landmarks are, copied from the spawner that
+     * placed it (Rowan farming questline M6, discovery 6.5).
+     *
+     * <p>Deliberately not part of the identity. Two Rowans standing in different towns are one
+     * {@code origin_npc} and one questline; only this string differs, and nothing that builds a
+     * Rails request reads it -- see {@link #resolveQuestGiverApiId()}, which never looks here.
+     */
+    private static final net.minecraft.network.syncher.EntityDataAccessor<String> DATA_LOCAL_DIRECTIONS =
+        net.minecraft.network.syncher.SynchedEntityData.defineId(
+            QuestGiverEntity.class, net.minecraft.network.syncher.EntityDataSerializers.STRING);
+
+    /**
+     * The profession an archetype answers with, keyed by its Rails identity. Anything not listed
+     * keeps the title every quest giver has always had, so no existing archetype changes.
+     */
+    private static final java.util.Map<String, String> ROLE_TITLES = java.util.Map.of(
+        com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity.ROWAN_ARCHETYPE, "Farmer");
+
+    private static final String DEFAULT_ROLE_TITLE = "Wanderer";
+
     private boolean reportedLegacyIdentity;
 
     public QuestGiverEntity(EntityType<? extends QuestGiverEntity> type, Level level) {
@@ -42,12 +63,14 @@ public class QuestGiverEntity extends CitizenEntity {
     protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_QUEST_GIVER_API_ID, "");
+        builder.define(DATA_LOCAL_DIRECTIONS, "");
     }
 
     @Override
     public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putString("questGiverApiId", getQuestGiverApiId());
+        tag.putString("questGiverDirections", getLocalDirections());
     }
 
     @Override
@@ -56,6 +79,25 @@ public class QuestGiverEntity extends CitizenEntity {
         if (tag.contains("questGiverApiId")) {
             setQuestGiverApiId(tag.getString("questGiverApiId"));
         }
+        if (tag.contains("questGiverDirections")) {
+            setLocalDirections(tag.getString("questGiverDirections"));
+        }
+    }
+
+    /** Sanitized and bounded by the spawner that supplies it; empty when this giver has no hint. */
+    public void setLocalDirections(String directions) {
+        this.entityData.set(DATA_LOCAL_DIRECTIONS,
+            com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity.sanitizeDirections(directions));
+    }
+
+    public String getLocalDirections() {
+        return this.entityData.get(DATA_LOCAL_DIRECTIONS);
+    }
+
+    /** The profession label for a Rails identity, without needing an entity to ask. */
+    public static String roleTitleFor(String questGiverApiId) {
+        if (questGiverApiId == null) return DEFAULT_ROLE_TITLE;
+        return ROLE_TITLES.getOrDefault(questGiverApiId.trim(), DEFAULT_ROLE_TITLE);
     }
 
     public void setQuestGiverApiId(String apiId) {
@@ -96,9 +138,14 @@ private static final Style UO_STYLE = Style.EMPTY
             .withFont(FONT_UO_CLASSIC)
             .withColor(0x2194A5);
 
+    /**
+     * Driven by the identity, not by a stored field, so it cannot drift from the quest the giver
+     * offers and needs nothing extra to survive a respawn. Widened to public so a test outside this
+     * package can read it; no behaviour depends on the visibility.
+     */
     @Override
-    protected String getRoleTitle() {
-        return "Wanderer";
+    public String getRoleTitle() {
+        return roleTitleFor(resolveQuestGiverApiId());
     }
 
     public static AttributeSupplier.Builder createAttributes() {

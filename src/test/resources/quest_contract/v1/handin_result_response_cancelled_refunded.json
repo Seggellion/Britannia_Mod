@@ -1,0 +1,35 @@
+{
+  "protocol_version": 1,
+  "result": "cancelled_refunded",
+  "handin_uuid": "2f8c1d40-9a3b-4c77-8f21-5b6e0d9a1c34",
+  "state": "cancelled",
+  "removed_items": [
+    {
+      "count": 1,
+      "requirement_index": 0,
+      "resolver": "awarded_crop_harvest_item",
+      "flag_value": "carrot",
+      "item": "britannia_mod:carrot"
+    }
+  ],
+  "reason": "abandoned",
+  "response": {
+    "success": true,
+    "item_handin_refund": {
+      "protocol_version": 1,
+      "handin_uuid": "2f8c1d40-9a3b-4c77-8f21-5b6e0d9a1c34",
+      "reason": "abandoned"
+    },
+    "reward_delivery": {
+      "protocol_version": 1,
+      "delivery_uuid": "b1b3d4a0-1f7e-4c0d-8f4c-6a2e9c1f0a11",
+      "quest_id": 41,
+      "quest_state_id": "9001",
+      "transition_key": "handin_refund:2f8c1d40-9a3b-4c77-8f21-5b6e0d9a1c34",
+      "items": [{ "id": "britannia_mod:carrot", "count": 1, "temporary": false }],
+      "state": "pending",
+      "created_at": "2026-09-09T12:00:00Z"
+    }
+  },
+  "refund_delivery": { "delivery_uuid": "b1b3d4a0-1f7e-4c0d-8f4c-6a2e9c1f0a11" }
+}

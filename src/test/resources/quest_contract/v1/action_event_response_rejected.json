@@ -1,0 +1,9 @@
+{
+  "protocol_version": 1,
+  "event_uuid": "3d2a0f8b-6b6c-4d2c-9d5a-0e7b8f1c2d3e",
+  "result": "rejected",
+  "reason": "not_planter",
+  "detail": "subject.planter_uuid does not match the player",
+  "quest_state_id": "9005",
+  "node_id": 1305
+}

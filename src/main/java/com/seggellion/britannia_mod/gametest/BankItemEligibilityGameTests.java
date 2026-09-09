@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.gametest;
 
+import com.google.gson.JsonObject;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.bank.item.BankItemCodec;
 import com.seggellion.britannia_mod.bank.item.BankItemEligibility;
@@ -280,6 +281,16 @@ public final class BankItemEligibilityGameTests {
         response.quest_id = 42L;
         response.questStateId = "gametest-quest-state";
         response.granted_items = List.of(reward);
+        // Rowan farming questline M1: only a TEMPORARY reward carries the quest stamp, and a
+        // reward is temporary when the destination node's destroy objective names it -- the
+        // magic ring's real shape. A plain grant is the player's to keep and is never stamped.
+        JsonObject destroyTrigger = new JsonObject();
+        destroyTrigger.addProperty("trigger_key", "ring_destroyed");
+        destroyTrigger.addProperty("item_tag", "magic_ring");
+        QuestModels.QuestNode node = new QuestModels.QuestNode();
+        node.metadata = new JsonObject();
+        node.metadata.add("destroy_trigger", destroyTrigger);
+        response.currentNode = node;
 
         QuestRewardService.apply(player, response);
 

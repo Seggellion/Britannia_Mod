@@ -63,6 +63,10 @@ public class VariantTopOnlySlabBlock extends TopOnlySlabBlock implements Variant
             Player player,
             InteractionHand hand,
             BlockHitResult hit) {
-        return cycleVariation(stack, state, level, pos, player);
+        // Main-hand decoration must reach the item's bottom-clear handler. The offhand
+        // retains top cycling without touching the acquired lower texture.
+        return hand == InteractionHand.OFF_HAND
+                ? cycleVariation(stack, state, level, pos, player)
+                : super.useItemOn(stack, state, level, pos, player, hand, hit);
     }
 }

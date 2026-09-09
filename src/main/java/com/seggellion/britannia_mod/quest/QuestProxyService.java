@@ -12,6 +12,9 @@ import com.seggellion.britannia_mod.network.QuestPayloadHandler;
 import com.seggellion.britannia_mod.network.payload.ClientboundSyncQuestsPayload;
 import com.seggellion.britannia_mod.network.payload.QuestActionC2SPayload;
 import com.seggellion.britannia_mod.network.payload.QuestActionResultS2CPayload;
+import com.seggellion.britannia_mod.quest.achievement.QuestAchievementAward;
+import com.seggellion.britannia_mod.quest.handin.QuestItemHandinService;
+import com.seggellion.britannia_mod.quest.network.QuestClientPayload;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
 import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
 import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
@@ -160,10 +163,7 @@ public final class QuestProxyService {
                             "{\"success\":false,\"error\":\"quest_service_unavailable\"}");
                         return;
                     }
-                    applyAuthoritativeResult(player, request, intent, result);
-                    QuestActionTelemetry.result(player, request, result.statusCode,
-                        succeeded(result), grantedItemCount(result));
-                    send(player, request.requestId(), result.statusCode, result.body);
+                    completeAction(player, request, intent, result);
                 }));
         } catch (RejectedExecutionException rejected) {
             QuestActionTelemetry.rejected(player, request, QuestActionTelemetry.Stage.DISPATCH,
@@ -286,14 +286,103 @@ public final class QuestProxyService {
         }
     }
 
-    private static void applyAuthoritativeResult(ServerPlayer player, QuestActionC2SPayload request,
-                                                 ResolvedIntent intent, Result result) {
+    /**
+     * How a hand-in's completion is applied, for callers outside this package.
+     *
+     * <p>The reconciler needs it because a completion recovered after a restart has a ledger row
+     * where a live claim has a packet: no action, no resolved quest giver, no request id. Everything
+     * that matters is in the response itself, so this reads the quest id from there and lets the
+     * journal parser fall back to the giver name Rails published.
+     */
+    public static QuestItemHandinService.CompletionApplier handinCompletionApplier() {
+        return (player, response) -> applyQuestResponse(player, response, GSON.toJson(response),
+            QuestActionC2SPayload.Action.CHOOSE, questIdOf(response), "", "", ZERO_UUID);
+    }
+
+    private static long questIdOf(JsonObject response) {
+        try {
+            String raw = string(response, "quest_id");
+            return raw.isBlank() ? 0L : Long.parseLong(raw.trim());
+        } catch (RuntimeException notANumber) {
+            return 0L;
+        }
+    }
+
+    /**
+     * Applies Rails' answer and sends exactly one reply to the screen that asked.
+     *
+     * <p>One answer is not an ordinary transition: {@code handin_required} means Rails prepared a
+     * strict item hand-in and deliberately did <b>not</b> advance the node, run an effect, publish a
+     * reward or complete the quest. Falling through to the ordinary path would apply nothing, forward
+     * the same node back, and -- since a same-node answer is read as a dismissal -- close the
+     * dialogue as though the choice had done something. So it is recognised here, and the hand-in
+     * service owns the reply from that point: it removes what was asked for, confirms it, and answers
+     * with the completion, the shortfall, or a reason.
+     *
+     * <p>An older build that did not recognise the result would take that fall-through path and fail
+     * closed, which is what the protocol's release order relies on: no node moves and no reward is
+     * ever created, because Rails creates none until a shard confirms a removal.
+     */
+    private static void completeAction(ServerPlayer player, QuestActionC2SPayload request,
+                                       ResolvedIntent intent, Result result) {
+        JsonObject root = handinDemand(request, result);
+        if (root != null) {
+            QuestItemHandinService.begin(player, root,
+                (target, response) -> applyQuestResponse(target, response, GSON.toJson(response),
+                    QuestActionC2SPayload.Action.CHOOSE, request.questId(), request.requestUuid(),
+                    intent.questGiverName(), intent.questGiverUuid()),
+                (status, body) -> {
+                    // Reported off the body the hand-in actually produced, not off Rails' original
+                    // answer: the demand carried no grant, and the completion that replaced it does.
+                    QuestActionTelemetry.result(player, request, status,
+                        succeeded(new Result(status, body)), grantedItemCount(new Result(status, body)));
+                    send(player, request.requestId(), status, body);
+                });
+            return;
+        }
+        String body = applyAuthoritativeResult(player, request, intent, result);
+        QuestActionTelemetry.result(player, request, result.statusCode,
+            succeeded(result), grantedItemCount(result));
+        send(player, request.requestId(), result.statusCode, body);
+    }
+
+    /**
+     * The parsed body when this answer is a hand-in demand for a turn-in, otherwise null.
+     *
+     * <p>Restricted to {@code CHOOSE} because that is the only action that can carry one: a hand-in
+     * hangs off a choice, and treating any other action's answer as one would be acting on a shape
+     * Rails cannot have sent.
+     */
+    private static JsonObject handinDemand(QuestActionC2SPayload request, Result result) {
+        if (request.action() != QuestActionC2SPayload.Action.CHOOSE) return null;
+        if (result.statusCode < 200 || result.statusCode >= 300) return null;
+        try {
+            JsonObject root = JsonParser.parseString(result.body).getAsJsonObject();
+            if (!booleanValue(root, "success", true)) return null;
+            return QuestItemHandinService.isHandinRequired(root) ? root : null;
+        } catch (RuntimeException unreadable) {
+            return null;
+        }
+    }
+
+    /**
+     * The mod-side authoritative boundary for a quest action: Rails has committed the node advance,
+     * the reward delivery and (M10) the website achievement in one transaction under the journal
+     * row lock, and this applies that decision to the game.
+     *
+     * <p>Returns the body to forward to the client -- {@code result.body} unchanged in every case
+     * but one: an achievement whose advancement this player had already earned is removed, so a
+     * replayed answer does not raise the toast a second time (M10; see
+     * {@link QuestAchievementAward}).
+     */
+    private static String applyAuthoritativeResult(ServerPlayer player, QuestActionC2SPayload request,
+                                                   ResolvedIntent intent, Result result) {
         if (result.statusCode < 200 || result.statusCode >= 300) {
             LOGGER.warn("event=quest_journal_not_updated request_uuid={} action={} player_uuid={} "
                     + "quest_id={} reason=rails_rejected rails_status={}",
                 request.requestUuid(), request.action(), player.getStringUUID(), request.questId(),
                 result.statusCode);
-            return;
+            return result.body;
         }
         try {
             JsonObject root = JsonParser.parseString(result.body).getAsJsonObject();
@@ -302,38 +391,86 @@ public final class QuestProxyService {
                         + "quest_id={} reason=rails_reported_failure rails_error={}",
                     request.requestUuid(), request.action(), player.getStringUUID(), request.questId(),
                     string(root, "error"));
-                return;
+                return result.body;
             }
-
-            List<ClientQuestEntry> accepted = QuestEntryParser.parseRailsAcceptSuccess(root, intent.questGiverName());
-            accepted.forEach(entry -> ServerQuestTable.addFromRailsAcceptSuccess(player, entry));
-
-            QuestModels.QuestResponse response = GSON.fromJson(root, QuestModels.QuestResponse.class);
-            QuestRewardService.apply(player, response);
-
-            if (request.action() == QuestActionC2SPayload.Action.CHOOSE && hasClientAction(root, "spawn_escort")) {
-                String questStateId = string(root, "quest_state_id");
-                if (questStateId.isBlank() && !accepted.isEmpty()) questStateId = accepted.get(0).questStateId();
-                if (questStateId.isBlank()) {
-                    ClientQuestEntry active = ServerQuestTable.findByQuestId(player, request.questId());
-                    if (active != null) questStateId = active.questStateId();
-                }
-                if (!questStateId.isBlank() && !ZERO_UUID.equals(intent.questGiverUuid())) {
-                    QuestPayloadHandler.activateEscort(player, request.questId(), questStateId, intent.questGiverUuid());
-                }
-            }
-
-            if (request.action() == QuestActionC2SPayload.Action.ABANDON
-                || booleanValue(root, "completed", false)) {
-                ServerQuestTable.removeAfterRailsCompletionSuccessByQuestId(player, request.questId());
-            }
-            ClientboundSyncQuestsPayload.send(player, ServerQuestTable.snapshot(player));
+            return applyQuestResponse(player, root, result.body, request.action(), request.questId(),
+                request.requestUuid(), intent.questGiverName(), intent.questGiverUuid());
         } catch (RuntimeException invalid) {
             LOGGER.warn("event=quest_journal_not_updated request_uuid={} action={} player_uuid={} "
                     + "quest_id={} reason=unreadable_response detail={}",
                 request.requestUuid(), request.action(), player.getStringUUID(), request.questId(),
                 invalid.toString());
         }
+        return result.body;
+    }
+
+    /**
+     * Applies one committed Rails transition response to the game.
+     *
+     * <p>Split out of {@link #applyAuthoritativeResult} so a strict item hand-in's completion runs
+     * exactly this code rather than a second copy of it. A hand-in finishes through the same shared
+     * transition on the Rails side, and it has to finish through the same journal, reward-delivery
+     * and achievement path here, or the two would drift apart one fix at a time.
+     *
+     * <p>Takes the identifying values rather than the request that carried them, because a
+     * completion recovered at login has a ledger row instead of a live packet.
+     */
+    static String applyQuestResponse(ServerPlayer player, JsonObject root, String rawBody,
+                                     QuestActionC2SPayload.Action action, long questId,
+                                     String requestUuid, String questGiverName, UUID questGiverUuid) {
+        try {
+            List<ClientQuestEntry> accepted = QuestEntryParser.parseRailsAcceptSuccess(root, questGiverName);
+            accepted.forEach(entry -> {
+                ServerQuestTable.addFromRailsAcceptSuccess(player, entry);
+                // M9 item 5. The only place a quest becomes accepted, so the only place an
+                // accept-time side effect can run exactly once. It runs after the journal row
+                // exists, so anything it does is consistent with what the player can see.
+                RowanQuestlineHooks.onQuestAccepted(player, entry, questGiverUuid);
+            });
+
+            QuestModels.QuestResponse response = GSON.fromJson(root, QuestModels.QuestResponse.class);
+            QuestRewardService.apply(player, response, root, requestUuid);
+
+            if (action == QuestActionC2SPayload.Action.CHOOSE && hasClientAction(root, "spawn_escort")) {
+                String questStateId = string(root, "quest_state_id");
+                if (questStateId.isBlank() && !accepted.isEmpty()) questStateId = accepted.get(0).questStateId();
+                if (questStateId.isBlank()) {
+                    ClientQuestEntry active = ServerQuestTable.findByQuestId(player, questId);
+                    if (active != null) questStateId = active.questStateId();
+                }
+                if (!questStateId.isBlank() && !ZERO_UUID.equals(questGiverUuid)) {
+                    QuestPayloadHandler.activateEscort(player, questId, questStateId, questGiverUuid);
+                }
+            }
+
+            if (action == QuestActionC2SPayload.Action.ABANDON
+                || booleanValue(root, "completed", false)) {
+                ServerQuestTable.removeAfterRailsCompletionSuccessByQuestId(player, questId);
+            }
+            ClientboundSyncQuestsPayload.send(player, ServerQuestTable.snapshot(player));
+
+            // M9 item 7. Talking to the quest giver is the gesture a player already makes when
+            // something has gone wrong, so it is where a lost tool is noticed and, within the
+            // Rails-held bound, replaced. Runs after the journal is level with Rails, so the
+            // active stage it reads is the real one, and does nothing at all when the player is
+            // carrying everything the questline requires.
+            if (action == QuestActionC2SPayload.Action.INTERACT) {
+                com.seggellion.britannia_mod.quest.equipment.QuestEquipmentReissueService
+                        .offerRecovery(player);
+            }
+
+            // M10 item 3. The persistent advancement is granted HERE, beside the delivery and from
+            // the same committed Rails answer -- never on a client signal -- and the announcement
+            // the client is given is filtered by whether it was actually new to this player.
+            JsonObject forwarded = QuestAchievementAward.grantAndFilter(player, root,
+                requestUuid, "turn_in");
+            return forwarded == root ? rawBody : GSON.toJson(forwarded);
+        } catch (RuntimeException invalid) {
+            LOGGER.warn("event=quest_journal_not_updated request_uuid={} action={} player_uuid={} "
+                    + "quest_id={} reason=unreadable_response detail={}",
+                requestUuid, action, player.getStringUUID(), questId, invalid.toString());
+        }
+        return rawBody;
     }
 
     /** Callers must have validated the shape first; {@code handle} does. */
@@ -447,8 +584,16 @@ public final class QuestProxyService {
         return rawName.contains(":") ? rawName.split(":", 2)[0].trim() : rawName.trim();
     }
 
+    /**
+     * The fourth place a Rails answer reaches a client, and the one an ordinary quest accept
+     * goes through. It is sanitized for the same reason the three trigger-result paths are:
+     * the body carries the journal entry's published objective machinery, including the
+     * resolved plot key and crop cycle a stage-five subscription binds to. The server still
+     * decides everything; this only stops the client being handed the answer.
+     */
     private static void send(ServerPlayer player, long requestId, int status, String body) {
-        NetworkHandler.sendToPlayer(player, new QuestActionResultS2CPayload(requestId, status, body));
+        NetworkHandler.sendToPlayer(player,
+                new QuestActionResultS2CPayload(requestId, status, QuestClientPayload.sanitizeJson(body)));
     }
 
     private record ResolvedIntent(String argument, String questGiverName, UUID questGiverUuid) {}

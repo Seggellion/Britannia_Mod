@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.farming;
 import com.seggellion.britannia_mod.block.FarmingBlock;
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
 import com.seggellion.britannia_mod.block.entity.OrangeTreeRootBlockEntity;
+import com.seggellion.britannia_mod.quest.action.QuestActionEvents;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -57,6 +58,7 @@ public final class FarmingPlantingTransaction {
             // Claim occupancy before any neighbor callbacks or plant synchronization can reenter.
             if (!level.setBlock(pos, plantedState, 3) || level.getBlockEntity(pos) != soil) return false;
             soil.plant(crop, variety);
+            soil.attributeCurrentCycleTo(player.getUUID());
             if (tree != null) {
                 if (!level.getBlockState(rootPos).equals(oldAbove)
                         || !level.setBlock(rootPos, tree.rootBlock().get().defaultBlockState(), 3)) return false;
@@ -94,6 +96,8 @@ public final class FarmingPlantingTransaction {
         }
         FarmingPlantingFeedback.planted(level, pos, player, crop.id(), crop.tier(), crop.farmingSkillModifier(),
                 eligibility.type() == FarmingCultivationGate.ResultType.APPROVED_BYPASS);
+        QuestActionEvents.cropPlant(player, level, pos, crop.id(), soil.cropCycleAtCurrentPlot(),
+                player.getUUID(), soil.isCommunityPlot());
         return true;
     }
 

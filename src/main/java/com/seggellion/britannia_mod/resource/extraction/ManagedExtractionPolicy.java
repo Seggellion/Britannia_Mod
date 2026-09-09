@@ -1,12 +1,15 @@
 package com.seggellion.britannia_mod.resource.extraction;
 
 import com.seggellion.britannia_mod.registry.ToolRegistry;
+import com.seggellion.britannia_mod.resource.ResourceDefinition;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,8 +34,16 @@ import org.jetbrains.annotations.Nullable;
  * destructive path — the Mining gate, the deposit handler, the yield handler — <em>stands
  * aside</em> for a creative player: no tool question, no skill question, no denial, no yield, no
  * depletion, no restoration debt, no Mining award. The block then breaks exactly as any other
- * block breaks in creative, which is what a builder cutting a cellar through catalogued stone, or
- * clearing a misplaced vein, expects.
+ * block breaks in creative, which is what a builder cutting a cellar through catalogued stone
+ * expects.
+ *
+ * <p>Standing aside is not the same as permitting destruction, and one narrow case separates
+ * them. A <em>sited deposit cell</em> — see {@link #isDepositCell} — is refused outright by
+ * {@link ManagedResourceCreativeGuard} before any of this is asked, because a vanilla break of one
+ * destroys the vein permanently and silently: no yield, no debt, nothing to restore it from. That
+ * guard reads the block, never the hand, so it takes nothing away from the rule below; an
+ * administrator clearing an ordinary misplaced block is unaffected, and removing a deposit is an
+ * explicit {@code /manageddeposit remove} or {@code /populateores clear}.
  *
  * <p>The one exception is the Britannia pickaxe — {@code britannia_mod:pickaxe}, by registered
  * identity — in the attacking hand. A creative player holding it is a tester: every rule then
@@ -184,6 +195,49 @@ public final class ManagedExtractionPolicy {
     /** The same question about the stack the caller named, for services that take the tool. */
     public static boolean bypassesManagedExtraction(ServerPlayer player, @Nullable ItemStack attackingWith) {
         return creativeBypasses(isCreativeGameMode(player), isBritanniaPickaxe(attackingWith));
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  What is a deposit                                                  */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Whether this managed block is a <em>deposit cell</em> — something that exists because the
+     * economy put it there — rather than ambient terrain that happens to be mineable.
+     *
+     * <p>The distinction only matters for one rule, and it matters a lot for it: a creative break
+     * of a deposit cell is refused ({@link ManagedResourceCreativeGuard}), so an operator cannot
+     * delete a vein by clicking it. Applying that to ambient rock instead would mean a creative
+     * builder could not break {@code minecraft:stone}, {@code granite} or {@code deepslate}
+     * anywhere in the world, which would make terraforming and the housing systems unusable.
+     * Stone is not a deposit; it is the crust.
+     *
+     * <p>The line is drawn from the data rather than from a list of names:
+     * <ul>
+     *   <li>ORE, MINERAL and SEDIMENT are deposits by definition — an ore block, a coal cell or a
+     *       bed is placed, never ambient, and every one of them is economy somebody sited
+     *       deliberately.</li>
+     *   <li>STONE is ambient <em>when the block is vanilla's</em>. A mod-owned stone block —
+     *       {@code britannia_mod:sandstone_deposit}, the four bespoke rocks — only exists where
+     *       this mod put it, so it is a deposit cell too.</li>
+     * </ul>
+     *
+     * <p>Written as "not STONE" rather than as a list of the deposit families on purpose: a
+     * family added later is a deposit unless somebody deliberately decides it is world crust,
+     * which is the safe default for a rule whose failure mode is a silently destroyed vein.
+     * {@code MINERAL} arrived after this rule was first written and inherited the right answer
+     * without being mentioned; the next one will too.
+     *
+     * <p>Player-placed blocks are not this method's business: provenance answers that separately,
+     * and a builder may always remove their own construction.
+     */
+    public static boolean isDepositCell(ResourceDefinition definition, BlockState state) {
+        if (definition.family() != ResourceDefinition.Family.STONE) {
+            return true;
+        }
+        return BuiltInRegistries.BLOCK.getKey(state.getBlock())
+                .getNamespace()
+                .equals(com.seggellion.britannia_mod.BritanniaMod.MODID);
     }
 
     /* ------------------------------------------------------------------ */
