@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.packaging;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -98,6 +99,36 @@ class DeployableArtifactPackagingTest {
     }
 
     @Test
+    void thePackagingGateRefusesADirtyBuildAndSaysHowToBuildOneOnPurpose() {
+        // "A dirty build is not a release candidate" was prose in the release handoff and nothing
+        // more: the gate required git.dirty to hold *some* value and then accepted `true`, so a
+        // build from an uncommitted tree passed `check` and artifactIdentity printed "deploy this
+        // one" beside its SHA-256. A jar built that way is already on disk in the canonical
+        // checkout, carrying the version string that is in production.
+        String gate = packagingGateBody();
+        assertTrue(gate.contains("git.dirty") && gate.contains("'true'"),
+                "verifyDeployableJar no longer compares git.dirty against 'true', so a build from "
+                        + "an uncommitted tree is a release candidate again");
+        assertTrue(gate.contains("git.dirty=true"),
+                "the dirty-tree failure no longer says which property it is talking about, so an "
+                        + "operator cannot tell what to fix");
+        assertTrue(gate.contains("git status --porcelain"),
+                "the dirty-tree failure no longer explains that git.dirty comes from "
+                        + "`git status --porcelain` and therefore counts untracked files; that is "
+                        + "the part nobody guesses, and it is why a build in the canonical checkout "
+                        + "is dirty from the owner's untracked playbooks alone");
+        // The rule must not leave a developer with no way to build. The opt-out is deliberate and
+        // has to be typed, which is the whole point: -Pdev is not usable here, because it drops
+        // GeckoLib and so fails this same gate on the bundled-dependency check first.
+        assertTrue(gate.contains("project.hasProperty('allowDirty')"),
+                "verifyDeployableJar has no -PallowDirty opt-out, so an ordinary local build from a "
+                        + "dirty tree has no way through the gate at all");
+        assertTrue(gate.contains("-PallowDirty"),
+                "the dirty-tree failure does not name the -PallowDirty opt-out, so a developer is "
+                        + "told to stop without being told how to proceed");
+    }
+
+    @Test
     void theDependencyFreeJarDoesNotHoldTheUnclassifiedName() {
         assertTrue(buildGradle.contains("archiveClassifier = 'thin'"),
                 "the thin jar has taken back the unclassified filename, which is the one an "
@@ -137,10 +168,17 @@ class DeployableArtifactPackagingTest {
      * The bytes check duplicated from {@code verifyDeployableJar}, so that a plain {@code gradlew
      * test} against an already-built tree still catches a hollow artifact. The Gradle task is the
      * gate that cannot be skipped; this runs whenever a build has left jars behind.
+     *
+     * <p>And when a build has <em>not</em> left jars behind -- a fresh clone, a clean CI runner, a
+     * tree where only {@code test} has run -- this test is <strong>skipped</strong> rather than
+     * passed. It used to iterate an empty list and report green, which claims more than it did: no
+     * bytes were examined at all, on exactly the machines whose green run is quoted as evidence.
+     * The guarantee lives in {@code verifyDeployableJar}, which inspects the real jar on every
+     * {@code check}; this is a second opinion, and it now says so when it has nothing to look at.
      */
     @Test
     void anyBuiltDeployableJarBundlesItsRuntimeDependencies() throws IOException {
-        for (Path jar : builtJars("-all.jar")) {
+        for (Path jar : deployableJarsToInspect()) {
             Set<String> embedded = jarJarEntries(jar);
             assertTrue(embedded.stream().anyMatch(name -> name.startsWith("geckolib-neoforge-")),
                     jar.getFileName() + " bundles no GeckoLib: " + embedded);
@@ -167,6 +205,9 @@ class DeployableArtifactPackagingTest {
 
     @Test
     void noBuiltJarCarriesTheUnclassifiedName() throws IOException {
+        // Deliberately no assumption about build/libs existing, unlike the test above: this one
+        // asserts an absence, and a tree with nothing built genuinely satisfies it. There is no
+        // vacuous pass to fix here -- the finding it guards is a file being present.
         List<Path> unclassified = new ArrayList<>();
         for (Path jar : builtJars(".jar")) {
             String name = jar.getFileName().toString();
@@ -177,6 +218,36 @@ class DeployableArtifactPackagingTest {
         assertEquals(List.of(), unclassified,
                 "an unclassified jar is back in build/libs; it is the name an operator reaches for "
                         + "and it is not the deployable artifact");
+    }
+
+    private static String packagingGateBody() {
+        int start = buildGradle.indexOf("tasks.register('verifyDeployableJar')");
+        assertTrue(start >= 0, "the verifyDeployableJar packaging gate is gone");
+        int end = buildGradle.indexOf("tasks.named('check')", start);
+        return end < 0 ? buildGradle.substring(start) : buildGradle.substring(start, end);
+    }
+
+    /**
+     * The built {@code -all} jars, or a skipped test.
+     *
+     * <p>An assumption rather than an assertion: a checkout with nothing built is a legitimate
+     * state and a plain {@code gradlew test} on a fresh clone must not fail for it. Reporting the
+     * caller as skipped is the honest outcome -- it names what was not available instead of
+     * quietly claiming to have inspected bytes that were never there.
+     */
+    private static List<Path> deployableJarsToInspect() throws IOException {
+        Path libs = PROJECT.resolve("build/libs").toAbsolutePath();
+        assumeTrue(Files.isDirectory(libs),
+                "nothing has been built in this tree (" + libs + " does not exist), so there are no "
+                        + "artifact bytes to inspect. verifyDeployableJar in build.gradle is the "
+                        + "gate that always runs against the real jar; this test is only a second "
+                        + "opinion when a build has left one behind.");
+        List<Path> jars = builtJars("-all.jar");
+        assumeTrue(!jars.isEmpty(),
+                libs + " holds no -all jar, so there is no deployable artifact to inspect. "
+                        + "verifyDeployableJar in build.gradle is the gate that always runs against "
+                        + "the real jar.");
+        return jars;
     }
 
     private static Set<String> jarJarEntries(Path jar) throws IOException {

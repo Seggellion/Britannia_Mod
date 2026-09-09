@@ -77,6 +77,12 @@ build if the `-all` jar has lost either bundled dependency or cannot say which c
 `-Pdev` deliberately drops GeckoLib from the bundle, so it belongs on `runClient` and nothing else:
 `./gradlew build -Pdev` now fails rather than quietly producing an `-all` jar that is not one.
 
+The same gate **fails on a dirty working tree**. `git.dirty=true` means the bytes came from source
+that no commit names, which is not a release candidate; the flag is computed from
+`git status --porcelain`, so untracked files count too. To build locally from a dirty tree anyway,
+pass **`-PallowDirty`** — the build then succeeds with a warning, and `artifactIdentity` labels the
+result a local build rather than "deploy this one".
+
 Every jar also carries `britannia_mod_build.properties` — mod version, git commit, branch, dirty
 flag and build timestamp — which a running server reports through `/grabby env`. That is how a
 deployed file is matched back to a commit; `./gradlew artifactIdentity` prints the same identity,

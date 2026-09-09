@@ -61,7 +61,7 @@ integration added around it.
 
 > **Superseded — these are not the gate results for the release.** They were measured on the
 > integration commit `2c63b207`, which **predates the entire strict item hand-in half of this
-> release**: 18 commits and 64 source files later (§3). Read this section as a record of the
+> release**: 18 commits — eleven of them the hand-in work — and 64 source files later (§3). Read this section as a record of the
 > reward-delivery integration and nothing more. The hand-in gates are in
 > `ROWAN_FARMING_QUESTLINE_HANDIN_STATUS.md`.
 
@@ -129,7 +129,7 @@ The 23 mod skips include 6 opt-in live-Rails tests that skip unless credentials 
 
 | Artifact | Value |
 | --- | --- |
-| **Deployable jar** | `build/libs/britannia_mod-0.1.8b-all.jar` — **deploy this one** |
+| **Deployable jar** | `build/libs/britannia_mod-0.1.8b-all.jar` — **deploy this one.** Only one copy exists, and it is *not* in the canonical checkout; the absolute path is in "Where the release artifact is" below |
 | Thin jar | `build/libs/britannia_mod-0.1.8b-thin.jar` — **NOT deployable.** No bundled GeckoLib or nanohttpd; it boots clean and then throws `NoClassDefFoundError` at the first animated render |
 | Mod version | `0.1.8b` — bumped from `0.1.8a` by the release commit, so a rebuild can be told apart from what is already running |
 | Mod id / display name | `britannia_mod` / Britannia |
@@ -138,6 +138,64 @@ The 23 mod skips include 6 opt-in live-Rails tests that skip unless credentials 
 Go by the **`-all`** classifier in the filename, never by file size: the two jars are within a few
 percent of each other. `./gradlew check` runs `verifyDeployableJar`, which fails the build if the
 `-all` jar has lost either bundled dependency or cannot say which commit produced it.
+
+### Where the release artifact is, and the four stale jars that are not it
+
+**The release artifact, by absolute path — the only copy of it that exists:**
+
+```
+C:\projects\britannia\mod\Britannia_Mod\.claude\worktrees\rowan-mod-remediation\build\libs\britannia_mod-0.1.8b-all.jar
+```
+
+The remediation fixed the build. It could not reach back into artifacts that were already written,
+and **the canonical checkout holds no `0.1.8b` at all.**
+`C:\projects\britannia\mod\Britannia_Mod\build\libs\` — the first place an operator looks —
+holds two `0.1.8a` jars instead, and both are traps:
+
+| Stale file in the canonical checkout's `build\libs\` | Size | Why it is dangerous |
+| --- | --- | --- |
+| `britannia_mod-0.1.8a-all.jar` | 35,044,450 B | **The dangerous one, precisely because it works.** It bundles GeckoLib and nanohttpd, it was built from `57136c93`, and it *can* perform a hand-in — so it boots, runs, and behaves. But it records `mod.version=0.1.8a`, **the version already deployed**, so nothing a running server reports separates it from the build that is already there: the same version string, leaving only the SHA-256 to tell them apart. It also records **`git.dirty=true`** — its bytes came from a working tree that no commit names, so `57136c93` says where it started, not what is in it. |
+| `britannia_mod-0.1.8a.jar` | 34,472,812 B | The **unclassified thin jar** — the exact trap the `-thin` classifier removed from the build, still sitting on disk under the name an operator reads as "the release". Its `META-INF/jarjar/` holds nothing, so a server given this file starts clean and then throws `NoClassDefFoundError` at the first animated render. Also `git.dirty=true`. |
+
+Two more `0.1.8a` pairs sit in other worktrees. Both are **pre-hand-in**: neither commit contains
+`1e298361`, so neither jar can perform a hand-in at all.
+
+* `...\.claude\worktrees\integration-rowan-patch18\build\libs\` — `britannia_mod-0.1.8a-all.jar`
+  (34,925,373 B) and `britannia_mod-0.1.8a.jar` (34,353,735 B), both from `2c63b207`. The `-all` one
+  is the withdrawn candidate the next subsection tells you not to deploy — clean-tree, correctly
+  packaged, entirely convincing, and **still physically on disk**.
+* `...\.claude\worktrees\rowan-farming-questline-mod\build\libs\` — `britannia_mod-0.1.8a-all.jar`
+  (34,924,717 B) and `britannia_mod-0.1.8a.jar` (34,353,079 B), both from `402f5585` on the feature
+  branch, older still.
+
+**None of these five files has been deleted, and none of them should be trusted.** They are kept as
+evidence of what was built when — one of them is the closest local reference to what production is
+actually running. Treat every `build\libs\` other than the one named at the top of this subsection
+as empty: **clear it or ignore it.** Do not open a `build\libs\` and take the newest file, and do
+not go by size — the four stale jars are within two percent of the real one, and two of them carry
+the `-all` classifier that means "deployable".
+
+**Verify the candidate before uploading it, and again after the restart.**
+
+1. `./gradlew artifactIdentity` prints the size and SHA-256 of the jar it just built, marks which of
+   the two is deployable, and prints at all only for a jar that passed `verifyDeployableJar`. Take
+   the digest from **the same invocation you deploy from** — the jar is not byte-reproducible (see
+   below), so a digest from an earlier run belongs to a different file.
+2. On the **still-running** server, `/grabby env` reports the live build's `commit=` and `sha256=`.
+   Record both before you upload anything. If the candidate's SHA-256 equals the one already
+   running, you are about to upload the build that is already there. If a candidate reports
+   `version=0.1.8a` beside `commit=57136c93`, you have picked up the stale jar from the canonical
+   checkout rather than the release.
+3. Upload only when the digest of the file on disk matches what `artifactIdentity` printed. After
+   the restart, read `/grabby env` again: `commit=` must be the commit you meant to release,
+   `sha256=` must be that same digest, and `dirtyWorkingTree=` must be `false`.
+
+**No size or SHA-256 for the `0.1.8b` jar is written here, on purpose.** It is rebuilt from the
+release-branch tip after these documents are committed, so any number pinned here would name a file
+that no longer exists — the same reason the old candidate's digests were deleted rather than
+refreshed. The artifact's identity is printed by `./gradlew artifactIdentity` and embedded in the
+jar as `britannia_mod_build.properties`, which is exactly what `/grabby env` reads back off a
+running server. That pair is the identity; a number copied into a document is not.
 
 ### There is no standing candidate. Do not deploy the `2c63b207` jar.
 
@@ -156,11 +214,22 @@ why no new digest is pinned in their place.
 | `git diff --stat 2c63b207 patch-18 -- src/` | "is empty" | **64 files changed, 8,677 insertions, 155 deletions** |
 | `git diff --stat 2c63b207 96948296 -- src/` (release-prep tip) | — | **65 files changed, 8,878 insertions, 155 deletions** (20 commits) |
 
-Those 18 commits are the **entire strict item hand-in half of this release**, `1e298361` through
-`57136c93`: the hand-in contract and its mirrored fixtures, signed transport for both hand-in
-endpoints, the hand-in ledger across the mutation boundary, taking the item and never losing it
-afterwards, the dialogue that says what happened to the player's goods, and three rounds of audit
-fixes. **A `2c63b207` jar cannot perform a hand-in at all.** An operator who trusted the old text
+**Eleven of those 18 commits are the strict item hand-in half of this release** — `1e298361`
+through `57136c93` inclusive. This sentence previously called all 18 of them the hand-in work while
+naming a range that holds 11, so the count and the range disagreed; both were re-counted with
+Windows git on 2026-09-09 (`git rev-list --count 2c63b207..patch-18` → 18,
+`git rev-list --count 1e298361~1..57136c93` → 11). Those eleven are the hand-in contract and its
+mirrored fixtures, signed transport for both hand-in endpoints, the hand-in ledger across the
+mutation boundary, taking the item and never losing it afterwards, the dialogue that says what
+happened to the player's goods, and three rounds of audit fixes.
+
+The other **seven** — `f9ef224a` through `a8017b81`, the oldest end of the range — are
+two documentation commits, three dialogue-rendering fixes, one quest-action payload fix and a
+roof-decorator fix. None of them is hand-in work,
+which is why the corrected count matters: it is the eleven, not the eighteen, that a candidate jar
+has to contain. The conclusion is unchanged and if anything sharper — **a `2c63b207` jar cannot
+perform a hand-in at all**, because `2c63b207` predates every one of the eleven
+(`git merge-base --is-ancestor 1e298361 2c63b207` fails). An operator who trusted the old text
 would deploy a pre-hand-in jar; combined with the wrong deployment order this document also used
 to carry, that is precisely the progression-losing window §5 exists to close.
 
@@ -182,7 +251,10 @@ the packaging gate.
 **Build from a worktree, not the canonical checkout.** `git.dirty` is computed from
 `git status --porcelain`, which counts untracked files, and the canonical checkout permanently
 holds untracked owner playbooks that must be preserved. A build there stamps `git.dirty=true`, and
-a dirty build is not a release candidate. `git.branch` will then name the worktree's branch rather
+a dirty build is not a release candidate — a rule `verifyDeployableJar` now **enforces** rather than
+merely asserting here: it fails the build on `git.dirty=true`, and the only way past it is
+`-PallowDirty`, which exists for local and dev builds and makes `artifactIdentity` label the result
+a local build instead of "deploy this one". `git.branch` will then name the worktree's branch rather
 than `patch-18`; that is expected and harmless, because `git.head` is the authoritative field —
 confirm the relationship with `git merge-base --is-ancestor <git.head> patch-18` if it matters.
 

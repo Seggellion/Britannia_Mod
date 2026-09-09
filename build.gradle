@@ -369,14 +369,25 @@ tasks.register('artifactIdentity') {
             println "    size   : ${file.length()} bytes"
             println "    sha256 : ${digest.digest().encodeHex().toString()}"
         }
+        def info = buildInfoFile.get().asFile
+        // verifyDeployableJar lets a dirty build past only under -PallowDirty. When it does, this
+        // report must stop calling the result "deploy this one": that phrase beside a SHA-256 is
+        // precisely what an operator reads as authorization.
+        def dirtyBuild = false
+        if (info.exists()) {
+            def recorded = new Properties()
+            info.withInputStream { recorded.load(it) }
+            dirtyBuild = recorded.getProperty('git.dirty')?.trim() == 'true'
+        }
         println ''
         println '=== Britannia artifact identity ==='
         // The plain jar carries no dependencies. GeckoLib and nanohttpd are embedded by
         // Jar-in-Jar into the -all jar, so that is the one a server without a separate
         // GeckoLib install needs.
-        describe(bundledJar.get().asFile, '<- deploy this one unless GeckoLib is installed separately')
+        describe(bundledJar.get().asFile, dirtyBuild
+                ? '<- DIRTY tree (-PallowDirty): a local build, NOT a release candidate'
+                : '<- deploy this one unless GeckoLib is installed separately')
         describe(plainJar.get().asFile, '(thin -- no bundled dependencies, NOT deployable)')
-        def info = buildInfoFile.get().asFile
         if (info.exists()) {
             println '  build metadata (baked into both):'
             info.readLines().findAll { !it.isBlank() }.each { println "    ${it}" }
@@ -416,6 +427,10 @@ tasks.register('verifyDeployableJar') {
     def required = deployableBundledDependencies
     def expectedVersion = mod_version
     def prefix = 'META-INF/jarjar/'
+    // The deliberate way past the dirty-tree rule below, in the style of the existing -Pdev
+    // switch, and read here at configuration time like every other value this task closes over,
+    // because `project` inside doLast is what the configuration cache refuses.
+    def allowDirty = project.hasProperty('allowDirty')
     inputs.file bundledJar
     // The whole value of this task is that it ran against the bytes now on disk. An up-to-date
     // skip would report a verdict about an earlier file.
@@ -468,6 +483,31 @@ tasks.register('verifyDeployableJar') {
                     throw new GradleException(
                             "${file.name} build provenance ${key}='${value}' cannot identify this build.")
                 }
+            }
+            // "A dirty build is not a release candidate" lived in the handoff as prose and
+            // nowhere else. The loop above only required git.dirty to say *something*, so `true`
+            // sailed through and artifactIdentity then printed "deploy this one" beside it. The
+            // 0.1.8a-all.jar still sitting in the canonical checkout's build/libs is exactly that
+            // build: deployable bytes carrying a git.dirty=true nobody ever had to act on.
+            def dirtyBuild = info.getProperty('git.dirty')?.trim() == 'true'
+            if (dirtyBuild) {
+                if (!allowDirty) {
+                    throw new GradleException(
+                            "${file.name} was built from a dirty working tree (git.dirty=true), so " +
+                            "it is not a release candidate: no commit names the source these bytes " +
+                            "came from, and /grabby env on a running server cannot match the file " +
+                            "back to anything reviewable. git.dirty is computed from " +
+                            "`git status --porcelain`, so untracked files count too -- which is why " +
+                            "a build in the canonical checkout is dirty from the owner's untracked " +
+                            "playbooks alone, and why a release is built from a clean worktree. " +
+                            "Commit the tree, or build from a clean one, and rebuild. For a local " +
+                            "or dev build, where none of this matters, pass -PallowDirty: that " +
+                            "build is not a release candidate and artifactIdentity says so on its " +
+                            "face.")
+                }
+                println "verifyDeployableJar: WARNING -- ${file.name} was built from a dirty working " +
+                        "tree and passes only because -PallowDirty was given. It is a local build, " +
+                        "not a release candidate. Do not deploy it."
             }
             if (info.getProperty('mod.version') != expectedVersion) {
                 throw new GradleException(
