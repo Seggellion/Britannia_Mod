@@ -11,8 +11,15 @@ from pathlib import Path
 
 PROJECT = Path(__file__).resolve().parents[2]
 ASSETS = PROJECT / "src/main/resources/assets/britannia_mod"
-MANIFEST = PROJECT / "docs/new-assets/PATCH18_WEAPON_ASSETS.json"
-SOURCE_LABEL = r"C:\projects\britannia\raw fiels\weapons"
+# The manifest the tool regenerates and verifies, and the label recorded inside it. Both are
+# deliberately portable: source_root must not name one machine's disk, or --check can only
+# ever pass on the machine that ran the import.
+MANIFEST = PROJECT / "tools/new-assets/patch18_weapon_assets.json"
+SOURCE_LABEL = "weapons"
+# Convenience only, and never written anywhere: the authoring machine's export directory, so
+# the invocation documented in docs/new-assets/PATCH18_WEAPON_INTEGRATION.md still runs with
+# no arguments there. Anywhere else --source is what supplies the path.
+DEFAULT_SOURCE = Path(r"C:\projects\britannia\raw fiels\weapons")
 MELEE = ("viking_sword", "katana", "rapier", "halberd")
 METAL_ELEMENTS = {"viking_sword": {1, 2, 3, 4, 5, 6}, "katana": {0, 2, 3, 4},
                   "rapier": {1, 2, 3, 4, 5, 6, 7, 8}, "halberd": set()}
@@ -75,7 +82,8 @@ def outputs(source):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", type=Path, default=Path(SOURCE_LABEL))
+    parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE,
+                        help="Directory containing the source weapon exports")
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
     source_files = sorted(p for p in args.source.rglob("*") if p.is_file())
