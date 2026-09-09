@@ -344,7 +344,12 @@ sourceSets.main.resources.srcDir tasks.named('generateBuildInfo')
 
 tasks.register('artifactIdentity') {
     description = 'Prints the exact identity of every built jar, for deployment verification.'
-    dependsOn tasks.named('jar'), tasks.named('jarJar')
+    // Printing "deploy this one" for a jar nobody checked is how the wrong file gets deployed with
+    // a digest beside it that looks like proof. Depending on the gate means the identity below was
+    // only ever printed for an artifact that passed it. It also matters that this task rebuilds:
+    // generateBuildInfo is deliberately never up to date, so every run stamps a new timestamp and
+    // produces a new digest. Take the SHA-256 from the same invocation you deploy from.
+    dependsOn tasks.named('jar'), tasks.named('jarJar'), tasks.named('verifyDeployableJar')
     // Everything the closure needs is captured as a local. Referencing `layout` or `logger`
     // from inside doLast reaches back into the script object, which the configuration cache
     // refuses.

@@ -88,6 +88,16 @@ class DeployableArtifactPackagingTest {
     }
 
     @Test
+    void theIdentityReportCannotVouchForAnUnverifiedJar() {
+        // artifactIdentity prints "deploy this one" beside a SHA-256. That reads as proof, so it
+        // must not be printable for a jar the gate has not passed.
+        assertTrue(buildGradle.contains(
+                        "tasks.named('jar'), tasks.named('jarJar'), tasks.named('verifyDeployableJar')"),
+                "artifactIdentity no longer depends on verifyDeployableJar, so it can vouch for an "
+                        + "artifact nothing checked");
+    }
+
+    @Test
     void theDependencyFreeJarDoesNotHoldTheUnclassifiedName() {
         assertTrue(buildGradle.contains("archiveClassifier = 'thin'"),
                 "the thin jar has taken back the unclassified filename, which is the one an "
