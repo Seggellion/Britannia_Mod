@@ -66,6 +66,7 @@ public final class QuestItemHandinReconcilerHandler {
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             QuestItemHandinReconciler.forgetPlayer(player.server, player.getUUID());
+            com.seggellion.britannia_mod.quest.RowanQuestlineHooks.forgetPlayer(player.getUUID());
         }
     }
 

@@ -1758,6 +1758,8 @@
   "message.britannia_mod.quest.handin.taken": "Handed over: %1$s",
   "message.britannia_mod.quest.handin.refunded": "That could not be finished. Your goods are on their way back.",
   "message.britannia_mod.quest.handin.unavailable": "That could not be completed (%1$s). Try again in a moment.",
+  "message.britannia_mod.quest.rowan.gather_again": "Rowan will need these again. You are still to find:",
+  "message.britannia_mod.quest.rowan.gather_line": "  %1$s x%2$s",
   "message.britannia_mod.quest.plot.occupied": "This plot belongs to someone else. Find a free public plot.",
   "message.britannia_mod.quest.plot.expired": "The plot went back to grass. Hoe it again to start over.",
   "message.britannia_mod.quest.step.window_expired": "You were too slow: that preparation has lapsed, and the work from it onward must be done again.",

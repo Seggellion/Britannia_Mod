@@ -172,6 +172,15 @@ public final class QuestScreenText {
     public static final String HANDIN_TAKEN = MESSAGE + "handin.taken";
     public static final String HANDIN_REFUNDED = MESSAGE + "handin.refunded";
     public static final String HANDIN_UNAVAILABLE = MESSAGE + "handin.unavailable";
+
+    /**
+     * Stage four and five of the Rowan questline ask for materials the earlier stages spent.
+     *
+     * <p>Sent only for what the player is not already carrying, so someone who kept a spare
+     * dung is told to find dirt and nothing else.
+     */
+    public static final String ROWAN_GATHER_AGAIN = MESSAGE + "rowan.gather_again";
+    public static final String ROWAN_GATHER_LINE = MESSAGE + "rowan.gather_line";
     public static final String PLOT_OCCUPIED = MESSAGE + "plot.occupied";
     public static final String PLOT_EXPIRED = MESSAGE + "plot.expired";
     public static final String CROP_LOST = MESSAGE + "crop.lost";
@@ -252,7 +261,7 @@ public final class QuestScreenText {
             MIX_SWAP_HANDS, MIX_WRONG_BOWL, MIX_MISSING_OFF_HAND, MIX_WRONG_DIRT, WATER_FLOWING,
             WATER_PROTECTED, PENDING_CONFIRMATION, PLOT_OCCUPIED, PLOT_EXPIRED, CROP_LOST,
             HANDIN_CHECKING, HANDIN_MISSING, HANDIN_MISSING_LINE, HANDIN_TAKEN, HANDIN_REFUNDED,
-            HANDIN_UNAVAILABLE,
+            HANDIN_UNAVAILABLE, ROWAN_GATHER_AGAIN, ROWAN_GATHER_LINE,
             INVENTORY_FULL_DROPPED,
             PLOT_HOED_WARNING, PLOT_FERTILIZED_WARNING, CROP_TAKEN_BY_OTHER,
             WATER_STATE_DRY, WATER_STATE_OK, WATER_STATE_IDEAL, WATER_STATE_OVER,
