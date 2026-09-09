@@ -62,6 +62,9 @@ public final class QuestItemHandinReconciler {
     /** After this many failed confirmations, asking what happened is cheaper than asking again. */
     private static final int INQUIRE_AFTER_ATTEMPTS = 3;
 
+    /** Marks a row this server rebuilt from a player marker because its ledger row was gone. */
+    static final String REBUILT_FROM_MARKER = "rebuilt_from_marker";
+
     private static final Map<MinecraftServer, Integer> TICKS = new ConcurrentHashMap<>();
     private static final Map<MinecraftServer, Map<UUID, Long>> NEXT_ATTEMPT_AT = new ConcurrentHashMap<>();
     private static final Map<MinecraftServer, Set<UUID>> IN_FLIGHT = new ConcurrentHashMap<>();
@@ -144,6 +147,8 @@ public final class QuestItemHandinReconciler {
         }
         Map<UUID, Long> schedule = NEXT_ATTEMPT_AT.get(server);
         if (schedule != null) schedule.keySet().removeAll(owned);
+        Map<UUID, Long> inquiries = NEXT_INQUIRY_AT.get(server);
+        if (inquiries != null) inquiries.keySet().removeAll(owned);
     }
 
     public static void clear(MinecraftServer server) {
@@ -239,6 +244,7 @@ public final class QuestItemHandinReconciler {
         ask.forEach(uuid -> schedule.put(uuid, now + INQUIRY_INTERVAL_MILLIS));
 
         UUID connectedPlayerId = player.getUUID();
+        Set<UUID> asked = Set.copyOf(ask);
         inquiry.reconcile(server, connectedPlayerId, ask)
                 .whenComplete((result, failure) -> server.execute(() -> {
                     ServerPlayer live = server.getPlayerList().getPlayer(connectedPlayerId);
@@ -246,7 +252,14 @@ public final class QuestItemHandinReconciler {
                             || !(result instanceof QuestItemHandinClient.Reconciled reconciled)) {
                         return;
                     }
-                    reconciled.response().handins().forEach(row -> applyInquiry(live, row));
+                    // Only the rows this sweep asked about, and only this player's. An answer is a
+                    // list of transaction ids, and a transaction id is enough to find any row on the
+                    // server: without both checks a malformed or mis-scoped listing could run one
+                    // player's completion on another, and close a row belonging to someone who was
+                    // not even asked about.
+                    reconciled.response().handins().stream()
+                            .filter(row -> asked.contains(row.handinUuid()))
+                            .forEach(row -> applyInquiry(live, row));
                 }));
     }
 
@@ -272,6 +285,11 @@ public final class QuestItemHandinReconciler {
         MinecraftServer server = player.server;
         QuestHandinLedgerEntry entry = QuestHandinLedger.find(server, row.handinUuid()).orElse(null);
         if (entry == null || entry.localState().settled()) return;
+        if (!entry.playerUuid().equals(player.getUUID())) {
+            LOGGER.warn("event=quest_handin_inquiry_wrong_player handin_uuid={} asked_for={}",
+                    row.handinUuid(), player.getStringUUID());
+            return;
+        }
         long now = System.currentTimeMillis();
         // A row that took nothing cannot be settled into a state that means the items are gone --
         // the record refuses to represent one, and an exception here would escape into the server
@@ -279,6 +297,18 @@ public final class QuestItemHandinReconciler {
         // removed for is an answer about somebody else's removal, and all it means locally is that
         // there is nothing left to do.
         boolean removedHere = entry.localState().itemsRemoved();
+        // A row that took something is only acted on while the player's own file still vouches for
+        // the removal. That single rule closes two different ways an answer could pay twice: a row
+        // stranded because the marker was missing means the player may still be holding the goods,
+        // so completing the quest or accepting a refund for it would hand them both; and a row
+        // whose marker has since gone is no longer a removal this server can account for.
+        boolean vouched = !removedHere
+                || PlayerDataStore.handinRemoval(player, row.handinUuid()).isPresent();
+        if (removedHere && !vouched) {
+            LOGGER.warn("event=quest_handin_inquiry_unvouched handin_uuid={} outcome={} state={}",
+                    row.handinUuid(), row.outcome(), entry.localState());
+            return;
+        }
         switch (row.outcome()) {
             case CONSUMED -> {
                 if (row.response() != null && removedHere) {
@@ -300,11 +330,20 @@ public final class QuestItemHandinReconciler {
                     settle(player, entry, QuestHandinLocalState.ABANDONED, now);
                     return;
                 }
-                if (PlayerDataStore.handinRemoval(player, row.handinUuid()).isEmpty()) return;
+                // A refusal of the evidence is not a transaction waiting for a refund, it is one
+                // Rails will refuse identically every time. Requeueing it would undo the strand and
+                // spin the same removal through confirm-refuse-strand once a minute forever, each
+                // lap flushing the whole overworld storage twice.
+                if (entry.lastError().startsWith("evidence_")) {
+                    LOGGER.info("event=quest_handin_requeue_refused handin_uuid={} reason={}",
+                            row.handinUuid(), entry.lastError());
+                    return;
+                }
                 // Removed here, unknown to Rails. Its confirmation is what publishes the refund.
                 LOGGER.info("event=quest_handin_requeued_for_refund handin_uuid={}", row.handinUuid());
+                String reason = entry.lastError();
                 QuestHandinLedger.transition(server, row.handinUuid(),
-                        stored -> stored.withRemovedLocally(now));
+                        stored -> stored.withRemovedLocally(now).withAttemptFailure(reason));
             }
             case UNKNOWN -> {
                 // Rails holds no such transaction. Nothing taken means nothing owed; something taken
@@ -343,7 +382,7 @@ public final class QuestItemHandinReconciler {
             QuestHandinLedgerEntry rebuilt = new QuestHandinLedgerEntry(marker.handinUuid(),
                     player.getUUID(), "", "", "", marker.proof(), QuestHandinLocalState.REMOVED_LOCAL,
                     marker.requestUuid(), 0, marker.removedAtMillis(), marker.removedAtMillis(), 0L,
-                    "rebuilt_from_marker");
+                    REBUILT_FROM_MARKER);
             QuestHandinLedgerStore.RecordOutcome outcome = QuestHandinLedger.record(player.server, rebuilt);
             LOGGER.warn("event=quest_handin_marker_adopted handin_uuid={} player_uuid={} outcome={} trigger={}",
                     marker.handinUuid(), player.getStringUUID(), outcome, trigger);

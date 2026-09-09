@@ -290,6 +290,14 @@ public final class QuestItemHandinService {
             QuestItemHandinReconciler.release(server, handinUuid);
             ServerPlayer live = server.getPlayerList().getPlayer(connectedPlayerId);
             QuestHandinLedgerEntry stored = QuestHandinLedger.find(server, handinUuid).orElse(entry);
+            if (live != null && live != player) {
+                // A relog or a respawn during the round trip. The outcome belongs to the live
+                // player and is applied to them; the reply does not, because the screen that asked
+                // is on a connection that no longer exists. The quest proxy drops a response on a
+                // session change for the same reason.
+                settle(live, stored, result, failure, railsRoot, applier);
+                return;
+            }
             if (live == null) {
                 // Nothing is applied to a player who is gone. Applying a completion to a removed
                 // entity syncs a journal down a dead connection, force-saves a stale snapshot that
@@ -344,11 +352,25 @@ public final class QuestItemHandinService {
         return apply(player, entry, answer, railsRoot, applier);
     }
 
-    /** Applies one Rails answer to a transaction whose items are already gone. */
-    static String apply(ServerPlayer player, QuestHandinLedgerEntry entry,
+    /**
+     * Applies one Rails answer to a transaction whose items are already gone.
+     *
+     * <p>Public so a GameTest can drive the answers a live claim can never reach -- a duplicate
+     * arriving for a row this server already finished is the one the "applied exactly once" guard
+     * exists for, and a second claim stops at the ledger long before it.
+     */
+    public static String apply(ServerPlayer player, QuestHandinLedgerEntry entry,
                         QuestItemHandinProtocol.ConfirmationResponse answer, JsonObject railsRoot,
                         CompletionApplier applier) {
         MinecraftServer server = player.server;
+        // An answer that names a different transaction is not an answer about this one. Rails omits
+        // the id only on a rejection, which names none by design; anything else naming the wrong one
+        // would settle a row on somebody else's outcome.
+        if (answer.handinUuid() != null && !answer.handinUuid().equals(entry.handinUuid())) {
+            LOGGER.error("event=quest_handin_answer_mismatched expected={} answered={}",
+                    entry.handinUuid(), answer.handinUuid());
+            return retryLater(server, entry, "answer_mismatched", railsRoot);
+        }
         switch (answer.result()) {
             case CONSUMED, DUPLICATE -> {
                 if (answer.response() == null) {
@@ -356,7 +378,8 @@ public final class QuestItemHandinService {
                     // reconciliation can ask again rather than closing a quest that never advanced.
                     return retryLater(server, entry, "completion_without_response", railsRoot);
                 }
-                String applied = applyOnce(player, entry, answer.response(), applier);
+                String applied = applyOnce(player, entry, answer.response(), applier,
+                        answer.result() == QuestItemHandinProtocol.Result.DUPLICATE);
                 settleRow(player, entry, QuestHandinLocalState.CONSUMED);
                 LOGGER.info("event=quest_handin_consumed handin_uuid={} player_uuid={} duplicate={}",
                         entry.handinUuid(), player.getStringUUID(),
@@ -412,7 +435,17 @@ public final class QuestItemHandinService {
      * refuse a second grant anyway; this stops the journal and achievement work as well.
      */
     private static String applyOnce(ServerPlayer player, QuestHandinLedgerEntry entry,
-                                    JsonObject response, CompletionApplier applier) {
+                                    JsonObject response, CompletionApplier applier,
+                                    boolean duplicate) {
+        // A row rebuilt from a player marker has no memory of whether this server applied the
+        // completion, but Rails answering `duplicate` does: it finalized on an earlier confirmation
+        // from this shard, and that confirmation came from a ledger row which applied it at the
+        // time. So a duplicate on a rebuilt row is replayed rather than re-applied.
+        if (duplicate && QuestItemHandinReconciler.REBUILT_FROM_MARKER.equals(entry.lastError())) {
+            LOGGER.info("event=quest_handin_completion_not_replayed handin_uuid={} reason=rebuilt_from_marker",
+                    entry.handinUuid());
+            return GSON.toJson(response);
+        }
         // Every settled state, not only CONSUMED: a row this server has already finished by any
         // route has already run the journal, reward and achievement work, and running it again on a
         // duplicate answer would re-add a completed quest to the journal mirror and re-fire the
@@ -427,6 +460,15 @@ public final class QuestItemHandinService {
 
     private static void settleRow(ServerPlayer player, QuestHandinLedgerEntry entry,
                                   QuestHandinLocalState state) {
+        // A settled row is not re-settled into a different ending. Two contradictory answers about
+        // one transaction -- a completion and a refund -- would otherwise leave the last one to
+        // arrive in charge, and a refund landing on top of an applied completion pays the player
+        // both. The first authoritative ending wins and the second is logged.
+        if (entry.localState().settled() && entry.localState() != state) {
+            LOGGER.error("event=quest_handin_contradictory_ending handin_uuid={} settled={} answered={}",
+                    entry.handinUuid(), entry.localState(), state);
+            return;
+        }
         // The ledger row goes terminal and is flushed BEFORE the marker is dropped, so a crash in
         // between leaves a stale marker whose row already says the transaction is over.
         QuestHandinLedger.transition(player.server, entry.handinUuid(),

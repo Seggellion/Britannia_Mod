@@ -112,7 +112,37 @@ public final class QuestClientPayload {
     @Nullable
     public static JsonObject sanitize(@Nullable JsonObject root) {
         if (root == null) return null;
-        return (JsonObject) strip(root.deepCopy(), 0);
+        JsonObject stripped = (JsonObject) strip(root.deepCopy(), 0);
+        stripHandinQuestion(stripped);
+        return stripped;
+    }
+
+    /**
+     * The keys a hand-in requirement carries as a <i>question</i> rather than an answer: which
+     * resolver, which flag, and the value that flag held when the transaction was prepared.
+     *
+     * <p>Not in {@link #SERVER_ONLY_KEYS} because they are too generic to strip at every depth --
+     * {@code flag} in particular. They are removed only from a hand-in's own requirement list.
+     */
+    static final Set<String> HANDIN_QUESTION_KEYS = Set.of("resolver", "flag", "flag_value");
+
+    /**
+     * Removes the resolver machinery from a hand-in block.
+     *
+     * <p>The hand-in service already replaces Rails' block with a client-facing one carrying only
+     * concrete items and counts, so on every path this feature takes there is nothing here to
+     * remove. This is the belt: a {@code handin_required} answer that reached a client by some other
+     * route would otherwise hand over the resolver name and the pinned flag value, which is the
+     * question the server is supposed to be answering on the player's behalf.
+     */
+    private static void stripHandinQuestion(JsonObject root) {
+        if (root == null || !root.has("handin") || !root.get("handin").isJsonObject()) return;
+        JsonObject handin = root.getAsJsonObject("handin");
+        if (!handin.has("requires") || !handin.get("requires").isJsonArray()) return;
+        for (JsonElement entry : handin.getAsJsonArray("requires")) {
+            if (!entry.isJsonObject()) continue;
+            HANDIN_QUESTION_KEYS.forEach(entry.getAsJsonObject()::remove);
+        }
     }
 
     /**
