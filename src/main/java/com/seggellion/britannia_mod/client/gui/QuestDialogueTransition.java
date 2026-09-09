@@ -43,6 +43,12 @@ public final class QuestDialogueTransition {
      */
     public static boolean isDismissal(long askedFromNodeId, QuestResponse answer) {
         if (askedFromNodeId < 0) return false;
+        // A strict item hand-in answers from the node it was asked at by design -- Rails does not
+        // advance until a shard confirms a removal -- so it looks exactly like a self-loop and is
+        // the opposite of a dismissal: the player is short of something, or the transaction could
+        // not finish, and the dialogue is the only place either can be said. Closing here would put
+        // this feature's entire failure vocabulary back into a screen that silently vanishes.
+        if (QuestHandinPresentation.from(answer).keepsDialogueOpen()) return false;
         long landedOn = nodeId(answer);
         return landedOn >= 0 && landedOn == askedFromNodeId;
     }

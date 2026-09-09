@@ -154,6 +154,24 @@ public final class QuestScreenText {
      */
     public static final String WATER_PROTECTED = MESSAGE + "water.protected";
     public static final String PENDING_CONFIRMATION = MESSAGE + "pending_confirmation";
+
+    /**
+     * The strict item hand-in's own vocabulary (protocol section 1.5).
+     *
+     * <p>Six lines for six states, and the reason each exists is that the alternative is a dialogue
+     * that appears to do nothing. A turn-in that cannot say "you are one dung short" reads as a
+     * dead button, which is the exact complaint that started this work.
+     *
+     * <p>{@link #HANDIN_UNAVAILABLE} deliberately shows its reason code. It is short, non-secret
+     * and machine-readable, it is the same string in the server log, and a player reporting "it
+     * said evidence_rejected" is telling an operator something a polite apology would have hidden.
+     */
+    public static final String HANDIN_CHECKING = MESSAGE + "handin.checking";
+    public static final String HANDIN_MISSING = MESSAGE + "handin.missing";
+    public static final String HANDIN_MISSING_LINE = MESSAGE + "handin.missing_line";
+    public static final String HANDIN_TAKEN = MESSAGE + "handin.taken";
+    public static final String HANDIN_REFUNDED = MESSAGE + "handin.refunded";
+    public static final String HANDIN_UNAVAILABLE = MESSAGE + "handin.unavailable";
     public static final String PLOT_OCCUPIED = MESSAGE + "plot.occupied";
     public static final String PLOT_EXPIRED = MESSAGE + "plot.expired";
     public static final String CROP_LOST = MESSAGE + "crop.lost";
@@ -233,6 +251,8 @@ public final class QuestScreenText {
             KEY_OPEN_JOURNAL, KEY_OPEN_JOURNAL_UNBOUND,
             MIX_SWAP_HANDS, MIX_WRONG_BOWL, MIX_MISSING_OFF_HAND, MIX_WRONG_DIRT, WATER_FLOWING,
             WATER_PROTECTED, PENDING_CONFIRMATION, PLOT_OCCUPIED, PLOT_EXPIRED, CROP_LOST,
+            HANDIN_CHECKING, HANDIN_MISSING, HANDIN_MISSING_LINE, HANDIN_TAKEN, HANDIN_REFUNDED,
+            HANDIN_UNAVAILABLE,
             INVENTORY_FULL_DROPPED,
             PLOT_HOED_WARNING, PLOT_FERTILIZED_WARNING, CROP_TAKEN_BY_OTHER,
             WATER_STATE_DRY, WATER_STATE_OK, WATER_STATE_IDEAL, WATER_STATE_OVER,

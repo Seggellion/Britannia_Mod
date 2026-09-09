@@ -192,7 +192,9 @@ public class QuestJournalScreen extends Screen {
             Component empty = QuestScreenDraw.text(QuestScreenText.JOURNAL_EMPTY);
             ScreenRect list = layout.list();
             QuestScreenDraw.drawLine(graphics, this.font, QuestScreenDraw.fit(this.font, empty, list.width()),
-                    list.x() + Math.max(0, (list.width() - this.font.width(empty)) / 2),
+                    // Screen units on both sides: font.width answers in font units, TEXT_SCALE
+                    // smaller, so the empty-journal line sat left of centre by a tenth of itself.
+                    list.x() + Math.max(0, (list.width() - QuestScreenDraw.width(this.font, empty)) / 2),
                     list.y() + Math.max(0, (list.height() - QuestScreenDraw.lineHeight(this.font)) / 2),
                     QuestScreenDraw.MUTED_COLOR);
             return;

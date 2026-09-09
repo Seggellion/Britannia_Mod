@@ -7,6 +7,7 @@ import com.seggellion.britannia_mod.client.gui.QuestMixingGuideLayout;
 import com.seggellion.britannia_mod.client.gui.QuestNodePresentation;
 import com.seggellion.britannia_mod.client.gui.QuestChoiceButton;
 import com.seggellion.britannia_mod.client.gui.QuestDialogueTransition;
+import com.seggellion.britannia_mod.client.gui.QuestHandinPresentation;
 import com.seggellion.britannia_mod.client.gui.QuestScreenDraw;
 import com.seggellion.britannia_mod.client.gui.QuestScreenText;
 import com.seggellion.britannia_mod.client.gui.QuestTriggerResultPresentation;
@@ -66,6 +67,15 @@ public class QuestDecisionScreen extends Screen {
     private boolean choiceMade = false;
     /** A transition has been sent and no reply has come back yet (M8 item 8). */
     private boolean awaitingServer = false;
+    /**
+     * The strict item hand-in's answer, when the last one carried it (protocol section 1.5).
+     *
+     * <p>Not final and not part of {@code questState}, because these answers deliberately do not
+     * move the node: the shortfall, the refund notice and the failure reason all belong to the
+     * screen the player is already looking at. Updating in place is also what removes the flicker
+     * -- a hand-in answer no longer swaps this screen for an identical one.
+     */
+    private QuestHandinPresentation handin = QuestHandinPresentation.ABSENT;
 
     private Component bodyComponent;
     private QuestDialogueLayout layout;
@@ -155,7 +165,10 @@ public class QuestDecisionScreen extends Screen {
 
             Button button = new QuestChoiceButton(at.x(), at.y(), at.width(), at.height(),
                     label, ignored -> onChoicePressed(choice));
-            button.active = !lockedAt(index);
+            // Disabled while a claim is in flight, which is the visible half of the debounce: the
+            // vanilla grey comes free, and the guard in handleChoice is the half that actually
+            // stops a second transaction being minted.
+            button.active = !lockedAt(index) && !awaitingServer;
             addRenderableWidget(button);
             if (slot == 0) {
                 // Deterministic keyboard entry point: the first drawn choice, every time.
@@ -247,11 +260,16 @@ public class QuestDecisionScreen extends Screen {
         // When the body scrolls, the last line of the box belongs to the hint rather than to the
         // text. Drawing both in it puts one on top of the other, which is what a bare
         // "draw the hint at the bottom" does on a short screen.
+        // Every line drawn at the foot of the body box is reserved out of the text area first. The
+        // status notice used to be drawn straight over the last wrapped line whenever the body did
+        // not scroll, which read as the parchment being corrupt rather than as a message.
         ScreenRect bodyBounds = layout.body().bounds();
-        ScreenRect textArea = layout.body().scrolls()
-                ? new ScreenRect(bodyBounds.x(), bodyBounds.y(), bodyBounds.width(),
-                        Math.max(QuestScreenDraw.lineHeight(this.font), bodyBounds.height() - QuestScreenDraw.lineHeight(this.font)))
-                : bodyBounds;
+        int line = QuestScreenDraw.lineHeight(this.font);
+        List<Component> status = statusLines();
+        int reserved = (layout.body().scrolls() ? line : 0) + (status.size() * line);
+        ScreenRect textArea = reserved == 0 ? bodyBounds
+                : new ScreenRect(bodyBounds.x(), bodyBounds.y(), bodyBounds.width(),
+                        Math.max(line, bodyBounds.height() - reserved));
         QuestScreenDraw.drawWrapped(graphics, this.font, bodyComponent, textArea,
                 layout.body().wrapWidth(), bodyScroll, QuestScreenDraw.TEXT_COLOR);
 
@@ -267,16 +285,7 @@ public class QuestDecisionScreen extends Screen {
             drawChoiceScrollHint(graphics, layout.choices().scrollHint());
         }
 
-        // M8 item 8: a choice that has been sent but not answered used to leave the screen looking
-        // exactly as it did before the click, so players clicked again. The buttons are already
-        // gone by then; this says why.
-        if (awaitingServer) {
-            ScreenRect body = layout.body().bounds();
-            QuestScreenDraw.drawLine(graphics, this.font, QuestScreenDraw.fit(this.font,
-                            QuestScreenDraw.text(QuestScreenText.PENDING_CONFIRMATION), body.width()),
-                    body.x(), Math.max(body.y(), body.bottom() - QuestScreenDraw.lineHeight(this.font)),
-                    QuestScreenDraw.CLAIM_COLOR);
-        }
+        drawStatusLines(graphics, bodyBounds, status, line);
 
         drawDirections(graphics);
 
@@ -397,7 +406,9 @@ public class QuestDecisionScreen extends Screen {
     /** One guide marker, centred in the rectangle the layout reserved for it. */
     private void drawMarker(GuiGraphics graphics, ScreenRect at, String key) {
         Component marker = QuestScreenDraw.text(key);
-        int x = at.x() + Math.max(0, (at.width() - this.font.width(marker)) / 2);
+        // Screen units on both sides. font.width is in font units, TEXT_SCALE smaller, so the
+        // marker used to sit about a tenth of its own width left of centre.
+        int x = at.x() + Math.max(0, (at.width() - QuestScreenDraw.width(this.font, marker)) / 2);
         QuestScreenDraw.drawLine(graphics, this.font, QuestScreenDraw.fit(this.font, marker, at.width()),
                 x, at.y(), QuestScreenDraw.MUTED_COLOR);
     }
@@ -448,6 +459,74 @@ public class QuestDecisionScreen extends Screen {
                             maxWidth),
                     x, y, QuestScreenDraw.MUTED_COLOR);
         }
+    }
+
+    /**
+     * The lines that belong at the foot of the parchment, in the order they are drawn.
+     *
+     * <p>These are five of the six presentation states a strict item hand-in has (protocol section
+     * 1.5): checking, short by an exact amount, waiting on the server, handed over, and could not
+     * be completed. The sixth -- ready to turn in -- is the dialogue with no line at all, which is
+     * what the player sees before they click.
+     *
+     * <p>Bounded by construction: the missing list is at most eight entries and the heading is one,
+     * so this never grows past what the layout reserved room to shrink by.
+     */
+    private List<Component> statusLines() {
+        List<Component> lines = new ArrayList<>();
+        if (awaitingServer) {
+            // Two different waits, and telling them apart is the difference between "the game is
+            // busy" and "the game is deciding whether you have the goods".
+            lines.add(QuestScreenDraw.text(handin.present()
+                    ? QuestScreenText.PENDING_CONFIRMATION : QuestScreenText.HANDIN_CHECKING));
+            return lines;
+        }
+        switch (handin.state()) {
+            case ITEMS_MISSING -> {
+                lines.add(handin.message().isBlank()
+                        ? QuestScreenDraw.text(QuestScreenText.HANDIN_MISSING)
+                        : QuestScreenDraw.literal(handin.message()));
+                for (QuestHandinPresentation.Line missing : handin.missing()) {
+                    lines.add(QuestScreenDraw.text(QuestScreenText.HANDIN_MISSING_LINE,
+                            QuestScreenDraw.itemName(missing.itemId()), missing.count()));
+                }
+            }
+            case CONSUMED -> {
+                if (!handin.removed().isEmpty()) {
+                    lines.add(QuestScreenDraw.text(QuestScreenText.HANDIN_TAKEN, describe(handin.removed())));
+                }
+            }
+            case REFUNDED -> lines.add(QuestScreenDraw.text(QuestScreenText.HANDIN_REFUNDED));
+            case UNAVAILABLE -> lines.add(QuestScreenDraw.text(QuestScreenText.HANDIN_UNAVAILABLE,
+                    handin.reason().isBlank() ? "unknown" : handin.reason()));
+            case NONE -> { }
+        }
+        return lines;
+    }
+
+    /** Draws the status block upward from the foot of the body box, above any scroll hint. */
+    private void drawStatusLines(GuiGraphics graphics, ScreenRect body, List<Component> lines, int lineHeight) {
+        if (lines.isEmpty()) return;
+        int bottom = body.bottom() - (layout.body().scrolls() ? lineHeight : 0);
+        int top = bottom - (lines.size() * lineHeight);
+        for (int index = 0; index < lines.size(); index++) {
+            int y = top + (index * lineHeight);
+            if (y < body.y()) continue;
+            QuestScreenDraw.drawLine(graphics, this.font,
+                    QuestScreenDraw.fit(this.font, lines.get(index), body.width()),
+                    body.x(), y, QuestScreenDraw.CLAIM_COLOR);
+        }
+    }
+
+    /** "1 Dung, 1 Dirt" -- what the quest giver actually took, in the player's own language. */
+    private Component describe(List<QuestHandinPresentation.Line> items) {
+        net.minecraft.network.chat.MutableComponent joined = Component.empty();
+        for (int index = 0; index < items.size(); index++) {
+            if (index > 0) joined.append(QuestScreenDraw.literal(", "));
+            joined.append(QuestScreenDraw.text(QuestScreenText.HANDIN_MISSING_LINE,
+                    QuestScreenDraw.itemName(items.get(index).itemId()), items.get(index).count()));
+        }
+        return joined;
     }
 
     private void drawScrollHint(GuiGraphics graphics, ScreenRect body) {
@@ -564,12 +643,36 @@ public class QuestDecisionScreen extends Screen {
     // ------------------------------------------------------------ quest plumbing
 
     private void handleChoice(QuestChoice choice) {
+        // The debounce. Vanilla answers a second click on a disabled button by doing nothing, but
+        // the buttons are only disabled on the next rebuild, and a fast double-click lands before
+        // it: without this guard the second click mints a second requestUuid, a second pending
+        // callback and -- for a turn-in -- a second claim on the same transaction. The server
+        // stops the second removal at its ledger, but a screen that lets you ask twice is a screen
+        // that looks like it did nothing the first time.
+        if (awaitingServer) return;
+
         this.choiceMade = true;
         this.awaitingServer = true;
+        // Rebuilt immediately so the buttons grey out with the notice rather than a frame later.
+        rebuild();
         long askedFrom = QuestDialogueTransition.nodeId(questState);
         QuestClient.sendTransition(questState.quest_id, choice.id, questGiverContext(), newResponse -> {
+            this.awaitingServer = false;
             if (newResponse == null || newResponse.error != null) {
                 this.onClose();
+                return;
+            }
+
+            // A strict item hand-in answers from the node it was asked at, because Rails does not
+            // advance until this server confirms a removal. Those answers are shown in place: the
+            // shortfall, the refund notice and the failure reason all belong to the parchment the
+            // player is already reading, and swapping the screen for an identical one is what the
+            // old flicker was.
+            QuestHandinPresentation answer = QuestHandinPresentation.from(newResponse);
+            if (answer.keepsDialogueOpen()) {
+                this.handin = answer;
+                this.choiceMade = false;
+                rebuild();
                 return;
             }
             // A choice that lands back on the node it was offered from is a dismissal, not a step:
@@ -586,8 +689,13 @@ public class QuestDecisionScreen extends Screen {
                 this.onClose();
                 return;
             }
-            Minecraft.getInstance().setScreen(
-                    new QuestDecisionScreen(newResponse, this.npcName, this.npcGender, this.npcUuid));
+            QuestDecisionScreen next = new QuestDecisionScreen(newResponse, this.npcName,
+                    this.npcGender, this.npcUuid);
+            // The completion notice travels with the node it completed, so "Handed over: 1 Dung"
+            // is read on the screen that shows what Rowan said next rather than on the one the
+            // player has already left.
+            next.handin = answer;
+            Minecraft.getInstance().setScreen(next);
         });
     }
 

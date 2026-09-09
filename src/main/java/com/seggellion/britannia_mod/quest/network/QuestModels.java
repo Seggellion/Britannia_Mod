@@ -50,6 +50,17 @@ public class QuestModels {
          */
         public JsonElement reward_delivery;
         public Boolean replayed;
+
+        /**
+         * The strict item hand-in block (protocol section 1.5), when this answer is about one.
+         *
+         * <p>Rails writes a {@code handin} object on a {@code handin_required} answer; the server
+         * rewrites it into the client-facing form before forwarding -- concrete items and counts,
+         * never the resolver or the flag it answered, because the player is owed the answer and not
+         * the question. {@link JsonElement} for the same reason as the field above: absent on
+         * almost every quest in the game, and a JSON {@code null} must parse rather than throw.
+         */
+        public JsonElement handin;
     }
 
 public static class ClientAction {
