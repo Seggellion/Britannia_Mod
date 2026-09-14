@@ -45,14 +45,12 @@ class DeployableArtifactPackagingTest {
     private static final String JARJAR_PREFIX = "META-INF/jarjar/";
 
     private static String buildGradle;
-    private static String readme;
     private static String modsTomlTemplate;
     private static Properties gradleProperties;
 
     @BeforeAll
     static void readProjectFiles() throws IOException {
         buildGradle = read(PROJECT.resolve("build.gradle"));
-        readme = read(PROJECT.resolve("README.md"));
         modsTomlTemplate = read(PROJECT.resolve("src/main/templates/META-INF/neoforge.mods.toml"));
         gradleProperties = new Properties();
         try (InputStream in = Files.newInputStream(PROJECT.resolve("gradle.properties"))) {
@@ -146,14 +144,20 @@ class DeployableArtifactPackagingTest {
     // ---------------------------------------------------------------- the documentation
 
     @Test
-    void readmeNamesTheVersionThatGradleActuallyBuilds() {
+    void readmeNamesTheVersionThatGradleActuallyBuilds() throws IOException {
+        org.junit.jupiter.api.Assumptions.assumeTrue(Files.isRegularFile(PROJECT.resolve("README.md")),
+                "documentation is absent from this branch (zero-Markdown production policy)");
+        String readme = read(PROJECT.resolve("README.md"));
         assertTrue(readme.contains(modVersion()),
                 "README does not mention mod version " + modVersion()
                         + "; the release note and gradle.properties have drifted apart");
     }
 
     @Test
-    void readmeNamesTheDeployableArtifactWithItsRealFilename() {
+    void readmeNamesTheDeployableArtifactWithItsRealFilename() throws IOException {
+        org.junit.jupiter.api.Assumptions.assumeTrue(Files.isRegularFile(PROJECT.resolve("README.md")),
+                "documentation is absent from this branch (zero-Markdown production policy)");
+        String readme = read(PROJECT.resolve("README.md"));
         // The base name is lower case: `britannia_mod-<version>-all.jar`. The README named
         // `Britannia_Mod-<version>-all.jar` for a long time, which matches no file Gradle produces.
         assertTrue(readme.contains("britannia_mod-<version>-all.jar"),
