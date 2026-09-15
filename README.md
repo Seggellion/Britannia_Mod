@@ -7,7 +7,7 @@ Britannia's systems — skills, a player-driven economy, banking, guilds, quests
 travel — on top of Minecraft 1.21.1, backed by a shared UltimaCraft web service that ties
 independent servers ("shards") into one persistent world.
 
-**Current release: Patch 18 (August 2026) — mod version 0.1.8b, the newest version of UltimaCraft.**
+**Current release: Patch 18 (August 2026) — mod version 0.1.8c, the newest version of UltimaCraft.**
 
 ## Features
 
@@ -66,7 +66,7 @@ animated render — minutes after the deploy, with nothing in the stack trace ab
 the classifier in the filename, or read the contents:
 
 ```bash
-unzip -l build/libs/britannia_mod-0.1.8b-all.jar | grep jarjar
+unzip -l build/libs/britannia_mod-0.1.8c-all.jar | grep jarjar
 #   META-INF/jarjar/nanohttpd-2.2.0.jar
 #   META-INF/jarjar/geckolib-neoforge-1.21.1-4.6.6.jar
 #   META-INF/jarjar/metadata.json
