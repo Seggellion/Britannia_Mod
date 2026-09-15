@@ -3,6 +3,10 @@ package com.seggellion.britannia_mod.farming;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.block.model.BlockModel;
+import net.minecraft.client.renderer.block.model.ItemTransform;
+import org.joml.Vector3f;
 import com.seggellion.britannia_mod.item.WateringCanItem;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -79,6 +83,61 @@ class PlantingPresentationTest {
         var waterTexture = resolveTexture(waterFace.get("texture").getAsString(),
                 textureBindings(full.getAsJsonObject("textures")));
         assertFalse(emptyTextures.contains(waterTexture), "water surface must use the full-only fill texture");
+    }
+
+    @Test void droppedCanVariantsStayAboveTheFloorAtMinimumBob() throws Exception {
+        var assets = Path.of(System.getProperty("britannia.projectDir", "."))
+                .resolve("src/main/resources/assets/britannia_mod/models/item");
+        ItemTransform sharedGround = null;
+        for (var name : new String[]{"watering_can", "watering_can_full"}) {
+            var model = BlockModel.fromString(Files.readString(assets.resolve(name + ".json")));
+            var ground = model.getTransforms().ground;
+            if (sharedGround == null) sharedGround = ground;
+            else assertEquals(sharedGround, ground, "charge state must not move the dropped can");
+            assertTrue(lowestDroppedVertex(model, ground) > 0,
+                    name + " must clear the supporting floor throughout the bob cycle");
+            assertTrue(lowestDroppedVertex(model, ItemTransform.NO_TRANSFORM) < 0,
+                    "negative control: the authored low geometry clips without a ground transform");
+        }
+    }
+
+    private static float lowestDroppedVertex(BlockModel model, ItemTransform ground) {
+        var pose = new PoseStack();
+        // ItemEntityRenderer's minimum sinusoidal bob is zero, plus a quarter of ground Y scale.
+        // ItemRenderer then applies the ground transform before centering model coordinates.
+        pose.translate(0, 0.25F * ground.scale.y(), 0);
+        ground.apply(false, pose);
+        pose.translate(-0.5F, -0.5F, -0.5F);
+        float lowest = Float.POSITIVE_INFINITY;
+        for (var element : model.getElements()) {
+            for (int corner = 0; corner < 8; corner++) {
+                var vertex = new Vector3f(
+                        (corner & 1) == 0 ? element.from.x() : element.to.x(),
+                        (corner & 2) == 0 ? element.from.y() : element.to.y(),
+                        (corner & 4) == 0 ? element.from.z() : element.to.z()).div(16);
+                var rotation = element.rotation;
+                if (rotation != null) {
+                    var axis = switch (rotation.axis()) {
+                        case X -> new Vector3f(1, 0, 0);
+                        case Y -> new Vector3f(0, 1, 0);
+                        case Z -> new Vector3f(0, 0, 1);
+                    };
+                    vertex.sub(rotation.origin()).rotateAxis((float) Math.toRadians(rotation.angle()),
+                            axis.x(), axis.y(), axis.z());
+                    if (rotation.rescale()) {
+                        // FaceBakery rescales the two axes perpendicular to element rotation.
+                        float factor = 1F / (float) Math.cos(Math.toRadians(
+                                Math.abs(rotation.angle()) == 22.5F ? 22.5F : 45F));
+                        vertex.mul(axis.x() == 0 ? factor : 1, axis.y() == 0 ? factor : 1,
+                                axis.z() == 0 ? factor : 1);
+                    }
+                    vertex.add(rotation.origin());
+                }
+                lowest = Math.min(lowest, pose.last().pose().transformPosition(vertex).y());
+            }
+        }
+        assertTrue(Float.isFinite(lowest), "the clearance check must inspect actual model vertices");
+        return lowest;
     }
 
     private static Set<String> assertRenderableModel(Path assets, String modelId, boolean forbidOverrides) throws Exception {
