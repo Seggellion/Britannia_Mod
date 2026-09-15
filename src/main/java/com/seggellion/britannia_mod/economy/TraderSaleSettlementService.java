@@ -193,12 +193,18 @@ public final class TraderSaleSettlementService {
     }
 
     private static boolean matchesReceipt(JsonObject response, TraderSaleReservationReceipt receipt) {
-        try {
-            return receipt.idempotencyKey().equals(response.get("idempotency_key").getAsString())
-                    && receipt.playerUuid().toString().replace("-", "").equalsIgnoreCase(
-                            response.get("player_uuid").getAsString().replace("-", ""))
-                    && "sell".equals(response.get("transaction_type").getAsString());
-        } catch (RuntimeException malformed) { return false; }
+        var contract = TraderSaleReceiptContract.parse(response);
+        if (!contract.accepted()) {
+            LOGGER.warn("Trader sale receipt rejected key={} reason={}",
+                    receipt.idempotencyKey(), contract.rejection());
+            return false;
+        }
+        String mismatch = contract.receipt().mismatch(receipt.idempotencyKey(), receipt.playerUuid());
+        if (!mismatch.isBlank()) {
+            LOGGER.warn("Trader sale receipt rejected key={} reason={}", receipt.idempotencyKey(), mismatch);
+            return false;
+        }
+        return true;
     }
 
     /** No partial delivery and no world-entity crash window when an inventory is full. */
