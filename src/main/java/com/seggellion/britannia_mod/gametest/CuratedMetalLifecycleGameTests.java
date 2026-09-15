@@ -108,39 +108,6 @@ public final class CuratedMetalLifecycleGameTests {
     }
 
 
-    /**
-     * A planned cell this test can actually use: inside the test's own chunk, and inside build
-     * height.
-     *
-     * <p>Both constraints are the platform's, not the test's. Materialisation refuses a cell
-     * outside build height, and restoration deliberately refuses to load a chunk just to restore
-     * into it — so a cell chosen from the far side of a 12-radius deposit would fail for reasons
-     * that have nothing to do with what is being tested. The origin is not usable either: Vertical
-     * grows upward from it and never includes it.
-     */
-    private static BlockPos workableCell(ServerLevel level, PlannedDeposit deposit, BlockPos origin) {
-        net.minecraft.world.level.ChunkPos here = new net.minecraft.world.level.ChunkPos(origin);
-        BlockPos best = null;
-        int bestDistance = Integer.MAX_VALUE;
-        // positionsIn is the same slice materialisation uses, so the cell is guaranteed both to
-        // belong to the deposit and to lie in the chunk this test may safely touch.
-        for (BlockPos candidate : deposit.positionsIn(here)) {
-            if (candidate.getY() > level.getMinBuildHeight() + 4
-                    && candidate.getY() < level.getMaxBuildHeight() - 1) {
-                int distance = Math.abs(candidate.getY() - origin.getY());
-                if (distance < bestDistance) {
-                    best = candidate;
-                    bestDistance = distance;
-                }
-            }
-        }
-        if (best == null) {
-            throw new GameTestAssertException(
-                    "no planned cell of this deposit lies in the test's own chunk within build height");
-        }
-        return best;
-    }
-
     private static List<ItemStack> takeDrops(ServerLevel level, BlockPos around) {
         List<ItemEntity> entities =
                 level.getEntitiesOfClass(ItemEntity.class, new AABB(around).inflate(3.0D));
@@ -164,27 +131,20 @@ public final class CuratedMetalLifecycleGameTests {
      */
     private static void runLifecycle(GameTestHelper helper, String path, Runnable onRestored) {
         ServerLevel level = helper.getLevel();
-        BlockPos origin = helper.absolutePos(NODE);
         String dimension = level.dimension().location().toString();
         ResourceDefinition resource = resource(path);
         Block block = managedBlock(resource);
 
-        // A curated Rails row: the only thing that says this deposit exists. Its immutable
-        // parameters derive the identity, and the identity derives the planner seed.
-        // A radius every one of the three allows: copper tops out at 22.
-        int radius = Math.min(20, resource.generation().orElseThrow().maxRadius());
-        CuratedDepositTestRows row = CuratedDepositTestRows.of(path, origin, radius);
+        // Establish a valid curated row within this fixture's loaded chunk and template interior.
+        // Do not assume a wandering vein seeded at a chunk edge returns to that same chunk.
+        ChunkPos chunk = new ChunkPos(helper.absolutePos(NODE));
+        check(level.getChunkSource().hasChunk(chunk.x, chunk.z), "the test's own chunk is not loaded");
+        CuratedMetalTestFixture.Fixture fixture = CuratedMetalTestFixture.select(path, dimension,
+                helper.getBounds().deflate(1.0), chunk, level.getMinBuildHeight(), level.getMaxBuildHeight());
+        CuratedDepositTestRows row = fixture.row();
         long instanceId = row.identity(dimension);
-        PlannedDeposit deposit = row.plan(dimension);
-
-        // A cell the deposit actually owns, in the test's own chunk.
-        //
-        // The origin will not do. Vertical grows upward from its origin and Snake wanders away from
-        // it, so neither includes it -- and restoration correctly refuses to restore a cell that is
-        // not part of the deposit, which is what made the iron and gold cases fail: the debt was
-        // consumed and the block stayed air. Copper only passed because Cluster happens to include
-        // its centre. Mining a cell the deposit owns is what the test meant all along.
-        BlockPos cell = workableCell(level, deposit, origin);
+        PlannedDeposit deposit = fixture.deposit();
+        BlockPos cell = fixture.cell();
         level.setBlock(cell, Blocks.STONE.defaultBlockState(), 2);
 
         DepositLedger ledger = DepositLedger.get(level);
