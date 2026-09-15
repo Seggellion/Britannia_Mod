@@ -155,6 +155,7 @@ public final class QuestCropAttributionGameTests {
             CropDefinition otherCrop = CropRegistry.byId("vanilla_potato").orElseThrow();
             soil.plantMigratedCrop(otherCrop, "", otherCrop.maxGrowthAge(), player.getUUID());
             setHasSeeds(level, plot, true);
+            QuestActionTestSupport.successfulHarvestOutcome(level);
             FarmingBlock.tryHarvestCrop(soil, level.getBlockState(plot), level, plot, player,
                 ItemStack.EMPTY, InteractionHand.MAIN_HAND, "rowan_m5_test");
             checkCount(0, rails.count(), "harvesting a different crop satisfied the bound objective");
@@ -165,6 +166,7 @@ public final class QuestCropAttributionGameTests {
             FarmingBlockEntity otherSoil = (FarmingBlockEntity) level.getBlockEntity(elsewhere);
             otherSoil.plantMigratedCrop(carrot(), "", carrot().maxGrowthAge(), player.getUUID());
             setHasSeeds(level, elsewhere, true);
+            QuestActionTestSupport.successfulHarvestOutcome(level);
             FarmingBlock.tryHarvestCrop(otherSoil, level.getBlockState(elsewhere), level, elsewhere, player,
                 ItemStack.EMPTY, InteractionHand.MAIN_HAND, "rowan_m5_test");
             checkCount(0, rails.count(), "harvesting the right crop on another plot satisfied the objective");
@@ -173,6 +175,7 @@ public final class QuestCropAttributionGameTests {
             soil.plantMigratedCrop(carrot(), "", carrot().maxGrowthAge(), player.getUUID());
             setHasSeeds(level, plot, true);
             check(!boundCycle.equals(soil.getCropCycleId()), "replanting did not rotate the cycle");
+            QuestActionTestSupport.successfulHarvestOutcome(level);
             FarmingBlock.tryHarvestCrop(soil, level.getBlockState(plot), level, plot, player,
                 ItemStack.EMPTY, InteractionHand.MAIN_HAND, "rowan_m5_test");
             checkCount(0, rails.count(), "a later cycle in the same hole satisfied the bound objective");
@@ -246,6 +249,7 @@ public final class QuestCropAttributionGameTests {
             UUID firstCycle = soil.getCropCycleId();
 
             player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ItemRegistry.SCISSORS.get()));
+            QuestActionTestSupport.successfulHarvestOutcome(level);
             FarmingBlock.tryHarvestCrop(soil, level.getBlockState(plot), level, plot, player,
                 player.getMainHandItem(), InteractionHand.MAIN_HAND, "rowan_m5_test");
 
@@ -300,6 +304,7 @@ public final class QuestCropAttributionGameTests {
         restoreCycle(soil, cycle, planter, level, plot);
         setHasSeeds(level, plot, true);
         player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        QuestActionTestSupport.successfulHarvestOutcome(level);
         FarmingBlock.tryHarvestCrop(soil, level.getBlockState(plot), level, plot, player,
             ItemStack.EMPTY, InteractionHand.MAIN_HAND, "rowan_m5_test");
     }

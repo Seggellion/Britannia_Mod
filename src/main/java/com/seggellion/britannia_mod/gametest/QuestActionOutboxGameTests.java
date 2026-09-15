@@ -259,6 +259,7 @@ public final class QuestActionOutboxGameTests {
             level.setBlock(plot, state.setValue(FarmingBlock.HAS_SEEDS, true), 3);
         }
         player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        QuestActionTestSupport.successfulHarvestOutcome(level);
         FarmingBlock.tryHarvestCrop(soil, level.getBlockState(plot), level, plot, player,
             ItemStack.EMPTY, InteractionHand.MAIN_HAND, "rowan_m5_test");
     }

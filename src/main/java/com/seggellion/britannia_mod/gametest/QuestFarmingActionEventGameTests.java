@@ -245,6 +245,7 @@ public final class QuestFarmingActionEventGameTests {
             soil.plantMigratedCrop(carrot, "", carrot.maxGrowthAge(), player.getUUID());
             java.util.UUID matureCycle = soil.getCropCycleId();
             player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            QuestActionTestSupport.successfulHarvestOutcome(level);
             FarmingBlock.tryHarvestCrop(soil, level.getBlockState(plot), level, plot, player,
                 ItemStack.EMPTY, InteractionHand.MAIN_HAND, "rowan_m5_test");
             List<JsonObject> harvested = rails.forAction(QuestAction.CROP_HARVEST);

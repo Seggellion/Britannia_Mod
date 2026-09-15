@@ -255,6 +255,15 @@ final class QuestActionTestSupport {
         return player;
     }
 
+    /**
+     * These fixtures assert what follows a successful economic harvest, not its probability.
+     * Use the harvest contract suite's seeded draw below the minimum 75% success threshold;
+     * the real survival transaction, skill gate, outputs and quest dispatch still execute.
+     */
+    static void successfulHarvestOutcome(net.minecraft.server.level.ServerLevel level) {
+        GameplayHarvestGameTests.seedOutcome(level, true);
+    }
+
     static void disconnect(ServerPlayer player) {
         ServerQuestTable.forget(player.getUUID());
         player.server.getPlayerList().remove(player);

@@ -163,6 +163,7 @@ public final class QuestRealDispatchGameTests {
             // 5. Harvesting, empty-handed: the block's useItemOn is called with an empty stack.
             soil.plantMigratedCrop(carrot, "", carrot.maxGrowthAge(), player.getUUID());
             UUID matureCycle = soil.getCropCycleId();
+            QuestActionTestSupport.successfulHarvestOutcome(level);
             rightClick(player, level, plot, ItemStack.EMPTY);
             List<JsonObject> harvested = rails.forAction(QuestAction.CROP_HARVEST);
             checkCount(1, harvested.size(), "one real harvest did not report exactly one event");
@@ -208,6 +209,7 @@ public final class QuestRealDispatchGameTests {
             check(planter.getUUID().equals(control.getPlanterId()),
                     "the block entity recorded somebody other than the clicking player as planter");
             rails.clear();
+            QuestActionTestSupport.successfulHarvestOutcome(level);
             rightClick(stranger, level, helper.absolutePos(TARGET), ItemStack.EMPTY);
             check(!rails.forAction(QuestAction.CROP_HARVEST).isEmpty(),
                     "the stranger's real click never reached the harvest publish point, so the "
@@ -220,6 +222,7 @@ public final class QuestRealDispatchGameTests {
                     QuestActionEvents.plotKey(level, otherPlot), bound.getCropCycleId());
             rails.clear();
 
+            QuestActionTestSupport.successfulHarvestOutcome(level);
             rightClick(stranger, level, otherPlot, ItemStack.EMPTY);
             checkCount(0, rails.forAction(QuestAction.CROP_HARVEST).size(),
                     "a stranger's real harvest was reported as their objective");
