@@ -46,6 +46,12 @@ public final class FlowerPlantingService {
             Player player,
             ItemStack heldStack
     ) {
+        // A nonflower must pass on both sides before client prediction can claim the click.
+        // Otherwise an empty main hand consumes the block interaction before offhand care runs.
+        if (REGISTRY.bySeedItemId(BuiltInRegistries.ITEM.getKey(heldStack.getItem())).isEmpty()
+                && !heldStack.is(ModTags.Items.FLOWER_SEEDS)) {
+            return Outcome.NOT_A_FLOWER_SEED;
+        }
         if (!(level instanceof net.minecraft.server.level.ServerLevel serverLevel) || player == null) return Outcome.REJECTED;
         return FarmingPlantingTransaction.locked(serverLevel, pos,
                 () -> execute(new LevelPlantingAccess(level, pos, farmingState, player, heldStack), REGISTRY, COLOR_SELECTOR), Outcome.REJECTED);
