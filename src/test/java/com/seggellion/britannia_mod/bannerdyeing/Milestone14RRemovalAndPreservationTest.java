@@ -144,15 +144,21 @@ class Milestone14RRemovalAndPreservationTest {
     }
 
     @Test
-    void scaffoldAndStatusHaveNoCraftingContract() throws Exception {
+    void scaffoldHasNoCraftingContract() throws Exception {
         String scaffold = Files.readString(ROOT.resolve(
                 "tools/scaffold/com/seggellion/britannia_mod/tools/BannerScaffoldTool.java"));
-        String status = Files.readString(ROOT.resolve("content/banner_catalogue_status.md"));
         for (String rejected : List.of(
                 "recipe/banner", "tags/item/banner_fabric", "tags/item/banner_mount",
                 "generatedRecipes", "fabricUnits", "Recipe definitions complete")) {
             assertFalse(scaffold.contains(rejected), rejected);
         }
+    }
+
+    @Test
+    void statusHasNoCraftingContract() throws Exception {
+        org.junit.jupiter.api.Assumptions.assumeTrue(Files.isRegularFile(ROOT.resolve("content/banner_catalogue_status.md")),
+                "documentation is absent from this branch (zero-Markdown production policy)");
+        String status = Files.readString(ROOT.resolve("content/banner_catalogue_status.md"));
         for (String rejected : List.of(
                 "Recipe ID", "Recipe present", "Pattern present", "Fabric units",
                 "Supported crafting materials", "Supported crafting mounts",

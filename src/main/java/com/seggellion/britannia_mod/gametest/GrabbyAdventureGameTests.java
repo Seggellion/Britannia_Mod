@@ -264,7 +264,9 @@ public final class GrabbyAdventureGameTests {
         // mid-air.
         BlockPos floor = floorAt(helper, 1, 1);
         ServerLevel level = helper.getLevel();
-        ServerPlayer player = adventurePlayerNear(helper, floor);
+        ServerPlayer player = ManagedResourceTestPlayers.survival(level, "M9GrabbyWine");
+        player.setGameMode(net.minecraft.world.level.GameType.ADVENTURE);
+        player.setPos(floor.getX() + 2.5D, floor.getY(), floor.getZ() + 2.5D);
 
         ItemStack bottle = new ItemStack(ItemRegistry.WINE_BOTTLE_GREEN.get());
         player.setItemInHand(InteractionHand.MAIN_HAND, bottle);
@@ -283,6 +285,7 @@ public final class GrabbyAdventureGameTests {
                 new BlockHitResult(Vec3.atCenterOf(midAir), Direction.UP, midAir, false));
         check(floating.outcome() != GrabbyPlacementOutcome.SUCCESS,
                 "a bottle was placed with nothing underneath it");
+        level.getServer().getPlayerList().remove(player);
         helper.succeed();
     }
 }

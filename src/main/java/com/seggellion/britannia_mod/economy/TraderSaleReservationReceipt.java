@@ -21,28 +21,36 @@ import java.util.UUID;
  * aware encoding banking already trusts for items sitting on disk — rather than
  * a second serialization path invented here.
  *
- * <h2>Status is the anti-duplication rule</h2>
- * {@link Status#RESERVED} means the receipt was written but the removal had not
- * yet been made durable, so the player's saved inventory still holds the items:
- * recovery must NOT refund such a receipt. Only {@link Status#ITEMS_REMOVED} and
- * {@link Status#DISPATCHED} prove the items durably left the player, and only
- * those are refundable. Loss is bounded and visible; duplication is unbounded
- * inflation, so the ambiguous case always resolves toward "do not mint".
+ * New records carry the exact replayable request and a player-save marker. Uncertain
+ * dispatches require an authoritative receipt; they never authorize a speculative refund.
  */
 public record TraderSaleReservationReceipt(
         String idempotencyKey,
         UUID playerUuid,
         List<byte[]> itemPayloads,
         Status status,
-        long createdAtEpochMillis
+        long createdAtEpochMillis,
+        String requestJson,
+        String serviceOrigin,
+        String settlementJson
 ) {
+    /** Legacy records have no replayable request. Preserve their data without inventing one. */
+    public TraderSaleReservationReceipt(String key, UUID player, List<byte[]> items, Status status, long created) {
+        this(key, player, items, status, created, "", "", "");
+    }
     public enum Status {
         /** Written; the items may or may not have durably left the inventory. */
         RESERVED,
         /** The removal was force-saved: the items are provably gone from the player. */
         ITEMS_REMOVED,
         /** Sent to Rails; the outcome is unknown to this process. */
-        DISPATCHED
+        DISPATCHED,
+        /** A prior dispatch may have committed; query/retry its original key, never guess a refund. */
+        RECONCILING,
+        /** Rails confirmed this payout; delivery waits for the current player and inventory space. */
+        PAYOUT_PENDING,
+        /** Rails definitively refused; exact goods are owed back to the current player. */
+        REFUND_PENDING
     }
 
     public TraderSaleReservationReceipt {
@@ -54,6 +62,11 @@ public record TraderSaleReservationReceipt(
             throw new IllegalArgumentException("a reservation must carry at least one item payload");
         }
         if (status == null) throw new IllegalArgumentException("status is required");
+        requestJson = requestJson == null ? "" : requestJson;
+        serviceOrigin = serviceOrigin == null ? "" : serviceOrigin;
+        settlementJson = settlementJson == null ? "" : settlementJson;
+        if (requestJson.length() > 1_048_576 || settlementJson.length() > 1_048_576)
+            throw new IllegalArgumentException("oversized trader receipt");
         List<byte[]> copied = new ArrayList<>(itemPayloads.size());
         for (byte[] payload : itemPayloads) copied.add(payload.clone());
         itemPayloads = List.copyOf(copied);
@@ -61,12 +74,20 @@ public record TraderSaleReservationReceipt(
 
     public TraderSaleReservationReceipt withStatus(Status next) {
         return new TraderSaleReservationReceipt(
-                idempotencyKey, playerUuid, itemPayloads, next, createdAtEpochMillis);
+                idempotencyKey, playerUuid, itemPayloads, next, createdAtEpochMillis,
+                requestJson, serviceOrigin, settlementJson);
     }
+
+    public TraderSaleReservationReceipt withSettlement(Status next, String response) {
+        return new TraderSaleReservationReceipt(idempotencyKey, playerUuid, itemPayloads, next,
+                createdAtEpochMillis, requestJson, serviceOrigin, response);
+    }
+
+    public boolean replayable() { return !requestJson.isBlank() && !serviceOrigin.isBlank(); }
 
     /** Only a receipt whose items provably left the player may be refunded. */
     public boolean refundable() {
-        return status == Status.ITEMS_REMOVED || status == Status.DISPATCHED;
+        return status == Status.ITEMS_REMOVED || status == Status.REFUND_PENDING;
     }
 
     /**
@@ -95,6 +116,9 @@ public record TraderSaleReservationReceipt(
         tag.putUUID("PlayerUuid", playerUuid);
         tag.putString("Status", status.name());
         tag.putLong("CreatedAtEpochMillis", createdAtEpochMillis);
+        if (!requestJson.isBlank()) tag.putString("RequestJson", requestJson);
+        if (!serviceOrigin.isBlank()) tag.putString("ServiceOrigin", serviceOrigin);
+        if (!settlementJson.isBlank()) tag.putString("SettlementJson", settlementJson);
         ListTag items = new ListTag();
         for (byte[] payload : itemPayloads) {
             CompoundTag entry = new CompoundTag();
@@ -119,7 +143,8 @@ public record TraderSaleReservationReceipt(
                     tag.getUUID("PlayerUuid"),
                     payloads,
                     Status.valueOf(tag.getString("Status")),
-                    tag.getLong("CreatedAtEpochMillis")
+                    tag.getLong("CreatedAtEpochMillis"),
+                    tag.getString("RequestJson"), tag.getString("ServiceOrigin"), tag.getString("SettlementJson")
             );
         } catch (RuntimeException unreadable) {
             return null;

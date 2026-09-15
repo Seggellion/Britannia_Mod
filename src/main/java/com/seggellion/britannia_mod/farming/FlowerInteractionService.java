@@ -123,6 +123,7 @@ public final class FlowerInteractionService {
     public static boolean isCareItem(ItemStack stack) {
         return stack.is(ItemRegistry.WATERING_CAN.get())
                 || stack.is(Items.WATER_BUCKET)
+                || stack.is(ItemRegistry.BOWL_OF_WATER.get())
                 || FarmingSoilCare.fertilizerFor(stack).isPresent();
     }
 
@@ -130,7 +131,9 @@ public final class FlowerInteractionService {
             Level level, BlockPos pos, BlockState blockState, Player player, InteractionHand hand,
             ItemStack stack, FlowerBlockEntity flower, FlowerPersistentState persistent
     ) {
-        if (!FlowerProtectionService.mayMutate(persistent, player, FlowerMutationReason.CARE)) {
+        if (player == null || player.isSpectator() || !level.mayInteract(player, pos)
+                || player.getItemInHand(hand) != stack
+                || !FlowerProtectionService.mayMutate(persistent, player, FlowerMutationReason.CARE)) {
             deny(player, level, PROTECTED_MESSAGE_KEY);
             return ItemInteractionResult.SUCCESS;
         }
@@ -139,6 +142,14 @@ public final class FlowerInteractionService {
         }
 
         FlowerSoilSnapshot soil = persistent.soil();
+        if (stack.is(ItemRegistry.BOWL_OF_WATER.get())) {
+            if (soil.hydration() < FarmingBlockEntity.MAX_HYDRATION
+                    && flower.replaceSoil(soil.withHydration(soil.hydration() + 1))) {
+                BowlWateringService.finish(level, pos, player, hand, stack);
+                awardTending(player, 1.0f);
+            }
+            return ItemInteractionResult.CONSUME;
+        }
         if (stack.is(ItemRegistry.WATERING_CAN.get())) {
             int charges = WateringCanItem.getWaterCharges(stack);
             if (soil.hydration() >= FarmingBlockEntity.MAX_HYDRATION || charges <= 0) {
@@ -189,34 +200,40 @@ public final class FlowerInteractionService {
         FlowerDefinition definition = FlowerRegistry.initial().byId(persistent.speciesId()).orElse(null);
         if (definition == null || !isMature(persistent, definition)
                 || !FlowerProtectionService.mayMutate(persistent, player, FlowerMutationReason.HARVEST)) {
-            if (persistent.protectedFlower()) {
-                deny(player, level, PROTECTED_MESSAGE_KEY);
-            }
+            if (persistent.protectedFlower()) deny(player, level, PROTECTED_MESSAGE_KEY);
             return ItemInteractionResult.SUCCESS;
         }
-        if (level.isClientSide) {
-            return ItemInteractionResult.sidedSuccess(true);
-        }
+        if (level.isClientSide) return ItemInteractionResult.SUCCESS;
         FlowerGrowthEvaluation evaluation = flower.evaluateGrowth((ServerLevel) level).orElse(null);
-        if (evaluation == null) {
-            return ItemInteractionResult.SUCCESS;
-        }
-        int quality = CropQualityCalculator.calculateQuality(definition.growthProfile(), evaluation.farmingContext());
-        ItemStack harvested = new ItemStack(BuiltInRegistries.ITEM.get(definition.harvestedItemId()));
-        CropQualityCalculator.applyQuality(harvested, definition.id(), quality);
-        FruitProvenance.setRegionName(harvested, FarmingClimateResolver.findRegionAt(level, pos)
-                .map(region -> region.name).orElse("Unknown"));
-        if (!flower.harvestAndReset(quality)) {
-            return ItemInteractionResult.SUCCESS;
-        }
-        if (!player.getInventory().add(harvested)) {
-            player.drop(harvested, false);
-        }
-        damageAfterSuccess(player, hand, stack);
-        level.playSound(null, pos, ModSounds.SCISSORS_CUT.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
-        if (player instanceof ServerPlayer serverPlayer) {
-            FarmingSkill.award(serverPlayer, FarmingActionType.HARVEST, 1, 1.0F);
-        }
+        if (evaluation == null) return ItemInteractionResult.SUCCESS;
+        FarmingHarvestService.execute(level, pos, player, BuiltInRegistries.ITEM.get(definition.seedItemId()),
+                () -> level.getBlockEntity(pos) == flower && flower.canCommitHarvest(persistent)
+                        && isMature(persistent, definition) && persistent.soil().remainingFertileHarvests() != 0
+                        && player.getItemInHand(hand) == stack && stack.is(ItemRegistry.SCISSORS.get())
+                        && FlowerProtectionService.mayMutate(persistent, player, FlowerMutationReason.HARVEST)
+                        && (!(level.getBlockState(pos).getBlock() instanceof com.seggellion.britannia_mod.block.HouseFarmPlotBlock)
+                            || com.seggellion.britannia_mod.block.HouseFarmPlotBlock.mayManagePlot((ServerLevel) level,pos,player)),
+                outcome -> {
+                    int quality = outcome.successful() ? Math.max(FlowerQuality.MINIMUM, CropQualityCalculator.calculateQuality(definition.growthProfile(), evaluation.farmingContext())) : persistent.quality().value();
+                    ItemStack harvested = ItemStack.EMPTY;
+                    if (outcome.successful()) {
+                        harvested = new ItemStack(BuiltInRegistries.ITEM.get(definition.harvestedItemId()));
+                        CropQualityCalculator.applyQuality(harvested, definition.id(), quality);
+                        FruitProvenance.setRegionName(harvested, FarmingClimateResolver.findRegionAt(level, pos).map(region -> region.name).orElse("Unknown"));
+                    }
+                    if (!flower.harvestAndReset(quality, !outcome.free())) return false;
+                    if (!outcome.free() && persistent.soil().remainingFertileHarvests() == 1) {
+                        BlockState exhausted = persistent.soil().origin() == FlowerSoilOrigin.COMMUNITY_PLOT
+                                ? BlockRegistry.COMMUNITY_FARM_BLOCK.get().defaultBlockState()
+                                : net.minecraft.world.level.block.Blocks.DIRT.defaultBlockState();
+                        level.setBlock(pos, exhausted, 3);
+                        FlowerInteractionTransactionGate.markReplacement((ServerLevel)level,pos);
+                    }
+                    if (!outcome.free()) damageAfterSuccess(player, hand, stack);
+                    if (!harvested.isEmpty()) com.seggellion.britannia_mod.bowlpreparation.BowlPreparationOutput.giveOrDrop((ServerPlayer)player, harvested);
+                    level.playSound(null, pos, ModSounds.SCISSORS_CUT.get(), SoundSource.BLOCKS, .8f, 1f);
+                    return true;
+                }, () -> FarmingSkill.award((ServerPlayer)player,FarmingActionType.HARVEST,1,1f));
         return ItemInteractionResult.SUCCESS;
     }
 
@@ -328,7 +345,7 @@ public final class FlowerInteractionService {
     }
 
     private static void deny(Player player, Level level, String messageKey) {
-        if (!level.isClientSide) {
+        if (!level.isClientSide && player != null) {
             player.displayClientMessage(Component.translatable(messageKey).withStyle(ChatFormatting.RED), true);
         }
     }

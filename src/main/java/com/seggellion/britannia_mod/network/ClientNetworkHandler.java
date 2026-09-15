@@ -31,6 +31,11 @@ import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
 import com.seggellion.britannia_mod.network.payload.QuestDestinationScreenS2CPayload;
 import com.seggellion.britannia_mod.client.screen.QuestDestinationScreen;
 import com.seggellion.britannia_mod.network.payload.EscortArrivedS2CPayload;
+import com.seggellion.britannia_mod.client.gui.QuestScreenText;
+import com.seggellion.britannia_mod.client.gui.QuestTriggerResultPresentation;
+import com.seggellion.britannia_mod.quest.ClientQuestEntry;
+import com.seggellion.britannia_mod.quest.ClientQuestTable;
+import com.seggellion.britannia_mod.quest.QuestEntryParser;
 import com.seggellion.britannia_mod.network.payload.QuestTriggerResultS2CPayload;
 import com.seggellion.britannia_mod.client.screen.QuestDecisionScreen;
 import com.seggellion.britannia_mod.network.payload.QuestGiverSpawnScreenS2CPayload;
@@ -65,7 +70,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.sounds.SoundEvents;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
@@ -297,61 +301,132 @@ public static void handleQuestTriggerResult(QuestTriggerResultS2CPayload payload
 
         QuestManager.getInstance().setCurrentQuestState(response);
 
+        // Rowan farming questline M8. Before anything is composed from the journal: this payload
+        // carries the advanced journal entry, and nothing was reading it. ClientQuestTable was
+        // written only by the login/quit sync and by talking to a giver, so the notice below read
+        // pre-advance detail and printed the same objective after hoeing, after fertilizing, after
+        // planting and after watering, claimPending was stale-false so the return-to-Rowan line
+        // never fired at the moment it exists for, and the journal screen was frozen between
+        // conversations. The refresh has to happen here, ahead of both the notice and the dialogue
+        // screen, because both read the table rather than the response.
+        refreshJournalFromTriggerResult(payload.responseJson(), payload.questId(),
+                payload.triggerKey());
+
         handleQuestClientActions(response, payload.questId(), payload.triggerKey());
 
-        if (response.currentNode != null) {
-            // If a presentation payload told us who fired this trigger, use their name.
-            TriggerPresentation presentation = PENDING_TRIGGER_PRESENTATION;
-            if (presentation != null && presentation.matches(payload.questId(), payload.triggerKey())) {
-                PENDING_TRIGGER_PRESENTATION = null;
-                openQuestDecisionScreen(response, presentation.npcName(), presentation.npcGender(),
-                        presentation.npcUuid());
-            } else {
-                openQuestDecisionScreen(response, "The Guardian", null);
-            }
-        } else {
-            LOGGER.warn("Quest trigger response missing node quest_id={} trigger_key={}", payload.questId(), payload.triggerKey());
+        // Rowan farming questline M8 item 4. Two changes here:
+        //
+        // 1. A farming objective completing no longer opens a screen. Those objectives fire while
+        //    the player is hoeing, fertilizing, planting and watering, so the old behaviour put a
+        //    dialogue over the plot they were standing on and took the mouse mid-task. The reward
+        //    is claimed at the quest giver, not in a popup at the plot, so an unprompted result is
+        //    now an action-bar line and a toast and nothing else. A result that arrived because
+        //    the player is talking to somebody still opens the dialogue.
+        //
+        // 2. The attribution is no longer the hardcoded "The Guardian" -- wrong for every quest,
+        //    and conspicuously wrong for a questline whose giver is a farmer called Rowan. The
+        //    name comes from the conversation, then the response, then the journal entry.
+        TriggerPresentation presentation = PENDING_TRIGGER_PRESENTATION;
+        boolean fromConversation = presentation != null
+                && presentation.matches(payload.questId(), payload.triggerKey());
+        if (fromConversation) {
+            PENDING_TRIGGER_PRESENTATION = null;
+        }
+
+        QuestTriggerResultPresentation.Outcome outcome =
+                QuestTriggerResultPresentation.decide(response.currentNode != null, fromConversation);
+        switch (outcome) {
+            case OPEN_DIALOGUE -> openQuestDecisionScreen(response, presentation.npcName(),
+                    presentation.npcGender(), presentation.npcUuid());
+            case QUIET_NOTICE -> showQuietObjectiveNotice(mc, response, payload.questId());
+            case NOTHING -> LOGGER.warn(
+                    "Quest trigger response missing node quest_id={} trigger_key={}",
+                    payload.questId(), payload.triggerKey());
         }
     });
 }
 
-private static void handleQuestClientActions(QuestModels.QuestResponse response, long questId, String triggerKey) {
-    Minecraft mc = Minecraft.getInstance();
-    if (response.client_actions == null || response.client_actions.isEmpty()) {
-        return;
+/**
+ * Applies the journal entry a trigger result carried, so the client's mirror is level with the
+ * advance before anything is composed from it.
+ *
+ * <p>Reads {@code accepted_quest} / {@code accepted_quests} out of the raw body -- the same fields
+ * {@code QuestActionDispatcher} reads server-side, and the reason it ships the raw Rails body
+ * rather than the parsed response, which models neither. A body carrying no journal entry (the
+ * watcher and the environmental handlers re-serialize the parsed response, which has no such
+ * field) leaves the table exactly as it was: absent is "this response said nothing about the
+ * journal", never "the journal is empty".
+ */
+private static void refreshJournalFromTriggerResult(String responseJson, long questId,
+                                                    String triggerKey) {
+    if (responseJson == null || responseJson.isBlank()) return;
+    try {
+        com.google.gson.JsonElement parsed = com.google.gson.JsonParser.parseString(responseJson);
+        if (!parsed.isJsonObject()) return;
+        java.util.List<ClientQuestEntry> advanced =
+                QuestEntryParser.parseAcceptedQuests(parsed.getAsJsonObject());
+        if (advanced.isEmpty()) return;
+        ClientQuestTable.updateFromTriggerResult(advanced);
+    } catch (RuntimeException malformed) {
+        // The response already parsed as a QuestResponse to get here, so this is a shape problem
+        // rather than a syntax one. A journal that could not be refreshed is the old behaviour,
+        // not a reason to drop the notice the player is waiting for.
+        LOGGER.warn("Quest trigger result journal refresh failed quest_id={} trigger_key={} error={}",
+                questId, triggerKey, malformed.toString());
     }
+}
 
-    for (QuestModels.ClientAction action : response.client_actions) {
-        String actionType = action.type != null && !action.type.isBlank() ? action.type : action.action;
-        if ("achievement".equals(actionType)) {
-            mc.getToasts().addToast(
-                    SystemToast.multiline(
-                            mc,
-                            SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
-                            uoMessage("Achievement Unlocked!").withStyle(UO_STYLE.withColor(TextColor.fromRgb(0xFFAA00))),
-                            uoMessage(action.name != null ? action.name : "Quest Completed")
-                    )
-            );
-            if (mc.player != null) {
-                mc.player.playSound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0F, 1.0F);
-            }
-        } else if ("stat_gain".equals(actionType)) {
-            if (mc.player != null) {
-                if (action.karma > 0 && action.fame > 0) {
-                    mc.player.sendSystemMessage(uoMessage("+" + action.karma + " Karma, +" + action.fame + " Fame"));
-                } else if (action.karma > 0) {
-                    mc.player.sendSystemMessage(uoMessage("+" + action.karma + " Karma"));
-                } else if (action.fame > 0) {
-                    mc.player.sendSystemMessage(uoMessage("+" + action.fame + " Fame"));
-                }
-            }
-        } else if ("spawn_escort".equals(actionType)) {
-            // Server-triggered environmental results do not spawn client-side escorts.
-        } else {
-            LOGGER.warn("Quest client action unknown quest_id={} trigger_key={} type={} action={} name={}",
-                    questId, triggerKey, action.type, action.action, action.name);
-        }
-    }
+/**
+ * The quiet form of a quest result (M8 item 4): a line on the action bar and a toast, attributed
+ * to the quest giver by name, and no screen.
+ *
+ * <p>Attribution goes through {@link QuestTriggerResultPresentation#attribution} rather than a
+ * constant. When nothing at all names a giver the toast says so in a translated string; it does
+ * not invent one, which is what "The Guardian" was.
+ *
+ * <p>Which of the two sentences to say is {@link QuestTriggerResultPresentation#objectiveNotice},
+ * a pure function, so "a second objective says something different from the first" and "the last
+ * one switches to the claim line" are assertable. It reads the journal entry, which
+ * {@link #refreshJournalFromTriggerResult} has already brought level with this advance.
+ */
+private static void showQuietObjectiveNotice(Minecraft mc, QuestModels.QuestResponse response,
+                                             long questId) {
+    if (mc.player == null) return;
+
+    ClientQuestEntry entry = ClientQuestTable.findByQuestId(Long.toString(questId));
+    String giver = QuestTriggerResultPresentation.attribution(
+            "", response.questGiverName, entry == null ? "" : entry.questGiverName());
+
+    QuestTriggerResultPresentation.Notice notice = QuestTriggerResultPresentation.objectiveNotice(
+            entry == null ? "" : entry.detail().objective(),
+            response.questTitle,
+            entry != null && entry.detail().claimPending(),
+            giver);
+
+    Component argument = switch (notice.kind()) {
+        case READY_TO_CLAIM -> notice.argument().isEmpty()
+                ? Component.translatable(QuestScreenText.GIVER_UNKNOWN)
+                : Component.literal(notice.argument());
+        case ADVANCED -> Component.literal(notice.argument());
+    };
+    Component line = Component.translatable(notice.translationKey(), argument);
+
+    mc.player.displayClientMessage(line.copy().withStyle(UO_STYLE), true);
+    mc.getToasts().addToast(SystemToast.multiline(mc, SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
+            Component.translatable(QuestScreenText.OBJECTIVE_TOAST_TITLE).withStyle(UO_STYLE),
+            line.copy().withStyle(UO_STYLE)));
+}
+
+/**
+ * Rowan farming questline M10: the rendering moved to
+ * {@link com.seggellion.britannia_mod.client.quest.QuestClientActions}, so the turn-in path --
+ * which comes back through {@code QuestClient}, not through this payload -- shows the same
+ * achievement toast and plays the same sound as an objective result. Whether an achievement is
+ * announced at all is the server's decision, already made and applied to this response.
+ */
+private static void handleQuestClientActions(QuestModels.QuestResponse response, long questId, String triggerKey) {
+    com.seggellion.britannia_mod.client.quest.QuestClientActions.present(
+            response.client_actions, questId, triggerKey);
 }
 
 private static MutableComponent uoMessage(String text) {

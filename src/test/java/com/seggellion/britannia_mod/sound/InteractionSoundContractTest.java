@@ -107,11 +107,11 @@ class InteractionSoundContractTest {
 
         assertSuccessMutationPrecedesCue(
                 JAVA.resolve("farming/FlowerInteractionService.java"),
-                "flower.harvestAndReset(quality)",
+                "flower.harvestAndReset(quality, !outcome.free())",
                 "ModSounds.SCISSORS_CUT.get()");
         assertSuccessMutationPrecedesCue(
-                JAVA.resolve("block/OrangeFruitBlock.java"),
-                "dropFruitFromTree(level, pos, root, player, true)",
+                JAVA.resolve("farming/FruitTreeHarvestService.java"),
+                "root.onFruitHarvested(pos)",
                 "ModSounds.SCISSORS_CUT.get()");
     }
 

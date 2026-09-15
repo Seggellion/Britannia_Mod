@@ -17,6 +17,33 @@ class MoongateMilestoneTenContractTest {
     private static final Path ASSETS = PROJECT.resolve("src/main/resources/assets/britannia_mod");
 
     @Test
+    void everyBillboardCornerStaysInsideRendererBoundsAtAllCameraHeadings() throws Exception {
+        var model = JsonParser.parseString(Files.readString(ASSETS.resolve("models/block/moongate_billboard.json"))).getAsJsonObject();
+        for (var value : model.getAsJsonArray("elements")) {
+            var element = value.getAsJsonObject();
+            var from = element.getAsJsonArray("from"); var to = element.getAsJsonArray("to");
+            for (int mask = 0; mask < 8; mask++) {
+                double x = (((mask & 1) == 0 ? from : to).get(0).getAsDouble() / 16 - .5) * 1.35;
+                double y = ((mask & 2) == 0 ? from : to).get(1).getAsDouble() / 16 * 1.35;
+                double z = (((mask & 4) == 0 ? from : to).get(2).getAsDouble() / 16 - .5) * 1.35;
+                for (int heading = 0; heading < 360; heading += 5) {
+                    double angle = Math.toRadians(heading);
+                    double rx = .5 + x * Math.cos(angle) - z * Math.sin(angle);
+                    double rz = .5 + x * Math.sin(angle) + z * Math.cos(angle);
+                    assertTrue(rx >= -.25 && rx <= 1.25 && rz >= -.25 && rz <= 1.25 && y >= 0 && y <= 3,
+                            "rotated billboard corner escaped the root BER bounds");
+                }
+            }
+        }
+        String setup = readJava("ClientModSetup.java");
+        assertTrue(setup.contains("MoongateBlockEntityRenderer.BILLBOARD_MODEL"), "standalone model must be registered for reload");
+        assertTrue(setup.contains("MoongateBlockEntityRenderer::new"), "placed BE renderer must remain registered");
+        String renderer = readJava("client/renderer/MoongateBlockEntityRenderer.java");
+        assertTrue(renderer.contains("minecraft.getModelManager().getModel(BILLBOARD_MODEL)"), "use the current model manager after resource reload");
+        assertTrue(renderer.contains("bufferSource.getBuffer(PORTAL_RENDER_TYPE)"), "tested entity material must reach the actual BER buffer");
+    }
+
+    @Test
     void oneLogicalBlockRendersTheReauthoredThirtyTwoVoxelModel() throws Exception {
         JsonObject permanent = JsonParser.parseString(Files.readString(
                 ASSETS.resolve("models/block/moongate_block.json"))).getAsJsonObject();

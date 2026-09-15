@@ -75,28 +75,8 @@ public class OrangeFruitBlock extends Block {
                 return ItemInteractionResult.SUCCESS;
             }
 
-            if (!dropFruitFromTree(level, pos, root, player, true)) {
-                return ItemInteractionResult.SUCCESS;
-            }
-            FruitTreeDefinition definition = root.definition();
-            level.setBlock(pos, definition.leafBlock().get().defaultBlockState(), 3);
-            root.onFruitHarvested(pos);
-
-            FarmingBlockEntity soil = root.getSoilBlockEntity(level).orElse(null);
-            if (soil != null && soil.consumeSuccessfulFertileHarvest() == 0
-                    && level instanceof ServerLevel serverLevel) {
-                root.cleanupTree(serverLevel, player, false);
-                FarmingBlock.exhaustFertileSoil(level, soil.getBlockPos(), soil);
-            }
-            level.playSound(null, pos, ModSounds.SCISSORS_CUT.get(), SoundSource.BLOCKS, 0.8f, 1.0f);
-            if (!player.getAbilities().instabuild) {
-                stack.hurtAndBreak(1, player, Player.getSlotForHand(hand));
-            }
-
-            CropDefinition crop = CropRegistry.byId(root.getTreeTypeId()).orElse(null);
-            if (crop != null && player instanceof ServerPlayer serverPlayer) {
-                FarmingSkill.award(serverPlayer, FarmingActionType.HARVEST, crop.tier(), crop.farmingSkillModifier());
-            }
+            com.seggellion.britannia_mod.farming.FruitTreeHarvestService.pick(
+                    (ServerLevel)level,pos,root,player,hand,stack,true);
         }
 
         return ItemInteractionResult.sidedSuccess(level.isClientSide);
@@ -110,22 +90,12 @@ public class OrangeFruitBlock extends Block {
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
+    /** Compatibility entry point; player callers must complete the same authorized fruit transaction. */
     public static boolean dropFruitFromTree(Level level, BlockPos fruitPos, OrangeTreeRootBlockEntity root, @Nullable Player player, boolean harvestedWithScissors) {
-        BlockState state = level.getBlockState(fruitPos);
-        FruitTreeDefinition definition = root.definition();
-        if (!state.is(definition.fruitBlock().get()) || !state.getValue(RIPE)) {
-            return false;
-        }
-        int count = definition.randomFruitYield(level.getRandom());
-        ItemStack harvest = root.createHarvestStack(player, count);
-        if (player != null && harvestedWithScissors) {
-            if (!player.getInventory().add(harvest)) {
-                player.drop(harvest, false);
-            }
-        } else {
-            popResource(level, fruitPos, harvest);
-        }
-        return true;
+        if (!(level instanceof ServerLevel server) || player == null) return false;
+        InteractionHand hand = harvestedWithScissors && player.getOffhandItem().is(ItemRegistry.SCISSORS.get())
+                && !player.getMainHandItem().is(ItemRegistry.SCISSORS.get()) ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+        return com.seggellion.britannia_mod.farming.FruitTreeHarvestService.pick(server,fruitPos,root,player,hand,player.getItemInHand(hand),harvestedWithScissors);
     }
 
     public String treeTypeId() {

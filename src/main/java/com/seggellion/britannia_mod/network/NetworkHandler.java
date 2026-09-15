@@ -96,6 +96,50 @@ import com.mojang.logging.LogUtils;
 public class NetworkHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
 
+    /**
+     * Server-side gate for {@link QuestGiverSpawnConfigC2SPayload} (Rowan farming questline M1,
+     * discovery D3). The screen that sends this payload opens only for administrators, but a client
+     * can craft the packet without the screen, so the handler decides on its own: Creative or
+     * permission level 2; within block-interaction reach of the position (the check vanilla applies
+     * to the block-use packet that opened the screen); a quest-giver spawner actually at that
+     * position; and a payload the spawner understands. Anything else changes nothing and logs one
+     * line naming the player by UUID only.
+     *
+     * @return true when the configuration was applied
+     */
+    public static boolean applyQuestGiverSpawnConfig(ServerPlayer player, QuestGiverSpawnConfigC2SPayload payload) {
+        if (player == null || payload == null) return false;
+        ServerLevel level = player.serverLevel();
+        String rejection = questGiverSpawnConfigRejection(player, level, payload);
+        if (rejection != null) {
+            net.minecraft.core.BlockPos pos = payload.pos();
+            LOGGER.warn("event=quest_giver_spawn_config_rejected reason={} player={} pos={}",
+                rejection, player.getStringUUID(),
+                pos == null ? "none" : pos.getX() + "," + pos.getY() + "," + pos.getZ());
+            return false;
+        }
+        if (level.getBlockEntity(payload.pos()) instanceof QuestGiverSpawnBlockEntity spawner) {
+            // The directions hint is carried through untouched: it is presentation for this one
+            // spawner and reaches neither the archetype nor the Rails identity.
+            spawner.applyConfig(payload.npcName(), payload.cityName(), payload.customApiId(),
+                payload.gender(), payload.spawnRadius(), payload.directions());
+            return true;
+        }
+        return false;
+    }
+
+    /** The first gate the request fails, as the rejection log's {@code reason}; null when none. */
+    private static String questGiverSpawnConfigRejection(ServerPlayer player, ServerLevel level,
+                                                         QuestGiverSpawnConfigC2SPayload payload) {
+        if (!(player.isCreative() || player.hasPermissions(2))) return "permission";
+        net.minecraft.core.BlockPos pos = payload.pos();
+        // Reach before the block lookup: asking for a block entity at a far position loads its chunk.
+        if (level == null || pos == null || !player.canInteractWithBlock(pos, 1.0D)) return "reach";
+        if (!(level.getBlockEntity(pos) instanceof QuestGiverSpawnBlockEntity)) return "block_entity";
+        if (!payload.isValidShape()) return "payload";
+        return null;
+    }
+
  @SubscribeEvent
 public static void register(final RegisterPayloadHandlersEvent event) {
     ClientModWhitelist.registerPayloads(event);
@@ -304,13 +348,8 @@ registrar.playToServer(
     QuestGiverSpawnConfigC2SPayload.TYPE,
     QuestGiverSpawnConfigC2SPayload.STREAM_CODEC,
     (payload, ctx) -> ctx.enqueueWork(() -> {
-        if (!(ctx.player() instanceof net.minecraft.server.level.ServerPlayer player)) return;
-        net.minecraft.server.level.ServerLevel level = player.serverLevel();
-        if (level == null) return;
-
-        net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(payload.pos());
-        if (be instanceof com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity spawner) {
-            spawner.applyConfig(payload.npcName(), payload.cityName(), payload.customApiId(), payload.gender(), payload.spawnRadius());
+        if (ctx.player() instanceof ServerPlayer player) {
+            applyQuestGiverSpawnConfig(player, payload);
         }
     })
 );

@@ -199,6 +199,9 @@ CraftableRegistry.init();
                 new com.seggellion.britannia_mod.event.CrateStackBreakHandler());
         NeoForge.EVENT_BUS.register(new FlowerInteractionHandler());
         NeoForge.EVENT_BUS.register(new HouseFarmPlotInteractionHandler());
+        NeoForge.EVENT_BUS.register(new com.seggellion.britannia_mod.event.BowlWateringInteractionHandler());
+        NeoForge.EVENT_BUS.register(new com.seggellion.britannia_mod.event.HandRecipeInteractionHandler());
+        NeoForge.EVENT_BUS.register(new com.seggellion.britannia_mod.event.DisplayCaseDecoratorInteractionHandler());
         NeoForge.EVENT_BUS.register(new ManagedVegetationInteractionHandler());
         NeoForge.EVENT_BUS.register(new TrainingDummyEventHandler());
         // UltimaCraft parrots are protected from all player-caused damage; see the handler.
@@ -246,8 +249,16 @@ CraftableRegistry.init();
         // could invent a managed deposit from the world seed. Deposits are defined by Rails rows
         // and enter the world through /populateores; a chunk generating is not an event that
         // creates economic material, and there is deliberately no listener here that says it is.
-        // OreVein milestone 6 amendment: refuses an ordinary creative break of a sited deposit,
-        // ahead of everything else, so removing one stays an explicit administrative act.
+        // OreVein milestone 6, reconciled with the attacking-hand creative rule. The two rules
+        // divide cleanly and both stand: the hand decides who is EARNING (a creative player
+        // holding the Britannia pickaxe is a tester and gets the whole ladder; without it every
+        // managed path stands aside -- ManagedExtractionPolicy.bypassesManagedExtraction), and
+        // this guard decides what may be SILENTLY DESTROYED (a sited deposit cell may not). So an
+        // administrator still clears an ordinary misplaced block in creative with no ore, no skill
+        // and no debt, and still cannot delete a vein by clicking it -- that stays an explicit
+        // /manageddeposit remove or /populateores clear. HIGHEST, ahead of everything below,
+        // because each handler under it stands aside for an administering creative player at the
+        // top of its own listener.
         NeoForge.EVENT_BUS.register(
                 new com.seggellion.britannia_mod.resource.extraction.ManagedResourceCreativeGuard());
         NeoForge.EVENT_BUS.register(

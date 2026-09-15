@@ -8,18 +8,16 @@ import org.junit.jupiter.api.Test;
 
 class DyeTubPreviewRoutingTest {
     @Test
-    void pigmentRoutingPrecedesBannerRoutingAndUnknownItemsRetainLoadingFailure() throws Exception {
+    void roleBasedPigmentRoutingPrecedesMainHandBannerPreviewAndNonmatchesPass() throws Exception {
         String source = Files.readString(Path.of(System.getProperty("britannia.projectDir", "."),
                 "src/main/java/com/seggellion/britannia_mod/dye/item/DyeTubItem.java"));
-        int pigmentCheck = source.indexOf("DyeItemRegistry.pigmentId(pigmentStack.getItem()).isEmpty()");
-        int bannerCheck = source.indexOf("pigmentStack.getItem() == BannerItemRegistry.BANNER.get()");
-        int loadingPlan = source.indexOf("DyeTubLoadingService.plan(");
-        assertTrue(pigmentCheck >= 0);
-        assertTrue(bannerCheck > pigmentCheck);
-        assertTrue(loadingPlan > bannerCheck);
-        assertTrue(source.contains("hand != InteractionHand.MAIN_HAND"));
-        assertTrue(source.contains("level.isClientSide()"));
-        assertTrue(source.indexOf("level.isClientSide()") < source.indexOf("DyePreviewRuntime.openPreview"));
+        int recipes = source.indexOf("HandRecipeInteraction.use(level, player, hand)");
+        int bannerCheck = source.indexOf("hand == InteractionHand.MAIN_HAND && player.getOffhandItem().is(BannerItemRegistry.BANNER.get())");
+        int preview = source.indexOf("DyePreviewRuntime.openPreview(serverPlayer)");
+        assertTrue(recipes >= 0 && bannerCheck > recipes && preview > bannerCheck);
+        assertTrue(source.contains("if (matched.getResult().consumesAction()) return matched;"));
+        assertTrue(source.contains("player instanceof ServerPlayer serverPlayer"));
+        assertTrue(source.contains("return InteractionResultHolder.pass(tubStack)"));
     }
 
     @Test

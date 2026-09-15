@@ -29,6 +29,25 @@ public final class ClientQuestTable {
         addInternal(quest, "Rails accept success");
     }
 
+    /**
+     * Refreshes the entries a trigger result carried, after an objective advanced a quest.
+     *
+     * <p>Rowan farming questline M8. This table was written only by the login/quit sync and by
+     * talking to a quest giver, so between two conversations nothing in it moved: the quiet
+     * objective notice printed the same sentence after hoeing, after fertilizing, after planting
+     * and after watering, and the journal's next action, ordered progress and claim badge were
+     * frozen at whatever the last sync had said. A trigger result carries the advanced journal
+     * entry, which is authoritative for exactly the fields a sync would have brought, so it is
+     * applied the same way -- keyed by quest state id, so a refreshed entry replaces its old self
+     * rather than joining it.
+     */
+    public static synchronized void updateFromTriggerResult(Collection<ClientQuestEntry> quests) {
+        if (quests == null) return;
+        for (ClientQuestEntry quest : quests) {
+            addInternal(quest, "quest trigger result");
+        }
+    }
+
     public static synchronized void removeAfterRailsQuitSuccess(String questStateId) {
         if (questStateId == null || questStateId.isBlank()) return;
         QUESTS.remove(questStateId.trim());

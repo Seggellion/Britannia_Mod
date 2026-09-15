@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "biomes": "#minecraft:is_overworld",
+  "step": "vegetal_decoration",
+  "suppressed": [
+    {
+      "feature": "minecraft:patch_pumpkin",
+      "reason": "Random landscape fruit patch; intentional cultivation is retained."
+    },
+    {
+      "feature": "minecraft:patch_melon",
+      "reason": "Random landscape fruit patch; intentional cultivation is retained."
+    },
+    {
+      "feature": "minecraft:patch_melon_sparse",
+      "reason": "Random landscape fruit patch; intentional cultivation is retained."
+    }
+  ],
+  "preserved": [
+    "structure-authored pumpkin and melon blocks",
+    "existing fruit and stem blocks",
+    "native player planting and bonemeal",
+    "native stem random ticks",
+    "custom pumpkin, watermelon and vanilla-compatible melon cultivation",
+    "all other vegetation features"
+  ],
+  "reload": "Biome modifiers are applied to worldgen registries at server load. Normal resource reload does not restore removed features; changing this worldgen datapack policy requires an explicit override and server/world reload."
+}

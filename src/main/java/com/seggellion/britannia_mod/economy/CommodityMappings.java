@@ -69,24 +69,10 @@ public final class CommodityMappings {
         map("oat_flour", "grain", "milled", "oat_flour", "Oat Flour", CommodityUnit.QUANTITY);
         map("rye_flour", "grain", "milled", "rye_flour", "Rye Flour", CommodityUnit.QUANTITY);
 
-        mapProduce("apple", "fruit", "Apple");
-        mapProduce("banana", "fruit", "Banana");
-        mapProduce("concord_grapes", "fruit", "Concord Grapes");
-        mapProduce("peaches", "fruit", "Peaches");
-        mapProduce("pears", "fruit", "Pears");
-        mapProduce("berries", "fruit", "Berries");
-        mapProduce("squash", "vegetable", "Squash");
-        mapProduce("carrots", "vegetable", "Carrots");
-        map("minecraft:carrot", "produce", "vegetable", "carrots", "Carrots", CommodityUnit.QUANTITY);
-        mapProduce("corn", "vegetable", "Corn");
-        mapProduce("cabbage", "vegetable", "Cabbage");
-        mapProduce("lettuce", "vegetable", "Lettuce");
-        mapProduce("onion", "vegetable", "Onion");
-        mapProduce("pumpkin", "vegetable", "Pumpkin");
-        map("minecraft:pumpkin", "produce", "vegetable", "pumpkin", "Pumpkin", CommodityUnit.QUANTITY);
-        mapProduce("potato", "vegetable", "Potato");
-        map("minecraft:potato", "produce", "vegetable", "potato", "Potato", CommodityUnit.QUANTITY);
-        mapProduce("tomato", "vegetable", "Tomato");
+        for (var produce : ProduceCommodityManifest.entries()) {
+            map(produce.itemId(), produce.category(), produce.subcategory(), produce.itemName(),
+                    produce.displayName(), CommodityUnit.QUANTITY);
+        }
 
         mapMeat("raw_pork", "pork", "Raw Pork");
         mapMeat("raw_pork_ribs", "pork", "Raw Pork Ribs");
@@ -193,7 +179,7 @@ public final class CommodityMappings {
         if (byId != null) return Optional.of(byId);
 
         String path = itemId.contains(":") ? itemId.substring(itemId.indexOf(':') + 1) : itemId;
-        return Optional.ofNullable(BY_PATH.get(path));
+        return pathFallback(itemId, path);
     }
 
     /**
@@ -209,7 +195,16 @@ public final class CommodityMappings {
         CommodityMapping byId = BY_ITEM_ID.get(id);
         if (byId != null) return Optional.of(byId);
         String path = id.contains(":") ? id.substring(id.indexOf(':') + 1) : id;
-        return Optional.ofNullable(BY_PATH.get(path));
+        return pathFallback(id, path);
+    }
+
+    private static Optional<CommodityMapping> pathFallback(String id, String path) {
+        CommodityMapping mapping = BY_PATH.get(path);
+        // Produce is an exact harvested registry contract. Bare-path legacy callers remain
+        // supported, but an unrelated mod cannot acquire a buyback identity by sharing a path.
+        if (id.contains(":") && mapping != null && "produce".equals(mapping.category()))
+            return Optional.empty();
+        return Optional.ofNullable(mapping);
     }
 
     public static String fishCommodityKey(String fishType) {
@@ -301,10 +296,6 @@ public final class CommodityMappings {
     /** {@code category|subcategory|item_name}, matching the identity Rails parses and looks up. */
     public static String stoneCommodityIdentityKey(String stoneType) {
         return "stone|" + stoneCommoditySubcategory(stoneType).orElse("") + "|" + stoneType;
-    }
-
-    private static void mapProduce(String itemName, String subcategory, String displayName) {
-        map(itemName, "produce", subcategory, itemName, displayName, CommodityUnit.QUANTITY);
     }
 
     private static void mapMeat(String itemName, String subcategory, String displayName) {

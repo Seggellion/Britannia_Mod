@@ -76,6 +76,59 @@ class BannerScaffoldToolTest {
     }
 
     @Test
+    void checkAcceptsWindowsTextLineEndingsWithoutChangingFiles() throws Exception {
+        Path root = seed();
+        var authoredPaths = snapshotDeclaredFiles(root).keySet();
+        run(root, false, false);
+        try (var paths = Files.walk(root)) {
+            for (Path path : paths.filter(Files::isRegularFile).toList()) {
+                String name = path.getFileName().toString();
+                String relative = root.relativize(path).toString().replace('\\', '/');
+                if (!authoredPaths.contains(relative) && (name.endsWith(".json") || name.endsWith(".md"))) {
+                    Files.writeString(path, Files.readString(path).replace("\r\n", "\n")
+                            .replace("\n", "\r\n"));
+                }
+            }
+        }
+        Map<String, byte[]> before = snapshotDeclaredFiles(root);
+        run(root, true, false);
+        Map<String, byte[]> after = snapshotDeclaredFiles(root);
+        assertEquals(before.keySet(), after.keySet());
+        before.forEach((path, bytes) -> assertArrayEquals(bytes, after.get(path), path));
+    }
+
+    @Test
+    void establishedScaffoldWithoutDocumentationStillChecksRuntimeOutputs() throws Exception {
+        Path root = seed();
+        run(root, false, false);
+        Files.delete(root.resolve(BannerScaffoldTool.STATUS_PATH));
+        run(root, true, false);
+        run(root, false, false);
+        run(root, false, true);
+        assertFalse(Files.exists(root.resolve(BannerScaffoldTool.STATUS_PATH)));
+
+        Path definitions = root.resolve("src/main/resources/data/britannia_mod/banner_definitions");
+        Path definition;
+        try (var files = Files.list(definitions)) {
+            definition = files.filter(path -> path.toString().endsWith(".json")).findFirst().orElseThrow();
+        }
+        byte[] original = Files.readAllBytes(definition);
+        Files.writeString(definition, "{}\n");
+        assertThrows(BannerScaffoldTool.ScaffoldException.class, () -> run(root, true, false));
+        Files.write(definition, original);
+        Files.delete(definition);
+        assertThrows(BannerScaffoldTool.ScaffoldException.class, () -> run(root, true, false));
+    }
+
+    @Test
+    void existingDocumentationMustStillMatchGeneratedStatus() throws Exception {
+        Path root = seed();
+        run(root, false, false);
+        Files.writeString(root.resolve(BannerScaffoldTool.STATUS_PATH), "stale status\n");
+        assertThrows(BannerScaffoldTool.ScaffoldException.class, () -> run(root, true, false));
+    }
+
+    @Test
     void normalAndForceRunsPreserveApprovedRoadGuardAssets() throws Exception {
         Path root = seed();
         Path base = root.resolve(

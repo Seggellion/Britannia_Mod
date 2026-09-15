@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.item;
 
+import com.seggellion.britannia_mod.placement.CreativeDecorationPolicy;
 import com.seggellion.britannia_mod.component.WineData;
 import com.seggellion.britannia_mod.registry.DataComponentRegistry;
 import net.minecraft.ChatFormatting;
@@ -15,6 +16,14 @@ public class WineBottleBlockItem extends BlockItem {
 
     public WineBottleBlockItem(Block block, Properties properties) {
         super(block, properties);
+    }
+
+    @Override
+    protected boolean canPlace(net.minecraft.world.item.context.BlockPlaceContext context,
+            net.minecraft.world.level.block.state.BlockState state) {
+        return CreativeDecorationPolicy.creative(context.getPlayer())
+                ? CreativeDecorationPolicy.canOccupy(context, context.getClickedPos(), state)
+                : super.canPlace(context, state);
     }
 
     // UPDATED: Added 'String labelColor' to the end

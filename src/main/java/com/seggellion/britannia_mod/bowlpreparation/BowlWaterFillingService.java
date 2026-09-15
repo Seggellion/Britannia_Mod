@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.bowlpreparation;
 
 import com.seggellion.britannia_mod.BritanniaMod;
+import com.seggellion.britannia_mod.quest.action.QuestActionEvents;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import java.util.Objects;
 import java.util.Optional;
@@ -59,6 +60,20 @@ public final class BowlWaterFillingService {
             InteractionHand hand,
             BowlWaterFillingPlan plan
     ) {
+        return apply(player, hand, plan, "");
+    }
+
+    /**
+     * @param source which unlimited water source this was, for the Rowan questline's action event
+     *               (protocol section 2.1, {@code bowl_water_fill}); empty when the caller has no
+     *               opinion, in which case the optional subject field is simply omitted
+     */
+    public static ApplyResult apply(
+            ServerPlayer player,
+            InteractionHand hand,
+            BowlWaterFillingPlan plan,
+            String source
+    ) {
         Objects.requireNonNull(player, "player");
         Objects.requireNonNull(hand, "hand");
         Objects.requireNonNull(plan, "plan");
@@ -70,12 +85,16 @@ public final class BowlWaterFillingService {
         }
 
         ItemStack output = commit.output();
+        // Read the identity before delivering it: giving a stack away can empty it.
+        String outputItemId = QuestActionEvents.itemId(output);
         if (liveInput.isEmpty()) {
             player.setItemInHand(hand, output);
         } else {
             BowlPreparationOutput.giveOrDrop(player, output);
         }
         player.getInventory().setChanged();
+        // The bowl exists and the input has been paid for; a stale plan left above without one.
+        QuestActionEvents.bowlWaterFill(player, outputItemId, source);
         return ApplyResult.APPLIED;
     }
 

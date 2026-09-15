@@ -30,17 +30,12 @@ class FarmingCultivationGateTest {
     }
 
     @Test
-    void everyApprovedSpeciesUsesInclusiveThresholdAndGrapeRemainsExempt() {
+    void everyApprovedSpeciesIncludingGrapesUsesInclusiveThreshold() {
         List<FarmingSkillRequirementResolver.ResolvedRequirement> requirements = requirements();
         assertEquals(74, requirements.size());
 
         for (FarmingSkillRequirementResolver.ResolvedRequirement requirement : requirements) {
             float required = requirement.minimumFarmingSkill();
-            if (requirement.speciesId().equals(FarmingCultivationGate.GRAPE_SPECIES_ID)) {
-                assertEquals(FarmingCultivationGate.ResultType.NOT_APPLICABLE,
-                        evaluate(requirement, -1.0F).type());
-                continue;
-            }
 
             FarmingCultivationGate.Evaluation exact = evaluate(requirement, required);
             assertEquals(FarmingCultivationGate.ResultType.ELIGIBLE,
@@ -162,6 +157,43 @@ class FarmingCultivationGateTest {
         }
     }
 
+    /**
+     * M9 item 4: the gate distinguishes a Farming value of zero from no Farming value at all.
+     *
+     * <p>These two subjects hold the identical float. Carrot -- the questline's crop -- requires
+     * Farming 0, so a player whose real Farming is 0 must plant it, and a player whose data never
+     * arrived must not, because nobody knows what their Farming is. The old behaviour was correct
+     * on this point and stays correct; what M9 adds is that the second player now gets their data
+     * retried instead of being stuck until they relog.
+     */
+    @Test
+    void anAuthoritativeFarmingZeroPlantsAZeroRequirementCropAndAnUnknownZeroDoesNot() {
+        CropDefinition carrotCrop = CropRegistry.byId("carrot").orElseThrow();
+        FarmingSkillRequirementResolver.ResolvedRequirement carrot =
+                new FarmingSkillRequirementResolver.ResolvedRequirement(carrotCrop.id(), carrotCrop);
+        assertEquals(0.0F, carrot.minimumFarmingSkill(), 0.0001F,
+                "the questline's crop is the zero-requirement case this test depends on");
+
+        FarmingCultivationGate.Evaluation known = FarmingCultivationGate.evaluateResolved(
+                carrot,
+                new FarmingCultivationGate.Subject(FarmingCultivationGate.ActorType.PLAYER, false, 0,
+                        SkillManager.SkillDataState.AVAILABLE, 0.0F));
+        assertEquals(FarmingCultivationGate.ResultType.ELIGIBLE, known.type());
+        assertTrue(known.permitsPlanting());
+        assertEquals(0.0F, known.currentFarmingSkill(), 0.0001F);
+
+        FarmingCultivationGate.Evaluation unknown = FarmingCultivationGate.evaluateResolved(
+                carrot,
+                new FarmingCultivationGate.Subject(FarmingCultivationGate.ActorType.PLAYER, false, 0,
+                        SkillManager.SkillDataState.UNAVAILABLE, 0.0F));
+        assertEquals(FarmingCultivationGate.ResultType.SKILL_DATA_UNAVAILABLE, unknown.type());
+        assertFalse(unknown.permitsPlanting());
+        // Reported as unknown rather than as zero, so no message can imply the player has a skill
+        // level nobody has read.
+        assertTrue(Float.isNaN(unknown.currentFarmingSkill()));
+        assertEquals("?", FarmingCultivationGate.formatSkill(unknown.currentFarmingSkill()));
+    }
+
     @Test
     void unresolvedMaterialFailsClosedAndFeedbackIsGenericAndLocalized() throws IOException {
         FarmingCultivationGate.Evaluation unresolved = FarmingCultivationGate.evaluate(null, null);
@@ -190,7 +222,7 @@ class FarmingCultivationGateTest {
     }
 
     @Test
-    void gatesAreAtSharedServerTransactionsBeforeMutationAndGrapeAndNativeRoutesStayUntouched() throws IOException {
+    void gatesAreAtSharedServerTransactionsBeforeMutationIncludingGrapesAndNativeOutsideIsUntouched() throws IOException {
         String farmingBlock = source("block/FarmingBlock.java");
         String plantingMethod = farmingBlock.substring(farmingBlock.indexOf("public static ItemInteractionResult tryPlantSeed"));
         int cropGate = plantingMethod.indexOf("FarmingCultivationGate.evaluate(player, stack.getItem())");
@@ -198,7 +230,7 @@ class FarmingCultivationGateTest {
         assertTrue(cropGate < plantingMethod.indexOf("not_trellis_crop"));
         assertTrue(cropGate < plantingMethod.indexOf("missing_support"));
         assertTrue(cropGate < plantingMethod.indexOf("tree_space_blocked"));
-        assertTrue(cropGate < plantingMethod.indexOf("farmBe.plant(crop)"));
+        assertTrue(cropGate < plantingMethod.indexOf("FarmingPlantingTransaction.plant("));
 
         String flowerPlanting = source("farming/FlowerPlantingService.java");
         int flowerGate = flowerPlanting.indexOf("FarmingCultivationGate.evaluateResolved(");
@@ -209,7 +241,7 @@ class FarmingCultivationGateTest {
         String trellis = source("block/TrellisBlock.java");
         assertTrue(trellis.contains("FarmingBlock.tryPlantSeed("));
         String grapes = source("item/GrapeSeedsItem.java");
-        assertFalse(grapes.contains("FarmingCultivationGate"));
+        assertTrue(grapes.contains("FarmingBlock.tryPlantGrapes"));
         assertFalse(grapes.contains("minimumFarmingSkill"));
         assertFalse(source("block/GrapeVineBlock.java").contains("FarmingCultivationGate"));
         assertFalse(source("block/entity/GrapeVineBlockEntity.java").contains("FarmingCultivationGate"));

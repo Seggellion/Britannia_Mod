@@ -97,7 +97,7 @@ class DisplayCaseContractTest {
         assertTrue(entity.contains("source.copyWithCount(1)"),
                 "storing merchandise must preserve the complete component-bearing stack");
         assertTrue(entity.contains("displayedItem.save(registries)"));
-        assertTrue(entity.contains("ItemStack.parse(registries"));
+        assertTrue(entity.contains("ItemStack.parseOptional(registries"));
         assertTrue(entity.contains("getUpdateTag("));
         assertTrue(entity.contains("getUpdatePacket("));
     }

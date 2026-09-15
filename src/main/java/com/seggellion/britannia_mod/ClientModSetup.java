@@ -636,6 +636,7 @@ public class ClientModSetup {
             NeoForge.EVENT_BUS.register(BritainMusicHandler.class);
             NeoForge.EVENT_BUS.register(GhostStructurePreviewRenderer.class);
             NeoForge.EVENT_BUS.register(SwampEnvironmentEffects.class);
+            NeoForge.EVENT_BUS.register(com.seggellion.britannia_mod.client.FarmingPlotOverlay.class);
             clientGameHandlersRegistered = true;
         }
 
@@ -646,6 +647,9 @@ public class ClientModSetup {
         ManaOverlayScreen.register();
 
         event.enqueueWork(() -> {
+            ItemProperties.register(ItemRegistry.WATERING_CAN.get(),
+                    ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "full"),
+                    (stack, level, entity, seed) -> com.seggellion.britannia_mod.item.WateringCanItem.fullModelState(stack));
 
             ItemProperties.register(WeaponRegistry.DECORATIVE_SHIELD.get(),
                     ResourceLocation.withDefaultNamespace("blocking"),

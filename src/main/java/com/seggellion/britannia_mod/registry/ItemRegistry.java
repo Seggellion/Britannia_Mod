@@ -1757,7 +1757,7 @@ public static final DeferredHolder<Item, Item> WOODEN_GATE_ITEM = ITEMS.register
 
 public static final DeferredHolder<Item, Item> IRON_FENCE_GATE_ITEM = ITEMS.register(
     "iron_fence_gate",
-    () -> new BlockItem(BlockRegistry.IRON_FENCE_GATE.get(), new Item.Properties().stacksTo(64))
+    () -> new com.seggellion.britannia_mod.item.TripleMetalDoorItem(BlockRegistry.IRON_FENCE_GATE.get(), new Item.Properties().stacksTo(64))
 );
 
 public static final DeferredHolder<Item, Item> LOCKABLE_WOOD_DOOR_ITEM = ITEMS.register(

@@ -1,12 +1,10 @@
 package com.seggellion.britannia_mod.bowlpreparation;
 
+import com.seggellion.britannia_mod.client.gui.QuestScreenText;
 import com.seggellion.britannia_mod.util.WaterSourceInteraction;
-import java.util.Optional;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -17,7 +15,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
-/** Main-hand driver for the two Patch 18 dry preparation steps. */
+/** Item adapter for the two Patch 18 dry preparation steps. */
 public final class BowlPreparationItem extends Item {
     public BowlPreparationItem(Properties properties) {
         super(properties);
@@ -25,53 +23,61 @@ public final class BowlPreparationItem extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-        ItemStack held = player.getItemInHand(hand);
-
-        // A deliberately targeted source wins over the dry offhand recipe. The shared service
-        // performs permission checks and the exact server-side bowl exchange.
-        if (BowlWaterFillingService.supports(held)) {
-            BlockHitResult hit = getPlayerPOVHitResult(level, player, ClipContext.Fluid.SOURCE_ONLY);
-            if (hit.getType() == HitResult.Type.BLOCK) {
-                var fluid = level.getFluidState(hit.getBlockPos());
-                if (fluid.is(FluidTags.WATER) && fluid.isSource()) {
-                    WaterSourceInteraction.fillFromSource(
-                            level, hit.getBlockPos(), player, hand, held);
-                    return InteractionResultHolder.sidedSuccess(
-                            player.getItemInHand(hand), level.isClientSide());
-                }
+        var recipe = HandRecipeInteraction.use(level, player, hand);
+        if (recipe.getResult().consumesAction()) return recipe;
+        if (tryFillFromSource(level, player, hand)) return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide);
+        if (!level.isClientSide && speaksForThisHand(player, hand)) {
+            ItemStack held = player.getItemInHand(hand);
+            if (BowlWaterFillingService.supports(held) && aimingAtFlowingWater(level, player)) {
+                sayFlowing(player);
+            } else if (hand == InteractionHand.MAIN_HAND) {
+                BowlMixingMessages.send(player, held,
+                        BowlPreparationService.diagnose(held, player.getOffhandItem()));
             }
         }
+        return InteractionResultHolder.pass(player.getItemInHand(hand));
+    }
 
-        if (hand != InteractionHand.MAIN_HAND) {
-            return InteractionResultHolder.pass(held);
-        }
+    public static boolean tryFillFromSource(Level level, Player player, InteractionHand hand) {
+        ItemStack held = player.getItemInHand(hand);
+        if (!BowlWaterFillingService.supports(held)) return false;
+        BlockHitResult hit = getPlayerPOVHitResult(level, player, ClipContext.Fluid.SOURCE_ONLY);
+        if (hit.getType() != HitResult.Type.BLOCK) return false;
+        var fluid = level.getFluidState(hit.getBlockPos());
+        if (!fluid.is(FluidTags.WATER) || !fluid.isSource()) return false;
+        WaterSourceInteraction.fillFromSource(level, hit.getBlockPos(), player, hand, held);
+        return true;
+    }
 
-        Optional<BowlPreparationPlan> candidate =
-                BowlPreparationService.plan(held, player.getOffhandItem());
-        if (candidate.isEmpty()) {
-            return InteractionResultHolder.pass(held);
-        }
-        if (level.isClientSide()) {
-            return InteractionResultHolder.sidedSuccess(held, true);
-        }
-        if (!(player instanceof ServerPlayer serverPlayer)) {
-            return InteractionResultHolder.sidedSuccess(held, false);
-        }
+    /**
+     * Whether the crosshair is on water that is not a source block.
+     *
+     * <p>A second clip, with {@code Fluid.ANY} rather than {@code SOURCE_ONLY}, because the first
+     * deliberately cannot see flowing water -- which is what makes the gesture do nothing, and
+     * therefore what has to be explained.
+     */
+    private static boolean aimingAtFlowingWater(Level level, Player player) {
+        BlockHitResult anyWater = getPlayerPOVHitResult(level, player, ClipContext.Fluid.ANY);
+        if (anyWater.getType() != HitResult.Type.BLOCK) return false;
+        var fluid = level.getFluidState(anyWater.getBlockPos());
+        return fluid.is(FluidTags.WATER) && !fluid.isSource();
+    }
 
-        BowlPreparationService.ApplyResult result =
-                BowlPreparationService.apply(serverPlayer, candidate.orElseThrow());
-        if (result == BowlPreparationService.ApplyResult.APPLIED
-                && level instanceof ServerLevel serverLevel) {
-            serverLevel.playSound(
-                    null,
-                    player.blockPosition(),
-                    SoundEvents.COMPOSTER_FILL_SUCCESS,
-                    SoundSource.PLAYERS,
-                    0.7F,
-                    1.0F);
-        }
+    /**
+     * Which hand may speak, so one right-click produces at most one warning.
+     *
+     * <p>Both hands run {@code use} for a single click and both may hold a fillable bowl. The main
+     * hand speaks whenever it holds one; the off hand speaks only when the main hand does not, so a
+     * bowl carried in the off hand alone is still explained.
+     */
+    private static boolean speaksForThisHand(Player player, InteractionHand hand) {
+        return hand == InteractionHand.MAIN_HAND
+                || !BowlWaterFillingService.supports(player.getMainHandItem());
+    }
 
-        // A stale accepted plan still owns this packet, preventing a second-hand reinterpretation.
-        return InteractionResultHolder.sidedSuccess(player.getMainHandItem(), false);
+    private static void sayFlowing(Player player) {
+        player.displayClientMessage(
+                Component.translatable(QuestScreenText.WATER_FLOWING)
+                        .withStyle(ChatFormatting.YELLOW), true);
     }
 }

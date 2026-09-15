@@ -6,6 +6,7 @@ import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 import com.seggellion.britannia_mod.quest.QuestManager;
 import com.seggellion.britannia_mod.quest.network.QuestClient;
+import com.seggellion.britannia_mod.quest.network.QuestClientPayload;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
 import com.seggellion.britannia_mod.quest.QuestItemMatcher;
 import com.seggellion.britannia_mod.quest.QuestObjectiveWatcher;
@@ -275,7 +276,11 @@ public class QuestEventHandlers {
 
     private static void handleQuestTriggerSuccess(ServerPlayer player, QuestModels.QuestResponse response, long questId, String triggerKey) {
         QuestRewardService.apply(player, response);
-        String responseJson = GSON.toJson(response);
+        // M11 deferred defect 2: the response is serialized through QuestClientPayload, which strips
+        // `node.metadata`'s objective machinery -- `action_trigger`, `action_steps` and the three
+        // legacy observers -- from what the client is handed. The reward above has already been
+        // applied from the parsed object, so nothing here depends on the stripped keys.
+        String responseJson = QuestClientPayload.toJson(response);
         PacketDistributor.sendToPlayer(player, new QuestTriggerResultS2CPayload(responseJson, questId, triggerKey));
     }
 

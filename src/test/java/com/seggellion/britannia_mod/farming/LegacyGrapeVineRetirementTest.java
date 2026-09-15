@@ -112,7 +112,7 @@ class LegacyGrapeVineRetirementTest {
         String seeds = Files.readString(MAIN.resolve("item/GrapeSeedsItem.java"), StandardCharsets.UTF_8);
         assertFalse(seeds.contains("super.useOn(context)"),
             "the BlockItem fallback is what used to place the standalone vine on vanilla farmland");
-        assertTrue(seeds.contains("mayPlantHere"), "grape planting must go through the plot ownership gate");
+        assertTrue(seeds.contains("FarmingBlock.tryPlantGrapes"), "grape planting must use the shared owned-plot transaction");
     }
 
     @Test

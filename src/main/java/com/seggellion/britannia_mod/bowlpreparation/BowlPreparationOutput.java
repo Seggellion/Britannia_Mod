@@ -1,30 +1,56 @@
 package com.seggellion.britannia_mod.bowlpreparation;
 
+import com.seggellion.britannia_mod.client.gui.QuestScreenText;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 /** Capacity-aware output delivery that does not use Creative's force-clear insertion fallback. */
-final class BowlPreparationOutput {
+public final class BowlPreparationOutput {
     private BowlPreparationOutput() {
     }
 
-    static void giveOrDrop(ServerPlayer player, ItemStack output) {
-        if (output.isEmpty()) {
-            return;
-        }
-        if (!hasSufficientCapacity(player.getInventory(), output)) {
-            player.drop(output.copy(), false);
-            return;
-        }
+    public static void giveOrDrop(ServerPlayer player, ItemStack output) {
+        giveOrDrop(player, output, net.minecraft.world.InteractionHand.MAIN_HAND);
+    }
 
-        ItemStack remainder = output.copy();
-        player.getInventory().add(remainder);
-        if (!remainder.isEmpty()) {
-            // Structurally unreachable after the capacity check on the server thread, but this
-            // preserves the exact output if a later Inventory implementation changes its rules.
-            player.drop(remainder, false);
+    static void giveOrDrop(ServerPlayer player, ItemStack output, net.minecraft.world.InteractionHand preferredEmptyHand) {
+        ItemStack remaining = output.copy();
+        Inventory inventory = player.getInventory();
+        // Do not call Inventory.add: its Creative fallback discards an uninsertable remainder.
+        for (ItemStack slot : inventory.items) merge(inventory, slot, remaining);
+        merge(inventory, player.getOffhandItem(), remaining);
+        if (!remaining.isEmpty() && player.getItemInHand(preferredEmptyHand).isEmpty()) {
+            int count = Math.min(remaining.getCount(), inventory.getMaxStackSize(remaining));
+            player.setItemInHand(preferredEmptyHand, remaining.split(count));
         }
+        for (int slot = 0; slot < inventory.items.size() && !remaining.isEmpty(); slot++) {
+            if (inventory.items.get(slot).isEmpty()) {
+                inventory.items.set(slot, remaining.split(Math.min(remaining.getCount(), inventory.getMaxStackSize(remaining))));
+            }
+        }
+        if (!remaining.isEmpty()) {
+            announceDrop(player, remaining);
+            player.drop(remaining, false);
+        }
+        inventory.setChanged();
+    }
+
+    private static void merge(Inventory inventory, ItemStack target, ItemStack remaining) {
+        if (remaining.isEmpty() || target.isEmpty() || !target.isStackable()
+                || !ItemStack.isSameItemSameComponents(target, remaining)) return;
+        int count = Math.min(remaining.getCount(), Math.max(0, inventory.getMaxStackSize(target) - target.getCount()));
+        target.grow(count);
+        remaining.shrink(count);
+    }
+
+    /** Names the item that fell, because "your pack is full" alone does not say what was lost. */
+    private static void announceDrop(ServerPlayer player, ItemStack output) {
+        player.displayClientMessage(
+                Component.translatable(QuestScreenText.INVENTORY_FULL_DROPPED, output.getHoverName())
+                        .withStyle(ChatFormatting.YELLOW), true);
     }
 
     static boolean hasSufficientCapacity(Inventory inventory, ItemStack stack) {

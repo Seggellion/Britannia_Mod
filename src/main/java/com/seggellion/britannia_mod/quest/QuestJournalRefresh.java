@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.quest;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.quest.delivery.QuestRewardDeliveryReconciler;
 import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
 import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
 import com.seggellion.britannia_mod.server.http.BoundedHttp;
@@ -114,6 +115,17 @@ public final class QuestJournalRefresh {
             COOLDOWN_UNTIL.remove(playerId);
             LOGGER.info("event=quest_journal_refreshed player_uuid={} quest_count={}",
                 player.getStringUUID(), quests.get().size());
+            // M3: a journal refresh is one of the delivery reconciliation triggers (protocol 1.8).
+            QuestRewardDeliveryReconciler.onJournalRefreshed(player);
+            // And of the hand-in ones (protocol 1.5.3): a player who opens their journal after a
+            // dialogue that went quiet is asking the same question the sweep answers.
+            com.seggellion.britannia_mod.quest.handin.QuestItemHandinReconciler.onJournalRefreshed(player);
+            // A refresh is also the first moment after a login where the journal is level with
+            // Rails, so it is where a returning player is reminded what their current stage still
+            // needs. Throttled per stage and silent when they are already carrying everything.
+            for (ClientQuestEntry entry : quests.get()) {
+                RowanQuestlineHooks.sendMaterialGuidance(player, entry.questKey());
+            }
         } else {
             // A failed refresh must not become a hot loop against a service that is already
             // struggling; the player's next action after the cooldown tries again.

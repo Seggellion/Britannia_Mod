@@ -97,11 +97,8 @@ public class WoodChopEventHandler {
     public static boolean handleAxeHarvest(ServerLevel serverLevel, BlockPos pos, BlockState state, Player player) {
         if (AxeHarvestRules.isAllowedFruitBlock(state)) {
             OrangeTreeRootBlockEntity root = OrangeTreeUtils.findRoot(serverLevel, pos).orElse(null);
-            if (root != null) {
-                OrangeFruitBlock.dropFruitFromTree(serverLevel, pos, root, player, false);
-            }
-            serverLevel.setBlock(pos, serverLevel.getFluidState(pos).createLegacyBlock(), 2);
-            return true;
+            return root != null && com.seggellion.britannia_mod.farming.FruitTreeHarvestService.pick(
+                    serverLevel,pos,root,player,net.minecraft.world.InteractionHand.MAIN_HAND,player.getMainHandItem(),false);
         }
 
         if (state.getBlock() instanceof WeightedWoodBlock) {
@@ -126,14 +123,12 @@ public class WoodChopEventHandler {
                 || state.getBlock() instanceof OrangeTreeRootBlock
                 || state.getBlock() instanceof OrangeTreeTrunkBlock
                 || state.getBlock() instanceof OrangeTreeBranchBlock) {
-            player.level().playSound(null, pos, ModSounds.CHOP_TREE.get(), SoundSource.PLAYERS, 2.0F, 2.0F);
             OrangeTreeRootBlockEntity root = OrangeTreeUtils.findRoot(serverLevel, pos).orElse(null);
             if (root != null) {
-                root.cleanupTree(serverLevel, player, true);
-                player.displayClientMessage(Component.literal("You chop down the " + root.definition().displayName().toLowerCase() + " tree."), true);
-            } else {
-                serverLevel.setBlock(pos, serverLevel.getFluidState(pos).createLegacyBlock(), 2);
+                return com.seggellion.britannia_mod.farming.FruitTreeHarvestService.chop(serverLevel,pos,root,player);
             }
+            // An orphaned structural block has no economic fruit root.
+            serverLevel.setBlock(pos, serverLevel.getFluidState(pos).createLegacyBlock(), 2);
             return true;
         }
 

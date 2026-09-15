@@ -12,8 +12,6 @@ import com.seggellion.britannia_mod.util.ModTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -48,7 +46,15 @@ public final class FlowerPlantingService {
             Player player,
             ItemStack heldStack
     ) {
-        return execute(new LevelPlantingAccess(level, pos, farmingState, player, heldStack), REGISTRY, COLOR_SELECTOR);
+        // A nonflower must pass on both sides before client prediction can claim the click.
+        // Otherwise an empty main hand consumes the block interaction before offhand care runs.
+        if (REGISTRY.bySeedItemId(BuiltInRegistries.ITEM.getKey(heldStack.getItem())).isEmpty()
+                && !heldStack.is(ModTags.Items.FLOWER_SEEDS)) {
+            return Outcome.NOT_A_FLOWER_SEED;
+        }
+        if (!(level instanceof net.minecraft.server.level.ServerLevel serverLevel) || player == null) return Outcome.REJECTED;
+        return FarmingPlantingTransaction.locked(serverLevel, pos,
+                () -> execute(new LevelPlantingAccess(level, pos, farmingState, player, heldStack), REGISTRY, COLOR_SELECTOR), Outcome.REJECTED);
     }
 
     static Outcome execute(PlantingAccess access, FlowerRegistry registry, FlowerColorSelector selector) {
@@ -65,6 +71,7 @@ public final class FlowerPlantingService {
         }
 
         boolean replacementAttempted = false;
+        boolean committed = false;
         try {
             if (!access.targetIsFarmingBlock() || access.targetOccupied()) {
                 return Outcome.REJECTED;
@@ -112,6 +119,8 @@ public final class FlowerPlantingService {
             );
             validateInitializedState(proposedState, definition, registry);
 
+            // The selector and provenance providers may run callbacks; recheck live occupancy first.
+            if (!access.targetIsFarmingBlock() || access.targetOccupied()) return Outcome.REJECTED;
             replacementAttempted = true;
             if (!access.replaceWithFlower(soil)
                     || !access.initializeFlower(proposedState)
@@ -121,19 +130,24 @@ public final class FlowerPlantingService {
             }
 
             access.synchronizeFlower();
+            if (!access.verifyFlowerState(proposedState)) {
+                rollbackOrWarn(access);
+                return Outcome.REJECTED;
+            }
             access.consumeOneSeed();
+            committed = true;
             access.applyPlantingFeedback();
             LOGGER.debug("[flower planting] planted species={} tint={} origin={} protected={} target={}",
                     proposedState.speciesId(), proposedState.color().hex(), proposedState.plantingOrigin(),
                     proposedState.protectedFlower(), access.targetDescription());
             return Outcome.PLANTED;
         } catch (RuntimeException exception) {
-            if (replacementAttempted) {
+            if (replacementAttempted && !committed) {
                 rollbackOrWarn(access);
             }
-            LOGGER.warn("[flower planting] Rejected unexpected transaction failure at {}: {}: {}",
+            LOGGER.warn("[flower planting] Unexpected planting/feedback failure at {}: {}: {}",
                     access.targetDescription(), exception.getClass().getSimpleName(), exception.getMessage());
-            return Outcome.REJECTED;
+            return committed ? Outcome.PLANTED : Outcome.REJECTED;
         }
     }
 
@@ -236,6 +250,9 @@ public final class FlowerPlantingService {
         private final Player player;
         private final ItemStack heldStack;
         private final int originalStackCount;
+        private final ItemStack originalStack;
+        private FlowerBlockEntity initializedFlower;
+        private FlowerPersistentState initializedState;
         @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
         private Optional<FarmingBlockEntity.FlowerConversionSnapshot> rollbackSnapshot = Optional.empty();
 
@@ -246,6 +263,7 @@ public final class FlowerPlantingService {
             this.player = Objects.requireNonNull(player, "Flower planting player is required");
             this.heldStack = Objects.requireNonNull(heldStack, "Flower planting item stack is required");
             this.originalStackCount = heldStack.getCount();
+            this.originalStack = heldStack.copy();
         }
 
         @Override
@@ -267,9 +285,14 @@ public final class FlowerPlantingService {
         public boolean targetIsFarmingBlock() {
             boolean supportedSurface = originalState.getBlock() == BlockRegistry.FARMING_BLOCK.get()
                     || originalState.getBlock() instanceof HouseFarmPlotBlock;
-            return supportedSurface
-                    && level.getBlockState(pos).getBlock() == originalState.getBlock()
-                    && level.getBlockEntity(pos) instanceof FarmingBlockEntity;
+            return supportedSurface && !heldStack.isEmpty() && !player.isSpectator()
+                    && (player.getMainHandItem() == heldStack || player.getOffhandItem() == heldStack)
+                    && level.mayInteract(player, pos)
+                    && (!(originalState.getBlock() instanceof HouseFarmPlotBlock)
+                        || HouseFarmPlotBlock.mayManagePlot((net.minecraft.server.level.ServerLevel) level, pos, player))
+                    && level.getBlockState(pos).equals(originalState)
+                    && level.getBlockEntity(pos) instanceof FarmingBlockEntity farming
+                    && FarmingBlock.mayPlantHere(level, farming, player);
         }
 
         @Override
@@ -356,14 +379,20 @@ public final class FlowerPlantingService {
 
         @Override
         public boolean initializeFlower(FlowerPersistentState state) {
-            return level.getBlockEntity(pos) instanceof FlowerBlockEntity flower
-                    && flower.initialize(state);
+            if (!(level.getBlockEntity(pos) instanceof FlowerBlockEntity flower)) return false;
+            initializedFlower = flower;
+            initializedState = state;
+            return flower.initialize(state);
         }
 
         @Override
         public boolean verifyFlowerState(FlowerPersistentState state) {
-            return level.getBlockEntity(pos) instanceof FlowerBlockEntity flower
-                    && flower.flowerState().filter(state::equals).isPresent();
+            return level.getBlockEntity(pos) == initializedFlower && initializedFlower != null
+                    && (player.getMainHandItem() == heldStack || player.getOffhandItem() == heldStack)
+                    && ItemStack.matches(originalStack, heldStack) && level.mayInteract(player, pos)
+                    && (!(originalState.getBlock() instanceof HouseFarmPlotBlock)
+                        || HouseFarmPlotBlock.mayManagePlot((net.minecraft.server.level.ServerLevel) level, pos, player))
+                    && initializedFlower.flowerState().filter(state::equals).isPresent();
         }
 
         @Override
@@ -386,11 +415,21 @@ public final class FlowerPlantingService {
 
         @Override
         public void applyPlantingFeedback() {
-            level.playSound(null, pos, SoundEvents.CROP_PLANTED, SoundSource.BLOCKS, 1.0f, 1.0f);
+            var species = ((FlowerBlockEntity) level.getBlockEntity(pos)).flowerState().orElseThrow().speciesId();
+            var eligibility = FarmingCultivationGate.evaluateResolved(
+                    new FarmingSkillRequirementResolver.ResolvedRequirement(species.toString(), REGISTRY.byId(species).orElseThrow()),
+                    FarmingCultivationGate.subject(player));
+            FarmingPlantingFeedback.planted((net.minecraft.server.level.ServerLevel) level, pos,
+                    (net.minecraft.server.level.ServerPlayer) player, species.getPath(), 1, 1f,
+                    eligibility.type() == FarmingCultivationGate.ResultType.APPROVED_BYPASS);
         }
 
         @Override
         public boolean rollback() {
+            if (initializedFlower != null && (level.getBlockEntity(pos) != initializedFlower
+                    || initializedFlower.flowerState().filter(current -> !current.equals(initializedState)).isPresent())) return false;
+            if (initializedFlower == null && !level.getBlockState(pos).equals(originalState)
+                    && !level.getBlockState(pos).is(BlockRegistry.FLOWER_BLOCK.get())) return false;
             heldStack.setCount(originalStackCount);
             FarmingBlockEntity.FlowerConversionSnapshot snapshot = rollbackSnapshot.orElse(null);
             if (snapshot == null) {

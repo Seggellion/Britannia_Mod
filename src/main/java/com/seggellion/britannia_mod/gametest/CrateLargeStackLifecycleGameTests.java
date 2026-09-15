@@ -247,7 +247,7 @@ public final class CrateLargeStackLifecycleGameTests {
         player.getAbilities().instabuild = true;
         player.onUpdateAbilities();
         BlockPos floor = helper.absolutePos(new BlockPos(2, 1, 2));
-        player.absMoveTo(floor.getX() + 0.5D, floor.getY() + 1.0D, floor.getZ() + 0.5D);
+        player.absMoveTo(floor.getX() + 2.5D, floor.getY() + 1.0D, floor.getZ() + 2.5D);
         player.setYRot(0.0F);
         player.setYHeadRot(0.0F);
         player.setXRot(0.0F);

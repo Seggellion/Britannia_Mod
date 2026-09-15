@@ -34,7 +34,14 @@ class AmbientRockIsNotADepositTest {
         return ResourceCatalog.instance().all();
     }
 
-    /** Every ORE and SEDIMENT resource is a deposit: they exist only where something sited them. */
+    /**
+     * Every ORE, MINERAL and SEDIMENT resource is a deposit: they exist only where something
+     * sited them.
+     *
+     * <p>Written as "every family that is not STONE" rather than as a list, which is why MINERAL
+     * — added for coal after this rule was written — needed no amendment to land on the right
+     * side of the line.
+     */
     @Test
     void everyOreAndSedimentResourceIsADepositCell() {
         int checked = 0;
@@ -73,6 +80,31 @@ class AmbientRockIsNotADepositTest {
             assertFalse(isVanillaStoneDeposit(owner, blockId),
                     blockId + " would now be protected from an ordinary Creative break, which stops"
                             + " builders terraforming ordinary world geology");
+        }
+    }
+
+    /**
+     * Coal is a MINERAL, and a MINERAL is a deposit.
+     *
+     * <p>Named on its own because it is the family that did not exist when this rule was written:
+     * a curated coal cell is sited by {@code /populateores} exactly as an ore vein is, and a
+     * creative click must no more delete it than delete silver.
+     */
+    @Test
+    void curatedCoalIsADepositCell() {
+        ResourceDefinition coal = null;
+        for (ResourceDefinition definition : catalogue()) {
+            if (definition.family() == ResourceDefinition.Family.MINERAL) {
+                coal = definition;
+                break;
+            }
+        }
+        assertTrue(coal != null, "no MINERAL resource is catalogued; this test is stale");
+        assertTrue(isDepositFamily(coal), coal.id() + " is MINERAL and must be a sited deposit");
+        for (String blockId : coal.blockIds()) {
+            assertTrue(isVanillaStoneDeposit(coal, blockId),
+                    blockId + " is a curated coal cell and must stay protected from a creative"
+                            + " click, which would destroy it with no restoration debt filed");
         }
     }
 

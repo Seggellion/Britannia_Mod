@@ -59,6 +59,16 @@ public class CitizenClothingLayer<T extends CitizenEntity> extends GeoRenderLaye
             "shoes", "boots",
             "chest", "chest",
             "cape", "cape"
+        ),
+        // Rowan farming questline M6: a working outfit for the Farmer role, assembled from
+        // textures that already ship -- the same boots and half apron the wood trader wears, for
+        // both genders. No new art is introduced here; the key exists so the role can be dressed
+        // without borrowing another trade's name.
+        "farmer", Map.of(
+            "shoes", "boots",
+            "apron", "half_apron",
+            "chest", "",
+            "cape", ""
         )
     );
 

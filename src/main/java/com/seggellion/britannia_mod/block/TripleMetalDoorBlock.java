@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.block;
 
+import com.seggellion.britannia_mod.placement.CreativeDecorationPolicy;
 import com.seggellion.britannia_mod.registry.BritanniaBlockSetTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -39,12 +40,13 @@ public class TripleMetalDoorBlock extends AutoClosingDoorBlock {
             .setValue(HINGE, net.minecraft.world.level.block.state.properties.DoorHingeSide.LEFT)
             .setValue(POWERED, false)
             .setValue(TRIPLE_PART, TripleBlockPart.LOWER)
+            .setValue(CreativeDecorationPolicy.ORIGIN, false)
             .setValue(BlockStateProperties.DOUBLE_BLOCK_HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER)); 
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, OPEN, HINGE, POWERED, TRIPLE_PART, BlockStateProperties.DOUBLE_BLOCK_HALF);
+        builder.add(FACING, OPEN, HINGE, POWERED, TRIPLE_PART, BlockStateProperties.DOUBLE_BLOCK_HALF, CreativeDecorationPolicy.ORIGIN);
     }
 
     private net.minecraft.world.level.block.state.properties.DoorHingeSide getHinge(BlockPlaceContext context) {
@@ -70,7 +72,7 @@ public class TripleMetalDoorBlock extends AutoClosingDoorBlock {
             level.getBlockState(pos.above()).canBeReplaced(context) && 
             level.getBlockState(pos.above(2)).canBeReplaced(context)) {
             
-            return this.defaultBlockState()
+            return CreativeDecorationPolicy.remember(this.defaultBlockState(), context)
                 .setValue(FACING, context.getHorizontalDirection())
                 .setValue(HINGE, this.getHinge(context))
                 .setValue(TRIPLE_PART, TripleBlockPart.LOWER);
@@ -80,8 +82,10 @@ public class TripleMetalDoorBlock extends AutoClosingDoorBlock {
 
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
-        level.setBlock(pos.above(), state.setValue(TRIPLE_PART, TripleBlockPart.MIDDLE), 3);
-        level.setBlock(pos.above(2), state.setValue(TRIPLE_PART, TripleBlockPart.UPPER), 3);
+        int flags = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
+        level.setBlock(pos.above(), state.setValue(TRIPLE_PART, TripleBlockPart.MIDDLE), flags);
+        level.setBlock(pos.above(2), state.setValue(TRIPLE_PART, TripleBlockPart.UPPER), flags);
+        for (int i=0;i<3;i++) level.updateNeighborsAt(pos.above(i), this);
     }
 
     // --- NEW: Override canSurvive so it checks for our 3 pieces instead of the vanilla 2 pieces ---
@@ -93,10 +97,11 @@ public class TripleMetalDoorBlock extends AutoClosingDoorBlock {
         
         if (part == TripleBlockPart.LOWER) {
             // Lower piece needs a solid floor
-            return stateBelow.isFaceSturdy(level, blockBelow, Direction.UP);
+            return CreativeDecorationPolicy.placedInCreative(state) || stateBelow.isFaceSturdy(level, blockBelow, Direction.UP);
         } else {
             // Middle and Upper pieces just need the door below them
-            return stateBelow.is(this);
+            return stateBelow.is(this) && stateBelow.getValue(TRIPLE_PART) == (part == TripleBlockPart.MIDDLE ? TripleBlockPart.LOWER : TripleBlockPart.MIDDLE)
+                    && stateBelow.getValue(CreativeDecorationPolicy.ORIGIN).equals(state.getValue(CreativeDecorationPolicy.ORIGIN));
         }
     }
 

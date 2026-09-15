@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.item;
 
+import com.seggellion.britannia_mod.placement.CreativeDecorationPolicy;
 import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
 import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock.Cell;
 import com.seggellion.britannia_mod.grabbyhands.GrabbyStructurePlacementItem;
@@ -85,7 +86,8 @@ public class DecorativeMultiblockItem extends BlockItem implements GrabbyStructu
                     || level.getBlockEntity(position) != null
                     || !level.getBlockState(position).canBeReplaced(placeContext)
                     || !level.mayInteract(player, position)
-                    || !mayPlaceCell(context, player, position, stack)) {
+                    || !mayPlaceCell(context, player, position, stack)
+                    || !level.isUnobstructed(placedState, position, net.minecraft.world.phys.shapes.CollisionContext.of(player))) {
                 return InteractionResult.FAIL;
             }
             if (cell.y() == block.minimumY()) {
@@ -132,7 +134,7 @@ public class DecorativeMultiblockItem extends BlockItem implements GrabbyStructu
     protected boolean mayUseSupport(
             UseOnContext context, Player player, BlockPos supportPosition, ItemStack stack) {
         Level level = context.getLevel();
-        return level.getBlockState(supportPosition)
+        return CreativeDecorationPolicy.creative(player) || level.getBlockState(supportPosition)
                 .isFaceSturdy(level, supportPosition, Direction.UP);
     }
 

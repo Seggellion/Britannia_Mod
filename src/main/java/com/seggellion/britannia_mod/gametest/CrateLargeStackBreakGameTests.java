@@ -240,7 +240,7 @@ public final class CrateLargeStackBreakGameTests {
         BlockPos floor = helper.absolutePos(new BlockPos(2, 1, 2));
         player.setYRot(facing.getOpposite().toYRot());
         player.setYHeadRot(facing.getOpposite().toYRot());
-        player.absMoveTo(floor.getX() + 0.5D, floor.getY() + 1.0D, floor.getZ() + 0.5D);
+        player.absMoveTo(floor.getX() + 2.5D, floor.getY() + 1.0D, floor.getZ() + 2.5D);
         player.setOldPosAndRot();
 
         place(helper, player, floor, floor.getY() + 1.0D, floor);

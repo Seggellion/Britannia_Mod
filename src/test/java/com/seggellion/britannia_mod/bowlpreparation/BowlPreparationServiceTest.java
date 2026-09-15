@@ -41,7 +41,7 @@ class BowlPreparationServiceTest {
     }
 
     @Test
-    void plansOnlyTheTwoExactFixedHandTuples() {
+    void plansBothArrangementsOfTheTwoExactTuples() {
         BowlPreparationPlan dirtPlan = plan(new ItemStack(emptyBowl), new ItemStack(dirt)).orElseThrow();
         assertEquals(BowlPreparationPlan.Step.DIRT, dirtPlan.step());
         assertEquals(bowlOfDirt, dirtPlan.output());
@@ -53,8 +53,8 @@ class BowlPreparationServiceTest {
         assertFalse(plan(new ItemStack(Items.BOWL), new ItemStack(dirt)).isPresent());
         assertFalse(plan(new ItemStack(Items.BUCKET), new ItemStack(dirt)).isPresent());
         assertFalse(plan(new ItemStack(emptyBowl), new ItemStack(Items.COARSE_DIRT)).isPresent());
-        assertFalse(plan(new ItemStack(dirt), new ItemStack(emptyBowl)).isPresent());
-        assertFalse(plan(new ItemStack(dung), new ItemStack(bowlOfDirt)).isPresent());
+        assertTrue(plan(new ItemStack(dirt), new ItemStack(emptyBowl)).isPresent());
+        assertTrue(plan(new ItemStack(dung), new ItemStack(bowlOfDirt)).isPresent());
     }
 
     @Test

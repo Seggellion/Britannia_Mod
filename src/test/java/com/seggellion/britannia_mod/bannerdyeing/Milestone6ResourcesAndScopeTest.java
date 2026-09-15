@@ -66,20 +66,23 @@ class Milestone6ResourcesAndScopeTest {
     }
 
     @Test
-    void interactionIsMainHandOnlyAndServerMutationPrecedesFeedback() throws Exception {
+    void mainPhaseDispatchesEitherRoleAndServerMutationPrecedesFeedback() throws Exception {
         String source = Files.readString(JAVA.resolve("dye/item/DyeTubItem.java"));
-        int handGuard = source.indexOf("hand != InteractionHand.MAIN_HAND");
-        int clientGuard = source.indexOf("level.isClientSide()");
+        String dispatcher = Files.readString(JAVA.resolve("bowlpreparation/HandRecipeInteraction.java"));
+        int handGuard = dispatcher.indexOf("hand != InteractionHand.MAIN_HAND");
+        int dispatch = dispatcher.indexOf(".loadFromHands(level, player, roles)");
+        int clientGuard = source.indexOf("if (level.isClientSide || !roles.matches(player)) return;");
         int plan = source.indexOf("DyeTubLoadingService.plan");
         int apply = source.indexOf("DyeTubLoadingService.apply");
         int feedback = source.indexOf("sendFeedback(player, result)");
         int sound = source.indexOf("SoundEvents.BOTTLE_FILL");
         int particles = source.indexOf("serverLevel.sendParticles");
-        assertTrue(handGuard >= 0 && handGuard < clientGuard);
-        assertTrue(clientGuard < plan && plan < apply && apply < feedback);
+        assertTrue(handGuard >= 0 && handGuard < dispatch);
+        assertTrue(clientGuard >= 0 && clientGuard < plan && plan < apply && apply < feedback);
         assertTrue(feedback < sound && sound < particles);
-        assertTrue(source.contains("player.getOffhandItem()"));
-        assertFalse(source.contains("InteractionHand.OFF_HAND"));
+        assertTrue(source.contains("player.getItemInHand(roles.driverHand())"));
+        assertTrue(source.contains("player.getItemInHand(roles.ingredientHand())"));
+        assertTrue(source.indexOf("if (!roles.matches(player)) return;", plan) < apply);
     }
 
     @Test

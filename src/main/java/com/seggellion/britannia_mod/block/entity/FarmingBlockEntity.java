@@ -35,11 +35,28 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 public class FarmingBlockEntity extends BlockEntity {
+    private boolean synchronizedPlotStatus;
+
+    public boolean hasSynchronizedPlotStatus() { return synchronizedPlotStatus; }
+
     public static final int MAX_HYDRATION = 5;
     public static final int MAX_FERTILE_HARVESTS = 5;
     public static final int UNTRACKED_FERTILE_HARVESTS = -1;
-    public static final long COMMUNITY_SEED_WINDOW_TICKS = 1200L;
+    /**
+     * How long a fertilized public plot with nothing growing in it waits for a seed.
+     *
+     * <p>M9 item 2: 1200 ticks (60 s) before, now
+     * {@link com.seggellion.britannia_mod.farming.CommunityPlotWindow#FERTILIZE_TO_PLANT_TICKS}
+     * (300 s), matching the deadline Rails enforces on the {@code crop_planted} step. The old
+     * number was doubly misleading -- it was only ever evaluated on a random tick (see
+     * {@code FarmingBlock#tick}), so the 60 s in the source was not the 60 s a player experienced.
+     */
+    public static final long COMMUNITY_SEED_WINDOW_TICKS =
+            com.seggellion.britannia_mod.farming.CommunityPlotWindow.FERTILIZE_TO_PLANT_TICKS;
     private static final String OWNER_ID_KEY = "OwnerUUID";
+    private static final String PLANTER_ID_KEY = "PlanterUUID";
+    private static final String CROP_CYCLE_ID_KEY = "CropCycleUUID";
+    private static final String CROP_CYCLE_PLOT_KEY = "CropCyclePlotKey";
     private static final String VISUAL_ROTATION_KEY = "VisualRotation";
     private static final String REMAINING_FERTILE_HARVESTS_KEY = "RemainingFertileHarvests";
     private static final int GROWTH_AGE_DATA_VERSION = 3;
@@ -61,6 +78,9 @@ public class FarmingBlockEntity extends BlockEntity {
     private boolean growthBlocked = false;
     private boolean communityPlot = false;
     private long seedableUntilGameTime = 0L;
+    @Nullable private BlockState previousHoedState;
+    private long pausedPreparationTicks;
+    private long announcedSeedWarningSeconds = 0L;
     // Missing legacy NBT remains unlimited. Only canonical fertilized-dirt application tracks 5..0.
     private int remainingFertileHarvests = UNTRACKED_FERTILE_HARVESTS;
 
@@ -72,6 +92,37 @@ public class FarmingBlockEntity extends BlockEntity {
      */
     @Nullable
     private UUID ownerId = null;
+
+    /**
+     * Who planted the crop growing here right now, or null when nobody did (an empty plot, a crop
+     * this plot grew without a planter, or a world that predates the field).
+     *
+     * <p>Distinct from {@link #ownerId} on purpose. Ownership says who may plant on a private plot
+     * and is a property of the PLOT; this says who put THIS crop in the ground and is a property of
+     * the CYCLE. A public plot has no owner at all and still has a planter, which is exactly the
+     * case quest credit turns on (Rowan questline M5, protocol section 2.1): produce another player
+     * planted must not complete your quest even though the plot let you harvest it.
+     */
+    @Nullable
+    private UUID planterId = null;
+
+    /**
+     * The identity of the crop cycle standing here: minted when a crop is planted, rotated when a
+     * perennial regrows after a harvest, and cleared when the crop is cleared, replanted or the
+     * block is removed (protocol section 2.1). It is what makes "the carrot you planted and
+     * harvested" different from "a carrot in the same hole", so a second cycle on the same plot
+     * cannot satisfy a quest bound to the first.
+     */
+    @Nullable
+    private UUID cropCycleId = null;
+
+    /**
+     * The {@code plot_key} the cycle was minted at, {@code "<dimension>:<x>:<y>:<z>"}. Persisted
+     * rather than recomputed so the row is self-describing: a block entity that arrives somewhere
+     * else (a structure paste, a moved save) carries a cycle that no longer describes where it is,
+     * and {@link #hasCropCycleAt} refuses it instead of crediting the wrong plot.
+     */
+    private String cropCyclePlotKey = "";
 
     /**
      * Quarter turns clockwise applied to the crop's model, as set with the interior decorator tool.
@@ -90,7 +141,7 @@ public class FarmingBlockEntity extends BlockEntity {
 
     public void setStoredSeed(String variety) {
         this.storedSeedVariety = variety;
-        if (communityPlot && variety != null && !variety.isBlank()) {
+        if (variety != null && !variety.isBlank()) {
             this.seedableUntilGameTime = 0L;
         }
         setChangedAndSync();
@@ -149,10 +200,23 @@ public class FarmingBlockEntity extends BlockEntity {
     }
 
     public void plant(CropDefinition crop) {
-        plant(crop, "");
+        plant(crop, "", null);
     }
 
     public void plant(CropDefinition crop, String cropVariant) {
+        plant(crop, cropVariant, null);
+    }
+
+    /**
+     * Plants a crop and opens a new attribution cycle for it (Rowan questline M5). The planter may
+     * be null -- a crop the world planted for itself, such as the grape auto-plant from a stored
+     * seed -- and the cycle uuid is minted either way, so a cycle is always identifiable even when
+     * nobody can claim it.
+     */
+    public void plant(CropDefinition crop, String cropVariant, @Nullable UUID planterUuid) {
+        this.planterId = planterUuid;
+        this.cropCycleId = UUID.randomUUID();
+        this.cropCyclePlotKey = currentPlotKey();
         this.plantedCropId = crop.id();
         this.storedSeedVariety = cropVariant == null ? "" : cropVariant;
         this.growthProgress = 0.0f;
@@ -161,9 +225,7 @@ public class FarmingBlockEntity extends BlockEntity {
         this.mature = false;
         this.growthBlocked = false;
         this.rootEstablishedGameTime = crop.usesRootAgeQualityBonus() && level != null ? level.getGameTime() : -1L;
-        if (communityPlot) {
-            this.seedableUntilGameTime = 0L;
-        }
+        this.seedableUntilGameTime = 0L;
         if (level != null && !level.isClientSide) {
             TallCropSupport.update(level, worldPosition, crop, growthStage);
         }
@@ -175,6 +237,7 @@ public class FarmingBlockEntity extends BlockEntity {
         if (level != null && !level.isClientSide && oldCrop != null) {
             TallCropSupport.clear(level, worldPosition, oldCrop);
         }
+        clearCropCycle();
         this.plantedCropId = "";
         this.growthProgress = 0.0f;
         this.growthStage = 0;
@@ -191,7 +254,17 @@ public class FarmingBlockEntity extends BlockEntity {
      * arbitrary callers choose a stage would make the crop's progress ambiguous.
      */
     public void plantMigratedCrop(CropDefinition crop, String cropVariant, int migratedGrowthStage) {
-        plant(crop, cropVariant);
+        plantMigratedCrop(crop, cropVariant, migratedGrowthStage, null);
+    }
+
+    /**
+     * As above, for a migration that knows whose plant it was. The cycle uuid is minted fresh
+     * either way -- a migrated plant is a new cycle as far as any quest bound to one is concerned
+     * -- but the planter is carried over rather than lost.
+     */
+    public void plantMigratedCrop(CropDefinition crop, String cropVariant, int migratedGrowthStage,
+                                  @Nullable UUID planterUuid) {
+        plant(crop, cropVariant, planterUuid);
         int stage = Math.max(0, Math.min(crop.maxGrowthAge(), migratedGrowthStage));
         this.growthStage = stage;
         this.growthProgress = stage <= 0 ? 0.0f : Math.min(0.99f, stage / (float) crop.visualAgeCount());
@@ -205,7 +278,16 @@ public class FarmingBlockEntity extends BlockEntity {
         setChangedAndSync();
     }
 
+    /**
+     * A perennial's next cycle after a harvest. The planter carries over -- nobody replanted, so
+     * the crop is still theirs -- but the cycle uuid ROTATES, because the cycle a quest bound
+     * itself to ended when its produce was pulled (protocol section 2.1: "cleared or rotated when
+     * the crop cycle ends (harvest reset, ...)"). Without the rotation one plot could satisfy the
+     * same bound harvest objective again and again.
+     */
     public void regrowAfterHarvest(CropDefinition crop) {
+        this.cropCycleId = UUID.randomUUID();
+        this.cropCyclePlotKey = currentPlotKey();
         this.plantedCropId = crop.id();
         int regrowthAge = crop.clampedPostHarvestRegrowthAge();
         this.growthStage = regrowthAge;
@@ -283,7 +365,7 @@ public class FarmingBlockEntity extends BlockEntity {
     }
 
     /**
-     * Records exactly one already-confirmed server harvest. Untracked legacy plots remain unlimited,
+     * Records one committed eligible harvest attempt, including destructive failure. Untracked legacy plots remain unlimited,
      * and an exhausted plot can never underflow even if a stale interaction reaches this method.
      *
      * @return the remaining count, or {@link #UNTRACKED_FERTILE_HARVESTS} for a legacy plot
@@ -313,11 +395,64 @@ public class FarmingBlockEntity extends BlockEntity {
         return remainingFertileHarvests == 0;
     }
 
+    public void beginFertilizerApplication(BlockState prior, long preparationTicks, UUID actor, long gameTime) {
+        previousHoedState = prior;
+        pausedPreparationTicks = Math.max(0, Math.min(CommunityFarmBlockEntity.PREPARED_EXPIRY_TICKS, preparationTicks));
+        communityPlot = prior.getBlock() instanceof com.seggellion.britannia_mod.block.CommunityHoedFarmBlock;
+        ownerId = communityPlot ? null : actor;
+        seedableUntilGameTime = gameTime + COMMUNITY_SEED_WINDOW_TICKS;
+        initializeFertileHarvests();
+    }
+
+    /** Loaded server ticks also reconcile time spent unloaded; downtime never changes gameTime. */
+    public static void serverTick(Level level, BlockPos pos, BlockState state, FarmingBlockEntity soil) {
+        soil.expireEmptySoil(level);
+    }
+
+    public boolean expireEmptySoil(Level level) {
+        if (level.isClientSide || level.getBlockEntity(worldPosition) != this
+                || !shouldReclaimCommunityPlot(level)) return false;
+        BlockState prior = previousHoedState;
+        if (prior == null) {
+            // Only old community plots had deadlines. Unknown private provenance never invents a reward.
+            if (!communityPlot) return false;
+            // A legacy public plot has no paused preparation budget to restore safely.
+            prior = com.seggellion.britannia_mod.registry.BlockRegistry.COMMUNITY_FARM_BLOCK.get().defaultBlockState();
+        }
+        if (!level.setBlock(worldPosition, prior, 3)) return false;
+        if (level.getBlockEntity(worldPosition) instanceof CommunityFarmBlockEntity restored) {
+            restored.resumePreparation(level.getGameTime(), pausedPreparationTicks);
+        }
+        // The replacement has no fertilizer entitlement. No side record survives this application.
+        return true;
+    }
+
+    public void restartEmptySeedWindow(long gameTime) {
+        if (hasRemainingFertility() && previousHoedState != null) {
+            seedableUntilGameTime = gameTime + COMMUNITY_SEED_WINDOW_TICKS;
+            setChangedAndSync();
+        }
+    }
+
     public void startCommunitySeedWindow(long deadlineGameTime) {
         this.communityPlot = true;
         this.ownerId = null;
         this.seedableUntilGameTime = deadlineGameTime;
+        this.announcedSeedWarningSeconds = 0L;
         setChangedAndSync();
+    }
+
+    /**
+     * True once, for each countdown mark. M9 item 3: the seed window speaks on the way down, and a
+     * repeated tick at the same game time must not repeat itself. Deliberately not persisted --
+     * see {@code CommunityFarmBlockEntity}.
+     */
+    public boolean claimSeedWindowWarning(long seconds) {
+        if (announcedSeedWarningSeconds == seconds) {
+            return false;
+        }
+        announcedSeedWarningSeconds = seconds;
+        return true;
     }
 
     /** Turns the crop's model a quarter turn clockwise, wrapping back to its original heading. */
@@ -353,6 +488,65 @@ public class FarmingBlockEntity extends BlockEntity {
         return getOwner() != null;
     }
 
+    /** Who planted the crop standing here, or null. Never inferred from who is holding the tool. */
+    @Nullable
+    public UUID getPlanterId() {
+        return hasCrop() ? planterId : null;
+    }
+
+    /** The identity of the cycle standing here, or null when nothing is planted. */
+    @Nullable
+    public UUID getCropCycleId() {
+        return hasCrop() ? cropCycleId : null;
+    }
+
+    /** The {@code plot_key} the cycle was minted at, or an empty string when there is no cycle. */
+    public String getCropCyclePlotKey() {
+        return hasCrop() ? cropCyclePlotKey : "";
+    }
+
+    /**
+     * The cycle standing here, but only when it still describes THIS plot. A block entity whose
+     * stored plot key disagrees with where it now is has been moved or pasted, and its cycle is
+     * not evidence about the plot the player is standing at.
+     */
+    @Nullable
+    public UUID cropCycleAtCurrentPlot() {
+        UUID cycle = getCropCycleId();
+        if (cycle == null) return null;
+        String here = currentPlotKey();
+        return here.isEmpty() || here.equals(cropCyclePlotKey) ? cycle : null;
+    }
+
+    public boolean hasCropCycleAt() {
+        return cropCycleAtCurrentPlot() != null;
+    }
+
+    /**
+     * Names whoever put the crop that is standing here into the ground. Separate from
+     * {@link #plant} so the planting transaction keeps its established shape -- the cultivation
+     * gate, the mutation, then the attribution -- and so a cycle the world planted for itself
+     * simply never gets one. Does nothing when no crop is planted.
+     */
+    public void attributeCurrentCycleTo(@Nullable UUID planterUuid) {
+        if (!hasCrop()) return;
+        this.planterId = planterUuid;
+        setChangedAndSync();
+    }
+
+    /** Ends the current attribution cycle. Called wherever the crop itself stops existing. */
+    public void clearCropCycle() {
+        this.planterId = null;
+        this.cropCycleId = null;
+        this.cropCyclePlotKey = "";
+    }
+
+    private String currentPlotKey() {
+        if (level == null) return "";
+        return level.dimension().location() + ":" + worldPosition.getX() + ":"
+                + worldPosition.getY() + ":" + worldPosition.getZ();
+    }
+
     /**
      * Community plots are open to everyone, and an unclaimed private plot stays open so that plots
      * placed before ownership existed do not silently lock their owners out. Administrators are
@@ -383,8 +577,10 @@ public class FarmingBlockEntity extends BlockEntity {
     }
 
     public boolean shouldReclaimCommunityPlot(Level level) {
-        return communityPlot
+        return !(this instanceof HouseFarmPlotBlockEntity)
+                && getBlockState().getBlock() instanceof FarmingBlock
                 && seedableUntilGameTime > 0L
+                && !getBlockState().getValue(FarmingBlock.HAS_SEEDS)
                 && !hasCrop()
                 && (storedSeedVariety == null || storedSeedVariety.isBlank())
                 && level.getGameTime() >= seedableUntilGameTime;
@@ -405,11 +601,14 @@ public class FarmingBlockEntity extends BlockEntity {
             throw new IllegalStateException("Flower planting requires empty FarmingBlock soil");
         }
 
+        if (level != null && shouldReclaimCommunityPlot(level)) {
+            throw new IllegalStateException("Fertilizer planting window expired");
+        }
         int fertilizerLevel = farmingState.getValue(FarmingBlock.FERTILIZER);
         FlowerSoilSnapshot soil = communityPlot
                 ? FlowerSoilSnapshot.communitySoil(
                         hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
-                        seedableUntilGameTime, remainingFertileHarvests
+                        0L, remainingFertileHarvests
                 )
                 : FlowerSoilSnapshot.privateSoil(
                         hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
@@ -417,7 +616,7 @@ public class FarmingBlockEntity extends BlockEntity {
                 );
         return new FlowerConversionSnapshot(
                 farmingState,
-                soil,
+                soil.withOwner(getOwner()),
                 storedSeedVariety == null ? "" : storedSeedVariety,
                 plantedCropId == null ? "" : plantedCropId,
                 growthProgress,
@@ -427,7 +626,9 @@ public class FarmingBlockEntity extends BlockEntity {
                 mature,
                 growthBlocked,
                 communityPlot,
-                seedableUntilGameTime
+                seedableUntilGameTime,
+                previousHoedState,
+                pausedPreparationTicks
         );
     }
 
@@ -450,7 +651,10 @@ public class FarmingBlockEntity extends BlockEntity {
         this.growthBlocked = snapshot.growthBlocked();
         this.communityPlot = snapshot.communityPlot();
         this.seedableUntilGameTime = snapshot.seedableUntilGameTime();
+        this.previousHoedState = snapshot.previousHoedState();
+        this.pausedPreparationTicks = snapshot.pausedPreparationTicks();
         this.remainingFertileHarvests = soil.remainingFertileHarvests();
+        this.ownerId = communityPlot ? null : soil.ownerUuid().orElse(null);
         setChangedAndSync();
     }
 
@@ -476,6 +680,8 @@ public class FarmingBlockEntity extends BlockEntity {
         communityPlot = false;
         seedableUntilGameTime = 0L;
         remainingFertileHarvests = soil.remainingFertileHarvests();
+        ownerId = soil.ownerUuid().orElse(null);
+        clearCropCycle();
         setChangedAndSync();
     }
 
@@ -499,9 +705,10 @@ public class FarmingBlockEntity extends BlockEntity {
         mature = false;
         growthBlocked = false;
         communityPlot = true;
-        seedableUntilGameTime = soil.communitySeedableUntilGameTime();
+        seedableUntilGameTime = 0L; // Occupied flower snapshots must never resurrect a planting deadline.
         remainingFertileHarvests = soil.remainingFertileHarvests();
         ownerId = null;
+        clearCropCycle();
         setChangedAndSync();
     }
 
@@ -668,11 +875,24 @@ public class FarmingBlockEntity extends BlockEntity {
         tag.putBoolean("GrowthBlocked", growthBlocked);
         tag.putBoolean("CommunityPlot", communityPlot);
         tag.putLong("SeedableUntilGameTime", seedableUntilGameTime);
+        if (previousHoedState != null) tag.put("PreviousHoedState", net.minecraft.nbt.NbtUtils.writeBlockState(previousHoedState));
+        tag.putLong("PausedPreparationTicks", pausedPreparationTicks);
         if (hasTrackedFertility()) {
             tag.putInt(REMAINING_FERTILE_HARVESTS_KEY, remainingFertileHarvests);
         }
         if (ownerId != null) {
             tag.putUUID(OWNER_ID_KEY, ownerId);
+        }
+        // Rowan questline M5: the cycle's attribution, saved beside the owner so it survives chunk
+        // unload, save and restart exactly as every other plot field does.
+        if (planterId != null) {
+            tag.putUUID(PLANTER_ID_KEY, planterId);
+        }
+        if (cropCycleId != null) {
+            tag.putUUID(CROP_CYCLE_ID_KEY, cropCycleId);
+        }
+        if (!cropCyclePlotKey.isEmpty()) {
+            tag.putString(CROP_CYCLE_PLOT_KEY, cropCyclePlotKey);
         }
         tag.putInt(VISUAL_ROTATION_KEY, visualRotationQuarters);
     }
@@ -680,6 +900,7 @@ public class FarmingBlockEntity extends BlockEntity {
     @Override
     public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        synchronizedPlotStatus = tag.getInt("PlotStatusVersion") == 1;
         this.nitrogen = tag.getFloat("Nitrogen");
         this.phosphorus = tag.getFloat("Phosphorus");
         this.potassium = tag.getFloat("Potassium");
@@ -704,10 +925,18 @@ public class FarmingBlockEntity extends BlockEntity {
         this.growthBlocked = tag.getBoolean("GrowthBlocked");
         this.communityPlot = tag.getBoolean("CommunityPlot");
         this.seedableUntilGameTime = tag.getLong("SeedableUntilGameTime");
+        this.previousHoedState = tag.contains("PreviousHoedState")
+                ? net.minecraft.nbt.NbtUtils.readBlockState(net.minecraft.core.registries.BuiltInRegistries.BLOCK.asLookup(), tag.getCompound("PreviousHoedState")) : null;
+        if (previousHoedState != null && !previousHoedState.is(net.minecraft.world.level.block.Blocks.FARMLAND)
+                && !(previousHoedState.getBlock() instanceof com.seggellion.britannia_mod.block.CommunityHoedFarmBlock)) previousHoedState = null;
+        this.pausedPreparationTicks = Math.max(0, Math.min(CommunityFarmBlockEntity.PREPARED_EXPIRY_TICKS, tag.getLong("PausedPreparationTicks")));
         this.remainingFertileHarvests = tag.contains(REMAINING_FERTILE_HARVESTS_KEY)
                 ? Math.max(0, Math.min(MAX_FERTILE_HARVESTS, tag.getInt(REMAINING_FERTILE_HARVESTS_KEY)))
                 : UNTRACKED_FERTILE_HARVESTS;
         this.ownerId = tag.hasUUID(OWNER_ID_KEY) ? tag.getUUID(OWNER_ID_KEY) : null;
+        this.planterId = tag.hasUUID(PLANTER_ID_KEY) ? tag.getUUID(PLANTER_ID_KEY) : null;
+        this.cropCycleId = tag.hasUUID(CROP_CYCLE_ID_KEY) ? tag.getUUID(CROP_CYCLE_ID_KEY) : null;
+        this.cropCyclePlotKey = tag.getString(CROP_CYCLE_PLOT_KEY);
         this.visualRotationQuarters = Math.floorMod(tag.getInt(VISUAL_ROTATION_KEY), 4);
         migrateLegacyGrowthStage(tag);
     }
@@ -812,6 +1041,8 @@ public class FarmingBlockEntity extends BlockEntity {
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);
         saveAdditional(tag, registries);
+        tag.putInt("PlotStatusVersion", 1);
+        tag.remove(OWNER_ID_KEY);
         return tag;
     }
 
@@ -833,7 +1064,9 @@ public class FarmingBlockEntity extends BlockEntity {
             boolean mature,
             boolean growthBlocked,
             boolean communityPlot,
-            long seedableUntilGameTime
+            long seedableUntilGameTime,
+            @Nullable BlockState previousHoedState,
+            long pausedPreparationTicks
     ) {
         public FlowerConversionSnapshot {
             Objects.requireNonNull(blockState, "Rollback blockstate is required");

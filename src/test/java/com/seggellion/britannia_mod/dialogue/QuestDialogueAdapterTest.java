@@ -35,7 +35,7 @@ class QuestDialogueAdapterTest {
         assertTrue(view.options().getLast().locked());
         assertFalse(view.completed());
 
-        DialogueLayout legacyLayout = DialogueLayout.calculate(800, 2, 2, 9, false);
+        DialogueLayout legacyLayout = DialogueLayout.calculate(800, 2, 2, 9, false, true);
         assertEquals(21, legacyLayout.portraitY());
         assertEquals(163, legacyLayout.textX());
         assertEquals(640, legacyLayout.buttonStartX());

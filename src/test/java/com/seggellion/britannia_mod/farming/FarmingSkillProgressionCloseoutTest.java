@@ -79,9 +79,7 @@ class FarmingSkillProgressionCloseoutTest {
             presentationPolicies++;
 
             FarmingCultivationGate.Evaluation exact = cultivation(resolved, resolved.minimumFarmingSkill());
-            assertEquals("grapes".equals(resolved.speciesId())
-                            ? FarmingCultivationGate.ResultType.NOT_APPLICABLE
-                            : FarmingCultivationGate.ResultType.ELIGIBLE,
+            assertEquals(FarmingCultivationGate.ResultType.ELIGIBLE,
                     exact.type(), resolved.speciesId());
             cultivationPolicies++;
         }
@@ -108,17 +106,6 @@ class FarmingSkillProgressionCloseoutTest {
                 continue;
             }
 
-            if ("grapes".equals(resolved.speciesId())) {
-                assertFalse(presentation(resolved, stack, required - 0.01F, false,
-                        SkillManager.SkillDataState.AVAILABLE).identified());
-                assertTrue(presentation(resolved, stack, required, false,
-                        SkillManager.SkillDataState.AVAILABLE).identified());
-                assertEquals(FarmingCultivationGate.ResultType.NOT_APPLICABLE,
-                        cultivation(resolved, required - 1.0F).type());
-                assertEquals(FarmingCultivationGate.ResultType.NOT_APPLICABLE,
-                        cultivation(resolved, required + 1.0F).type());
-                continue;
-            }
 
             for (float delta : new float[]{1.0F, 0.01F}) {
                 assertFalse(presentation(resolved, stack, required - delta, false,
@@ -153,7 +140,7 @@ class FarmingSkillProgressionCloseoutTest {
             unifiedPolicies++;
         }
 
-        assertEquals(67, unifiedPolicies, "74 policies minus six native exclusions and Grapes");
+        assertEquals(68, unifiedPolicies, "74 policies minus six native presentation exclusions");
     }
 
     @Test
@@ -165,7 +152,7 @@ class FarmingSkillProgressionCloseoutTest {
         String farmingBlock = source("block/FarmingBlock.java");
         int cropGate = farmingBlock.indexOf("FarmingCultivationGate.evaluate(player, stack.getItem())");
         assertTrue(cropGate >= 0);
-        assertTrue(cropGate < farmingBlock.indexOf("farmBe.plant(crop)", cropGate));
+        assertTrue(cropGate < farmingBlock.indexOf("FarmingPlantingTransaction.plant(", cropGate));
 
         String flowerPlanting = source("farming/FlowerPlantingService.java");
         int flowerGate = flowerPlanting.indexOf("FarmingCultivationGate.evaluateResolved(");

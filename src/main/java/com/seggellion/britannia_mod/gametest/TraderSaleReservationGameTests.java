@@ -35,13 +35,13 @@ public final class TraderSaleReservationGameTests {
     @GameTest(template = TEMPLATE)
     public static void aCrashAfterRemovalRefundsTheItemsOnRecovery(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = ManagedResourceTestPlayers.survival(level, "M7Legacy");
         player.getInventory().clearContent();
 
-        // A sale removed 12 iron ingots and the process died before Rails answered.
+        // A sale removed 12 iron ingots and the process died before dispatch.
         String key = "sale:test:" + UUID.randomUUID();
         record(level, key, player.getUUID(), new ItemStack(Items.IRON_INGOT, 12),
-                TraderSaleReservationReceipt.Status.DISPATCHED);
+                TraderSaleReservationReceipt.Status.ITEMS_REMOVED);
 
         int refunded = TraderSaleReservationRecovery.refundStrandedReservations(level, player);
         check(refunded == 1, "expected one stack refunded, got " + refunded);
@@ -54,6 +54,7 @@ public final class TraderSaleReservationGameTests {
         check(TraderSaleReservationRecovery.refundStrandedReservations(level, player) == 0,
                 "a second recovery pass must refund nothing");
         check(count(player, Items.IRON_INGOT) == 12, "a second pass duplicated items");
+        level.getServer().getPlayerList().remove(player);
         helper.succeed();
     }
 
@@ -65,7 +66,7 @@ public final class TraderSaleReservationGameTests {
     @GameTest(template = TEMPLATE)
     public static void aReservationThatNeverBecameDurableIsResolvedWithoutRefund(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = ManagedResourceTestPlayers.survival(level, "M7Legacy");
         player.getInventory().clearContent();
         // The player still holds the goods -- the removal never durably happened.
         player.getInventory().add(new ItemStack(Items.GOLD_INGOT, 5));
@@ -80,13 +81,14 @@ public final class TraderSaleReservationGameTests {
                 "the player must keep exactly what they had, found " + count(player, Items.GOLD_INGOT));
         check(TraderSaleReservationStore.get(level).find(key) == null,
                 "the receipt must still be resolved so it cannot linger");
+        level.getServer().getPlayerList().remove(player);
         helper.succeed();
     }
 
     @GameTest(template = TEMPLATE)
     public static void receiptsSurviveTheSaveLoadBoundaryAndOnlyTouchTheirOwnPlayer(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = ManagedResourceTestPlayers.survival(level, "M7Legacy");
         player.getInventory().clearContent();
 
         String mine = "sale:test:" + UUID.randomUUID();
@@ -112,6 +114,7 @@ public final class TraderSaleReservationGameTests {
         check(count(player, Items.EMERALD) == 0, "another player's reservation must never pay out here");
         check(TraderSaleReservationStore.get(level).find(someoneElse) != null,
                 "another player's reservation must remain for their own login");
+        level.getServer().getPlayerList().remove(player);
         helper.succeed();
     }
 

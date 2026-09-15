@@ -14,10 +14,15 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 
 /** Y-axis billboard renderer for the animated vertical city-moongate layers. */
 public final class MoongateBlockEntityRenderer implements BlockEntityRenderer<MoongateBlockEntity> {
     static final float VISUAL_SCALE = 1.35F;
+    // Match the named minecraft:translucent model's item/entity material. A BER
+    // must emit NEW_ENTITY vertices, not the chunk/TERRAIN format used by Iris
+    // for RenderType.translucent(). Keep atlas alpha, sorting, light and culling.
+    static final RenderType PORTAL_RENDER_TYPE = NeoForgeRenderTypes.ITEM_LAYERED_TRANSLUCENT.get();
     public static final ModelResourceLocation BILLBOARD_MODEL = ModelResourceLocation.standalone(
             ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/moongate_billboard"));
 
@@ -44,7 +49,7 @@ public final class MoongateBlockEntityRenderer implements BlockEntityRenderer<Mo
         poseStack.scale(VISUAL_SCALE, VISUAL_SCALE, VISUAL_SCALE);
         poseStack.mulPose(Axis.YP.rotationDegrees(-minecraft.gameRenderer.getMainCamera().getYRot()));
         poseStack.translate(-0.5D, 0.0D, -0.5D);
-        VertexConsumer consumer = bufferSource.getBuffer(RenderType.translucent());
+        VertexConsumer consumer = bufferSource.getBuffer(PORTAL_RENDER_TYPE);
         minecraft.getBlockRenderer().getModelRenderer().renderModel(
                 poseStack.last(),
                 consumer,

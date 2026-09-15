@@ -45,11 +45,11 @@ public final class NewAssetsMarketStallGameTests {
                 (DecorativeMultiblockItem) ItemRegistry.MARKET_STALL_BLUE_ITEM.get(),
                 (DecorativeMultiblockItem) ItemRegistry.MARKET_STALL_GREEN_ITEM.get(),
                 (DecorativeMultiblockItem) ItemRegistry.MARKET_STALL_PURPLE_ITEM.get());
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = ManagedResourceTestPlayers.survival(helper.getLevel(), "M9Stall");
         player.setGameMode(GameType.SURVIVAL);
         player.getAbilities().instabuild = false;
         BlockPos minimum = helper.absolutePos(new BlockPos(2, 3, 2));
-        player.setPos(minimum.getX() + 0.5D, minimum.getY(), minimum.getZ() + 0.5D);
+        player.setPos(minimum.getX() + 3.5D, minimum.getY(), minimum.getZ() + 3.5D);
 
         for (int color = 0; color < blocks.size(); color++) {
             DecorativeMultiblockBlock block = blocks.get(color);
@@ -96,6 +96,7 @@ public final class NewAssetsMarketStallGameTests {
                 clearSupports(helper, block, anchor, facing);
             }
         }
+        helper.getLevel().getServer().getPlayerList().remove(player);
         helper.succeed();
     }
 
@@ -106,10 +107,10 @@ public final class NewAssetsMarketStallGameTests {
         Direction facing = Direction.NORTH;
         BlockPos minimum = helper.absolutePos(new BlockPos(2, 3, 2));
         BlockPos anchor = prepareSupports(helper, block, minimum, facing);
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = ManagedResourceTestPlayers.survival(helper.getLevel(), "M9Stall");
         player.setGameMode(GameType.SURVIVAL);
         player.getAbilities().instabuild = false;
-        player.setPos(minimum.getX() + 0.5D, minimum.getY(), minimum.getZ() + 0.5D);
+        player.setPos(minimum.getX() + 3.5D, minimum.getY(), minimum.getZ() + 3.5D);
         player.setYRot(Direction.SOUTH.toYRot());
 
         List<DecorativeMultiblockBlock.Cell> obstructionTargets = List.of(
@@ -138,6 +139,7 @@ public final class NewAssetsMarketStallGameTests {
                 "placement succeeded on uneven/unsupported terrain");
         check(unevenStack.getCount() == 1, "failed uneven placement consumed the stall item");
         assertNoStallCells(helper, block, anchor, facing);
+        helper.getLevel().getServer().getPlayerList().remove(player);
         helper.succeed();
     }
 

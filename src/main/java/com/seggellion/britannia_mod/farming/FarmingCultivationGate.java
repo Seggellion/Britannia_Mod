@@ -139,10 +139,6 @@ public final class FarmingCultivationGate {
         float required = resolved.minimumFarmingSkill();
         Optional<FarmingSkillRequirementResolver.ResolvedRequirement> resolution = Optional.of(resolved);
 
-        if (GRAPE_SPECIES_ID.equals(resolved.speciesId())) {
-            return new Evaluation(ResultType.NOT_APPLICABLE, resolution, material,
-                    subject.farmingSkill(), required);
-        }
         if (subject.actorType() != ActorType.PLAYER) {
             return new Evaluation(ResultType.NON_PLAYER_POLICY, resolution, material,
                     subject.farmingSkill(), required);
@@ -151,7 +147,7 @@ public final class FarmingCultivationGate {
             return new Evaluation(ResultType.APPROVED_BYPASS, resolution, material,
                     subject.farmingSkill(), required);
         }
-        if (subject.skillDataState() != SkillManager.SkillDataState.AVAILABLE) {
+        if (subject.skillDataState() != SkillManager.SkillDataState.AVAILABLE || !Float.isFinite(subject.farmingSkill())) {
             return new Evaluation(ResultType.SKILL_DATA_UNAVAILABLE, resolution, material,
                     Float.NaN, required);
         }
@@ -198,6 +194,13 @@ public final class FarmingCultivationGate {
         Objects.requireNonNull(evaluation, "Cultivation evaluation is required");
         if (!(actor instanceof ServerPlayer serverPlayer) || evaluation.permitsPlanting()) {
             return;
+        }
+        // M9 item 4 / discovery D11. Trying to plant is the moment the skill data is wanted, so it
+        // is the moment to ask for it again. Bounded and rate-limited inside SkillManager, and a
+        // no-op unless the state really is missing -- an INSUFFICIENT_SKILL denial asks for
+        // nothing, because that answer was authoritative.
+        if (evaluation.type() == ResultType.SKILL_DATA_UNAVAILABLE) {
+            SkillManager.requestSkillDataRetry(serverPlayer);
         }
         Component message = evaluation.type() == ResultType.INSUFFICIENT_SKILL
                 ? Component.translatable(

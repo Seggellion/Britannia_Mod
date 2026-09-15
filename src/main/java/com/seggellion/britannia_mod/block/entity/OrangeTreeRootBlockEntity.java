@@ -52,6 +52,10 @@ public class OrangeTreeRootBlockEntity extends BlockEntity {
     private static final float STRUCTURAL_FLOOR_MIN_HYDRATION_FIT = 0.35f;
 
     private String treeTypeId = FruitTreeRegistry.DEFAULT_TREE_ID;
+    private boolean synchronizedPlotStatus;
+
+    public boolean hasSynchronizedPlotStatus() { return synchronizedPlotStatus; }
+
     private long treeSeed = 0L;
     private int growthStep = 1;
     private float growthProgress = 0.0f;
@@ -322,37 +326,49 @@ public class OrangeTreeRootBlockEntity extends BlockEntity {
     }
 
     public void cleanupTree(ServerLevel level, @Nullable Player player, boolean dropFruit) {
-        cleanupTree(level, player, dropFruit, true);
+        if (dropFruit && player != null) {
+            com.seggellion.britannia_mod.farming.FruitTreeHarvestService.chop(level,worldPosition,this,player);
+            return;
+        }
+        cleanupTree(level, player, false, true);
     }
 
+    public void cleanupTreeAfterHarvest(ServerLevel level, Player player, boolean successful) {
+        if (!com.seggellion.britannia_mod.farming.FarmingHarvestService.isCommitting(level,getSoilPos())) return;
+        cleanupTree(level,player,successful,true);
+    }
+
+    private boolean cleanupInProgress;
+
     private void cleanupTree(ServerLevel level, @Nullable Player player, boolean dropFruit, boolean includeRoot) {
-        BlockPos.betweenClosedStream(
-                worldPosition.offset(-definition().canopyRadiusX() - 1, 0, -definition().canopyRadiusZ() - 1),
-                worldPosition.offset(definition().canopyRadiusX() + 1, definition().trunkHeight() + definition().canopyRadiusY() + 2, definition().canopyRadiusZ() + 1)
-        ).forEach(pos -> {
-            BlockState state = level.getBlockState(pos);
+        if (cleanupInProgress) return;
+        cleanupInProgress = true;
+        try {
+            record PendingDrop(BlockPos pos, ItemStack stack) {}
+            java.util.List<BlockPos> removals = new java.util.ArrayList<>();
+            java.util.List<PendingDrop> outputs = new java.util.ArrayList<>();
             FruitTreeDefinition definition = definition();
-            if (state.is(definition.fruitBlock().get())) {
-                if (dropFruit) {
-                    OrangeFruitBlock.dropFruitFromTree(level, pos, this, player, false);
-                }
-                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
-            } else if (state.is(definition.rootBlock().get())
-                    || state.is(definition.trunkBlock().get())
-                    || state.is(definition.branchBlock().get())) {
-                if (includeRoot || !pos.equals(worldPosition)) {
-                    if (dropFruit) {
-                        dropFruitTreeWood(level, pos, state);
-                    }
-                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
-                }
-            } else if (state.is(definition.leafBlock().get())) {
-                if (includeRoot || !pos.equals(worldPosition)) {
-                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
-                }
+            for (BlockPos cursor : BlockPos.betweenClosed(
+                    worldPosition.offset(-definition.canopyRadiusX() - 1, 0, -definition.canopyRadiusZ() - 1),
+                    worldPosition.offset(definition.canopyRadiusX() + 1, definition.trunkHeight() + definition.canopyRadiusY() + 2, definition.canopyRadiusZ() + 1))) {
+                BlockPos pos = cursor.immutable();
+                BlockState state = level.getBlockState(pos);
+                boolean wood = state.is(definition.rootBlock().get()) || state.is(definition.trunkBlock().get()) || state.is(definition.branchBlock().get());
+                boolean fruit = state.is(definition.fruitBlock().get());
+                if ((!wood && !fruit && !state.is(definition.leafBlock().get())) || !includeRoot && pos.equals(worldPosition)) continue;
+                removals.add(pos);
+                if (dropFruit && fruit && state.getValue(OrangeFruitBlock.RIPE))
+                    outputs.add(new PendingDrop(pos, createHarvestStack(player, definition.randomFruitYield(level.getRandom()))));
+                if (dropFruit && wood) outputs.add(new PendingDrop(pos, createFruitTreeWood(level, state)));
             }
-        });
-        clearSoilCrop(level);
+            // Root removal invokes onRemove; this guard keeps that environmental callback from
+            // clearing the canopy before this committed harvest has captured its exact outputs.
+            for (int i = removals.size() - 1; i >= 0; i--) level.setBlock(removals.get(i), Blocks.AIR.defaultBlockState(), 3);
+            clearSoilCrop(level);
+            for (PendingDrop output : outputs) net.minecraft.world.level.block.Block.popResource(level, output.pos(), output.stack());
+        } finally {
+            cleanupInProgress = false;
+        }
     }
 
     public CropGrowthContext createGrowthContext(Level level, BlockPos pos, CropDefinition crop, @Nullable Player player) {
@@ -574,20 +590,14 @@ public class OrangeTreeRootBlockEntity extends BlockEntity {
         return state.is(definition().leafBlock().get()) || state.is(definition().fruitBlock().get());
     }
 
-    private void dropFruitTreeWood(ServerLevel level, BlockPos pos, BlockState state) {
+    private ItemStack createFruitTreeWood(ServerLevel level, BlockState state) {
         ItemStack woodStack = new ItemStack(ItemRegistry.WEIGHTED_WOOD_ITEM.get());
         WeightedWoodItem woodItem = (WeightedWoodItem) woodStack.getItem();
         woodItem.setWoodType(woodStack, definition().id());
         double minWeight = state.is(definition().branchBlock().get()) ? 1.0D : 3.0D;
         double maxWeight = state.is(definition().branchBlock().get()) ? 4.0D : 8.0D;
         woodItem.setWeight(woodStack, minWeight + level.getRandom().nextDouble() * (maxWeight - minWeight));
-        level.addFreshEntity(new ItemEntity(
-                level,
-                pos.getX() + 0.5D,
-                pos.getY() + 0.5D,
-                pos.getZ() + 0.5D,
-                woodStack
-        ));
+        return woodStack;
     }
 
     private BlockState branchStateFor(BlockPos pos) {
@@ -1178,6 +1188,7 @@ public class OrangeTreeRootBlockEntity extends BlockEntity {
     @Override
     public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        synchronizedPlotStatus = tag.getInt("PlotStatusVersion") == 1;
         treeTypeId = tag.contains("TreeTypeId") ? tag.getString("TreeTypeId") : FruitTreeRegistry.DEFAULT_TREE_ID;
         treeTypeId = FruitTreeRegistry.byIdOrDefault(treeTypeId).id();
         treeSeed = tag.getLong("TreeSeed");
@@ -1228,6 +1239,7 @@ public class OrangeTreeRootBlockEntity extends BlockEntity {
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);
         saveAdditional(tag, registries);
+        tag.putInt("PlotStatusVersion", 1);
         return tag;
     }
 

@@ -108,39 +108,6 @@ public final class CuratedMetalLifecycleGameTests {
     }
 
 
-    /**
-     * A planned cell this test can actually use: inside the test's own chunk, and inside build
-     * height.
-     *
-     * <p>Both constraints are the platform's, not the test's. Materialisation refuses a cell
-     * outside build height, and restoration deliberately refuses to load a chunk just to restore
-     * into it — so a cell chosen from the far side of a 12-radius deposit would fail for reasons
-     * that have nothing to do with what is being tested. The origin is not usable either: Vertical
-     * grows upward from it and never includes it.
-     */
-    private static BlockPos workableCell(ServerLevel level, PlannedDeposit deposit, BlockPos origin) {
-        net.minecraft.world.level.ChunkPos here = new net.minecraft.world.level.ChunkPos(origin);
-        BlockPos best = null;
-        int bestDistance = Integer.MAX_VALUE;
-        // positionsIn is the same slice materialisation uses, so the cell is guaranteed both to
-        // belong to the deposit and to lie in the chunk this test may safely touch.
-        for (BlockPos candidate : deposit.positionsIn(here)) {
-            if (candidate.getY() > level.getMinBuildHeight() + 4
-                    && candidate.getY() < level.getMaxBuildHeight() - 1) {
-                int distance = Math.abs(candidate.getY() - origin.getY());
-                if (distance < bestDistance) {
-                    best = candidate;
-                    bestDistance = distance;
-                }
-            }
-        }
-        if (best == null) {
-            throw new GameTestAssertException(
-                    "no planned cell of this deposit lies in the test's own chunk within build height");
-        }
-        return best;
-    }
-
     private static List<ItemStack> takeDrops(ServerLevel level, BlockPos around) {
         List<ItemEntity> entities =
                 level.getEntitiesOfClass(ItemEntity.class, new AABB(around).inflate(3.0D));
@@ -164,27 +131,20 @@ public final class CuratedMetalLifecycleGameTests {
      */
     private static void runLifecycle(GameTestHelper helper, String path, Runnable onRestored) {
         ServerLevel level = helper.getLevel();
-        BlockPos origin = helper.absolutePos(NODE);
         String dimension = level.dimension().location().toString();
         ResourceDefinition resource = resource(path);
         Block block = managedBlock(resource);
 
-        // A curated Rails row: the only thing that says this deposit exists. Its immutable
-        // parameters derive the identity, and the identity derives the planner seed.
-        // A radius every one of the three allows: copper tops out at 22.
-        int radius = Math.min(20, resource.generation().orElseThrow().maxRadius());
-        CuratedDepositTestRows row = CuratedDepositTestRows.of(path, origin, radius);
+        // Establish a valid curated row within this fixture's loaded chunk and template interior.
+        // Do not assume a wandering vein seeded at a chunk edge returns to that same chunk.
+        ChunkPos chunk = new ChunkPos(helper.absolutePos(NODE));
+        check(level.getChunkSource().hasChunk(chunk.x, chunk.z), "the test's own chunk is not loaded");
+        CuratedMetalTestFixture.Fixture fixture = CuratedMetalTestFixture.select(path, dimension,
+                helper.getBounds().deflate(1.0), chunk, level.getMinBuildHeight(), level.getMaxBuildHeight());
+        CuratedDepositTestRows row = fixture.row();
         long instanceId = row.identity(dimension);
-        PlannedDeposit deposit = row.plan(dimension);
-
-        // A cell the deposit actually owns, in the test's own chunk.
-        //
-        // The origin will not do. Vertical grows upward from its origin and Snake wanders away from
-        // it, so neither includes it -- and restoration correctly refuses to restore a cell that is
-        // not part of the deposit, which is what made the iron and gold cases fail: the debt was
-        // consumed and the block stayed air. Copper only passed because Cluster happens to include
-        // its centre. Mining a cell the deposit owns is what the test meant all along.
-        BlockPos cell = workableCell(level, deposit, origin);
+        PlannedDeposit deposit = fixture.deposit();
+        BlockPos cell = fixture.cell();
         level.setBlock(cell, Blocks.STONE.defaultBlockState(), 2);
 
         DepositLedger ledger = DepositLedger.get(level);
@@ -277,7 +237,9 @@ public final class CuratedMetalLifecycleGameTests {
      * A curated metal obeys every extraction policy the platform already had.
      *
      * <p>Integration regression, not a re-specification: wrong tools, automation and Creative are
-     * milestone 6's rules, and this proves the new supply channel did not route around them.
+     * the extraction policy's rules, and this proves the new supply channel did not route around
+     * them — including the creative rule's two halves, plain removal without the Britannia
+     * pickaxe and the full managed flow with it.
      */
     @GameTest(template = TEMPLATE)
     public static void aCuratedMetalObeysEveryExtractionPolicy(GameTestHelper helper) {
@@ -317,14 +279,30 @@ public final class CuratedMetalLifecycleGameTests {
             check(level.getBlockState(cell).is(block), path + " was mined by a fake player");
             check(takeDrops(level, cell).isEmpty(), path + " paid a fake player");
 
-            // Creative, on a sited deposit.
+            // Creative without the Britannia pickaxe: an administrator, who earns nothing. A
+            // curated metal is a sited deposit, so the click is refused outright rather than
+            // deleting a vein that nothing would ever restore.
             level.setBlock(cell, block.defaultBlockState(), 2);
-            ServerPlayer operator = miner(level, pickaxe());
+            ServerPlayer operator = miner(level, ItemStack.EMPTY);
             operator.setGameMode(GameType.CREATIVE);
             breakThroughTheEventBus(level, cell, operator);
             check(level.getBlockState(cell).is(block),
-                    path + " was deleted by an ordinary Creative break");
-            check(takeDrops(level, cell).isEmpty(), path + " paid a Creative operator");
+                    path + " was deleted by a bare-handed Creative click; removing a curated"
+                            + " deposit stays /manageddeposit remove or /populateores clear");
+            check(takeDrops(level, cell).isEmpty(), path + " paid a bare-handed Creative operator");
+
+            // Creative attacking with the Britannia pickaxe: a tester, and the managed flow runs.
+            level.setBlock(cell, block.defaultBlockState(), 2);
+            operator.setItemInHand(InteractionHand.MAIN_HAND, pickaxe());
+            breakThroughTheEventBus(level, cell, operator);
+            check(!level.getBlockState(cell).is(block),
+                    path + " was not extracted by a Creative tester's Britannia pickaxe");
+            List<ItemStack> testerDrops = takeDrops(level, cell);
+            check(testerDrops.size() == 1 && testerDrops.get(0).getItem() instanceof PurityOreItem,
+                    path + " did not pay a Creative tester the purity ore, got " + testerDrops);
+            check(BrokenBlockDataStorage.get(level).getBrokenBlocks().get(cell) != null,
+                    path + " extracted by a Creative tester filed no restoration debt");
+            BrokenBlockDataStorage.get(level).remove(cell);
         }
         helper.succeed();
     }

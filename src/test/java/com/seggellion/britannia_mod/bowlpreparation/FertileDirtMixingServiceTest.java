@@ -8,6 +8,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -39,13 +40,13 @@ class FertileDirtMixingServiceTest {
     }
 
     @Test
-    void plansOnlyTheExactFixedHandFinalTuple() {
+    void plansBothArrangementsOfTheExactFinalTuple() {
         FertileDirtMixingPlan plan =
                 plan(new ItemStack(fertileBowl), new ItemStack(waterBowl)).orElseThrow();
         assertEquals(fertilizedDirt, plan.fertilizedDirt());
         assertEquals(emptyBowl, plan.emptyBowl());
 
-        assertFalse(plan(new ItemStack(waterBowl), new ItemStack(fertileBowl)).isPresent());
+        assertTrue(plan(new ItemStack(waterBowl), new ItemStack(fertileBowl)).isPresent());
         assertFalse(plan(new ItemStack(fertileBowl), new ItemStack(Items.WATER_BUCKET)).isPresent());
         assertFalse(plan(new ItemStack(Items.BOWL), new ItemStack(waterBowl)).isPresent());
         assertFalse(plan(ItemStack.EMPTY, new ItemStack(waterBowl)).isPresent());
@@ -130,6 +131,69 @@ class FertileDirtMixingServiceTest {
         assertEquals(1, offhand.getCount());
         assertEquals(1, commit.fertilizedDirt().getCount());
         assertEquals(2, commit.returnedBowls().getCount());
+    }
+
+    // ---------------------------------------------------------------- diagnosis
+
+    @Test
+    void holdingTheBowlWithAnEmptyOffHandSaysNothingAtAll() {
+        // FertileDirtMixingItem is registered on the Bowl of Fertile Dirt and nothing else, so its
+        // use() runs on every right-click while that bowl is held -- swinging it, clicking at the
+        // air, walking about. The old test "one half of the mix is in hand" was therefore true
+        // every single time, and every right-click printed "That bowl is not ready for this. Use an
+        // Empty Bowl to gather, and a filled bowl to mix." at a player holding a perfectly correct
+        // filled bowl, while never naming the requirement.
+        assertEquals(FertileDirtMixingService.Diagnosis.NONE,
+                diagnose(new ItemStack(fertileBowl), ItemStack.EMPTY));
+        assertEquals(FertileDirtMixingService.Diagnosis.NONE,
+                diagnose(new ItemStack(waterBowl), ItemStack.EMPTY),
+                "an empty off hand is not an attempted mix whichever bowl is held");
+        assertEquals(FertileDirtMixingService.Diagnosis.NONE,
+                diagnose(ItemStack.EMPTY, ItemStack.EMPTY));
+    }
+
+    @Test
+    void theSameSilenceTheDryStepAlreadyKept() {
+        // BowlPreparationService is the reference: a filled bowl with an empty off hand has always
+        // been silent there. The final mix now behaves the same way in the same situation.
+        BowlPreparationService.RecipeSet dry = new BowlPreparationService.RecipeSet(
+                Items.GLASS_BOTTLE, Items.GRAVEL, Items.CLAY_BALL, Items.BONE_MEAL, Items.MUD);
+        assertEquals(BowlPreparationService.Diagnosis.NONE,
+                BowlPreparationService.diagnose(new ItemStack(Items.CLAY_BALL), ItemStack.EMPTY, dry));
+    }
+
+    @Test
+    void namesTheMissingOffHandItemInsteadOfBlamingTheBowlInHand() {
+        // The right bowl in the main hand and the wrong thing in the off hand. The requirement --
+        // a Bowl of Water in the off hand -- is the whole answer, and the old message never said it.
+        assertEquals(FertileDirtMixingService.Diagnosis.MISSING_OFF_HAND,
+                diagnose(new ItemStack(fertileBowl), new ItemStack(Items.WATER_BUCKET)));
+        assertEquals(FertileDirtMixingService.Diagnosis.MISSING_OFF_HAND,
+                diagnose(new ItemStack(fertileBowl), new ItemStack(emptyBowl)));
+        assertEquals(FertileDirtMixingService.Diagnosis.MISSING_OFF_HAND,
+                diagnose(new ItemStack(fertileBowl), new ItemStack(Items.STONE)));
+    }
+
+    @Test
+    void acceptsTheReversedHandRecipeAndStillCallsAWrongBowlWrong() {
+        assertEquals(FertileDirtMixingService.Diagnosis.NONE,
+                diagnose(new ItemStack(waterBowl), new ItemStack(fertileBowl)));
+        assertEquals(InteractionHand.OFF_HAND,
+                plan(new ItemStack(waterBowl), new ItemStack(fertileBowl)).orElseThrow().driverHand());
+        assertEquals(FertileDirtMixingService.Diagnosis.WRONG_BOWL,
+                diagnose(new ItemStack(Items.STONE), new ItemStack(waterBowl)));
+        assertEquals(FertileDirtMixingService.Diagnosis.WRONG_BOWL,
+                diagnose(new ItemStack(waterBowl), new ItemStack(Items.STONE)));
+    }
+
+    @Test
+    void aValidPairIsNeverDiagnosedAtAll() {
+        assertEquals(FertileDirtMixingService.Diagnosis.NONE,
+                diagnose(new ItemStack(fertileBowl), new ItemStack(waterBowl)));
+    }
+
+    private FertileDirtMixingService.Diagnosis diagnose(ItemStack main, ItemStack offhand) {
+        return FertileDirtMixingService.diagnose(main, offhand, recipes);
     }
 
     private java.util.Optional<FertileDirtMixingPlan> plan(

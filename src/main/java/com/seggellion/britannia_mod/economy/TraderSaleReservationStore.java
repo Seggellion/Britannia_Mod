@@ -89,6 +89,13 @@ public final class TraderSaleReservationStore extends SavedData {
         setDirty();
     }
 
+    public void settlement(String key, TraderSaleReservationReceipt.Status status, String response) {
+        var existing = receipts.get(key);
+        if (existing == null) return;
+        receipts.put(key, existing.withSettlement(status, response));
+        setDirty();
+    }
+
     /** Removes a settled reservation; the item risk is over. */
     public void resolve(String idempotencyKey) {
         if (receipts.remove(idempotencyKey) != null) setDirty();
@@ -121,11 +128,23 @@ public final class TraderSaleReservationStore extends SavedData {
      * and again once their removal is durable), not merely at the next
      * autosave — that is the whole point of the crash-safety guarantee.
      */
-    public void flush(ServerLevel level) {
+    public boolean flush(ServerLevel level) {
         try {
-            level.getServer().overworld().getDataStorage().save();
-        } catch (RuntimeException failure) {
+            // SavedData.save catches IOException and clears dirty even when the write failed.
+            // Call the same NeoForge atomic/fsync writer directly so callers can refuse risk.
+            CompoundTag outer = new CompoundTag();
+            outer.put("data", save(new CompoundTag(), level.registryAccess()));
+            net.minecraft.nbt.NbtUtils.addCurrentDataVersion(outer);
+            var file = level.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT)
+                    .resolve("data").resolve(DATA_NAME + ".dat");
+            java.nio.file.Files.createDirectories(file.getParent());
+            net.neoforged.neoforge.common.IOUtilities.writeNbtCompressed(outer, file);
+            setDirty(false);
+            return true;
+        } catch (java.io.IOException | RuntimeException failure) {
+            setDirty();
             LOGGER.warn("Could not force-save trader sale reservations: {}", failure.toString());
+            return false;
         }
     }
 }

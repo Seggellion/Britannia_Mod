@@ -242,7 +242,7 @@ class FarmingSkillIdentificationTest {
         String grapeItem = source("item/GrapeSeedsItem.java");
         assertFalse(grapeItem.contains("FarmingCultivationGate"));
         assertFalse(grapeItem.contains("FarmingPlantingItemPresentation"));
-        assertTrue(grapeItem.contains("stack.shrink(1)"));
+        assertTrue(grapeItem.contains("FarmingBlock.tryPlantGrapes"));
 
         String skillManager = source("skill/SkillManager.java");
         assertTrue(skillManager.contains("SkillDataState.LOADING"));

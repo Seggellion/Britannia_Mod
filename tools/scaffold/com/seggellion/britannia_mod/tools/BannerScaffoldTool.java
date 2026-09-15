@@ -137,7 +137,11 @@ public final class BannerScaffoldTool {
         ResolvedCatalogue catalogue = resolve(manifest);
         LinkedHashMap<String, byte[]> expected = buildExpectedFiles(catalogue);
         RegistryLoadResult registry = validateRegistry(expected);
-        expected.put(STATUS_PATH, utf8(statusReport(catalogue, registry)));
+        // Bootstrap documentation for a new scaffold, but respect its deliberate removal
+        // from an established production snapshot. All generated runtime outputs stay required.
+        if (Files.exists(root.resolve(STATUS_PATH)) || !Files.exists(root.resolve(METADATA_PATH))) {
+            expected.put(STATUS_PATH, utf8(statusReport(catalogue, registry)));
+        }
         validateAssetMappings(root, catalogue, expected.keySet());
 
         if (options.check) {
@@ -812,7 +816,7 @@ public final class BannerScaffoldTool {
             Path path = root.resolve(entry.getKey());
             if (!Files.isRegularFile(path)) {
                 failures.add("missing " + entry.getKey());
-            } else if (!Arrays.equals(Files.readAllBytes(path), entry.getValue())) {
+            } else if (!matchesGeneratedOutput(path, entry.getValue())) {
                 failures.add("changed " + entry.getKey());
             }
         }
@@ -821,6 +825,18 @@ public final class BannerScaffoldTool {
             throw new ScaffoldException("--check found " + failures.size() + " problem(s): "
                     + String.join("; ", failures));
         }
+    }
+
+    private static boolean matchesGeneratedOutput(Path path, byte[] expected) throws IOException {
+        byte[] actual = Files.readAllBytes(path);
+        String name = path.getFileName().toString();
+        if (name.endsWith(".json") || name.endsWith(".md")) {
+            // Git may check text out with CRLF on Windows. Preserve all other content checks;
+            // generated PNGs and other binary outputs must still match byte for byte.
+            return new String(actual, StandardCharsets.UTF_8).replace("\r\n", "\n")
+                    .equals(new String(expected, StandardCharsets.UTF_8));
+        }
+        return Arrays.equals(actual, expected);
     }
 
     private static void checkLocalization(Path path, ResolvedCatalogue catalogue, List<String> failures)

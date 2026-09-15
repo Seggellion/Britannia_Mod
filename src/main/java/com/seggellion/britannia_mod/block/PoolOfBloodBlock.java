@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.block;
 
+import com.seggellion.britannia_mod.placement.CreativeDecorationPolicy;
 import com.mojang.serialization.MapCodec;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.core.BlockPos;
@@ -38,7 +39,7 @@ public final class PoolOfBloodBlock extends HorizontalDirectionalBlock {
         super(properties);
         registerDefaultState(stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
-                .setValue(VARIANT, 0));
+                .setValue(VARIANT, 0).setValue(CreativeDecorationPolicy.ORIGIN, false));
     }
 
     @Override
@@ -48,20 +49,20 @@ public final class PoolOfBloodBlock extends HorizontalDirectionalBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, VARIANT);
+        builder.add(FACING, VARIANT, CreativeDecorationPolicy.ORIGIN);
     }
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         RandomSource random = context.getLevel().random;
-        return defaultBlockState()
+        return CreativeDecorationPolicy.remember(defaultBlockState(), context)
                 .setValue(FACING, context.getHorizontalDirection().getOpposite())
                 .setValue(VARIANT, random.nextInt(VARIANT_COUNT));
     }
 
     @Override
     public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
-        return Block.canSupportCenter(level, pos.below(), Direction.UP);
+        return CreativeDecorationPolicy.placedInCreative(state) || Block.canSupportCenter(level, pos.below(), Direction.UP);
     }
 
     @Override
