@@ -1,0 +1,8 @@
+build	UNKNOWN STEP	2026-10-07T21:17:00.3554390Z RunuoAccountingDriftTest > initializationError FAILED
+build	UNKNOWN STEP	2026-10-07T21:17:00.3556253Z RunuoBuybackCoverageTest > initializationError FAILED
+build	UNKNOWN STEP	2026-10-07T21:17:00.3557289Z     org.opentest4j.AssertionFailedError at RunuoBuybackCoverageTest.java:60
+build	UNKNOWN STEP	2026-10-07T21:17:00.3558192Z RunuoRetailRolloutCoverageTest > initializationError FAILED
+build	UNKNOWN STEP	2026-10-07T21:17:19.8659583Z 4124 tests completed, 3 failed, 31 skipped
+build	UNKNOWN STEP	2026-10-07T21:17:20.3599603Z > Task :test FAILED
+build	UNKNOWN STEP	2026-10-07T21:17:20.4555182Z > There were failing tests. See the report at: file:///home/runner/work/Britannia_Mod/Britannia_Mod/build/reports/tests/test/index.html
+build	UNKNOWN STEP	2026-10-07T21:17:20.4558215Z BUILD FAILED in 6m 58s

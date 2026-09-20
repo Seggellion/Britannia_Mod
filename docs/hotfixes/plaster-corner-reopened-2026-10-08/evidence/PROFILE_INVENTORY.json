@@ -1,0 +1,44 @@
+[
+  {
+    "profile": "C:\\Users\\dusti\\AppData\\Roaming\\.minecraft",
+    "mod": "C:\\Users\\dusti\\AppData\\Roaming\\.minecraft\\mods\\Britannia_Mod-0.1.4j.jar",
+    "size": 9396642,
+    "sha256": "7bb1eb450d22fb228283ff1478a3e52c7dc96cc9c00f2fe9d652c9cd69f1c515",
+    "identity": "No embedded identity entry"
+  },
+  {
+    "profile": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia",
+    "mod": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia\\mods\\britannia_mod-0.1.8d.jar",
+    "size": 36107339,
+    "sha256": "c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6",
+    "identity": "mod.version=0.1.8d\ngit.head=4435912197fba84630d6e5a0544f29fc3a736450\ngit.branch=patch-18\ngit.dirty=false\nbuild.timestamp=2026-10-06T00:15:17.175199Z\n"
+  },
+  {
+    "profile": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia (1)",
+    "mod": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia (1)\\mods\\britannia_mod-0.1.8c.jar",
+    "size": 36088456,
+    "sha256": "a540591773481db5beaae1965344a17e42fcf1683892136138539e760d388dce",
+    "identity": "mod.version=0.1.8c\ngit.head=ef38d8cc8eb4a24a0a588c761fd39c4cbf4dbb20\ngit.branch=patch-19\ngit.dirty=false\nbuild.timestamp=2026-09-21T17:02:03.850285700Z\n"
+  },
+  {
+    "profile": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia (2)",
+    "mod": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia (2)\\mods\\britannia_mod-0.1.8c.jar",
+    "size": 36088456,
+    "sha256": "a540591773481db5beaae1965344a17e42fcf1683892136138539e760d388dce",
+    "identity": "mod.version=0.1.8c\ngit.head=ef38d8cc8eb4a24a0a588c761fd39c4cbf4dbb20\ngit.branch=patch-19\ngit.dirty=false\nbuild.timestamp=2026-09-21T17:02:03.850285700Z\n"
+  },
+  {
+    "profile": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia (3)",
+    "mod": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia (3)\\mods\\britannia_mod-0.1.8c.jar",
+    "size": 36088456,
+    "sha256": "a540591773481db5beaae1965344a17e42fcf1683892136138539e760d388dce",
+    "identity": "mod.version=0.1.8c\ngit.head=ef38d8cc8eb4a24a0a588c761fd39c4cbf4dbb20\ngit.branch=patch-19\ngit.dirty=false\nbuild.timestamp=2026-09-21T17:02:03.850285700Z\n"
+  },
+  {
+    "profile": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Atrevion",
+    "mod": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Atrevion\\mods\\britannia-0.1.8c.jar",
+    "size": 28870548,
+    "sha256": "7dd930b3e85d4f34574fa992a093c7058fbc8fe4153bde1b2ac11506c207c3c4",
+    "identity": "No embedded identity entry"
+  }
+]

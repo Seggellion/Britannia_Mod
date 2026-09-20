@@ -1,0 +1,80 @@
+> Task :cacheVersionManifest1.21.1 FROM-CACHE
+> Task :cacheVersionExecutableClient1.21.1 FROM-CACHE
+> Task :cacheVersionExecutableServer1.21.1 FROM-CACHE
+> Task :cacheVersionMappingsClient1.21.1 FROM-CACHE
+> Task :cacheVersionMappingsServer1.21.1 FROM-CACHE
+> Task :neoFormListLibraries UP-TO-DATE
+> Task :neoFormStripClient UP-TO-DATE
+> Task :neoFormExtractServer FROM-CACHE
+> Task :neoFormStripServer UP-TO-DATE
+> Task :neoFormMerge FROM-CACHE
+> Task :neoFormMergeMappings FROM-CACHE
+> Task :neoFormRename FROM-CACHE
+> Task :neoFormDecompile FROM-CACHE
+> Task :create1.21.1ClientExtraJar FROM-CACHE
+> Task :selectRawArtifactNg_dummy_ng.net.minecraft_client_1.21.1_client-extra
+> Task :neoFormApplyForgesAccessTransformer FROM-CACHE
+> Task :neoFormInject UP-TO-DATE
+> Task :neoFormPatch UP-TO-DATE
+> Task :neoFormPatchUserDev UP-TO-DATE
+> Task :neoFormApplyOfficialMappings UP-TO-DATE
+> Task :neoFormUnzipSources
+> Task :neoFormUnzipSources UP-TO-DATE
+> Task :neoFormRecompile FROM-CACHE
+> Task :neoFormPackRecomp
+> Task :supplyRawJarForneoFormJoined1.21.1-20240808.144430 FROM-CACHE
+> Task :selectRawArtifactNg_dummy_ng.net.neoforged_neoforge_21.1.72
+> Task :compileJava FROM-CACHE
+> Task :generateAlligatorGameTestStructure
+> Task :generateBuildInfo
+> Task :generateEdgeFenceGameTestStructure
+> Task :generateModMetadata
+> Task :generateServiceNpcSpawnGameTestStructure
+> Task :validateTrainingDummyGeo
+> Task :processResources
+> Task :classes
+> Task :jar
+> Task :jarJar
+> Task :compileScaffoldJava FROM-CACHE
+> Task :processScaffoldResources NO-SOURCE
+> Task :scaffoldClasses UP-TO-DATE
+
+> Task :compileTestJava
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :processTestResources
+> Task :testClasses
+> Task :test
+> Task :assemble
+> Task :neoFormJoined1.21.1-20240808.144430DownloadAssets UP-TO-DATE
+> Task :neoFormJoined1.21.1-20240808.144430ExtractNatives
+> Task :writeMinecraftClasspathJunit
+> Task :testJunit NO-SOURCE
+
+> Task :verifyDeployableJar
+verifyDeployableJar: britannia_mod-0.1.8d-all.jar bundles [geckolib-neoforge-1.21.1-4.6.6.jar, nanohttpd-2.2.0.jar], built from ac6b2e80e1dac33d48dfd0b48b52543deab5cb2d on HEAD (dirty=false)
+
+> Task :check
+> Task :build
+
+> Task :artifactIdentity
+
+=== Britannia artifact identity ===
+  britannia_mod-0.1.8d-all.jar  <- deploy this one unless GeckoLib is installed separately
+    size   : 36140726 bytes
+    sha256 : de563ecfcb8f9067248ec09ae0578f7776ea5c1beefa4f1c182b9ac255a5df2e
+  britannia_mod-0.1.8d-thin.jar  (thin -- no bundled dependencies, NOT deployable)
+    size   : 35569088 bytes
+    sha256 : 7412952cc79c128f57c81fdd4f84c1719c8c8c8588c8db0c2302eaf22f0d3761
+  build metadata (baked into both):
+    mod.version=0.1.8d
+    git.head=ac6b2e80e1dac33d48dfd0b48b52543deab5cb2d
+    git.branch=HEAD
+    git.dirty=false
+    build.timestamp=2026-10-07T03:42:22.901928400Z
+===================================
+
+> Task :writeMinecraftClasspathGameTestServer
+
+> Task :runGameTestServer

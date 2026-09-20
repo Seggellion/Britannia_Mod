@@ -1,0 +1,27 @@
+{
+  "com/seggellion/britannia_mod/item/InteriorDecoratorToolItem.class": {
+    "candidate": "bc349814363df70b984c605593f581f6f7653986054aae7a9f1d1cefc92cd357",
+    "pre_plaster_fence_candidate": "bc349814363df70b984c605593f581f6f7653986054aae7a9f1d1cefc92cd357",
+    "byte_equal": true
+  },
+  "com/seggellion/britannia_mod/block/MirrorableWallBlock.class": {
+    "candidate": "0fd7030d0be8dcac92d0cabac3841e47b56010a089f99661dfd9286524a38ee5",
+    "pre_plaster_fence_candidate": "0fd7030d0be8dcac92d0cabac3841e47b56010a089f99661dfd9286524a38ee5",
+    "byte_equal": true
+  },
+  "com/seggellion/britannia_mod/block/DoubleWallBlock.class": {
+    "candidate": "baa3a319d0f27324eaa56a079752535ed6fa461cfb129cbe32bac57f429dd1dc",
+    "pre_plaster_fence_candidate": "baa3a319d0f27324eaa56a079752535ed6fa461cfb129cbe32bac57f429dd1dc",
+    "byte_equal": true
+  },
+  "com/seggellion/britannia_mod/block/WallConnection.class": {
+    "candidate": "d6da00ad5404820f7038ee34b58d8f49d0a334c8f1e2a6de8ec9a6be1aecdab8",
+    "pre_plaster_fence_candidate": "d6da00ad5404820f7038ee34b58d8f49d0a334c8f1e2a6de8ec9a6be1aecdab8",
+    "byte_equal": true
+  },
+  "com/seggellion/britannia_mod/block/PlasterWallHalfBlock.class": {
+    "candidate": "ea382ec2275877640a0acf639821fd5902e584d31fcfe7d16eeddd953002cba7",
+    "pre_plaster_fence_candidate": "ea382ec2275877640a0acf639821fd5902e584d31fcfe7d16eeddd953002cba7",
+    "byte_equal": true
+  }
+}

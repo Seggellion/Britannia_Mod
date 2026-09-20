@@ -1,0 +1,16 @@
+{
+  "filename": "britannia_mod-0.1.8d-all.jar",
+  "bytes": 36140545,
+  "sha256": "89c3f936d2f942a0967ddc500542a8b0f587f5987a0902b2833596c099b486cb",
+  "forbiddenTestArtifacts": [],
+  "bundledJars": [
+    "META-INF/jarjar/",
+    "META-INF/jarjar/nanohttpd-2.2.0.jar",
+    "META-INF/jarjar/geckolib-neoforge-1.21.1-4.6.6.jar",
+    "META-INF/jarjar/metadata.json"
+  ],
+  "identity": {
+    "britannia_mod_build.properties": "mod.version=0.1.8d\ngit.head=07359f98277417b8ffdafd9d57b55b828804ab5b\ngit.branch=task/patch18-0.1.8d-edge-fence\ngit.dirty=false\nbuild.timestamp=2026-10-06T20:38:59.278362500Z\n"
+  },
+  "woodenModelCount": 20
+}

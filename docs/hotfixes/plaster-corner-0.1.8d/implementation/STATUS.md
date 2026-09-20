@@ -1,0 +1,28 @@
+## Current combined closeout — 2026-10-07
+
+This update supersedes the historical status below. The bounded shared-wall repair is integrated in `5a6734ba`; clean final candidate source is `986ed746`, SHA-256 `f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd`, 36,142,668 bytes. Full 4,129-case JUnit and 1,366-required-GameTest gates pass; candidate and prior evidence are preserved. Actual packaged both-half edits now match, joins/transforms render correctly, engine legacy collision follows the visible lower at both heights, and all 54 copied client fixture rows/neighbors survive a real dedicated load/save with 108 loaded state assertions. This is not a claim of post-load human visual acceptance.
+
+Plaster status: **AUTOMATED_AND_CURRENT_RENDER_ACCEPTANCE_PASS; FINAL_LOADED_APPEARANCE_PENDING**. The prior mirror divergence was pre-existing and player-visible/blocking (0.5625-block upper branch displacement); it was repaired, not waived. Current manual remainder is one upper edit followed by reconnect/resource refresh and appearance/outline comparison. Sustained wall/fence movement is already owner-approved and must not be repeated.
+
+Combined production acceptance remains pending fence corner/decorator/reconnect appearance and alligator playback, plus the short plaster loaded appearance check. Medallion UI is **OWNER_APPROVED_UI_ACCEPTANCE_COMPLETE**. Timing repetitions are follow-up confidence measurements, with measured memory cost retained. Source publication is independently authorized; `main` must follow its ruleset without administrator bypass. See the [current combined handoff](../../combined-0.1.8d/RELEASE_HANDOFF.md), [gate reassessment](../../combined-0.1.8d/GATE_REASSESSMENT.md) and [single manual session](../../combined-0.1.8d/MANUAL_SESSION.md). No live deployment, world edits, launcher update, tag or GitHub Release is authorized/performed.
+
+---
+
+# Plaster corner implementation ledger
+
+Base: exact `patch-18`, `7ca44a78d2438ae2204c4f64271ef84bb0672740`, refreshed 2026-10-06. Cached origin/patch-18 matches; no push/fetch performed. Version remains 0.1.8d, Minecraft 1.21.1, NeoForge 21.1.72, Java 21, GeckoLib 4.6.6. Tracked/index baseline clean; owner untracked playbooks and discovery reports preserved.
+
+Contract: relocate the existing single pillar to the architectural edge junction, restore finished plaster at its old end, preserve seven-pixel collision and all state/texture/placement semantics. No second free-end post. Canonical candidate post bounds (-0.8,0,-0.1)..(6.7,32,2.9); actual client acceptance remains required.
+
+- [x] M0 baseline/contract — refreshed source; original exact owner state reproduced in a fresh no-pack client; saved lower, upper and neighbors dumped.
+- [x] M1 bounded derivation — four Python tests pass; scoped freshness/idempotence verified, derivative LF pinned.
+- [x] M2 repair — authored corner/reflection repaired; actual half derivative generated; bounded resource diff reviewed.
+- [ ] M3 validation — automated gates pass; original oracle fails three new assertions. Resumed packaged matrix covers all 16 full corners, eight half corners, legal straight/T controls, actual placement orders, nine neighborhoods, both-half decorator interactions, 12 structure transforms, resource refresh and dedicated copied-world restart. Repaired mesh renders pass. Actual mirror/rotation pair divergence and mirrored topology fail required physical/transform behavior; byte-identical pre-plaster shared Java establishes a pre-existing blocking defect. Sustained player walk/jump and unknown owner overrides remain unverified. See CLIENT_ACCEPTANCE.md and MIRROR_MISMATCH_DIAGNOSIS.md; no waiver.
+- [x] M4 local candidate preparation — integrated source ac6b2e80, clean detached task checkout, normal bundled build/artifactIdentity pass; 4,126 JUnit cases (23 skipped), zero failures/errors; all 1,362 required GameTests pass; actual bundled candidate smoke and saved-world comparison recorded. Release acceptance remains held by M3 and other hotfixes.
+- [x] M5 release handoff — exact hash/identity, executed evidence, explicit remaining matrix, combined holds and rollback recorded. Publication/deployment not performed.
+
+Final plaster status: **BLOCKED_PRE_EXISTING_WALL_PAIR_AND_MIRROR_TOPOLOGY**. Scoped mesh render matrix: **COMPLETE**. Candidate: **CANDIDATE_PREPARED_RELEASE_HELD**. M3 remains incomplete because required behavior fails, not because the legal E/W render matrix was skipped. Combined release status: **HELD**, separately retaining every fence/alligator/medallion hold.
+
+Resume checkpoint f29548d77c03163e16321f120e28904685fdbdab was verified on exact patch-18 without resetting. Candidate remains ac6b2e80/de563ecf…5df2e, 36,140,726 bytes. No application implementation changes were needed or made. Scoped freshness and all four generation tests passed again; prior 23 focused JUnit and complete 4,126-case JUnit / 1,362-required-GameTest gates remain applicable to unchanged source and artifact. Two isolated packaged dedicated runs exited 0; all 54 fixture rows and recorded neighbors remained exactly equal across client save, dedicated save and restart. See implementation/acceptance-resume/PERSISTENCE_RESULTS.json. Verification tooling/documents do not require rebuilding the candidate. The previous candidate and original evidence/worlds remain preserved.
+
+Release holds: existing fence packet/art/interactive visuals, alligator client visuals, medallion motion/cape/swimming visuals remain. Plaster does not clear them. Publication/deployment/launcher/live-world changes are not authorized.

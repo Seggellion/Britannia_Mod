@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.seggellion.britannia_mod.block.ThinWallCornerModelContractTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-07T17:20:47" hostname="MSI" time="0.069">
+  <properties/>
+  <testcase name="everyFamilyHasCornerArtForAllFourFacings()" classname="com.seggellion.britannia_mod.block.ThinWallCornerModelContractTest" time="0.004"/>
+  <testcase name="everyVariantDrawsPanelsOnExactlyTheEdgesItsStateNames()" classname="com.seggellion.britannia_mod.block.ThinWallCornerModelContractTest" time="0.049"/>
+  <testcase name="everyReachableStateResolvesToAModel()" classname="com.seggellion.britannia_mod.block.ThinWallCornerModelContractTest" time="0.014"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

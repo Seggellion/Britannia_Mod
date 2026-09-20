@@ -1,0 +1,1666 @@
+[
+  {
+    "case": 0,
+    "position": [
+      8,
+      80,
+      8
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank[facing=south,shape=corner,branch_right=false,mirrored=false,half=lower]",
+    "properties": {
+      "facing": "south",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "false",
+      "half": "lower"
+    },
+    "arms": [
+      {
+        "position": [
+          7,
+          80,
+          8
+        ],
+        "facing": "south",
+        "distance": 1
+      },
+      {
+        "position": [
+          6,
+          80,
+          8
+        ],
+        "facing": "south",
+        "distance": 2
+      },
+      {
+        "position": [
+          8,
+          80,
+          7
+        ],
+        "facing": "east",
+        "distance": 1
+      },
+      {
+        "position": [
+          8,
+          80,
+          6
+        ],
+        "facing": "east",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "south",
+      "east"
+    ],
+    "joint_world_xz": [
+      9.0,
+      9.0
+    ],
+    "camera": [
+      11.2,
+      80,
+      11.2,
+      135.0,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 1,
+    "position": [
+      20,
+      80,
+      8
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank[facing=south,shape=corner,branch_right=true,mirrored=false,half=lower]",
+    "properties": {
+      "facing": "south",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "false",
+      "half": "lower"
+    },
+    "arms": [
+      {
+        "position": [
+          21,
+          80,
+          8
+        ],
+        "facing": "south",
+        "distance": 1
+      },
+      {
+        "position": [
+          22,
+          80,
+          8
+        ],
+        "facing": "south",
+        "distance": 2
+      },
+      {
+        "position": [
+          20,
+          80,
+          7
+        ],
+        "facing": "west",
+        "distance": 1
+      },
+      {
+        "position": [
+          20,
+          80,
+          6
+        ],
+        "facing": "west",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "south",
+      "west"
+    ],
+    "joint_world_xz": [
+      20.0,
+      9.0
+    ],
+    "camera": [
+      17.8,
+      80,
+      11.2,
+      -135.0,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 2,
+    "position": [
+      32,
+      80,
+      8
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank[facing=north,shape=corner,branch_right=false,mirrored=false,half=lower]",
+    "properties": {
+      "facing": "north",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "false",
+      "half": "lower"
+    },
+    "arms": [
+      {
+        "position": [
+          33,
+          80,
+          8
+        ],
+        "facing": "north",
+        "distance": 1
+      },
+      {
+        "position": [
+          34,
+          80,
+          8
+        ],
+        "facing": "north",
+        "distance": 2
+      },
+      {
+        "position": [
+          32,
+          80,
+          9
+        ],
+        "facing": "west",
+        "distance": 1
+      },
+      {
+        "position": [
+          32,
+          80,
+          10
+        ],
+        "facing": "west",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "north",
+      "west"
+    ],
+    "joint_world_xz": [
+      32.0,
+      8.0
+    ],
+    "camera": [
+      29.8,
+      80,
+      5.8,
+      -44.99999999999999,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 3,
+    "position": [
+      44,
+      80,
+      8
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank[facing=north,shape=corner,branch_right=false,mirrored=true,half=lower]",
+    "properties": {
+      "facing": "north",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "true",
+      "half": "lower"
+    },
+    "arms": [
+      {
+        "position": [
+          43,
+          80,
+          8
+        ],
+        "facing": "north",
+        "distance": 1
+      },
+      {
+        "position": [
+          42,
+          80,
+          8
+        ],
+        "facing": "north",
+        "distance": 2
+      },
+      {
+        "position": [
+          44,
+          80,
+          9
+        ],
+        "facing": "east",
+        "distance": 1
+      },
+      {
+        "position": [
+          44,
+          80,
+          10
+        ],
+        "facing": "east",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "north",
+      "east"
+    ],
+    "joint_world_xz": [
+      45.0,
+      8.0
+    ],
+    "camera": [
+      47.2,
+      80,
+      5.8,
+      45.00000000000003,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 4,
+    "position": [
+      8,
+      80,
+      20
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank[facing=north,shape=corner,branch_right=true,mirrored=false,half=lower]",
+    "properties": {
+      "facing": "north",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "false",
+      "half": "lower"
+    },
+    "arms": [
+      {
+        "position": [
+          7,
+          80,
+          20
+        ],
+        "facing": "north",
+        "distance": 1
+      },
+      {
+        "position": [
+          6,
+          80,
+          20
+        ],
+        "facing": "north",
+        "distance": 2
+      },
+      {
+        "position": [
+          8,
+          80,
+          21
+        ],
+        "facing": "east",
+        "distance": 1
+      },
+      {
+        "position": [
+          8,
+          80,
+          22
+        ],
+        "facing": "east",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "north",
+      "east"
+    ],
+    "joint_world_xz": [
+      9.0,
+      20.0
+    ],
+    "camera": [
+      11.2,
+      80,
+      17.8,
+      45.0,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 5,
+    "position": [
+      20,
+      80,
+      20
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank[facing=north,shape=corner,branch_right=true,mirrored=true,half=lower]",
+    "properties": {
+      "facing": "north",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "true",
+      "half": "lower"
+    },
+    "arms": [
+      {
+        "position": [
+          21,
+          80,
+          20
+        ],
+        "facing": "north",
+        "distance": 1
+      },
+      {
+        "position": [
+          22,
+          80,
+          20
+        ],
+        "facing": "north",
+        "distance": 2
+      },
+      {
+        "position": [
+          20,
+          80,
+          21
+        ],
+        "facing": "west",
+        "distance": 1
+      },
+      {
+        "position": [
+          20,
+          80,
+          22
+        ],
+        "facing": "west",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "north",
+      "west"
+    ],
+    "joint_world_xz": [
+      20.0,
+      20.0
+    ],
+    "camera": [
+      17.8,
+      80,
+      17.8,
+      -45.0,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 6,
+    "position": [
+      32,
+      80,
+      20
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank[facing=east,shape=corner,branch_right=false,mirrored=false,half=lower]",
+    "properties": {
+      "facing": "east",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "false",
+      "half": "lower"
+    },
+    "arms": [
+      {
+        "position": [
+          31,
+          80,
+          20
+        ],
+        "facing": "north",
+        "distance": 1
+      },
+      {
+        "position": [
+          30,
+          80,
+          20
+        ],
+        "facing": "north",
+        "distance": 2
+      },
+      {
+        "position": [
+          32,
+          80,
+          21
+        ],
+        "facing": "east",
+        "distance": 1
+      },
+      {
+        "position": [
+          32,
+          80,
+          22
+        ],
+        "facing": "east",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "east",
+      "north"
+    ],
+    "joint_world_xz": [
+      33.0,
+      20.0
+    ],
+    "camera": [
+      35.2,
+      80,
+      17.8,
+      45.000000000000036,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 7,
+    "position": [
+      44,
+      80,
+      20
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank[facing=east,shape=corner,branch_right=false,mirrored=true,half=lower]",
+    "properties": {
+      "facing": "east",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "true",
+      "half": "lower"
+    },
+    "arms": [
+      {
+        "position": [
+          43,
+          80,
+          20
+        ],
+        "facing": "south",
+        "distance": 1
+      },
+      {
+        "position": [
+          42,
+          80,
+          20
+        ],
+        "facing": "south",
+        "distance": 2
+      },
+      {
+        "position": [
+          44,
+          80,
+          19
+        ],
+        "facing": "east",
+        "distance": 1
+      },
+      {
+        "position": [
+          44,
+          80,
+          18
+        ],
+        "facing": "east",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "east",
+      "south"
+    ],
+    "joint_world_xz": [
+      45.0,
+      21.0
+    ],
+    "camera": [
+      47.2,
+      80,
+      23.2,
+      134.99999999999997,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 8,
+    "position": [
+      8,
+      80,
+      32
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank[facing=east,shape=corner,branch_right=true,mirrored=false,half=lower]",
+    "properties": {
+      "facing": "east",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "false",
+      "half": "lower"
+    },
+    "arms": [
+      {
+        "position": [
+          7,
+          80,
+          32
+        ],
+        "facing": "south",
+        "distance": 1
+      },
+      {
+        "position": [
+          6,
+          80,
+          32
+        ],
+        "facing": "south",
+        "distance": 2
+      },
+      {
+        "position": [
+          8,
+          80,
+          31
+        ],
+        "facing": "east",
+        "distance": 1
+      },
+      {
+        "position": [
+          8,
+          80,
+          30
+        ],
+        "facing": "east",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "east",
+      "south"
+    ],
+    "joint_world_xz": [
+      9.0,
+      33.0
+    ],
+    "camera": [
+      11.2,
+      80,
+      35.2,
+      135.00000000000006,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 9,
+    "position": [
+      20,
+      80,
+      32
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank[facing=east,shape=corner,branch_right=true,mirrored=true,half=lower]",
+    "properties": {
+      "facing": "east",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "true",
+      "half": "lower"
+    },
+    "arms": [
+      {
+        "position": [
+          19,
+          80,
+          32
+        ],
+        "facing": "north",
+        "distance": 1
+      },
+      {
+        "position": [
+          18,
+          80,
+          32
+        ],
+        "facing": "north",
+        "distance": 2
+      },
+      {
+        "position": [
+          20,
+          80,
+          33
+        ],
+        "facing": "east",
+        "distance": 1
+      },
+      {
+        "position": [
+          20,
+          80,
+          34
+        ],
+        "facing": "east",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "east",
+      "north"
+    ],
+    "joint_world_xz": [
+      21.0,
+      32.0
+    ],
+    "camera": [
+      23.2,
+      80,
+      29.8,
+      45.0,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 10,
+    "position": [
+      32,
+      80,
+      32
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank[facing=south,shape=corner,branch_right=false,mirrored=true,half=lower]",
+    "properties": {
+      "facing": "south",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "true",
+      "half": "lower"
+    },
+    "arms": [
+      {
+        "position": [
+          33,
+          80,
+          32
+        ],
+        "facing": "south",
+        "distance": 1
+      },
+      {
+        "position": [
+          34,
+          80,
+          32
+        ],
+        "facing": "south",
+        "distance": 2
+      },
+      {
+        "position": [
+          32,
+          80,
+          31
+        ],
+        "facing": "west",
+        "distance": 1
+      },
+      {
+        "position": [
+          32,
+          80,
+          30
+        ],
+        "facing": "west",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "south",
+      "west"
+    ],
+    "joint_world_xz": [
+      32.0,
+      33.0
+    ],
+    "camera": [
+      29.8,
+      80,
+      35.2,
+      -135.00000000000006,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 11,
+    "position": [
+      44,
+      80,
+      32
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank[facing=south,shape=corner,branch_right=true,mirrored=true,half=lower]",
+    "properties": {
+      "facing": "south",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "true",
+      "half": "lower"
+    },
+    "arms": [
+      {
+        "position": [
+          43,
+          80,
+          32
+        ],
+        "facing": "south",
+        "distance": 1
+      },
+      {
+        "position": [
+          42,
+          80,
+          32
+        ],
+        "facing": "south",
+        "distance": 2
+      },
+      {
+        "position": [
+          44,
+          80,
+          31
+        ],
+        "facing": "east",
+        "distance": 1
+      },
+      {
+        "position": [
+          44,
+          80,
+          30
+        ],
+        "facing": "east",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "south",
+      "east"
+    ],
+    "joint_world_xz": [
+      45.0,
+      33.0
+    ],
+    "camera": [
+      47.2,
+      80,
+      35.2,
+      135.0,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 12,
+    "position": [
+      8,
+      80,
+      44
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank[facing=west,shape=corner,branch_right=false,mirrored=false,half=lower]",
+    "properties": {
+      "facing": "west",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "false",
+      "half": "lower"
+    },
+    "arms": [
+      {
+        "position": [
+          9,
+          80,
+          44
+        ],
+        "facing": "south",
+        "distance": 1
+      },
+      {
+        "position": [
+          10,
+          80,
+          44
+        ],
+        "facing": "south",
+        "distance": 2
+      },
+      {
+        "position": [
+          8,
+          80,
+          43
+        ],
+        "facing": "west",
+        "distance": 1
+      },
+      {
+        "position": [
+          8,
+          80,
+          42
+        ],
+        "facing": "west",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "west",
+      "south"
+    ],
+    "joint_world_xz": [
+      8.0,
+      45.0
+    ],
+    "camera": [
+      5.8,
+      80,
+      47.2,
+      -135.00000000000003,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 13,
+    "position": [
+      20,
+      80,
+      44
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank[facing=west,shape=corner,branch_right=false,mirrored=true,half=lower]",
+    "properties": {
+      "facing": "west",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "true",
+      "half": "lower"
+    },
+    "arms": [
+      {
+        "position": [
+          21,
+          80,
+          44
+        ],
+        "facing": "north",
+        "distance": 1
+      },
+      {
+        "position": [
+          22,
+          80,
+          44
+        ],
+        "facing": "north",
+        "distance": 2
+      },
+      {
+        "position": [
+          20,
+          80,
+          45
+        ],
+        "facing": "west",
+        "distance": 1
+      },
+      {
+        "position": [
+          20,
+          80,
+          46
+        ],
+        "facing": "west",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "west",
+      "north"
+    ],
+    "joint_world_xz": [
+      20.0,
+      44.0
+    ],
+    "camera": [
+      17.8,
+      80,
+      41.8,
+      -44.999999999999964,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 14,
+    "position": [
+      32,
+      80,
+      44
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank[facing=west,shape=corner,branch_right=true,mirrored=false,half=lower]",
+    "properties": {
+      "facing": "west",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "false",
+      "half": "lower"
+    },
+    "arms": [
+      {
+        "position": [
+          33,
+          80,
+          44
+        ],
+        "facing": "north",
+        "distance": 1
+      },
+      {
+        "position": [
+          34,
+          80,
+          44
+        ],
+        "facing": "north",
+        "distance": 2
+      },
+      {
+        "position": [
+          32,
+          80,
+          45
+        ],
+        "facing": "west",
+        "distance": 1
+      },
+      {
+        "position": [
+          32,
+          80,
+          46
+        ],
+        "facing": "west",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "west",
+      "north"
+    ],
+    "joint_world_xz": [
+      32.0,
+      44.0
+    ],
+    "camera": [
+      29.8,
+      80,
+      41.8,
+      -44.999999999999964,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 15,
+    "position": [
+      44,
+      80,
+      44
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank[facing=west,shape=corner,branch_right=true,mirrored=true,half=lower]",
+    "properties": {
+      "facing": "west",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "true",
+      "half": "lower"
+    },
+    "arms": [
+      {
+        "position": [
+          45,
+          80,
+          44
+        ],
+        "facing": "south",
+        "distance": 1
+      },
+      {
+        "position": [
+          46,
+          80,
+          44
+        ],
+        "facing": "south",
+        "distance": 2
+      },
+      {
+        "position": [
+          44,
+          80,
+          43
+        ],
+        "facing": "west",
+        "distance": 1
+      },
+      {
+        "position": [
+          44,
+          80,
+          42
+        ],
+        "facing": "west",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "west",
+      "south"
+    ],
+    "joint_world_xz": [
+      44.0,
+      45.0
+    ],
+    "camera": [
+      41.8,
+      80,
+      47.2,
+      -135.0,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 16,
+    "position": [
+      8,
+      80,
+      56
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=north,shape=corner,branch_right=false]",
+    "properties": {
+      "facing": "north",
+      "shape": "corner",
+      "branch_right": "false"
+    },
+    "arms": [
+      {
+        "position": [
+          9,
+          80,
+          56
+        ],
+        "facing": "north",
+        "distance": 1
+      },
+      {
+        "position": [
+          10,
+          80,
+          56
+        ],
+        "facing": "north",
+        "distance": 2
+      },
+      {
+        "position": [
+          8,
+          80,
+          57
+        ],
+        "facing": "west",
+        "distance": 1
+      },
+      {
+        "position": [
+          8,
+          80,
+          58
+        ],
+        "facing": "west",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "north",
+      "west"
+    ],
+    "joint_world_xz": [
+      8.0,
+      56.0
+    ],
+    "camera": [
+      5.8,
+      80,
+      53.8,
+      -44.99999999999997,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 17,
+    "position": [
+      20,
+      80,
+      56
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=north,shape=corner,branch_right=true]",
+    "properties": {
+      "facing": "north",
+      "shape": "corner",
+      "branch_right": "true"
+    },
+    "arms": [
+      {
+        "position": [
+          19,
+          80,
+          56
+        ],
+        "facing": "north",
+        "distance": 1
+      },
+      {
+        "position": [
+          18,
+          80,
+          56
+        ],
+        "facing": "north",
+        "distance": 2
+      },
+      {
+        "position": [
+          20,
+          80,
+          57
+        ],
+        "facing": "east",
+        "distance": 1
+      },
+      {
+        "position": [
+          20,
+          80,
+          58
+        ],
+        "facing": "east",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "north",
+      "east"
+    ],
+    "joint_world_xz": [
+      21.0,
+      56.0
+    ],
+    "camera": [
+      23.2,
+      80,
+      53.8,
+      44.999999999999964,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 18,
+    "position": [
+      32,
+      80,
+      56
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=east,shape=corner,branch_right=false]",
+    "properties": {
+      "facing": "east",
+      "shape": "corner",
+      "branch_right": "false"
+    },
+    "arms": [
+      {
+        "position": [
+          31,
+          80,
+          56
+        ],
+        "facing": "north",
+        "distance": 1
+      },
+      {
+        "position": [
+          30,
+          80,
+          56
+        ],
+        "facing": "north",
+        "distance": 2
+      },
+      {
+        "position": [
+          32,
+          80,
+          57
+        ],
+        "facing": "east",
+        "distance": 1
+      },
+      {
+        "position": [
+          32,
+          80,
+          58
+        ],
+        "facing": "east",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "east",
+      "north"
+    ],
+    "joint_world_xz": [
+      33.0,
+      56.0
+    ],
+    "camera": [
+      35.2,
+      80,
+      53.8,
+      45.0,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 19,
+    "position": [
+      44,
+      80,
+      56
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=east,shape=corner,branch_right=true]",
+    "properties": {
+      "facing": "east",
+      "shape": "corner",
+      "branch_right": "true"
+    },
+    "arms": [
+      {
+        "position": [
+          43,
+          80,
+          56
+        ],
+        "facing": "south",
+        "distance": 1
+      },
+      {
+        "position": [
+          42,
+          80,
+          56
+        ],
+        "facing": "south",
+        "distance": 2
+      },
+      {
+        "position": [
+          44,
+          80,
+          55
+        ],
+        "facing": "east",
+        "distance": 1
+      },
+      {
+        "position": [
+          44,
+          80,
+          54
+        ],
+        "facing": "east",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "east",
+      "south"
+    ],
+    "joint_world_xz": [
+      45.0,
+      57.0
+    ],
+    "camera": [
+      47.2,
+      80,
+      59.2,
+      135.0,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 20,
+    "position": [
+      8,
+      80,
+      68
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=south,shape=corner,branch_right=false]",
+    "properties": {
+      "facing": "south",
+      "shape": "corner",
+      "branch_right": "false"
+    },
+    "arms": [
+      {
+        "position": [
+          7,
+          80,
+          68
+        ],
+        "facing": "south",
+        "distance": 1
+      },
+      {
+        "position": [
+          6,
+          80,
+          68
+        ],
+        "facing": "south",
+        "distance": 2
+      },
+      {
+        "position": [
+          8,
+          80,
+          67
+        ],
+        "facing": "east",
+        "distance": 1
+      },
+      {
+        "position": [
+          8,
+          80,
+          66
+        ],
+        "facing": "east",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "south",
+      "east"
+    ],
+    "joint_world_xz": [
+      9.0,
+      69.0
+    ],
+    "camera": [
+      11.2,
+      80,
+      71.2,
+      135.00000000000006,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 21,
+    "position": [
+      20,
+      80,
+      68
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=south,shape=corner,branch_right=true]",
+    "properties": {
+      "facing": "south",
+      "shape": "corner",
+      "branch_right": "true"
+    },
+    "arms": [
+      {
+        "position": [
+          21,
+          80,
+          68
+        ],
+        "facing": "south",
+        "distance": 1
+      },
+      {
+        "position": [
+          22,
+          80,
+          68
+        ],
+        "facing": "south",
+        "distance": 2
+      },
+      {
+        "position": [
+          20,
+          80,
+          67
+        ],
+        "facing": "west",
+        "distance": 1
+      },
+      {
+        "position": [
+          20,
+          80,
+          66
+        ],
+        "facing": "west",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "south",
+      "west"
+    ],
+    "joint_world_xz": [
+      20.0,
+      69.0
+    ],
+    "camera": [
+      17.8,
+      80,
+      71.2,
+      -135.00000000000006,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 22,
+    "position": [
+      32,
+      80,
+      68
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=west,shape=corner,branch_right=false]",
+    "properties": {
+      "facing": "west",
+      "shape": "corner",
+      "branch_right": "false"
+    },
+    "arms": [
+      {
+        "position": [
+          33,
+          80,
+          68
+        ],
+        "facing": "south",
+        "distance": 1
+      },
+      {
+        "position": [
+          34,
+          80,
+          68
+        ],
+        "facing": "south",
+        "distance": 2
+      },
+      {
+        "position": [
+          32,
+          80,
+          67
+        ],
+        "facing": "west",
+        "distance": 1
+      },
+      {
+        "position": [
+          32,
+          80,
+          66
+        ],
+        "facing": "west",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "west",
+      "south"
+    ],
+    "joint_world_xz": [
+      32.0,
+      69.0
+    ],
+    "camera": [
+      29.8,
+      80,
+      71.2,
+      -135.00000000000006,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  },
+  {
+    "case": 23,
+    "position": [
+      44,
+      80,
+      68
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=west,shape=corner,branch_right=true]",
+    "properties": {
+      "facing": "west",
+      "shape": "corner",
+      "branch_right": "true"
+    },
+    "arms": [
+      {
+        "position": [
+          45,
+          80,
+          68
+        ],
+        "facing": "north",
+        "distance": 1
+      },
+      {
+        "position": [
+          46,
+          80,
+          68
+        ],
+        "facing": "north",
+        "distance": 2
+      },
+      {
+        "position": [
+          44,
+          80,
+          69
+        ],
+        "facing": "west",
+        "distance": 1
+      },
+      {
+        "position": [
+          44,
+          80,
+          70
+        ],
+        "facing": "west",
+        "distance": 2
+      }
+    ],
+    "physical_edges": [
+      "west",
+      "north"
+    ],
+    "joint_world_xz": [
+      44.0,
+      68.0
+    ],
+    "camera": [
+      41.8,
+      80,
+      65.8,
+      -45.0,
+      8
+    ],
+    "setup_kind": "command connected build; NOT normal BlockItem placement"
+  }
+]

@@ -1,0 +1,272 @@
+[
+  {
+    "scene": 2,
+    "label": "north_half_true",
+    "file": "join-scene-02-2026-10-07_04.23.29.png",
+    "log": "[07Oct2026 04:23:29.229] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.23.29.png"
+  },
+  {
+    "scene": 3,
+    "label": "neighbor_support",
+    "file": "join-scene-03-2026-10-07_04.23.42.png",
+    "log": "[07Oct2026 04:23:42.227] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.23.42.png"
+  },
+  {
+    "scene": 4,
+    "label": "neighbor_door",
+    "file": "join-scene-04-2026-10-07_04.23.54.png",
+    "log": "[07Oct2026 04:23:54.230] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.23.54.png"
+  },
+  {
+    "scene": 6,
+    "label": "neighbor_solid",
+    "file": "join-scene-06-2026-10-07_04.24.17.png",
+    "log": "[07Oct2026 04:24:17.191] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.24.17.png"
+  },
+  {
+    "scene": 7,
+    "label": "neighbor_post",
+    "file": "join-scene-07-2026-10-07_04.24.30.png",
+    "log": "[07Oct2026 04:24:30.306] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.24.30.png"
+  },
+  {
+    "scene": 8,
+    "label": "neighbor_full_with_half",
+    "file": "join-scene-08-2026-10-07_04.24.42.png",
+    "log": "[07Oct2026 04:24:42.690] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.24.42.png"
+  },
+  {
+    "scene": 9,
+    "label": "neighbor_half_with_full",
+    "file": "join-scene-09-2026-10-07_04.24.54.png",
+    "log": "[07Oct2026 04:24:54.247] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.24.54.png"
+  },
+  {
+    "scene": 10,
+    "label": "neighbor_half_with_half",
+    "file": "join-scene-10-2026-10-07_04.25.06.png",
+    "log": "[07Oct2026 04:25:06.215] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.25.06.png"
+  },
+  {
+    "scene": 11,
+    "label": "neighbor_mutations",
+    "file": "join-scene-11-2026-10-07_04.25.18.png",
+    "log": "[07Oct2026 04:25:18.219] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.25.18.png"
+  },
+  {
+    "scene": 12,
+    "label": "structure_00_none_none",
+    "file": "join-scene-12-2026-10-07_04.25.30.png",
+    "log": "[07Oct2026 04:25:30.222] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.25.30.png"
+  },
+  {
+    "scene": 16,
+    "label": "structure_04_none_left_right",
+    "file": "join-scene-16-2026-10-07_04.26.27.png",
+    "log": "[07Oct2026 04:26:27.204] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.26.27.png"
+  },
+  {
+    "scene": 20,
+    "label": "structure_08_none_front_back",
+    "file": "join-scene-20-2026-10-07_04.27.07.png",
+    "log": "[07Oct2026 04:27:07.707] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.27.07.png"
+  },
+  {
+    "scene": 20,
+    "label": "structure_08_none_front_back",
+    "file": "join-scene-20-2026-10-07_04.27.08.png",
+    "log": "[07Oct2026 04:27:08.107] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.27.08.png"
+  },
+  {
+    "scene": 20,
+    "label": "structure_08_none_front_back",
+    "file": "join-scene-20-2026-10-07_04.27.15.png",
+    "log": "[07Oct2026 04:27:15.284] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.27.15.png"
+  },
+  {
+    "scene": 21,
+    "label": "structure_09_clockwise_90_front_back",
+    "file": "join-scene-21-2026-10-07_04.27.18.png",
+    "log": "[07Oct2026 04:27:18.251] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.27.18.png"
+  },
+  {
+    "scene": 22,
+    "label": "structure_10_180_front_back",
+    "file": "join-scene-22-2026-10-07_04.27.30.png",
+    "log": "[07Oct2026 04:27:30.275] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.27.30.png"
+  },
+  {
+    "scene": 23,
+    "label": "structure_11_counterclockwise_90_front_back",
+    "file": "join-scene-23-2026-10-07_04.27.42.png",
+    "log": "[07Oct2026 04:27:42.259] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.27.42.png"
+  },
+  {
+    "scene": 24,
+    "label": "actual_corner_first",
+    "file": "join-scene-24-2026-10-07_04.27.54.png",
+    "log": "[07Oct2026 04:27:54.244] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.27.54.png"
+  },
+  {
+    "scene": 25,
+    "label": "actual_reversed_arms",
+    "file": "join-scene-25-2026-10-07_04.28.06.png",
+    "log": "[07Oct2026 04:28:06.248] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.28.06.png"
+  },
+  {
+    "scene": 26,
+    "label": "decorated_pair_oblique",
+    "file": "join-scene-26-2026-10-07_04.28.18.png",
+    "log": "[07Oct2026 04:28:18.253] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.28.18.png"
+  },
+  {
+    "scene": 27,
+    "label": "control_east_straight_true_mirror_false",
+    "file": "join-scene-27-2026-10-07_04.28.30.png",
+    "log": "[07Oct2026 04:28:30.222] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.28.30.png"
+  },
+  {
+    "scene": 28,
+    "label": "control_east_straight_true_mirror_true",
+    "file": "join-scene-28-2026-10-07_04.28.42.png",
+    "log": "[07Oct2026 04:28:42.243] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.28.42.png"
+  },
+  {
+    "scene": 29,
+    "label": "control_north_t_junction_true_mirror_false",
+    "file": "join-scene-29-2026-10-07_04.28.54.png",
+    "log": "[07Oct2026 04:28:54.245] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.28.54.png"
+  },
+  {
+    "scene": 30,
+    "label": "control_north_t_junction_true_mirror_true",
+    "file": "join-scene-30-2026-10-07_04.29.06.png",
+    "log": "[07Oct2026 04:29:06.215] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.29.06.png"
+  },
+  {
+    "scene": 12,
+    "label": "structure_00_none_none",
+    "file": "join-scene-12-2026-10-07_04.31.20.png",
+    "log": "[07Oct2026 04:31:20.144] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.31.20.png"
+  },
+  {
+    "scene": 12,
+    "label": "structure_00_none_none",
+    "file": "join-scene-12-2026-10-07_04.33.12.png",
+    "log": "[07Oct2026 04:33:12.100] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.33.12.png"
+  },
+  {
+    "scene": 14,
+    "label": "structure_02_180_none",
+    "file": "join-scene-14-2026-10-07_04.35.34.png",
+    "log": "[07Oct2026 04:35:34.252] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.35.34.png"
+  },
+  {
+    "scene": 14,
+    "label": "structure_02_180_none",
+    "file": "join-scene-14-2026-10-07_04.35.34_2.png",
+    "log": "[07Oct2026 04:35:34.816] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.35.34_2.png"
+  },
+  {
+    "scene": 14,
+    "label": "structure_02_180_none",
+    "file": "join-scene-14-2026-10-07_04.35.36.png",
+    "log": "[07Oct2026 04:35:36.090] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.35.36.png"
+  },
+  {
+    "scene": 14,
+    "label": "structure_02_180_none",
+    "file": "join-scene-14-2026-10-07_04.35.37.png",
+    "log": "[07Oct2026 04:35:37.350] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.35.37.png"
+  },
+  {
+    "scene": 14,
+    "label": "structure_02_180_none",
+    "file": "join-scene-14-2026-10-07_04.35.38.png",
+    "log": "[07Oct2026 04:35:38.610] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.35.38.png"
+  },
+  {
+    "scene": 15,
+    "label": "structure_03_counterclockwise_90_none",
+    "file": "join-scene-15-2026-10-07_04.35.43.png",
+    "log": "[07Oct2026 04:35:43.998] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.35.43.png"
+  },
+  {
+    "scene": 15,
+    "label": "structure_03_counterclockwise_90_none",
+    "file": "join-scene-15-2026-10-07_04.35.49.png",
+    "log": "[07Oct2026 04:35:49.917] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.35.49.png"
+  },
+  {
+    "scene": 16,
+    "label": "structure_04_none_left_right",
+    "file": "join-scene-16-2026-10-07_04.36.04.png",
+    "log": "[07Oct2026 04:36:04.887] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.36.04.png"
+  },
+  {
+    "scene": 17,
+    "label": "structure_05_clockwise_90_left_right",
+    "file": "join-scene-17-2026-10-07_04.36.19.png",
+    "log": "[07Oct2026 04:36:19.909] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.36.19.png"
+  },
+  {
+    "scene": 18,
+    "label": "structure_06_180_left_right",
+    "file": "join-scene-18-2026-10-07_04.36.34.png",
+    "log": "[07Oct2026 04:36:34.896] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.36.34.png"
+  },
+  {
+    "scene": 19,
+    "label": "structure_07_counterclockwise_90_left_right",
+    "file": "join-scene-19-2026-10-07_04.36.49.png",
+    "log": "[07Oct2026 04:36:49.918] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.36.49.png"
+  },
+  {
+    "scene": 20,
+    "label": "structure_08_none_front_back",
+    "file": "join-scene-20-2026-10-07_04.37.04.png",
+    "log": "[07Oct2026 04:37:04.921] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.37.04.png"
+  },
+  {
+    "scene": 21,
+    "label": "structure_09_clockwise_90_front_back",
+    "file": "join-scene-21-2026-10-07_04.37.19.png",
+    "log": "[07Oct2026 04:37:19.875] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.37.19.png"
+  },
+  {
+    "scene": 22,
+    "label": "structure_10_180_front_back",
+    "file": "join-scene-22-2026-10-07_04.37.34.png",
+    "log": "[07Oct2026 04:37:34.913] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.37.34.png"
+  },
+  {
+    "scene": 23,
+    "label": "structure_11_counterclockwise_90_front_back",
+    "file": "join-scene-23-2026-10-07_04.37.49.png",
+    "log": "[07Oct2026 04:37:49.900] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.37.49.png"
+  },
+  {
+    "scene": 0,
+    "label": "owner_cap",
+    "file": "join-scene-00-2026-10-07_04.40.27.png",
+    "log": "[07Oct2026 04:40:28.069] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.40.27.png"
+  },
+  {
+    "scene": 5,
+    "label": "neighbor_tagged_gate",
+    "file": "join-scene-05-2026-10-07_04.48.21.png",
+    "log": "[07Oct2026 04:48:21.251] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.48.21.png"
+  },
+  {
+    "scene": 1,
+    "label": "north_half_false",
+    "file": "join-scene-01-2026-10-07_04.48.59.png",
+    "log": "[07Oct2026 04:49:00.046] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.48.59.png"
+  },
+  {
+    "scene": 13,
+    "label": "structure_01_clockwise_90_none",
+    "file": "join-scene-13-2026-10-07_04.49.51.png",
+    "log": "[07Oct2026 04:49:51.509] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_04.49.51.png"
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "label": "support",
+    "position": [
+      60,
+      80,
+      12
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank",
+    "peer": "britannia_mod:plaster_wall_and_support_blank"
+  },
+  {
+    "label": "door",
+    "position": [
+      72,
+      80,
+      12
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank",
+    "peer": "minecraft:oak_door"
+  },
+  {
+    "label": "tagged_gate",
+    "position": [
+      84,
+      80,
+      12
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank",
+    "peer": "britannia_mod:wooden_gate"
+  },
+  {
+    "label": "solid",
+    "position": [
+      96,
+      80,
+      12
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank",
+    "peer": "minecraft:stone"
+  },
+  {
+    "label": "post",
+    "position": [
+      108,
+      80,
+      12
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank",
+    "peer": "britannia_mod:wooden_post"
+  },
+  {
+    "label": "full_with_half",
+    "position": [
+      60,
+      80,
+      28
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank",
+    "peer": "britannia_mod:plaster_wall_and_support_blank_half"
+  },
+  {
+    "label": "half_with_full",
+    "position": [
+      72,
+      80,
+      28
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank_half",
+    "peer": "britannia_mod:plaster_wall_blank"
+  },
+  {
+    "label": "half_with_half",
+    "position": [
+      84,
+      80,
+      28
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank_half",
+    "peer": "britannia_mod:plaster_wall_and_support_blank_half"
+  },
+  {
+    "label": "mutations",
+    "position": [
+      96,
+      80,
+      28
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank",
+    "peer": "britannia_mod:plaster_wall_blank"
+  }
+]

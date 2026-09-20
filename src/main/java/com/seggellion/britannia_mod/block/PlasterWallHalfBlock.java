@@ -112,9 +112,7 @@ public class PlasterWallHalfBlock extends Block {
                                       neighbour.getValue(BRANCH_RIGHT));
         }
         if (neighbour.getBlock() instanceof DoubleWallBlock) {
-            return new WallConnection(neighbour.getValue(DoubleWallBlock.SHAPE),
-                                      neighbour.getValue(DoubleWallBlock.FACING),
-                                      neighbour.getValue(DoubleWallBlock.BRANCH_RIGHT));
+            return DoubleWallBlock.physicalRun(neighbour);
         }
         return null;
     }

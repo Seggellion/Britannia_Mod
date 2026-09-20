@@ -1,0 +1,36 @@
+{
+  "file_status": "FILE_MISMATCH",
+  "loaded_runtime_status": "LOADED_RUNTIME_UNVERIFIED",
+  "loaded_runtime_reason": "Files do not prove a loaded JVM. Verify a new session with /grabby env artifact/build/server lines.",
+  "errors": [
+    "Installed Britannia bytes/source differ from approved candidate"
+  ],
+  "selected_artifact": {
+    "filename": "britannia_mod-0.1.8d-all.jar",
+    "bytes": 36142686,
+    "sha256": "e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70",
+    "mod_version": "0.1.8d",
+    "source_commit": "cf49b1700d1a8992f39396f2ae531f0cb26502d7",
+    "dirty": "false",
+    "build_timestamp": "2026-10-08T22:31:37.806305200Z"
+  },
+  "source_ancestry_verified": true,
+  "active_britannia_jars": [
+    {
+      "filename": "britannia_mod-0.1.8d.jar",
+      "bytes": 36107339,
+      "sha256": "c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6",
+      "mod_version": "0.1.8d",
+      "source_commit": "4435912197fba84630d6e5a0544f29fc3a736450",
+      "dirty": "false",
+      "build_timestamp": "2026-10-06T00:15:17.175199Z"
+    }
+  ],
+  "disabled_old_files": [
+    "Britannia_Mod-0.1.7k.old",
+    "WorldEditCUI-NeoForge-1.21.1+01-SNAPSHOT.old",
+    "britannia_mod-0.1.8a.old",
+    "britannia_mod-0.1.8b.old",
+    "britannia_mod-0.1.8c.old"
+  ]
+}

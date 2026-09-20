@@ -51,6 +51,7 @@ public final class SandstoneBattlementBlock extends DoubleWallBlock {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        state = canonicalPairState(state, level, pos);
         DoubleBlockHalf half = state.getValue(HALF);
         VoxelShape canonical;
         if (state.getValue(SHAPE) == WallShape.CORNER) {

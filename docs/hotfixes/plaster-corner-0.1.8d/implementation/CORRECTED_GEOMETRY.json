@@ -1,0 +1,3893 @@
+{
+  "variant_count": 96,
+  "state_coverage_exact": true,
+  "missing_models": [],
+  "corner_rows": [
+    {
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
+      "y": 0,
+      "posts": [
+        {
+          "element_index_0_based": 8,
+          "from": [
+            -0.8,
+            0,
+            -0.1
+          ],
+          "to": [
+            6.7,
+            32,
+            2.9
+          ]
+        }
+      ],
+      "wall_boxes": [
+        {
+          "from": [
+            6.7,
+            0,
+            0
+          ],
+          "to": [
+            16,
+            31.9,
+            5
+          ]
+        },
+        {
+          "from": [
+            0,
+            0,
+            2.9
+          ],
+          "to": [
+            5,
+            31.9,
+            5
+          ]
+        },
+        {
+          "from": [
+            0,
+            0,
+            5
+          ],
+          "to": [
+            5,
+            31.9,
+            16
+          ]
+        },
+        {
+          "from": [
+            5,
+            0,
+            2.9
+          ],
+          "to": [
+            6.7,
+            31.9,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "false",
+        "half": "upper"
+      },
+      "model": "minecraft:block/air",
+      "y": 0,
+      "posts": []
+    },
+    {
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "y": 0,
+      "posts": [
+        {
+          "element_index_0_based": 8,
+          "from": [
+            9.3,
+            0,
+            -0.1
+          ],
+          "to": [
+            16.8,
+            32,
+            2.9
+          ]
+        }
+      ],
+      "wall_boxes": [
+        {
+          "from": [
+            0,
+            0,
+            0
+          ],
+          "to": [
+            9.3,
+            31.9,
+            5
+          ]
+        },
+        {
+          "from": [
+            11,
+            0,
+            2.9
+          ],
+          "to": [
+            16,
+            31.9,
+            5
+          ]
+        },
+        {
+          "from": [
+            11,
+            0,
+            5
+          ],
+          "to": [
+            16,
+            31.9,
+            16
+          ]
+        },
+        {
+          "from": [
+            9.3,
+            0,
+            2.9
+          ],
+          "to": [
+            11,
+            31.9,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "true",
+        "half": "upper"
+      },
+      "model": "minecraft:block/air",
+      "y": 0,
+      "posts": []
+    },
+    {
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
+      "y": 0,
+      "posts": [
+        {
+          "element_index_0_based": 3,
+          "from": [
+            -0.1,
+            0,
+            -0.8
+          ],
+          "to": [
+            2.9,
+            32,
+            6.7
+          ]
+        },
+        {
+          "element_index_0_based": 7,
+          "from": [
+            9.3,
+            0,
+            -0.1
+          ],
+          "to": [
+            16.8,
+            32,
+            2.9
+          ]
+        }
+      ],
+      "wall_boxes": [
+        {
+          "from": [
+            3,
+            0,
+            0
+          ],
+          "to": [
+            11,
+            31.9,
+            5
+          ]
+        },
+        {
+          "from": [
+            11,
+            0,
+            3
+          ],
+          "to": [
+            16,
+            31.9,
+            16
+          ]
+        }
+      ]
+    },
+    {
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "false",
+        "half": "upper"
+      },
+      "model": "minecraft:block/air",
+      "y": 0,
+      "posts": []
+    },
+    {
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "y": 0,
+      "posts": [
+        {
+          "element_index_0_based": 3,
+          "from": [
+            13.1,
+            0,
+            -0.8
+          ],
+          "to": [
+            16.1,
+            32,
+            6.7
+          ]
+        },
+        {
+          "element_index_0_based": 7,
+          "from": [
+            -0.8,
+            0,
+            -0.1
+          ],
+          "to": [
+            6.7,
+            32,
+            2.9
+          ]
+        }
+      ],
+      "wall_boxes": [
+        {
+          "from": [
+            5,
+            0,
+            0
+          ],
+          "to": [
+            13,
+            31.9,
+            5
+          ]
+        },
+        {
+          "from": [
+            0,
+            0,
+            3
+          ],
+          "to": [
+            5,
+            31.9,
+            16
+          ]
+        }
+      ]
+    },
+    {
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "true",
+        "half": "upper"
+      },
+      "model": "minecraft:block/air",
+      "y": 0,
+      "posts": []
+    },
+    {
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
+      "y": 90,
+      "posts": [
+        {
+          "element_index_0_based": 8,
+          "from": [
+            13.1,
+            0,
+            -0.8
+          ],
+          "to": [
+            16.1,
+            32,
+            6.7
+          ]
+        }
+      ],
+      "wall_boxes": [
+        {
+          "from": [
+            11,
+            0,
+            6.7
+          ],
+          "to": [
+            16,
+            31.9,
+            16
+          ]
+        },
+        {
+          "from": [
+            11,
+            0,
+            0
+          ],
+          "to": [
+            13.1,
+            31.9,
+            5
+          ]
+        },
+        {
+          "from": [
+            0,
+            0,
+            0
+          ],
+          "to": [
+            11,
+            31.9,
+            5
+          ]
+        },
+        {
+          "from": [
+            11,
+            0,
+            5
+          ],
+          "to": [
+            13.1,
+            31.9,
+            6.7
+          ]
+        }
+      ]
+    },
+    {
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "false",
+        "half": "upper"
+      },
+      "model": "minecraft:block/air",
+      "y": 0,
+      "posts": []
+    },
+    {
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "y": 90,
+      "posts": [
+        {
+          "element_index_0_based": 8,
+          "from": [
+            13.1,
+            0,
+            9.3
+          ],
+          "to": [
+            16.1,
+            32,
+            16.8
+          ]
+        }
+      ],
+      "wall_boxes": [
+        {
+          "from": [
+            11,
+            0,
+            0
+          ],
+          "to": [
+            16,
+            31.9,
+            9.3
+          ]
+        },
+        {
+          "from": [
+            11,
+            0,
+            11
+          ],
+          "to": [
+            13.1,
+            31.9,
+            16
+          ]
+        },
+        {
+          "from": [
+            0,
+            0,
+            11
+          ],
+          "to": [
+            11,
+            31.9,
+            16
+          ]
+        },
+        {
+          "from": [
+            11,
+            0,
+            9.3
+          ],
+          "to": [
+            13.1,
+            31.9,
+            11
+          ]
+        }
+      ]
+    },
+    {
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "true",
+        "half": "upper"
+      },
+      "model": "minecraft:block/air",
+      "y": 0,
+      "posts": []
+    },
+    {
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
+      "y": 90,
+      "posts": [
+        {
+          "element_index_0_based": 3,
+          "from": [
+            9.3,
+            0,
+            -0.1
+          ],
+          "to": [
+            16.8,
+            32,
+            2.9
+          ]
+        },
+        {
+          "element_index_0_based": 7,
+          "from": [
+            13.1,
+            0,
+            9.3
+          ],
+          "to": [
+            16.1,
+            32,
+            16.8
+          ]
+        }
+      ],
+      "wall_boxes": [
+        {
+          "from": [
+            11,
+            0,
+            3
+          ],
+          "to": [
+            16,
+            31.9,
+            11
+          ]
+        },
+        {
+          "from": [
+            0,
+            0,
+            11
+          ],
+          "to": [
+            13,
+            31.9,
+            16
+          ]
+        }
+      ]
+    },
+    {
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "false",
+        "half": "upper"
+      },
+      "model": "minecraft:block/air",
+      "y": 0,
+      "posts": []
+    },
+    {
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "y": 90,
+      "posts": [
+        {
+          "element_index_0_based": 3,
+          "from": [
+            9.3,
+            0,
+            13.1
+          ],
+          "to": [
+            16.8,
+            32,
+            16.1
+          ]
+        },
+        {
+          "element_index_0_based": 7,
+          "from": [
+            13.1,
+            0,
+            -0.8
+          ],
+          "to": [
+            16.1,
+            32,
+            6.7
+          ]
+        }
+      ],
+      "wall_boxes": [
+        {
+          "from": [
+            11,
+            0,
+            5
+          ],
+          "to": [
+            16,
+            31.9,
+            13
+          ]
+        },
+        {
+          "from": [
+            0,
+            0,
+            0
+          ],
+          "to": [
+            13,
+            31.9,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "true",
+        "half": "upper"
+      },
+      "model": "minecraft:block/air",
+      "y": 0,
+      "posts": []
+    },
+    {
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
+      "y": 180,
+      "posts": [
+        {
+          "element_index_0_based": 8,
+          "from": [
+            9.3,
+            0,
+            13.1
+          ],
+          "to": [
+            16.8,
+            32,
+            16.1
+          ]
+        }
+      ],
+      "wall_boxes": [
+        {
+          "from": [
+            0,
+            0,
+            11
+          ],
+          "to": [
+            9.3,
+            31.9,
+            16
+          ]
+        },
+        {
+          "from": [
+            11,
+            0,
+            11
+          ],
+          "to": [
+            16,
+            31.9,
+            13.1
+          ]
+        },
+        {
+          "from": [
+            11,
+            0,
+            0
+          ],
+          "to": [
+            16,
+            31.9,
+            11
+          ]
+        },
+        {
+          "from": [
+            9.3,
+            0,
+            11
+          ],
+          "to": [
+            11,
+            31.9,
+            13.1
+          ]
+        }
+      ]
+    },
+    {
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "false",
+        "half": "upper"
+      },
+      "model": "minecraft:block/air",
+      "y": 0,
+      "posts": []
+    },
+    {
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "y": 180,
+      "posts": [
+        {
+          "element_index_0_based": 8,
+          "from": [
+            -0.8,
+            0,
+            13.1
+          ],
+          "to": [
+            6.7,
+            32,
+            16.1
+          ]
+        }
+      ],
+      "wall_boxes": [
+        {
+          "from": [
+            6.7,
+            0,
+            11
+          ],
+          "to": [
+            16,
+            31.9,
+            16
+          ]
+        },
+        {
+          "from": [
+            0,
+            0,
+            11
+          ],
+          "to": [
+            5,
+            31.9,
+            13.1
+          ]
+        },
+        {
+          "from": [
+            0,
+            0,
+            0
+          ],
+          "to": [
+            5,
+            31.9,
+            11
+          ]
+        },
+        {
+          "from": [
+            5,
+            0,
+            11
+          ],
+          "to": [
+            6.7,
+            31.9,
+            13.1
+          ]
+        }
+      ]
+    },
+    {
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "true",
+        "half": "upper"
+      },
+      "model": "minecraft:block/air",
+      "y": 0,
+      "posts": []
+    },
+    {
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
+      "y": 180,
+      "posts": [
+        {
+          "element_index_0_based": 3,
+          "from": [
+            13.1,
+            0,
+            9.3
+          ],
+          "to": [
+            16.1,
+            32,
+            16.8
+          ]
+        },
+        {
+          "element_index_0_based": 7,
+          "from": [
+            -0.8,
+            0,
+            13.1
+          ],
+          "to": [
+            6.7,
+            32,
+            16.1
+          ]
+        }
+      ],
+      "wall_boxes": [
+        {
+          "from": [
+            5,
+            0,
+            11
+          ],
+          "to": [
+            13,
+            31.9,
+            16
+          ]
+        },
+        {
+          "from": [
+            0,
+            0,
+            0
+          ],
+          "to": [
+            5,
+            31.9,
+            13
+          ]
+        }
+      ]
+    },
+    {
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "false",
+        "half": "upper"
+      },
+      "model": "minecraft:block/air",
+      "y": 0,
+      "posts": []
+    },
+    {
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "y": 180,
+      "posts": [
+        {
+          "element_index_0_based": 3,
+          "from": [
+            -0.1,
+            0,
+            9.3
+          ],
+          "to": [
+            2.9,
+            32,
+            16.8
+          ]
+        },
+        {
+          "element_index_0_based": 7,
+          "from": [
+            9.3,
+            0,
+            13.1
+          ],
+          "to": [
+            16.8,
+            32,
+            16.1
+          ]
+        }
+      ],
+      "wall_boxes": [
+        {
+          "from": [
+            3,
+            0,
+            11
+          ],
+          "to": [
+            11,
+            31.9,
+            16
+          ]
+        },
+        {
+          "from": [
+            11,
+            0,
+            0
+          ],
+          "to": [
+            16,
+            31.9,
+            13
+          ]
+        }
+      ]
+    },
+    {
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "true",
+        "half": "upper"
+      },
+      "model": "minecraft:block/air",
+      "y": 0,
+      "posts": []
+    },
+    {
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
+      "y": 270,
+      "posts": [
+        {
+          "element_index_0_based": 8,
+          "from": [
+            -0.1,
+            0,
+            9.3
+          ],
+          "to": [
+            2.9,
+            32,
+            16.8
+          ]
+        }
+      ],
+      "wall_boxes": [
+        {
+          "from": [
+            0,
+            0,
+            0
+          ],
+          "to": [
+            5,
+            31.9,
+            9.3
+          ]
+        },
+        {
+          "from": [
+            2.9,
+            0,
+            11
+          ],
+          "to": [
+            5,
+            31.9,
+            16
+          ]
+        },
+        {
+          "from": [
+            5,
+            0,
+            11
+          ],
+          "to": [
+            16,
+            31.9,
+            16
+          ]
+        },
+        {
+          "from": [
+            2.9,
+            0,
+            9.3
+          ],
+          "to": [
+            5,
+            31.9,
+            11
+          ]
+        }
+      ]
+    },
+    {
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "false",
+        "half": "upper"
+      },
+      "model": "minecraft:block/air",
+      "y": 0,
+      "posts": []
+    },
+    {
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "y": 270,
+      "posts": [
+        {
+          "element_index_0_based": 8,
+          "from": [
+            -0.1,
+            0,
+            -0.8
+          ],
+          "to": [
+            2.9,
+            32,
+            6.7
+          ]
+        }
+      ],
+      "wall_boxes": [
+        {
+          "from": [
+            0,
+            0,
+            6.7
+          ],
+          "to": [
+            5,
+            31.9,
+            16
+          ]
+        },
+        {
+          "from": [
+            2.9,
+            0,
+            0
+          ],
+          "to": [
+            5,
+            31.9,
+            5
+          ]
+        },
+        {
+          "from": [
+            5,
+            0,
+            0
+          ],
+          "to": [
+            16,
+            31.9,
+            5
+          ]
+        },
+        {
+          "from": [
+            2.9,
+            0,
+            5
+          ],
+          "to": [
+            5,
+            31.9,
+            6.7
+          ]
+        }
+      ]
+    },
+    {
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "true",
+        "half": "upper"
+      },
+      "model": "minecraft:block/air",
+      "y": 0,
+      "posts": []
+    },
+    {
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
+      "y": 270,
+      "posts": [
+        {
+          "element_index_0_based": 3,
+          "from": [
+            -0.8,
+            0,
+            13.1
+          ],
+          "to": [
+            6.7,
+            32,
+            16.1
+          ]
+        },
+        {
+          "element_index_0_based": 7,
+          "from": [
+            -0.1,
+            0,
+            -0.8
+          ],
+          "to": [
+            2.9,
+            32,
+            6.7
+          ]
+        }
+      ],
+      "wall_boxes": [
+        {
+          "from": [
+            0,
+            0,
+            5
+          ],
+          "to": [
+            5,
+            31.9,
+            13
+          ]
+        },
+        {
+          "from": [
+            3,
+            0,
+            0
+          ],
+          "to": [
+            16,
+            31.9,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "false",
+        "half": "upper"
+      },
+      "model": "minecraft:block/air",
+      "y": 0,
+      "posts": []
+    },
+    {
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "y": 270,
+      "posts": [
+        {
+          "element_index_0_based": 3,
+          "from": [
+            -0.8,
+            0,
+            -0.1
+          ],
+          "to": [
+            6.7,
+            32,
+            2.9
+          ]
+        },
+        {
+          "element_index_0_based": 7,
+          "from": [
+            -0.1,
+            0,
+            9.3
+          ],
+          "to": [
+            2.9,
+            32,
+            16.8
+          ]
+        }
+      ],
+      "wall_boxes": [
+        {
+          "from": [
+            0,
+            0,
+            3
+          ],
+          "to": [
+            5,
+            31.9,
+            11
+          ]
+        },
+        {
+          "from": [
+            3,
+            0,
+            11
+          ],
+          "to": [
+            16,
+            31.9,
+            16
+          ]
+        }
+      ]
+    },
+    {
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "true",
+        "half": "upper"
+      },
+      "model": "minecraft:block/air",
+      "y": 0,
+      "posts": []
+    }
+  ],
+  "model_inventory": {
+    "src\\main\\resources\\assets\\britannia_mod\\models\\block\\structure\\plaster\\plaster_wall_and_support_blank_corner.json": {
+      "parent": "minecraft:block/block",
+      "textures": {
+        "1": "britannia_mod:block/structure/plaster/dirty_plaster",
+        "2": "britannia_mod:block/structure/plaster/wood_support"
+      },
+      "ambientocclusion": false,
+      "render_type": "unspecified",
+      "hand_authored_by_generator_contract": true,
+      "sha256": "79fdfa23c20f082db1250456243908a59e45732d3b5173da3f89689b18e04baa",
+      "elements": [
+        {
+          "index": 0,
+          "from": [
+            6.7,
+            0,
+            0
+          ],
+          "to": [
+            16,
+            31.9,
+            5
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              3,
+              0,
+              -5.5
+            ]
+          },
+          "faces": {
+            "north": {
+              "uv": [
+                8.25,
+                8.375,
+                13.79423,
+                16
+              ],
+              "texture": "#1"
+            },
+            "east": {
+              "uv": [
+                8.25,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1"
+            },
+            "south": {
+              "uv": [
+                10.45577,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1"
+            },
+            "up": {
+              "uv": [
+                10.45577,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1"
+            },
+            "down": {
+              "uv": [
+                10.45577,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1"
+            }
+          }
+        },
+        {
+          "index": 1,
+          "from": [
+            6.7,
+            0,
+            -1
+          ],
+          "to": [
+            16,
+            1,
+            0
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              3,
+              0,
+              -1
+            ]
+          },
+          "faces": {
+            "north": {
+              "uv": [
+                0,
+                12.09375,
+                6.79615,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "east": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                2.70385,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "down": {
+              "uv": [
+                2.70385,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            }
+          }
+        },
+        {
+          "index": 2,
+          "from": [
+            6.5,
+            0,
+            5.5
+          ],
+          "to": [
+            16,
+            1,
+            6.5
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              0,
+              0,
+              5.5
+            ]
+          },
+          "faces": {
+            "north": {
+              "uv": [
+                0,
+                12.09375,
+                5.64062,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "east": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                3.85938,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                3.85938,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "down": {
+              "uv": [
+                3.85938,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            }
+          }
+        },
+        {
+          "index": 3,
+          "from": [
+            0,
+            0,
+            2.9
+          ],
+          "to": [
+            5,
+            31.9,
+            5
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              -5.5,
+              0,
+              16
+            ]
+          },
+          "faces": {
+            "west": {
+              "uv": [
+                8.25,
+                8.375,
+                9.49237,
+                16
+              ],
+              "texture": "#1"
+            },
+            "up": {
+              "uv": [
+                8.25,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1",
+              "rotation": 270
+            },
+            "down": {
+              "uv": [
+                8.25,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1",
+              "rotation": 90
+            }
+          }
+        },
+        {
+          "index": 4,
+          "from": [
+            0,
+            0,
+            5
+          ],
+          "to": [
+            5,
+            31.9,
+            16
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              -5.5,
+              0,
+              16
+            ]
+          },
+          "faces": {
+            "west": {
+              "uv": [
+                9.49237,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1"
+            },
+            "east": {
+              "uv": [
+                8.25,
+                8.375,
+                14.75763,
+                16
+              ],
+              "texture": "#1"
+            },
+            "south": {
+              "uv": [
+                8.25,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1"
+            },
+            "up": {
+              "uv": [
+                8.25,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1",
+              "rotation": 270
+            },
+            "down": {
+              "uv": [
+                8.25,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1",
+              "rotation": 90
+            }
+          }
+        },
+        {
+          "index": 5,
+          "from": [
+            5,
+            0,
+            2.9
+          ],
+          "to": [
+            6.7,
+            31.9,
+            5
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              3,
+              0,
+              -5.5
+            ]
+          },
+          "faces": {
+            "south": {
+              "uv": [
+                9.44231,
+                8.375,
+                10.45577,
+                16
+              ],
+              "texture": "#1"
+            },
+            "up": {
+              "uv": [
+                9.44231,
+                12.7975,
+                10.45577,
+                16
+              ],
+              "texture": "#1"
+            },
+            "down": {
+              "uv": [
+                9.44231,
+                8.375,
+                10.45577,
+                11.5775
+              ],
+              "texture": "#1"
+            }
+          }
+        },
+        {
+          "index": 6,
+          "from": [
+            -1,
+            0,
+            2.9
+          ],
+          "to": [
+            0,
+            1,
+            16
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              -1,
+              0,
+              16
+            ]
+          },
+          "faces": {
+            "west": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "north": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2",
+              "rotation": 270
+            },
+            "down": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2",
+              "rotation": 90
+            }
+          }
+        },
+        {
+          "index": 7,
+          "from": [
+            5.5,
+            0,
+            5
+          ],
+          "to": [
+            6.5,
+            1,
+            16
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              5.5,
+              0,
+              16
+            ]
+          },
+          "faces": {
+            "west": {
+              "uv": [
+                2.96875,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "east": {
+              "uv": [
+                0,
+                12.09375,
+                6.53125,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2",
+              "rotation": 270
+            },
+            "down": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2",
+              "rotation": 90
+            }
+          }
+        },
+        {
+          "index": 8,
+          "from": [
+            -0.8,
+            0,
+            -0.1
+          ],
+          "to": [
+            6.7,
+            32,
+            2.9
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              -0.8,
+              0,
+              2.9
+            ]
+          },
+          "faces": {
+            "west": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "rotation": 90,
+              "texture": "#2"
+            },
+            "north": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "rotation": 90,
+              "texture": "#2"
+            },
+            "east": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "rotation": 90,
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "rotation": 90,
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "texture": "#2"
+            },
+            "down": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "rotation": 180,
+              "texture": "#2"
+            }
+          }
+        }
+      ]
+    },
+    "src\\main\\resources\\assets\\britannia_mod\\models\\block\\structure\\plaster\\plaster_wall_and_support_blank_corner_mirrored.json": {
+      "parent": "minecraft:block/block",
+      "textures": {
+        "1": "britannia_mod:block/structure/plaster/dirty_plaster",
+        "2": "britannia_mod:block/structure/plaster/wood_support"
+      },
+      "ambientocclusion": false,
+      "render_type": "unspecified",
+      "hand_authored_by_generator_contract": true,
+      "sha256": "eb3b0c87497f98f62a5f5c1dd415aabf285add4ec8fa0a4b2b0b9fb2df73c8de",
+      "elements": [
+        {
+          "index": 0,
+          "from": [
+            0,
+            0,
+            0
+          ],
+          "to": [
+            9.3,
+            31.9,
+            5
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              13,
+              0,
+              -5.5
+            ]
+          },
+          "faces": {
+            "north": {
+              "uv": [
+                13.79423,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1"
+            },
+            "west": {
+              "uv": [
+                16,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1"
+            },
+            "south": {
+              "uv": [
+                16,
+                8.375,
+                10.45577,
+                16
+              ],
+              "texture": "#1"
+            },
+            "up": {
+              "uv": [
+                16,
+                8.375,
+                10.45577,
+                16
+              ],
+              "texture": "#1"
+            },
+            "down": {
+              "uv": [
+                16,
+                8.375,
+                10.45577,
+                16
+              ],
+              "texture": "#1"
+            }
+          }
+        },
+        {
+          "index": 1,
+          "from": [
+            0,
+            0,
+            -1
+          ],
+          "to": [
+            9.3,
+            1,
+            0
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              13,
+              0,
+              -1
+            ]
+          },
+          "faces": {
+            "north": {
+              "uv": [
+                6.79615,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "west": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                9.5,
+                12.09375,
+                2.70385,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "down": {
+              "uv": [
+                9.5,
+                12.09375,
+                2.70385,
+                13.84375
+              ],
+              "texture": "#2"
+            }
+          }
+        },
+        {
+          "index": 2,
+          "from": [
+            0,
+            0,
+            5.5
+          ],
+          "to": [
+            9.5,
+            1,
+            6.5
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              16,
+              0,
+              5.5
+            ]
+          },
+          "faces": {
+            "north": {
+              "uv": [
+                5.64062,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "west": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                9.5,
+                12.09375,
+                3.85938,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                9.5,
+                12.09375,
+                3.85938,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "down": {
+              "uv": [
+                9.5,
+                12.09375,
+                3.85938,
+                13.84375
+              ],
+              "texture": "#2"
+            }
+          }
+        },
+        {
+          "index": 3,
+          "from": [
+            11,
+            0,
+            2.9
+          ],
+          "to": [
+            16,
+            31.9,
+            5
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              21.5,
+              0,
+              16
+            ]
+          },
+          "faces": {
+            "east": {
+              "uv": [
+                9.49237,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1"
+            },
+            "up": {
+              "uv": [
+                16,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1",
+              "rotation": 90
+            },
+            "down": {
+              "uv": [
+                16,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1",
+              "rotation": 270
+            }
+          }
+        },
+        {
+          "index": 4,
+          "from": [
+            11,
+            0,
+            5
+          ],
+          "to": [
+            16,
+            31.9,
+            16
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              21.5,
+              0,
+              16
+            ]
+          },
+          "faces": {
+            "east": {
+              "uv": [
+                16,
+                8.375,
+                9.49237,
+                16
+              ],
+              "texture": "#1"
+            },
+            "west": {
+              "uv": [
+                14.75763,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1"
+            },
+            "south": {
+              "uv": [
+                16,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1"
+            },
+            "up": {
+              "uv": [
+                16,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1",
+              "rotation": 90
+            },
+            "down": {
+              "uv": [
+                16,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1",
+              "rotation": 270
+            }
+          }
+        },
+        {
+          "index": 5,
+          "from": [
+            9.3,
+            0,
+            2.9
+          ],
+          "to": [
+            11,
+            31.9,
+            5
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              13,
+              0,
+              -5.5
+            ]
+          },
+          "faces": {
+            "south": {
+              "uv": [
+                10.45577,
+                8.375,
+                9.44231,
+                16
+              ],
+              "texture": "#1"
+            },
+            "up": {
+              "uv": [
+                10.45577,
+                12.7975,
+                9.44231,
+                16
+              ],
+              "texture": "#1"
+            },
+            "down": {
+              "uv": [
+                10.45577,
+                8.375,
+                9.44231,
+                11.5775
+              ],
+              "texture": "#1"
+            }
+          }
+        },
+        {
+          "index": 6,
+          "from": [
+            16,
+            0,
+            2.9
+          ],
+          "to": [
+            17,
+            1,
+            16
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              17,
+              0,
+              16
+            ]
+          },
+          "faces": {
+            "east": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "north": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2",
+              "rotation": 90
+            },
+            "down": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2",
+              "rotation": 270
+            }
+          }
+        },
+        {
+          "index": 7,
+          "from": [
+            9.5,
+            0,
+            5
+          ],
+          "to": [
+            10.5,
+            1,
+            16
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              10.5,
+              0,
+              16
+            ]
+          },
+          "faces": {
+            "east": {
+              "uv": [
+                9.5,
+                12.09375,
+                2.96875,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "west": {
+              "uv": [
+                6.53125,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2",
+              "rotation": 90
+            },
+            "down": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2",
+              "rotation": 270
+            }
+          }
+        },
+        {
+          "index": 8,
+          "from": [
+            9.3,
+            0,
+            -0.1
+          ],
+          "to": [
+            16.8,
+            32,
+            2.9
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              16.8,
+              0,
+              2.9
+            ]
+          },
+          "faces": {
+            "east": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "rotation": 270,
+              "texture": "#2"
+            },
+            "north": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "rotation": 270,
+              "texture": "#2"
+            },
+            "west": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "rotation": 270,
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "rotation": 270,
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "texture": "#2"
+            },
+            "down": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "rotation": 180,
+              "texture": "#2"
+            }
+          }
+        }
+      ]
+    },
+    "src\\main\\resources\\assets\\britannia_mod\\models\\block\\structure\\plaster\\plaster_wall_and_support_blank_corner_branch_right.json": {
+      "parent": "minecraft:block/block",
+      "textures": {
+        "1": "britannia_mod:block/structure/plaster/dirty_plaster",
+        "2": "britannia_mod:block/structure/plaster/wood_support"
+      },
+      "ambientocclusion": false,
+      "render_type": "unspecified",
+      "hand_authored_by_generator_contract": true,
+      "sha256": "c42fbf6d92acdde33a90a1a2ee0f02b51b700e1c1119cc13a08c32d20c96be8d",
+      "elements": [
+        {
+          "index": 0,
+          "from": [
+            3,
+            0,
+            0
+          ],
+          "to": [
+            11,
+            31.9,
+            5
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              3,
+              0,
+              -5.5
+            ]
+          },
+          "faces": {
+            "north": {
+              "uv": [
+                11.23077,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1"
+            },
+            "south": {
+              "uv": [
+                8.25,
+                8.375,
+                13.01923,
+                16
+              ],
+              "texture": "#1"
+            },
+            "west": {
+              "uv": [
+                8.25,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1"
+            },
+            "up": {
+              "uv": [
+                8.25,
+                8.375,
+                13.01923,
+                16
+              ],
+              "texture": "#1"
+            },
+            "down": {
+              "uv": [
+                8.25,
+                8.375,
+                13.01923,
+                16
+              ],
+              "texture": "#1"
+            }
+          }
+        },
+        {
+          "index": 1,
+          "from": [
+            3,
+            0,
+            -1
+          ],
+          "to": [
+            11,
+            1,
+            0
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              3,
+              0,
+              -1
+            ]
+          },
+          "faces": {
+            "north": {
+              "uv": [
+                3.65385,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                0,
+                12.09375,
+                5.84615,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "west": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                0,
+                12.09375,
+                5.84615,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "down": {
+              "uv": [
+                0,
+                12.09375,
+                5.84615,
+                13.84375
+              ],
+              "texture": "#2"
+            }
+          }
+        },
+        {
+          "index": 2,
+          "from": [
+            0,
+            0,
+            5.5
+          ],
+          "to": [
+            11,
+            1,
+            6.5
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              0,
+              0,
+              5.5
+            ]
+          },
+          "faces": {
+            "north": {
+              "uv": [
+                2.96875,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                0,
+                12.09375,
+                6.53125,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "west": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                0,
+                12.09375,
+                6.53125,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "down": {
+              "uv": [
+                0,
+                12.09375,
+                6.53125,
+                13.84375
+              ],
+              "texture": "#2"
+            }
+          }
+        },
+        {
+          "index": 3,
+          "from": [
+            -0.1,
+            0,
+            -0.8
+          ],
+          "to": [
+            2.9,
+            32,
+            6.7
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              -0.1,
+              0,
+              -0.8
+            ]
+          },
+          "faces": {
+            "north": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "rotation": 90,
+              "texture": "#2"
+            },
+            "east": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "rotation": 90,
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "rotation": 90,
+              "texture": "#2"
+            },
+            "west": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "rotation": 90,
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "rotation": 90,
+              "texture": "#2"
+            },
+            "down": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "rotation": 90,
+              "texture": "#2"
+            }
+          }
+        },
+        {
+          "index": 4,
+          "from": [
+            11,
+            0,
+            3
+          ],
+          "to": [
+            16,
+            31.9,
+            16
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              21.5,
+              0,
+              3
+            ]
+          },
+          "faces": {
+            "east": {
+              "uv": [
+                8.25,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1"
+            },
+            "south": {
+              "uv": [
+                8.25,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1"
+            },
+            "west": {
+              "uv": [
+                8.25,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1"
+            },
+            "north": {
+              "uv": [
+                8.25,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1"
+            },
+            "up": {
+              "uv": [
+                8.25,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1",
+              "rotation": 90
+            },
+            "down": {
+              "uv": [
+                8.25,
+                8.375,
+                16,
+                16
+              ],
+              "texture": "#1",
+              "rotation": 270
+            }
+          }
+        },
+        {
+          "index": 5,
+          "from": [
+            16,
+            0,
+            3
+          ],
+          "to": [
+            17,
+            1,
+            16
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              17,
+              0,
+              3
+            ]
+          },
+          "faces": {
+            "east": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "west": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "north": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2",
+              "rotation": 90
+            },
+            "down": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2",
+              "rotation": 270
+            }
+          }
+        },
+        {
+          "index": 6,
+          "from": [
+            9.5,
+            0,
+            0
+          ],
+          "to": [
+            10.5,
+            1,
+            16
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              10.5,
+              0,
+              0
+            ]
+          },
+          "faces": {
+            "east": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "west": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "north": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2",
+              "rotation": 90
+            },
+            "down": {
+              "uv": [
+                0,
+                12.09375,
+                9.5,
+                13.84375
+              ],
+              "texture": "#2",
+              "rotation": 270
+            }
+          }
+        },
+        {
+          "index": 7,
+          "from": [
+            9.3,
+            0,
+            -0.1
+          ],
+          "to": [
+            16.8,
+            32,
+            2.9
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              16.8,
+              0,
+              -0.1
+            ]
+          },
+          "faces": {
+            "east": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "rotation": 90,
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "rotation": 90,
+              "texture": "#2"
+            },
+            "west": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "rotation": 90,
+              "texture": "#2"
+            },
+            "north": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "rotation": 90,
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "rotation": 180,
+              "texture": "#2"
+            },
+            "down": {
+              "uv": [
+                0,
+                6.09375,
+                16,
+                7.84375
+              ],
+              "texture": "#2"
+            }
+          }
+        }
+      ]
+    },
+    "src\\main\\resources\\assets\\britannia_mod\\models\\block\\structure\\plaster\\plaster_wall_and_support_blank_corner_branch_right_mirrored.json": {
+      "parent": "minecraft:block/block",
+      "textures": {
+        "1": "britannia_mod:block/structure/plaster/dirty_plaster",
+        "2": "britannia_mod:block/structure/plaster/wood_support"
+      },
+      "ambientocclusion": false,
+      "render_type": "unspecified",
+      "hand_authored_by_generator_contract": true,
+      "sha256": "e36b6521f728fb2db4910d7f0551bc08afe357305429d984538c7063328a3e94",
+      "elements": [
+        {
+          "index": 0,
+          "from": [
+            5,
+            0,
+            0
+          ],
+          "to": [
+            13,
+            31.9,
+            5
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              13,
+              0,
+              -5.5
+            ]
+          },
+          "faces": {
+            "north": {
+              "uv": [
+                16,
+                8.375,
+                11.23077,
+                16
+              ],
+              "texture": "#1"
+            },
+            "south": {
+              "uv": [
+                13.01923,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1"
+            },
+            "east": {
+              "uv": [
+                16,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1"
+            },
+            "up": {
+              "uv": [
+                13.01923,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1"
+            },
+            "down": {
+              "uv": [
+                13.01923,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1"
+            }
+          }
+        },
+        {
+          "index": 1,
+          "from": [
+            5,
+            0,
+            -1
+          ],
+          "to": [
+            13,
+            1,
+            0
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              13,
+              0,
+              -1
+            ]
+          },
+          "faces": {
+            "north": {
+              "uv": [
+                9.5,
+                12.09375,
+                3.65385,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                5.84615,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "east": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                5.84615,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "down": {
+              "uv": [
+                5.84615,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            }
+          }
+        },
+        {
+          "index": 2,
+          "from": [
+            5,
+            0,
+            5.5
+          ],
+          "to": [
+            16,
+            1,
+            6.5
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              16,
+              0,
+              5.5
+            ]
+          },
+          "faces": {
+            "north": {
+              "uv": [
+                9.5,
+                12.09375,
+                2.96875,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                6.53125,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "east": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                6.53125,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "down": {
+              "uv": [
+                6.53125,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            }
+          }
+        },
+        {
+          "index": 3,
+          "from": [
+            13.1,
+            0,
+            -0.8
+          ],
+          "to": [
+            16.1,
+            32,
+            6.7
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              16.1,
+              0,
+              -0.8
+            ]
+          },
+          "faces": {
+            "north": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "rotation": 270,
+              "texture": "#2"
+            },
+            "west": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "rotation": 270,
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "rotation": 270,
+              "texture": "#2"
+            },
+            "east": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "rotation": 270,
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "rotation": 270,
+              "texture": "#2"
+            },
+            "down": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "rotation": 270,
+              "texture": "#2"
+            }
+          }
+        },
+        {
+          "index": 4,
+          "from": [
+            0,
+            0,
+            3
+          ],
+          "to": [
+            5,
+            31.9,
+            16
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              -5.5,
+              0,
+              3
+            ]
+          },
+          "faces": {
+            "west": {
+              "uv": [
+                16,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1"
+            },
+            "south": {
+              "uv": [
+                16,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1"
+            },
+            "east": {
+              "uv": [
+                16,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1"
+            },
+            "north": {
+              "uv": [
+                16,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1"
+            },
+            "up": {
+              "uv": [
+                16,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1",
+              "rotation": 270
+            },
+            "down": {
+              "uv": [
+                16,
+                8.375,
+                8.25,
+                16
+              ],
+              "texture": "#1",
+              "rotation": 90
+            }
+          }
+        },
+        {
+          "index": 5,
+          "from": [
+            -1,
+            0,
+            3
+          ],
+          "to": [
+            0,
+            1,
+            16
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              -1,
+              0,
+              3
+            ]
+          },
+          "faces": {
+            "west": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "east": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "north": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2",
+              "rotation": 270
+            },
+            "down": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2",
+              "rotation": 90
+            }
+          }
+        },
+        {
+          "index": 6,
+          "from": [
+            5.5,
+            0,
+            0
+          ],
+          "to": [
+            6.5,
+            1,
+            16
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              5.5,
+              0,
+              0
+            ]
+          },
+          "faces": {
+            "west": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "east": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "north": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2",
+              "rotation": 270
+            },
+            "down": {
+              "uv": [
+                9.5,
+                12.09375,
+                0,
+                13.84375
+              ],
+              "texture": "#2",
+              "rotation": 90
+            }
+          }
+        },
+        {
+          "index": 7,
+          "from": [
+            -0.8,
+            0,
+            -0.1
+          ],
+          "to": [
+            6.7,
+            32,
+            2.9
+          ],
+          "rotation": {
+            "angle": 0,
+            "axis": "y",
+            "origin": [
+              -0.8,
+              0,
+              -0.1
+            ]
+          },
+          "faces": {
+            "west": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "rotation": 270,
+              "texture": "#2"
+            },
+            "south": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "rotation": 270,
+              "texture": "#2"
+            },
+            "east": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "rotation": 270,
+              "texture": "#2"
+            },
+            "north": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "rotation": 270,
+              "texture": "#2"
+            },
+            "up": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "rotation": 180,
+              "texture": "#2"
+            },
+            "down": {
+              "uv": [
+                16,
+                6.09375,
+                0,
+                7.84375
+              ],
+              "texture": "#2"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "generator_comparison": {
+    "corner": {
+      "elements_equal_current_junction_generator": false,
+      "half_elements_equal_current_half_generator": true
+    },
+    "corner_branch_right": {
+      "elements_equal_current_junction_generator": false,
+      "half_elements_equal_current_half_generator": true
+    },
+    "t_junction": {
+      "elements_equal_current_junction_generator": false,
+      "half_elements_equal_current_half_generator": true
+    },
+    "t_junction_branch_right": {
+      "elements_equal_current_junction_generator": false,
+      "half_elements_equal_current_half_generator": true
+    }
+  },
+  "support_in_blockstate_generator_mirrorable_list": false,
+  "parent_consumers": {
+    "src\\main\\resources\\assets\\britannia_mod\\models\\item\\plaster_wall_and_support_blank.json": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_straight",
+    "src\\main\\resources\\assets\\britannia_mod\\models\\item\\plaster_wall_and_support_blank_half.json": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half"
+  },
+  "existing_jars": {
+    "build\\libs\\britannia_mod-0.1.8c-all.jar": {
+      "build_identity": "mod.version=0.1.8c\ngit.head=c1f2b5b819834ab971a2fc65b86fcd484d31e7c9\ngit.branch=patch-18\ngit.dirty=true\nbuild.timestamp=2026-09-23T01:46:31.276198Z\n",
+      "asset_comparison": {
+        "assets/britannia_mod/blockstates/plaster_wall_and_support_blank.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner.json": "JSON differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored.json": "JSON differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_corner.json": "JSON differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_corner_branch_right.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_t_junction.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_t_junction_branch_right.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_straight.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_straight_mirrored.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_t_junction.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_t_junction_branch_right.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_t_junction_branch_right_mirrored.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_t_junction_mirrored.json": "byte-identical"
+      }
+    },
+    "build\\libs\\britannia_mod-0.1.8c-thin.jar": {
+      "build_identity": "mod.version=0.1.8c\ngit.head=c1f2b5b819834ab971a2fc65b86fcd484d31e7c9\ngit.branch=patch-18\ngit.dirty=true\nbuild.timestamp=2026-09-23T01:46:31.276198Z\n",
+      "asset_comparison": {
+        "assets/britannia_mod/blockstates/plaster_wall_and_support_blank.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner.json": "JSON differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored.json": "JSON differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_corner.json": "JSON differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_corner_branch_right.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_t_junction.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_t_junction_branch_right.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_straight.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_straight_mirrored.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_t_junction.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_t_junction_branch_right.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_t_junction_branch_right_mirrored.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_t_junction_mirrored.json": "byte-identical"
+      }
+    },
+    "build\\libs\\britannia_mod-0.1.8d-all.jar": {
+      "build_identity": "mod.version=0.1.8d\ngit.head=4435912197fba84630d6e5a0544f29fc3a736450\ngit.branch=patch-18\ngit.dirty=false\nbuild.timestamp=2026-10-06T00:15:17.175199Z\n",
+      "asset_comparison": {
+        "assets/britannia_mod/blockstates/plaster_wall_and_support_blank.json": "byte-identical",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner.json": "JSON differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right.json": "JSON-identical, byte formatting differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored.json": "JSON-identical, byte formatting differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored.json": "JSON differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half.json": "JSON-identical, byte formatting differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_corner.json": "JSON differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_corner_branch_right.json": "JSON-identical, byte formatting differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_t_junction.json": "JSON-identical, byte formatting differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_t_junction_branch_right.json": "JSON-identical, byte formatting differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_straight.json": "JSON-identical, byte formatting differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_straight_mirrored.json": "JSON-identical, byte formatting differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_t_junction.json": "JSON-identical, byte formatting differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_t_junction_branch_right.json": "JSON-identical, byte formatting differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_t_junction_branch_right_mirrored.json": "JSON-identical, byte formatting differs",
+        "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_t_junction_mirrored.json": "JSON-identical, byte formatting differs"
+      }
+    }
+  }
+}

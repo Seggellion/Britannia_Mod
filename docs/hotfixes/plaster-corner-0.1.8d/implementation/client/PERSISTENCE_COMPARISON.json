@@ -1,0 +1,30 @@
+{
+  "command_grid_cases": 26,
+  "identical_saved_cases": 26,
+  "changed_cases": [],
+  "placed_sample_position": [
+    48,
+    80,
+    84
+  ],
+  "placed_sample_lower": {
+    "Properties": {
+      "half": "lower",
+      "shape": "corner",
+      "facing": "south",
+      "branch_right": "false",
+      "mirrored": "true"
+    },
+    "Name": "britannia_mod:plaster_wall_and_support_blank"
+  },
+  "placed_sample_upper": {
+    "Properties": {
+      "half": "upper",
+      "shape": "corner",
+      "facing": "south",
+      "branch_right": "false",
+      "mirrored": "false"
+    },
+    "Name": "britannia_mod:plaster_wall_and_support_blank"
+  }
+}

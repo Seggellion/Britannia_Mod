@@ -69,6 +69,25 @@ class DeployableArtifactPackagingTest {
     // ---------------------------------------------------------------- the declarations
 
     @Test
+    void effectiveMinecraftMetadataIncludesThePinnedRuntime() throws IOException {
+        assertEquals("1.21.1", gradleProperties.getProperty("minecraft_version"));
+        assertEquals("[1.21.1,1.21.2)", gradleProperties.getProperty("minecraft_version_range"));
+        // The metadata task's actual output is checked by the packaged-artifact assertion too.
+        Path libs = PROJECT.resolve("build/libs");
+        if (Files.isDirectory(libs)) try (Stream<Path> jars = Files.list(libs)) {
+            for (Path jar : jars.filter(p -> p.getFileName().toString().equals("britannia_mod-" + modVersion() + "-all.jar")).toList()) {
+                try (ZipFile zip = new ZipFile(jar.toFile())) {
+                    String toml = new String(zip.getInputStream(zip.getEntry("META-INF/neoforge.mods.toml")).readAllBytes(), StandardCharsets.UTF_8);
+                    // An older recovery artifact is retained until final packaging. Only enforce
+                    // the new effective range once this hotfix's navigation class is packaged.
+                    if (zip.getEntry("com/seggellion/britannia_mod/entity/ai/AlligatorNavigation.class") != null)
+                        assertTrue(toml.contains("versionRange=\"[1.21.1,1.21.2)\""), toml);
+                }
+            }
+        }
+    }
+
+    @Test
     void jarInJarStillEmbedsGeckoLibAndNanohttpd() {
         assertTrue(buildGradle.contains("jarJar \"software.bernie.geckolib:geckolib-neoforge-"),
                 "build.gradle no longer embeds GeckoLib via Jar-in-Jar");

@@ -1,0 +1,1058 @@
+[
+  {
+    "case": 0,
+    "owner_A": [
+      240,
+      80,
+      200
+    ],
+    "owner_B": [
+      241,
+      80,
+      200
+    ],
+    "intended_facing": "north",
+    "surface_B": "endpoint",
+    "extension": "east",
+    "oblique": false,
+    "start": "fence_recovery:case_00_start",
+    "extend": "fence_recovery:case_00_extend",
+    "verify": "fence_recovery:case_00_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 1,
+    "owner_A": [
+      246,
+      80,
+      200
+    ],
+    "owner_B": [
+      247,
+      80,
+      200
+    ],
+    "intended_facing": "north",
+    "surface_B": "endpoint",
+    "extension": "east",
+    "oblique": true,
+    "start": "fence_recovery:case_01_start",
+    "extend": "fence_recovery:case_01_extend",
+    "verify": "fence_recovery:case_01_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 2,
+    "owner_A": [
+      252,
+      80,
+      200
+    ],
+    "owner_B": [
+      253,
+      80,
+      200
+    ],
+    "intended_facing": "north",
+    "surface_B": "support",
+    "extension": "east",
+    "oblique": false,
+    "start": "fence_recovery:case_02_start",
+    "extend": "fence_recovery:case_02_extend",
+    "verify": "fence_recovery:case_02_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 3,
+    "owner_A": [
+      258,
+      80,
+      200
+    ],
+    "owner_B": [
+      259,
+      80,
+      200
+    ],
+    "intended_facing": "north",
+    "surface_B": "support",
+    "extension": "east",
+    "oblique": true,
+    "start": "fence_recovery:case_03_start",
+    "extend": "fence_recovery:case_03_extend",
+    "verify": "fence_recovery:case_03_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 4,
+    "owner_A": [
+      264,
+      80,
+      200
+    ],
+    "owner_B": [
+      265,
+      80,
+      200
+    ],
+    "intended_facing": "north",
+    "surface_B": "ground",
+    "extension": "east",
+    "oblique": false,
+    "start": "fence_recovery:case_04_start",
+    "extend": "fence_recovery:case_04_extend",
+    "verify": "fence_recovery:case_04_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 5,
+    "owner_A": [
+      270,
+      80,
+      200
+    ],
+    "owner_B": [
+      271,
+      80,
+      200
+    ],
+    "intended_facing": "north",
+    "surface_B": "ground",
+    "extension": "east",
+    "oblique": true,
+    "start": "fence_recovery:case_05_start",
+    "extend": "fence_recovery:case_05_extend",
+    "verify": "fence_recovery:case_05_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 6,
+    "owner_A": [
+      276,
+      80,
+      200
+    ],
+    "owner_B": [
+      275,
+      80,
+      200
+    ],
+    "intended_facing": "north",
+    "surface_B": "endpoint",
+    "extension": "west",
+    "oblique": false,
+    "start": "fence_recovery:case_06_start",
+    "extend": "fence_recovery:case_06_extend",
+    "verify": "fence_recovery:case_06_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 7,
+    "owner_A": [
+      282,
+      80,
+      200
+    ],
+    "owner_B": [
+      281,
+      80,
+      200
+    ],
+    "intended_facing": "north",
+    "surface_B": "endpoint",
+    "extension": "west",
+    "oblique": true,
+    "start": "fence_recovery:case_07_start",
+    "extend": "fence_recovery:case_07_extend",
+    "verify": "fence_recovery:case_07_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 8,
+    "owner_A": [
+      240,
+      80,
+      206
+    ],
+    "owner_B": [
+      239,
+      80,
+      206
+    ],
+    "intended_facing": "north",
+    "surface_B": "support",
+    "extension": "west",
+    "oblique": false,
+    "start": "fence_recovery:case_08_start",
+    "extend": "fence_recovery:case_08_extend",
+    "verify": "fence_recovery:case_08_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 9,
+    "owner_A": [
+      246,
+      80,
+      206
+    ],
+    "owner_B": [
+      245,
+      80,
+      206
+    ],
+    "intended_facing": "north",
+    "surface_B": "support",
+    "extension": "west",
+    "oblique": true,
+    "start": "fence_recovery:case_09_start",
+    "extend": "fence_recovery:case_09_extend",
+    "verify": "fence_recovery:case_09_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 10,
+    "owner_A": [
+      252,
+      80,
+      206
+    ],
+    "owner_B": [
+      251,
+      80,
+      206
+    ],
+    "intended_facing": "north",
+    "surface_B": "ground",
+    "extension": "west",
+    "oblique": false,
+    "start": "fence_recovery:case_10_start",
+    "extend": "fence_recovery:case_10_extend",
+    "verify": "fence_recovery:case_10_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 11,
+    "owner_A": [
+      258,
+      80,
+      206
+    ],
+    "owner_B": [
+      257,
+      80,
+      206
+    ],
+    "intended_facing": "north",
+    "surface_B": "ground",
+    "extension": "west",
+    "oblique": true,
+    "start": "fence_recovery:case_11_start",
+    "extend": "fence_recovery:case_11_extend",
+    "verify": "fence_recovery:case_11_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 12,
+    "owner_A": [
+      264,
+      80,
+      206
+    ],
+    "owner_B": [
+      264,
+      80,
+      207
+    ],
+    "intended_facing": "east",
+    "surface_B": "endpoint",
+    "extension": "south",
+    "oblique": false,
+    "start": "fence_recovery:case_12_start",
+    "extend": "fence_recovery:case_12_extend",
+    "verify": "fence_recovery:case_12_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 13,
+    "owner_A": [
+      270,
+      80,
+      206
+    ],
+    "owner_B": [
+      270,
+      80,
+      207
+    ],
+    "intended_facing": "east",
+    "surface_B": "endpoint",
+    "extension": "south",
+    "oblique": true,
+    "start": "fence_recovery:case_13_start",
+    "extend": "fence_recovery:case_13_extend",
+    "verify": "fence_recovery:case_13_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 14,
+    "owner_A": [
+      276,
+      80,
+      206
+    ],
+    "owner_B": [
+      276,
+      80,
+      207
+    ],
+    "intended_facing": "east",
+    "surface_B": "support",
+    "extension": "south",
+    "oblique": false,
+    "start": "fence_recovery:case_14_start",
+    "extend": "fence_recovery:case_14_extend",
+    "verify": "fence_recovery:case_14_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 15,
+    "owner_A": [
+      282,
+      80,
+      206
+    ],
+    "owner_B": [
+      282,
+      80,
+      207
+    ],
+    "intended_facing": "east",
+    "surface_B": "support",
+    "extension": "south",
+    "oblique": true,
+    "start": "fence_recovery:case_15_start",
+    "extend": "fence_recovery:case_15_extend",
+    "verify": "fence_recovery:case_15_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 16,
+    "owner_A": [
+      240,
+      80,
+      212
+    ],
+    "owner_B": [
+      240,
+      80,
+      213
+    ],
+    "intended_facing": "east",
+    "surface_B": "ground",
+    "extension": "south",
+    "oblique": false,
+    "start": "fence_recovery:case_16_start",
+    "extend": "fence_recovery:case_16_extend",
+    "verify": "fence_recovery:case_16_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 17,
+    "owner_A": [
+      246,
+      80,
+      212
+    ],
+    "owner_B": [
+      246,
+      80,
+      213
+    ],
+    "intended_facing": "east",
+    "surface_B": "ground",
+    "extension": "south",
+    "oblique": true,
+    "start": "fence_recovery:case_17_start",
+    "extend": "fence_recovery:case_17_extend",
+    "verify": "fence_recovery:case_17_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 18,
+    "owner_A": [
+      252,
+      80,
+      212
+    ],
+    "owner_B": [
+      252,
+      80,
+      211
+    ],
+    "intended_facing": "east",
+    "surface_B": "endpoint",
+    "extension": "north",
+    "oblique": false,
+    "start": "fence_recovery:case_18_start",
+    "extend": "fence_recovery:case_18_extend",
+    "verify": "fence_recovery:case_18_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 19,
+    "owner_A": [
+      258,
+      80,
+      212
+    ],
+    "owner_B": [
+      258,
+      80,
+      211
+    ],
+    "intended_facing": "east",
+    "surface_B": "endpoint",
+    "extension": "north",
+    "oblique": true,
+    "start": "fence_recovery:case_19_start",
+    "extend": "fence_recovery:case_19_extend",
+    "verify": "fence_recovery:case_19_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 20,
+    "owner_A": [
+      264,
+      80,
+      212
+    ],
+    "owner_B": [
+      264,
+      80,
+      211
+    ],
+    "intended_facing": "east",
+    "surface_B": "support",
+    "extension": "north",
+    "oblique": false,
+    "start": "fence_recovery:case_20_start",
+    "extend": "fence_recovery:case_20_extend",
+    "verify": "fence_recovery:case_20_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 21,
+    "owner_A": [
+      270,
+      80,
+      212
+    ],
+    "owner_B": [
+      270,
+      80,
+      211
+    ],
+    "intended_facing": "east",
+    "surface_B": "support",
+    "extension": "north",
+    "oblique": true,
+    "start": "fence_recovery:case_21_start",
+    "extend": "fence_recovery:case_21_extend",
+    "verify": "fence_recovery:case_21_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 22,
+    "owner_A": [
+      276,
+      80,
+      212
+    ],
+    "owner_B": [
+      276,
+      80,
+      211
+    ],
+    "intended_facing": "east",
+    "surface_B": "ground",
+    "extension": "north",
+    "oblique": false,
+    "start": "fence_recovery:case_22_start",
+    "extend": "fence_recovery:case_22_extend",
+    "verify": "fence_recovery:case_22_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 23,
+    "owner_A": [
+      282,
+      80,
+      212
+    ],
+    "owner_B": [
+      282,
+      80,
+      211
+    ],
+    "intended_facing": "east",
+    "surface_B": "ground",
+    "extension": "north",
+    "oblique": true,
+    "start": "fence_recovery:case_23_start",
+    "extend": "fence_recovery:case_23_extend",
+    "verify": "fence_recovery:case_23_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 24,
+    "owner_A": [
+      240,
+      80,
+      218
+    ],
+    "owner_B": [
+      241,
+      80,
+      218
+    ],
+    "intended_facing": "south",
+    "surface_B": "endpoint",
+    "extension": "east",
+    "oblique": false,
+    "start": "fence_recovery:case_24_start",
+    "extend": "fence_recovery:case_24_extend",
+    "verify": "fence_recovery:case_24_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 25,
+    "owner_A": [
+      246,
+      80,
+      218
+    ],
+    "owner_B": [
+      247,
+      80,
+      218
+    ],
+    "intended_facing": "south",
+    "surface_B": "endpoint",
+    "extension": "east",
+    "oblique": true,
+    "start": "fence_recovery:case_25_start",
+    "extend": "fence_recovery:case_25_extend",
+    "verify": "fence_recovery:case_25_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 26,
+    "owner_A": [
+      252,
+      80,
+      218
+    ],
+    "owner_B": [
+      253,
+      80,
+      218
+    ],
+    "intended_facing": "south",
+    "surface_B": "support",
+    "extension": "east",
+    "oblique": false,
+    "start": "fence_recovery:case_26_start",
+    "extend": "fence_recovery:case_26_extend",
+    "verify": "fence_recovery:case_26_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 27,
+    "owner_A": [
+      258,
+      80,
+      218
+    ],
+    "owner_B": [
+      259,
+      80,
+      218
+    ],
+    "intended_facing": "south",
+    "surface_B": "support",
+    "extension": "east",
+    "oblique": true,
+    "start": "fence_recovery:case_27_start",
+    "extend": "fence_recovery:case_27_extend",
+    "verify": "fence_recovery:case_27_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 28,
+    "owner_A": [
+      264,
+      80,
+      218
+    ],
+    "owner_B": [
+      265,
+      80,
+      218
+    ],
+    "intended_facing": "south",
+    "surface_B": "ground",
+    "extension": "east",
+    "oblique": false,
+    "start": "fence_recovery:case_28_start",
+    "extend": "fence_recovery:case_28_extend",
+    "verify": "fence_recovery:case_28_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 29,
+    "owner_A": [
+      270,
+      80,
+      218
+    ],
+    "owner_B": [
+      271,
+      80,
+      218
+    ],
+    "intended_facing": "south",
+    "surface_B": "ground",
+    "extension": "east",
+    "oblique": true,
+    "start": "fence_recovery:case_29_start",
+    "extend": "fence_recovery:case_29_extend",
+    "verify": "fence_recovery:case_29_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 30,
+    "owner_A": [
+      276,
+      80,
+      218
+    ],
+    "owner_B": [
+      275,
+      80,
+      218
+    ],
+    "intended_facing": "south",
+    "surface_B": "endpoint",
+    "extension": "west",
+    "oblique": false,
+    "start": "fence_recovery:case_30_start",
+    "extend": "fence_recovery:case_30_extend",
+    "verify": "fence_recovery:case_30_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 31,
+    "owner_A": [
+      282,
+      80,
+      218
+    ],
+    "owner_B": [
+      281,
+      80,
+      218
+    ],
+    "intended_facing": "south",
+    "surface_B": "endpoint",
+    "extension": "west",
+    "oblique": true,
+    "start": "fence_recovery:case_31_start",
+    "extend": "fence_recovery:case_31_extend",
+    "verify": "fence_recovery:case_31_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 32,
+    "owner_A": [
+      240,
+      80,
+      224
+    ],
+    "owner_B": [
+      239,
+      80,
+      224
+    ],
+    "intended_facing": "south",
+    "surface_B": "support",
+    "extension": "west",
+    "oblique": false,
+    "start": "fence_recovery:case_32_start",
+    "extend": "fence_recovery:case_32_extend",
+    "verify": "fence_recovery:case_32_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 33,
+    "owner_A": [
+      246,
+      80,
+      224
+    ],
+    "owner_B": [
+      245,
+      80,
+      224
+    ],
+    "intended_facing": "south",
+    "surface_B": "support",
+    "extension": "west",
+    "oblique": true,
+    "start": "fence_recovery:case_33_start",
+    "extend": "fence_recovery:case_33_extend",
+    "verify": "fence_recovery:case_33_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 34,
+    "owner_A": [
+      252,
+      80,
+      224
+    ],
+    "owner_B": [
+      251,
+      80,
+      224
+    ],
+    "intended_facing": "south",
+    "surface_B": "ground",
+    "extension": "west",
+    "oblique": false,
+    "start": "fence_recovery:case_34_start",
+    "extend": "fence_recovery:case_34_extend",
+    "verify": "fence_recovery:case_34_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 35,
+    "owner_A": [
+      258,
+      80,
+      224
+    ],
+    "owner_B": [
+      257,
+      80,
+      224
+    ],
+    "intended_facing": "south",
+    "surface_B": "ground",
+    "extension": "west",
+    "oblique": true,
+    "start": "fence_recovery:case_35_start",
+    "extend": "fence_recovery:case_35_extend",
+    "verify": "fence_recovery:case_35_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 36,
+    "owner_A": [
+      264,
+      80,
+      224
+    ],
+    "owner_B": [
+      264,
+      80,
+      225
+    ],
+    "intended_facing": "west",
+    "surface_B": "endpoint",
+    "extension": "south",
+    "oblique": false,
+    "start": "fence_recovery:case_36_start",
+    "extend": "fence_recovery:case_36_extend",
+    "verify": "fence_recovery:case_36_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 37,
+    "owner_A": [
+      270,
+      80,
+      224
+    ],
+    "owner_B": [
+      270,
+      80,
+      225
+    ],
+    "intended_facing": "west",
+    "surface_B": "endpoint",
+    "extension": "south",
+    "oblique": true,
+    "start": "fence_recovery:case_37_start",
+    "extend": "fence_recovery:case_37_extend",
+    "verify": "fence_recovery:case_37_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 38,
+    "owner_A": [
+      276,
+      80,
+      224
+    ],
+    "owner_B": [
+      276,
+      80,
+      225
+    ],
+    "intended_facing": "west",
+    "surface_B": "support",
+    "extension": "south",
+    "oblique": false,
+    "start": "fence_recovery:case_38_start",
+    "extend": "fence_recovery:case_38_extend",
+    "verify": "fence_recovery:case_38_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 39,
+    "owner_A": [
+      282,
+      80,
+      224
+    ],
+    "owner_B": [
+      282,
+      80,
+      225
+    ],
+    "intended_facing": "west",
+    "surface_B": "support",
+    "extension": "south",
+    "oblique": true,
+    "start": "fence_recovery:case_39_start",
+    "extend": "fence_recovery:case_39_extend",
+    "verify": "fence_recovery:case_39_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 40,
+    "owner_A": [
+      240,
+      80,
+      230
+    ],
+    "owner_B": [
+      240,
+      80,
+      231
+    ],
+    "intended_facing": "west",
+    "surface_B": "ground",
+    "extension": "south",
+    "oblique": false,
+    "start": "fence_recovery:case_40_start",
+    "extend": "fence_recovery:case_40_extend",
+    "verify": "fence_recovery:case_40_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 41,
+    "owner_A": [
+      246,
+      80,
+      230
+    ],
+    "owner_B": [
+      246,
+      80,
+      231
+    ],
+    "intended_facing": "west",
+    "surface_B": "ground",
+    "extension": "south",
+    "oblique": true,
+    "start": "fence_recovery:case_41_start",
+    "extend": "fence_recovery:case_41_extend",
+    "verify": "fence_recovery:case_41_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 42,
+    "owner_A": [
+      252,
+      80,
+      230
+    ],
+    "owner_B": [
+      252,
+      80,
+      229
+    ],
+    "intended_facing": "west",
+    "surface_B": "endpoint",
+    "extension": "north",
+    "oblique": false,
+    "start": "fence_recovery:case_42_start",
+    "extend": "fence_recovery:case_42_extend",
+    "verify": "fence_recovery:case_42_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 43,
+    "owner_A": [
+      258,
+      80,
+      230
+    ],
+    "owner_B": [
+      258,
+      80,
+      229
+    ],
+    "intended_facing": "west",
+    "surface_B": "endpoint",
+    "extension": "north",
+    "oblique": true,
+    "start": "fence_recovery:case_43_start",
+    "extend": "fence_recovery:case_43_extend",
+    "verify": "fence_recovery:case_43_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 44,
+    "owner_A": [
+      264,
+      80,
+      230
+    ],
+    "owner_B": [
+      264,
+      80,
+      229
+    ],
+    "intended_facing": "west",
+    "surface_B": "support",
+    "extension": "north",
+    "oblique": false,
+    "start": "fence_recovery:case_44_start",
+    "extend": "fence_recovery:case_44_extend",
+    "verify": "fence_recovery:case_44_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 45,
+    "owner_A": [
+      270,
+      80,
+      230
+    ],
+    "owner_B": [
+      270,
+      80,
+      229
+    ],
+    "intended_facing": "west",
+    "surface_B": "support",
+    "extension": "north",
+    "oblique": true,
+    "start": "fence_recovery:case_45_start",
+    "extend": "fence_recovery:case_45_extend",
+    "verify": "fence_recovery:case_45_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 46,
+    "owner_A": [
+      276,
+      80,
+      230
+    ],
+    "owner_B": [
+      276,
+      80,
+      229
+    ],
+    "intended_facing": "west",
+    "surface_B": "ground",
+    "extension": "north",
+    "oblique": false,
+    "start": "fence_recovery:case_46_start",
+    "extend": "fence_recovery:case_46_extend",
+    "verify": "fence_recovery:case_46_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  },
+  {
+    "case": 47,
+    "owner_A": [
+      282,
+      80,
+      230
+    ],
+    "owner_B": [
+      282,
+      80,
+      229
+    ],
+    "intended_facing": "west",
+    "surface_B": "ground",
+    "extension": "north",
+    "oblique": true,
+    "start": "fence_recovery:case_47_start",
+    "extend": "fence_recovery:case_47_extend",
+    "verify": "fence_recovery:case_47_verify",
+    "actual_mouse_executed": false,
+    "camera_calibration": "prepared only; must inspect actual resolved hit/owner"
+  }
+]

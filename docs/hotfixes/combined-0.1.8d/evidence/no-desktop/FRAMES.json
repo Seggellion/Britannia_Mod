@@ -1,0 +1,63 @@
+[
+  {
+    "label": "solid-neighbor",
+    "file": "solid-neighbor-2026-10-07_12.06.32.png",
+    "sha256": "d23388897fbcdb85fda34eb88ff0ef90f94b6842dca7b2c19a73eead2b046db9"
+  },
+  {
+    "label": "front-back-transform",
+    "file": "front-back-transform-2026-10-07_12.06.45.png",
+    "sha256": "7068d18c6819ae91cb7bede3371904708c81be4568e7ae427d3f513e0812f672"
+  },
+  {
+    "label": "fence-north",
+    "file": "fence-north-2026-10-07_12.07.35.png",
+    "sha256": "6097bf7f34ee488ddcca026f896d114a6d08165b326cc211f5d2299019e986cc"
+  },
+  {
+    "label": "fence-east",
+    "file": "fence-east-2026-10-07_12.13.14.png",
+    "sha256": "db95e7e8468798a9b09949c09d342d4376dc7ef0a1cb7ae5116b8f6b400dd519"
+  },
+  {
+    "label": "fence-south",
+    "file": "fence-south-2026-10-07_12.17.30.png",
+    "sha256": "0ad5df56b5d54efec2e6bf0ee482d37eb94f735bc033ade93785bea44dbc5103"
+  },
+  {
+    "label": "fence-west",
+    "file": "fence-west-2026-10-07_12.18.27.png",
+    "sha256": "101e238eedcc9adc175dd78dc8dcce31493a5ce857309b395284508a14fd9f2d"
+  },
+  {
+    "label": "fence-support",
+    "file": "fence-support-2026-10-07_12.19.37.png",
+    "sha256": "ec7d658db36ed60658bfd2a6da100047bd7462cc0e9393c576b22a32de871110"
+  },
+  {
+    "label": "wall-lower-placement",
+    "file": "wall-lower-placement-2026-10-07_11.35.10.png",
+    "sha256": "1a582a2a26faf32a84d720b508a1868cb5bd4af3d925332331a9d15bf5f65755"
+  },
+  {
+    "label": "wall-lower-mirror",
+    "file": "wall-lower-mirror-2026-10-07_11.38.32.png",
+    "sha256": "cbbeaa1c9059b776f661770500bfd955e6123bbd4e2f4a77e5710f39c062e837"
+  },
+  {
+    "label": "wall-lower-rotate",
+    "file": "wall-lower-rotate-2026-10-07_11.46.35.png",
+    "sha256": "f4e2c205dc0d34ca6622b5f621e5a97831af834b5fe73a9b961984d89ccae1ee"
+  },
+  {
+    "label": "wall-upper-rotate",
+    "file": "wall-upper-rotate-2026-10-07_11.48.25.png",
+    "sha256": "399b5ccadb6e7fc3daccb9724caedabd9fe7dfbdf0f084bc2ee5f0ed251f0869"
+  },
+  {
+    "label": "wall-upper-mirror",
+    "file": "wall-upper-mirror-2026-10-07_11.45.12.png",
+    "sha256": "e62bb96567475bea9adb52dd2659b259467c8a70f2131a33e33e605e85023407",
+    "context": "Actual upper mirror 11:45:02; post-click native F2 11:45:13; scheduled exact pair assertions 11:45:25. Earlier JOIN_FRAMES scene label was stale."
+  }
+]

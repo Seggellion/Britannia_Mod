@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.seggellion.britannia_mod.farming.CommunityPlotWindowTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-10-07T17:20:47" hostname="MSI" time="0.007">
+  <properties/>
+  <testcase name="theScheduleDelayIsNeverZeroSoARescheduleCannotSpin()" classname="com.seggellion.britannia_mod.farming.CommunityPlotWindowTest" time="0.003"/>
+  <testcase name="aWarningBelongsOnlyToTheTickThatIsExactlyThatManySecondsOut()" classname="com.seggellion.britannia_mod.farming.CommunityPlotWindowTest" time="0.0"/>
+  <testcase name="bothWindowsCarryTheSecondsRailsEnforcesOnTheSameTwoSteps()" classname="com.seggellion.britannia_mod.farming.CommunityPlotWindowTest" time="0.001"/>
+  <testcase name="secondsRemainingRoundsUpSoAPlayerIsNeverToldZeroWhileTheWindowIsOpen()" classname="com.seggellion.britannia_mod.farming.CommunityPlotWindowTest" time="0.0"/>
+  <testcase name="theTickConstantsAreTheSecondsAndNothingElse()" classname="com.seggellion.britannia_mod.farming.CommunityPlotWindowTest" time="0.0"/>
+  <testcase name="aWindowExpiresExactlyOnItsDeadlineAndNotBefore()" classname="com.seggellion.britannia_mod.farming.CommunityPlotWindowTest" time="0.001"/>
+  <testcase name="aWindowShorterThanItsMarksStillSchedulesTheMarksItCanReach()" classname="com.seggellion.britannia_mod.farming.CommunityPlotWindowTest" time="0.0"/>
+  <testcase name="theBlockEntitiesUseTheSharedWindowRatherThanNumbersOfTheirOwn()" classname="com.seggellion.britannia_mod.farming.CommunityPlotWindowTest" time="0.0"/>
+  <testcase name="theCountdownMarksAreSixtyThirtyAndTenSeconds()" classname="com.seggellion.britannia_mod.farming.CommunityPlotWindowTest" time="0.001"/>
+  <testcase name="theScheduleWalksTheMarksInOrderAndFinishesOnTheDeadline()" classname="com.seggellion.britannia_mod.farming.CommunityPlotWindowTest" time="0.0"/>
+  <testcase name="aDeadlineOfZeroIsNoWindowAtAllRatherThanAWindowInThePast()" classname="com.seggellion.britannia_mod.farming.CommunityPlotWindowTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

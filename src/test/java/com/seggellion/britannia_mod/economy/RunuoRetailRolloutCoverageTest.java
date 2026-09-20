@@ -2,13 +2,10 @@ package com.seggellion.britannia_mod.economy;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,19 +41,8 @@ final class RunuoRetailRolloutCoverageTest {
 
     @BeforeAll
     static void load() throws IOException {
-        mapping = parse(Path.of("docs", "vendor-trader-economy", "runuo_ultimacraft_mapping.json"));
-        rollout = parse(Path.of("docs", "vendor-trader-economy", "economic_vendor_rollout.json"));
-    }
-
-    private static JsonObject parse(Path relative) throws IOException {
-        Path base = Path.of(System.getProperty("user.dir")).toAbsolutePath();
-        for (int depth = 0; depth < 6 && base != null; depth++, base = base.getParent()) {
-            Path candidate = base.resolve(relative);
-            if (Files.exists(candidate)) {
-                return JsonParser.parseString(Files.readString(candidate)).getAsJsonObject();
-            }
-        }
-        throw new IOException(relative + " not found walking up from " + System.getProperty("user.dir"));
+        mapping = RunuoContractFixtures.load("runuo_ultimacraft_mapping.json");
+        rollout = RunuoContractFixtures.load("economic_vendor_rollout.json");
     }
 
     @Test

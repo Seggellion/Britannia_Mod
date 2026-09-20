@@ -1,0 +1,17 @@
+# Reopened discovery status — 2026-10-08
+
+**2026-10-09 clarification:** The owner requires continuous **exterior** junction timber for both A and B, preserving the interior. Neither original cropped-case label nor interior acceptance is a prerequisite. Selected older JAR discrepancy remains confirmed; actual candidate appearance is still pending. The [follow-up handoff](../plaster-corner-followup-2026-10-09/FOLLOWUP_HANDOFF.md) supersedes future-contract requirements below and provides an unlaunched isolated profile, short comparison, verified staged candidate and rollback instructions. Identity/analysis metadata was refreshed on Oct 9 for M0; historical runtime logs/results were not rerun. No further mesh/code change is justified before the candidate comparison.
+
+**Plaster:** REOPENED_VISUAL_DEFECT_UNRESOLVED. Discovery deliverables complete with explicit owner-view/server limitations. Confirmed selected client installation/source discrepancy; verified candidate geometry and packaged state/neighbor/persistence findings; source appearance not declared accepted. Original A/B good/bad label remains pending.
+
+**Combined 0.1.8d production acceptance:** PENDING. Existing independent fence corner/decorator/reload and alligator playback holds remain. Medallion owner UI approval and accepted sustained movement are retained. Source publication/signing status is historical context only; no push/review/merge/tag/release/deployment occurred in this discovery.
+
+**Source:** exact `patch-18`, entry HEAD `71de2312a552ebf4dad3ecf147efd1de4bd815db`; closeout HEAD `cf49b1700d1a8992f39396f2ae531f0cb26502d7`. The concurrent fence discovery adds an excluded GameTest harness and documentation/evidence; production implementation/resources still match the candidate. No application/resource/test/build/tool implementation changes by this plaster discovery. Dated documentation/analysis/disposable fixture only; other owner work preserved.
+
+**Candidate unchanged:** `C:\projects\britannia\mod\Britannia_Mod\tmp\combined-0.1.8d\release\britannia_mod-0.1.8d-all.jar`; clean 986ed746866dc944b7b496ab9428b670f65e15c0;36,142,668 bytes;SHA-256 `f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd`. Prior plaster candidate also preserved.
+
+**Actual discovery checks:** source/current/ZIP/installed-entry parity and embedded identity;40-row corner model audit; scoped half freshness; face-aware analytical rays; packaged headless32 full pair/8 half state observations;40 exact restart assertions;8 lone-full-wall half-corner assertions; blank→support arm states/physical edges/pair consistency. Missing actual player/visual/owner-server evidence is not called passed. Initial offline SDK setup failures are preserved separately from successful runtime results. Both task-created server sessions stopped normally; no desktop input or client process was started.
+
+Read [DISCOVERY_REPORT.md](DISCOVERY_REPORT.md), [short controlled comparison](CONTROLLED_COMPARISON.md), [conditional M0–M5 proposal](IMPLEMENTATION_PROPOSAL.md), [runtime evidence](evidence/RUNTIME_SUMMARY.json), [candidate/installed identity](evidence/ARTIFACTS.json), [full geometry/state matrix](evidence/MATRIX.csv).
+
+Future implementation must first resolve the owner-labeled inside/outside visual contract on verified resources. Do not silently clear the reopened defect, duplicate posts, remap selectors, extend generation broadly, change collision again or waive an unobserved required view.

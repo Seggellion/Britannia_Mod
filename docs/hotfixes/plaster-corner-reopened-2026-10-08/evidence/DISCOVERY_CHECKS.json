@@ -1,0 +1,9 @@
+{
+  "legal_full_corner_rows": 32,
+  "legal_half_corner_rows": 8,
+  "full_blank_exact_rows": 32,
+  "half_lone_exact_rows": 8,
+  "document_missing_links": [],
+  "candidate_sha256": "f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd",
+  "production_visual_acceptance": false
+}

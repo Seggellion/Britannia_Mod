@@ -1,0 +1,48 @@
+{
+  "artifact": "f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd",
+  "registeredRequiredTests": 1,
+  "passed": 1,
+  "constructedScenarios": 48,
+  "sameCoordinateTransitionChecks": 288,
+  "legacyCodecAndModelPreservationChecks": 64,
+  "schema": {
+    "states": 2112,
+    "provenance": [
+      "artifact: britannia_mod 0.1.8d britannia_mod-0.1.8d-all.jar 36142668B modified=2026-10-07T17:45:12.518Z sha256=f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd",
+      "build: version=0.1.8d commit=986ed746866dc944b7b496ab9428b670f65e15c0 branch=HEAD dirtyWorkingTree=false built=2026-10-07T17:43:56.051245600Z",
+      "neoforge: 21.1.72  minecraft: 1.21.1",
+      "server: integrated/other (GameTestServer) - vanilla spawn protection cannot apply here",
+      "spawn-protection: not applicable on this server type"
+    ],
+    "class": "com.seggellion.britannia_mod.block.WoodenFenceBlock",
+    "properties": {
+      "east": "[true, false]",
+      "facing": "[north, south, west, east]",
+      "layout_code": "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]",
+      "north": "[true, false]",
+      "south": "[true, false]",
+      "west": "[true, false]"
+    },
+    "default": {
+      "Properties": {
+        "west": "false",
+        "south": "false",
+        "north": "false",
+        "layout_code": "32",
+        "facing": "north",
+        "east": "false"
+      },
+      "Name": "britannia_mod:wooden_fence"
+    },
+    "origin": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\fence-runtime-rediscovery-2026-10-08\\source\\tmp\\edge-fence\\rediscovery\\combined-artifact\\mods\\britannia_mod-0.1.8d-all.jar",
+    "phase": "schema"
+  },
+  "summary": {
+    "cases": 48,
+    "divergences": 0,
+    "fixtures": 112,
+    "firstDivergence": "none",
+    "phase": "summary-write"
+  },
+  "freshClientPacketsAndRender": "not executed; computer-use helper unavailable"
+}

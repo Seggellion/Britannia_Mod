@@ -1,0 +1,38 @@
+[06Oct2026 20:49:13.692] [main/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "neoforge-21.1.72.jar" [locator: neoforge devenv provider ([C:\projects\britannia\mod\Britannia_Mod\.gradle\repositories\ng_dummy_ng\net\neoforged\neoforge\21.1.72\neoforge-21.1.72.jar])]
+[06Oct2026 20:49:13.714] [main/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "neoforge-21.1.72.jar" [locator: neoforge devenv provider ([C:\projects\britannia\mod\Britannia_Mod\.gradle\repositories\ng_dummy_ng\net\neoforged\neoforge\21.1.72\neoforge-21.1.72.jar])]
+[06Oct2026 20:49:13.751] [main/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "britannia_mod-0.1.8d-all.jar" [locator: {mods folder locator at C:\projects\britannia\mod\Britannia_Mod\tmp\plaster-corner-0.1.8d\client-packaged\mods}, reader: mod manifest]
+[06Oct2026 20:49:14.295] [main/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/SCAN]: Found library file "nanohttpd-2.2.0.jar" [parent: britannia_mod-0.1.8d-all.jar, locator: jarinjar]
+[06Oct2026 20:49:14.295] [main/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "geckolib-neoforge-1.21.1-4.6.6.jar" [parent: britannia_mod-0.1.8d-all.jar, locator: jarinjar, reader: mod manifest]
+[06Oct2026 20:50:33.220] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Starting integrated minecraft server version 1.21.1
+[06Oct2026 20:51:20.831] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Dev] PLASTER_CASE_00_EXACT_LOWER_PASS
+[06Oct2026 20:51:20.838] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] [Dev] PLASTER_CASE_00_EXACT_LOWER_PASS
+[06Oct2026 20:52:50.712] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Dev] PLASTER_CASE_05_STATE_NORMALIZED
+[06Oct2026 20:52:50.721] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] [Dev] PLASTER_CASE_05_STATE_NORMALIZED
+[06Oct2026 20:53:18.371] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Dev] PLASTER_CASE_09_EXACT_LOWER_PASS
+[06Oct2026 20:53:18.372] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] [Dev] PLASTER_CASE_09_EXACT_LOWER_PASS
+[06Oct2026 20:53:49.067] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Dev] PLASTER_CASE_20_EXACT_LOWER_PASS
+[06Oct2026 20:53:49.075] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] [Dev] PLASTER_CASE_20_EXACT_LOWER_PASS
+[06Oct2026 20:54:13.873] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Dev] PLASTER_BLOCKITEM_ARMS_FIRST_READY_AT_48_80_84
+[06Oct2026 20:54:13.880] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] [Dev] PLASTER_BLOCKITEM_ARMS_FIRST_READY_AT_48_80_84
+[06Oct2026 20:54:33.402] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Dev] PLASTER_BLOCKITEM_LOWER_PASS
+[06Oct2026 20:54:33.402] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Dev] PLASTER_BLOCKITEM_UPPER_PASS
+[06Oct2026 20:54:33.408] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] [Dev] PLASTER_BLOCKITEM_LOWER_PASS
+[06Oct2026 20:54:33.408] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] [Dev] PLASTER_BLOCKITEM_UPPER_PASS
+[06Oct2026 20:56:51.027] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Dev] PLASTER_DECORATOR_LOWER_MIRRORED_TRUE
+[06Oct2026 20:56:51.028] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Dev] PLASTER_DECORATOR_UPPER_REMAINS_FALSE_PAIR_RISK
+[06Oct2026 20:56:51.028] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] [Dev] PLASTER_DECORATOR_LOWER_MIRRORED_TRUE
+[06Oct2026 20:56:51.028] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] [Dev] PLASTER_DECORATOR_UPPER_REMAINS_FALSE_PAIR_RISK
+[06Oct2026 20:58:32.096] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Server] PLASTER_CHUNK_UNLOADED_PASS
+[06Oct2026 20:58:32.108] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Dev] PLASTER_CASE_00_EXACT_LOWER_PASS
+[06Oct2026 20:58:32.119] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] [Server] PLASTER_CHUNK_UNLOADED_PASS
+[06Oct2026 20:58:32.120] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] [Dev] PLASTER_CASE_00_EXACT_LOWER_PASS
+[06Oct2026 21:00:51.559] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Plaster Corner Baseline]'/minecraft:overworld
+[06Oct2026 21:00:51.585] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Plaster Corner Baseline]'/minecraft:the_end
+[06Oct2026 21:00:51.593] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Plaster Corner Baseline]'/minecraft:the_nether
+[06Oct2026 21:01:07.022] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
+[06Oct2026 21:01:07.062] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Plaster Corner Baseline]'/minecraft:overworld
+[06Oct2026 21:01:07.110] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Plaster Corner Baseline]'/minecraft:the_end
+[06Oct2026 21:01:07.115] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Plaster Corner Baseline]'/minecraft:the_nether
+[06Oct2026 21:02:31.282] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Starting integrated minecraft server version 1.21.1
+[06Oct2026 21:03:04.337] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Dev] PLASTER_CASE_00_EXACT_LOWER_PASS
+[06Oct2026 21:03:04.340] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] [Dev] PLASTER_CASE_00_EXACT_LOWER_PASS

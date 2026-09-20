@@ -1,0 +1,169 @@
+{
+  "checkpoint": "f29548d77c03163e16321f120e28904685fdbdab",
+  "candidate_sha256": "de563ecfcb8f9067248ec09ae0578f7776ea5c1beefa4f1c182b9ac255a5df2e",
+  "plaster_status": "BLOCKED_PRE_EXISTING_WALL_PAIR_AND_MIRROR_TOPOLOGY",
+  "rows": [
+    {
+      "id": 1,
+      "status": "PASS_RENDER_ONLY",
+      "result": "All four facings x two mirrors rendered with exact LOWER/UPPER assertions; cases0,1,2,5,6,9,12,13. Forced legal states do not certify normal placement.",
+      "evidence": "FORCED_STATES.json; RENDER_FRAMES.json; JOIN_FRAMES.json"
+    },
+    {
+      "id": 2,
+      "status": "PASS_RENDER_CONTROL",
+      "result": "Eight true-branch full controls rendered; existing two-post layout retained.",
+      "evidence": "RENDER_FRAMES.json"
+    },
+    {
+      "id": 3,
+      "status": "PASS_MESH",
+      "result": "Both visible sections and top inspected; lower renders Y0..32, upper air, no duplicate upper post in repaired false branch.",
+      "evidence": "join-scene-00-2026-10-07_04.40.27.png"
+    },
+    {
+      "id": 4,
+      "status": "PASS_RENDER_ONLY",
+      "result": "All four false-branch half facings rendered with exact assertions; visible cap, one post, no invented mirror/half.",
+      "evidence": "RENDER_FRAMES.json; join-scene-01-2026-10-07_04.48.59.png"
+    },
+    {
+      "id": 5,
+      "status": "PASS_RENDER_CONTROL",
+      "result": "All four true-branch half controls rendered with exact assertions.",
+      "evidence": "RENDER_FRAMES.json"
+    },
+    {
+      "id": 6,
+      "status": "COMPLETED_WITH_PRE_EXISTING_FAILURE",
+      "result": "Valid straight/T states rendered, both branches represented and full mirror controls. Mirrored T detached branch matches mirror-ignorant neighbor derivation; art unchanged.",
+      "evidence": "CLIENT_SAVED_STATES.json; JOIN_FRAMES.json scenes27-30; cases24-25"
+    },
+    {
+      "id": 7,
+      "status": "PASS_ACTUAL_CLICK",
+      "result": "Actual corner BlockItem placed before command-created blank arms; both heights derive south/corner/false/unmirrored.",
+      "evidence": "CLIENT_SAVED_STATES.json; placement-corner-first-initial.png; scene24"
+    },
+    {
+      "id": 8,
+      "status": "PASS_ACTUAL_CLICK",
+      "result": "North then west blank arms prepared; actual corner BlockItem click gives matching south/corner/false/unmirrored halves.",
+      "evidence": "CLIENT_SAVED_STATES.json; placement-reversed-arms.png; scene25"
+    },
+    {
+      "id": 9,
+      "status": "PASS_OBSERVED_RULE",
+      "result": "Unmirrored full support arms join to matching south/corner/false/unmirrored center.",
+      "evidence": "CLIENT_SAVED_STATES.json; scene03"
+    },
+    {
+      "id": 10,
+      "status": "PASS_OBSERVED_RULE",
+      "result": "Valid two-half oak doors normalize center to north/straight; rendered and dumped.",
+      "evidence": "CLIENT_SAVED_STATES.json; scene04"
+    },
+    {
+      "id": 11,
+      "status": "PASS_OBSERVED_RULE",
+      "result": "Corrected valid two-half tagged wooden_gate neighbors asserted at all four cells; center north/straight both halves. Initial lower-only fixture excluded.",
+      "evidence": "CLIENT_LATEST.log VALID_TAGGED_GATE; scene05 latest; CLIENT_SAVED_STATES.json"
+    },
+    {
+      "id": 12,
+      "status": "PASS_OBSERVED_RULE",
+      "result": "Stone and wooden_post are non-peers; center remains south/straight both halves.",
+      "evidence": "CLIENT_SAVED_STATES.json; scenes06-07"
+    },
+    {
+      "id": 13,
+      "status": "COMPLETED_OBSERVATION",
+      "result": "Full center ignores half neighbors (straight); half center joins full blank/half peers (corner). This is observed existing asymmetry, not a symmetric join pass.",
+      "evidence": "CLIENT_SAVED_STATES.json; scenes08-10"
+    },
+    {
+      "id": 14,
+      "status": "PASS_OBSERVED_RULE",
+      "result": "Remove north arm: matching south/straight; add back: matching south/corner. E/W forced corner separately normalizes N/S on neighbor notification; MIRRORED mismatch survives update.",
+      "evidence": "CLIENT_LATEST.log STATE_removed_arm / STATE_added_arm; scene11"
+    },
+    {
+      "id": 15,
+      "status": "COMPLETED_FAIL_PRE_EXISTING",
+      "result": "Actual offhand lower click changes only lower mirror, with visible art following lower through both heights. Prior true/false divergence restored to false/false by repeated click.",
+      "evidence": "decorator-lower-mirror.png; PHYSICS_RESULTS.json"
+    },
+    {
+      "id": 16,
+      "status": "COMPLETED_FAIL_PRE_EXISTING",
+      "result": "Actual offhand upper click produces false/true; visible art unchanged while upper branch collider moves 0.5625 blocks.",
+      "evidence": "decorator-upper-mirror.png; PHYSICS_UPPER_ONLY_MIRROR.json"
+    },
+    {
+      "id": 17,
+      "status": "COMPLETED_FAIL_PRE_EXISTING",
+      "result": "Actual main-hand lower rotation leaves lower west while upper remains south; scheduled ten-second pair assertions confirm divergence.",
+      "evidence": "decorator-lower-rotation.png; CLIENT_LATEST.log"
+    },
+    {
+      "id": 18,
+      "status": "COMPLETED_FAIL_PRE_EXISTING",
+      "result": "Actual upper rotation normalizes facings to south but leaves false/true mirrors; not paired-edit acceptance.",
+      "evidence": "decorator-upper-rotation.png; CLIENT_LATEST.log"
+    },
+    {
+      "id": 19,
+      "status": "COMPLETED_OBSERVATION",
+      "result": "All four unmirrored vanilla rotations executed. Physical joins retained; 90/270 normalize to N/S true branch with pre-existing two-post layout. Literal one-post rigid transform not passed.",
+      "evidence": "CLIENT_SAVED_STATES.json STRUCTURES0-3; JOIN_FRAMES scenes12-15"
+    },
+    {
+      "id": 20,
+      "status": "COMPLETED_FAIL_PRE_EXISTING",
+      "result": "All eight mirrored vanilla structure transforms executed; both halves match, but rendered branch detached/misplaced after normalization.",
+      "evidence": "CLIENT_SAVED_STATES.json STRUCTURES4-11; JOIN_FRAMES scenes16-23"
+    },
+    {
+      "id": 21,
+      "status": "NOT_COMPLETED_UI_HOLD",
+      "result": "W/Space taps did not sustain movement in per-tick player coordinates. Engine item collision probes complete but do not pass player walking/jumping. Manual reproduction prepared.",
+      "evidence": "COMMAND_STORAGE.json; RUNTIME_REPRODUCTION.md"
+    },
+    {
+      "id": 22,
+      "status": "COMPLETED_WITH_PRE_EXISTING_FAILURE",
+      "result": "Actual selection/targeting on both stored heights observed; upper is selectable despite air model. Per-half shape divergence blocks outline/geometry agreement.",
+      "evidence": "decorator-lower-mirror.png; decorator-upper-mirror.png; prior placement hit-outline evidence"
+    },
+    {
+      "id": 23,
+      "status": "PASS_RESOURCE_RELOAD",
+      "result": "Actual F3+T resource refresh completed and settled structure/target state reobserved; no jar change.",
+      "evidence": "structure-resource-refresh.png; structure-unmirrored-settled-state.png; CLIENT_LATEST.log"
+    },
+    {
+      "id": 24,
+      "status": "NOT_SUPPLIED",
+      "result": "Default no selected packs/shader mods verified. Owner overrides not provided; unknown configuration cannot be certified.",
+      "evidence": "client-resume/options.txt; runtime mod-discovery log; RUNTIME_REPRODUCTION.md"
+    },
+    {
+      "id": 25,
+      "status": "PASS_PERSISTENCE",
+      "result": "Dedicated copied world: 90 chunks loaded, save/stop/restart/save/stop both exit0. All54 fixture rows and recorded neighbors unchanged; divergent mirrors persist.",
+      "evidence": "PERSISTENCE_RESULTS.json; SERVER_FIRST.log; SERVER_RESTART.log"
+    },
+    {
+      "id": 26,
+      "status": "COMPLETED_REPRODUCED",
+      "result": "Minimal isolated corner with four two-height blank-arm cells; actual upper click from matching false/false creates false/true.",
+      "evidence": "MIRROR_MISMATCH_DIAGNOSIS.md; CLIENT_LATEST.log; CLIENT_SAVED_STATES.json"
+    },
+    {
+      "id": 27,
+      "status": "COMPLETED_BLOCKING_DISPOSITION",
+      "result": "Byte-identical pre-plaster shared classes; actual rendered/physical branch divergence, mirror-ignorant joins and durable persistence. Pre-existing blocking required corner behavior.",
+      "evidence": "PRE_EXISTING_BYTECODE.json; PHYSICS_RESULTS.json; PHYSICS_UPPER_ONLY_MIRROR.json; PERSISTENCE_RESULTS.json"
+    }
+  ]
+}

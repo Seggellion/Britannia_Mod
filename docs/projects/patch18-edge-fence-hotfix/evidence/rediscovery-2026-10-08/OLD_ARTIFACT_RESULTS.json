@@ -1,0 +1,421 @@
+{
+  "artifact": "c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6",
+  "registeredTests": 1,
+  "requiredFailures": 1,
+  "constructedScenarios": 48,
+  "changedOwnerCases": [
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35
+  ],
+  "unchangedOwnerCases": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47
+  ],
+  "cases12and24": {
+    "12": {
+      "A-isolated-immediate": {
+        "case": 12,
+        "phase": "A-isolated-immediate",
+        "ownerA": "20032, 80, 22008",
+        "ownerB": "20032, 80, 22009",
+        "outlineA": "[AABB[0.75, 0.0, 0.0] -> [1.0, 1.0, 1.0]]",
+        "collisionA": "[AABB[0.75, 0.0, 0.0] -> [1.0, 1.5, 1.0]]",
+        "A": {
+          "Properties": {
+            "west": "false",
+            "south": "false",
+            "north": "false",
+            "facing": "east",
+            "east": "false"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "B": {
+          "Name": "minecraft:air"
+        },
+        "clientState": "unobserved; constructed server context"
+      },
+      "A-isolated-settled-before-B": {
+        "case": 12,
+        "phase": "A-isolated-settled-before-B",
+        "ownerA": "20032, 80, 22008",
+        "ownerB": "20032, 80, 22009",
+        "outlineA": "[AABB[0.75, 0.0, 0.0] -> [1.0, 1.0, 1.0]]",
+        "collisionA": "[AABB[0.75, 0.0, 0.0] -> [1.0, 1.5, 1.0]]",
+        "A": {
+          "Properties": {
+            "west": "false",
+            "south": "false",
+            "north": "false",
+            "facing": "east",
+            "east": "false"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "B": {
+          "Name": "minecraft:air"
+        },
+        "clientState": "unobserved; constructed server context"
+      },
+      "after-B-immediate": {
+        "case": 12,
+        "phase": "after-B-immediate",
+        "ownerA": "20032, 80, 22008",
+        "ownerB": "20032, 80, 22009",
+        "outlineA": "[AABB[0.0, 0.0, 0.0] -> [0.25, 1.0, 1.0]]",
+        "collisionA": "[AABB[0.0, 0.0, 0.0] -> [0.25, 1.5, 1.0]]",
+        "A": {
+          "Properties": {
+            "west": "false",
+            "south": "true",
+            "north": "false",
+            "facing": "west",
+            "east": "false"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "B": {
+          "Properties": {
+            "west": "false",
+            "south": "false",
+            "north": "true",
+            "facing": "west",
+            "east": "false"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "clientState": "unobserved; constructed server context"
+      },
+      "after-B-scheduled-tick": {
+        "case": 12,
+        "phase": "after-B-scheduled-tick",
+        "ownerA": "20032, 80, 22008",
+        "ownerB": "20032, 80, 22009",
+        "outlineA": "[AABB[0.0, 0.0, 0.0] -> [0.25, 1.0, 1.0]]",
+        "collisionA": "[AABB[0.0, 0.0, 0.0] -> [0.25, 1.5, 1.0]]",
+        "A": {
+          "Properties": {
+            "west": "false",
+            "south": "true",
+            "north": "false",
+            "facing": "west",
+            "east": "false"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "B": {
+          "Properties": {
+            "west": "false",
+            "south": "false",
+            "north": "true",
+            "facing": "west",
+            "east": "false"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "clientState": "unobserved; constructed server context"
+      },
+      "after-B-settled": {
+        "case": 12,
+        "phase": "after-B-settled",
+        "ownerA": "20032, 80, 22008",
+        "ownerB": "20032, 80, 22009",
+        "outlineA": "[AABB[0.0, 0.0, 0.0] -> [0.25, 1.0, 1.0]]",
+        "collisionA": "[AABB[0.0, 0.0, 0.0] -> [0.25, 1.5, 1.0]]",
+        "A": {
+          "Properties": {
+            "west": "false",
+            "south": "true",
+            "north": "false",
+            "facing": "west",
+            "east": "false"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "B": {
+          "Properties": {
+            "west": "false",
+            "south": "false",
+            "north": "true",
+            "facing": "west",
+            "east": "false"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "clientState": "unobserved; constructed server context"
+      },
+      "removed-B-immediate": {
+        "case": 12,
+        "phase": "removed-B-immediate",
+        "ownerA": "20032, 80, 22008",
+        "ownerB": "20032, 80, 22009",
+        "outlineA": "[AABB[0.0, 0.0, 0.0] -> [0.25, 1.0, 1.0]]",
+        "collisionA": "[AABB[0.0, 0.0, 0.0] -> [0.25, 1.5, 1.0]]",
+        "A": {
+          "Properties": {
+            "west": "false",
+            "south": "false",
+            "north": "false",
+            "facing": "west",
+            "east": "false"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "B": {
+          "Name": "minecraft:air"
+        },
+        "clientState": "unobserved; constructed server context"
+      },
+      "removed-B-settled": {
+        "case": 12,
+        "phase": "removed-B-settled",
+        "ownerA": "20032, 80, 22008",
+        "ownerB": "20032, 80, 22009",
+        "outlineA": "[AABB[0.0, 0.0, 0.0] -> [0.25, 1.0, 1.0]]",
+        "collisionA": "[AABB[0.0, 0.0, 0.0] -> [0.25, 1.5, 1.0]]",
+        "A": {
+          "Properties": {
+            "west": "false",
+            "south": "false",
+            "north": "false",
+            "facing": "west",
+            "east": "false"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "B": {
+          "Name": "minecraft:air"
+        },
+        "clientState": "unobserved; constructed server context"
+      }
+    },
+    "24": {
+      "A-isolated-immediate": {
+        "case": 24,
+        "phase": "A-isolated-immediate",
+        "ownerA": "20000, 80, 22024",
+        "ownerB": "20001, 80, 22024",
+        "outlineA": "[AABB[0.0, 0.0, 0.75] -> [1.0, 1.0, 1.0]]",
+        "collisionA": "[AABB[0.0, 0.0, 0.75] -> [1.0, 1.5, 1.0]]",
+        "A": {
+          "Properties": {
+            "west": "false",
+            "south": "false",
+            "north": "false",
+            "facing": "south",
+            "east": "false"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "B": {
+          "Name": "minecraft:air"
+        },
+        "clientState": "unobserved; constructed server context"
+      },
+      "A-isolated-settled-before-B": {
+        "case": 24,
+        "phase": "A-isolated-settled-before-B",
+        "ownerA": "20000, 80, 22024",
+        "ownerB": "20001, 80, 22024",
+        "outlineA": "[AABB[0.0, 0.0, 0.75] -> [1.0, 1.0, 1.0]]",
+        "collisionA": "[AABB[0.0, 0.0, 0.75] -> [1.0, 1.5, 1.0]]",
+        "A": {
+          "Properties": {
+            "west": "false",
+            "south": "false",
+            "north": "false",
+            "facing": "south",
+            "east": "false"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "B": {
+          "Name": "minecraft:air"
+        },
+        "clientState": "unobserved; constructed server context"
+      },
+      "after-B-immediate": {
+        "case": 24,
+        "phase": "after-B-immediate",
+        "ownerA": "20000, 80, 22024",
+        "ownerB": "20001, 80, 22024",
+        "outlineA": "[AABB[0.0, 0.0, 0.0] -> [1.0, 1.0, 0.25]]",
+        "collisionA": "[AABB[0.0, 0.0, 0.0] -> [1.0, 1.5, 0.25]]",
+        "A": {
+          "Properties": {
+            "west": "false",
+            "south": "false",
+            "north": "false",
+            "facing": "north",
+            "east": "true"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "B": {
+          "Properties": {
+            "west": "true",
+            "south": "false",
+            "north": "false",
+            "facing": "north",
+            "east": "false"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "clientState": "unobserved; constructed server context"
+      },
+      "after-B-scheduled-tick": {
+        "case": 24,
+        "phase": "after-B-scheduled-tick",
+        "ownerA": "20000, 80, 22024",
+        "ownerB": "20001, 80, 22024",
+        "outlineA": "[AABB[0.0, 0.0, 0.0] -> [1.0, 1.0, 0.25]]",
+        "collisionA": "[AABB[0.0, 0.0, 0.0] -> [1.0, 1.5, 0.25]]",
+        "A": {
+          "Properties": {
+            "west": "false",
+            "south": "false",
+            "north": "false",
+            "facing": "north",
+            "east": "true"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "B": {
+          "Properties": {
+            "west": "true",
+            "south": "false",
+            "north": "false",
+            "facing": "north",
+            "east": "false"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "clientState": "unobserved; constructed server context"
+      },
+      "after-B-settled": {
+        "case": 24,
+        "phase": "after-B-settled",
+        "ownerA": "20000, 80, 22024",
+        "ownerB": "20001, 80, 22024",
+        "outlineA": "[AABB[0.0, 0.0, 0.0] -> [1.0, 1.0, 0.25]]",
+        "collisionA": "[AABB[0.0, 0.0, 0.0] -> [1.0, 1.5, 0.25]]",
+        "A": {
+          "Properties": {
+            "west": "false",
+            "south": "false",
+            "north": "false",
+            "facing": "north",
+            "east": "true"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "B": {
+          "Properties": {
+            "west": "true",
+            "south": "false",
+            "north": "false",
+            "facing": "north",
+            "east": "false"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "clientState": "unobserved; constructed server context"
+      },
+      "removed-B-immediate": {
+        "case": 24,
+        "phase": "removed-B-immediate",
+        "ownerA": "20000, 80, 22024",
+        "ownerB": "20001, 80, 22024",
+        "outlineA": "[AABB[0.0, 0.0, 0.0] -> [1.0, 1.0, 0.25]]",
+        "collisionA": "[AABB[0.0, 0.0, 0.0] -> [1.0, 1.5, 0.25]]",
+        "A": {
+          "Properties": {
+            "west": "false",
+            "south": "false",
+            "north": "false",
+            "facing": "north",
+            "east": "false"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "B": {
+          "Name": "minecraft:air"
+        },
+        "clientState": "unobserved; constructed server context"
+      },
+      "removed-B-settled": {
+        "case": 24,
+        "phase": "removed-B-settled",
+        "ownerA": "20000, 80, 22024",
+        "ownerB": "20001, 80, 22024",
+        "outlineA": "[AABB[0.0, 0.0, 0.0] -> [1.0, 1.0, 0.25]]",
+        "collisionA": "[AABB[0.0, 0.0, 0.0] -> [1.0, 1.5, 0.25]]",
+        "A": {
+          "Properties": {
+            "west": "false",
+            "south": "false",
+            "north": "false",
+            "facing": "north",
+            "east": "false"
+          },
+          "Name": "britannia_mod:wooden_fence"
+        },
+        "B": {
+          "Name": "minecraft:air"
+        },
+        "clientState": "unobserved; constructed server context"
+      }
+    }
+  },
+  "summary": {
+    "phase": "summary-write",
+    "firstDivergence": "case=12 phase=after-B-immediate A=20032, 80, 22008 old=Block{britannia_mod:wooden_fence}[east=false,facing=east,north=false,south=false,west=false] now=Block{britannia_mod:wooden_fence}[east=false,facing=west,north=false,south=true,west=false]",
+    "fixtures": 48,
+    "divergences": 120,
+    "cases": 48
+  }
+}

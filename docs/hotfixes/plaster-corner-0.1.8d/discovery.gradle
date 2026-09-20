@@ -1,0 +1,8 @@
+// Discovery-only build/test output isolation. Does not change source or packaging rules.
+allprojects {
+    layout.buildDirectory.set(file('C:/projects/britannia/mod/Britannia_Mod/tmp/plaster-corner-discovery/build'))
+    tasks.withType(Test).configureEach {
+        systemProperty 'britannia.projectDir', 'C:/projects/britannia/mod/Britannia_Mod'
+        workingDir = file('C:/projects/britannia/mod/Britannia_Mod/tmp/plaster-corner-discovery/test-working')
+    }
+}

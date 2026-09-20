@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.seggellion.britannia_mod.block.BannisterWallBranchTest" tests="14" skipped="0" failures="0" errors="0" timestamp="2026-10-07T17:20:46" hostname="MSI" time="0.113">
+  <properties/>
+  <testcase name="aRunSetAgainstTheWallItHugsStaysFlat()" classname="com.seggellion.britannia_mod.block.BannisterWallBranchTest" time="0.069"/>
+  <testcase name="aRunWithRailingEitherSideAndAWallOppositeGrowsAReturn()" classname="com.seggellion.britannia_mod.block.BannisterWallBranchTest" time="0.01"/>
+  <testcase name="takingTheWallAwayTakesTheReturnWithIt()" classname="com.seggellion.britannia_mod.block.BannisterWallBranchTest" time="0.0"/>
+  <testcase name="aWallTurnedAwayFromTheRunDoesNotGetAReturn()" classname="com.seggellion.britannia_mod.block.BannisterWallBranchTest" time="0.0"/>
+  <testcase name="mirroringSwapsTheSideTheReturnHugs()" classname="com.seggellion.britannia_mod.block.BannisterWallBranchTest" time="0.002"/>
+  <testcase name="everyRotationOfTheArrangementResolvesTheSameWay()" classname="com.seggellion.britannia_mod.block.BannisterWallBranchTest" time="0.008"/>
+  <testcase name="takingAwayTheRailingEitherSideTakesTheReturnWithIt()" classname="com.seggellion.britannia_mod.block.BannisterWallBranchTest" time="0.0"/>
+  <testcase name="anythingThatIsNotAnArchitecturalWallIsNotAWall()" classname="com.seggellion.britannia_mod.block.BannisterWallBranchTest" time="0.0"/>
+  <testcase name="everyStateTheBlockstateNamesIsOneTheBlockCanHold()" classname="com.seggellion.britannia_mod.block.BannisterWallBranchTest" time="0.0"/>
+  <testcase name="theReturnReachesTheEdgeFacingTheWallAndAPlainRunDoesNot()" classname="com.seggellion.britannia_mod.block.BannisterWallBranchTest" time="0.001"/>
+  <testcase name="aRunWithRailingOnOneSideOnlyGrowsNothing()" classname="com.seggellion.britannia_mod.block.BannisterWallBranchTest" time="0.0"/>
+  <testcase name="aCornerOrJunctionKeepsItsOwnBranch()" classname="com.seggellion.britannia_mod.block.BannisterWallBranchTest" time="0.001"/>
+  <testcase name="collisionNeverLeavesTheBlockEvenThoughTheModelDoes()" classname="com.seggellion.britannia_mod.block.BannisterWallBranchTest" time="0.014"/>
+  <testcase name="aLoneBannisterAgainstAWallGrowsNothing()" classname="com.seggellion.britannia_mod.block.BannisterWallBranchTest" time="0.001"/>
+  <system-out><![CDATA[WARN StatusConsoleListener Advanced terminal features are not available in this environment
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

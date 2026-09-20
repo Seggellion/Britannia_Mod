@@ -1,0 +1,262 @@
+[
+  {
+    "case": 0,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=south,shape=corner,branch_right=false,mirrored=false,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "join-scene-00-2026-10-07_04.40.27.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 1,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=north,shape=corner,branch_right=false,mirrored=false,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "render-case-01-2026-10-07_03.46.51.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 2,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=north,shape=corner,branch_right=false,mirrored=true,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "render-case-02-2026-10-07_03.47.15.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 3,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=north,shape=corner,branch_right=true,mirrored=false,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "render-case-03-2026-10-07_03.47.22.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 4,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=north,shape=corner,branch_right=true,mirrored=true,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "render-case-04-2026-10-07_03.47.37.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 5,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=east,shape=corner,branch_right=false,mirrored=false,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "render-case-05-2026-10-07_03.47.52.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 6,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=east,shape=corner,branch_right=false,mirrored=true,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "render-case-06-2026-10-07_03.48.07.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 7,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=east,shape=corner,branch_right=true,mirrored=false,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "render-case-07-2026-10-07_03.48.22.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 8,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=east,shape=corner,branch_right=true,mirrored=true,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "render-case-08-2026-10-07_03.48.37.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 9,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=south,shape=corner,branch_right=false,mirrored=true,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "render-case-09-2026-10-07_03.48.52.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 10,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=south,shape=corner,branch_right=true,mirrored=false,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "render-case-10-2026-10-07_03.49.07.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 11,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=south,shape=corner,branch_right=true,mirrored=true,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "render-case-11-2026-10-07_03.49.22.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 12,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=west,shape=corner,branch_right=false,mirrored=false,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "render-case-12-2026-10-07_03.49.37.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 13,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=west,shape=corner,branch_right=false,mirrored=true,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "render-case-13-2026-10-07_03.49.52.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 14,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=west,shape=corner,branch_right=true,mirrored=false,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "render-case-14-2026-10-07_03.50.07.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 15,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=west,shape=corner,branch_right=true,mirrored=true,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "render-case-15-2026-10-07_03.50.22.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 16,
+    "state": "britannia_mod:plaster_wall_and_support_blank_half[facing=north,shape=corner,branch_right=false]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": null,
+    "frame": "render-case-16-2026-10-07_03.50.37.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": "join-scene-01-2026-10-07_04.48.59.png"
+  },
+  {
+    "case": 17,
+    "state": "britannia_mod:plaster_wall_and_support_blank_half[facing=north,shape=corner,branch_right=true]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": null,
+    "frame": "render-case-17-2026-10-07_03.50.52.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 18,
+    "state": "britannia_mod:plaster_wall_and_support_blank_half[facing=east,shape=corner,branch_right=false]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": null,
+    "frame": "render-case-18-2026-10-07_03.51.11.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 19,
+    "state": "britannia_mod:plaster_wall_and_support_blank_half[facing=east,shape=corner,branch_right=true]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": null,
+    "frame": "render-case-19-2026-10-07_03.51.22.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 20,
+    "state": "britannia_mod:plaster_wall_and_support_blank_half[facing=south,shape=corner,branch_right=false]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": null,
+    "frame": "render-case-20-2026-10-07_03.51.37.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 21,
+    "state": "britannia_mod:plaster_wall_and_support_blank_half[facing=south,shape=corner,branch_right=true]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": null,
+    "frame": "render-case-21-2026-10-07_03.51.52.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 22,
+    "state": "britannia_mod:plaster_wall_and_support_blank_half[facing=west,shape=corner,branch_right=false]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": null,
+    "frame": "render-case-22-2026-10-07_03.52.07.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 23,
+    "state": "britannia_mod:plaster_wall_and_support_blank_half[facing=west,shape=corner,branch_right=true]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": null,
+    "frame": "render-case-23-2026-10-07_03.52.22.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 24,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=south,shape=straight,branch_right=false,mirrored=false,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "render-case-24-2026-10-07_03.52.37.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  },
+  {
+    "case": 25,
+    "state": "britannia_mod:plaster_wall_and_support_blank[facing=south,shape=t_junction,branch_right=false,mirrored=false,half=lower]",
+    "exact_lower_assertion_logged": true,
+    "exact_upper_assertion_logged": true,
+    "frame": "render-case-25-2026-10-07_03.52.52.png",
+    "visual_review": "completed",
+    "acceptance": "legal render only; not placement reachability",
+    "half_cap_supplement": null
+  }
+]

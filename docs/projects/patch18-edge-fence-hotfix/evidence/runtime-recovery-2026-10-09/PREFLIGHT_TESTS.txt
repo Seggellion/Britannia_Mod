@@ -1,0 +1,17 @@
+test_dirty_candidate_is_rejected (test_verify_installation.InstallationPreflightTests.test_dirty_candidate_is_rejected) ... ok
+test_disabled_old_jars_do_not_count_as_duplicates (test_verify_installation.InstallationPreflightTests.test_disabled_old_jars_do_not_count_as_duplicates) ... ok
+test_matching_files_never_claim_loaded_runtime (test_verify_installation.InstallationPreflightTests.test_matching_files_never_claim_loaded_runtime) ... ok
+test_missing_active_jar (test_verify_installation.InstallationPreflightTests.test_missing_active_jar) ... ok
+test_preflight_does_not_change_files (test_verify_installation.InstallationPreflightTests.test_preflight_does_not_change_files) ... ok
+test_renamed_duplicate_active_jar (test_verify_installation.InstallationPreflightTests.test_renamed_duplicate_active_jar) ... ok
+test_same_version_different_bytes_is_mismatch (test_verify_installation.InstallationPreflightTests.test_same_version_different_bytes_is_mismatch) ... ok
+test_short_hash_is_rejected (test_verify_installation.InstallationPreflightTests.test_short_hash_is_rejected) ... ok
+test_thin_jar_is_rejected (test_verify_installation.InstallationPreflightTests.test_thin_jar_is_rejected) ... ok
+test_wrong_approved_hash (test_verify_installation.InstallationPreflightTests.test_wrong_approved_hash) ... ok
+test_wrong_approved_source (test_verify_installation.InstallationPreflightTests.test_wrong_approved_source) ... ok
+test_wrong_instance_is_rejected (test_verify_installation.InstallationPreflightTests.test_wrong_instance_is_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 1.078s
+
+OK

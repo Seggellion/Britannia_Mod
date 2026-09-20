@@ -95,6 +95,14 @@ public class WoodChopEventHandler {
     }
 
     public static boolean handleAxeHarvest(ServerLevel serverLevel, BlockPos pos, BlockState state, Player player) {
+        // First, and ahead of every wood route, because this is the one axe target that must NOT be
+        // harvested. onBlockBreak above cancels the vanilla break for any block struck with the
+        // two-handed axe, so a category that falls through this method unhandled is not merely
+        // unrewarded -- it is indestructible, which is exactly how grape vines behaved.
+        if (AxeHarvestRules.isAllowedAxeSeverablePlant(state)) {
+            return severPlant(serverLevel, pos, state, player);
+        }
+
         if (AxeHarvestRules.isAllowedFruitBlock(state)) {
             OrangeTreeRootBlockEntity root = OrangeTreeUtils.findRoot(serverLevel, pos).orElse(null);
             return root != null && com.seggellion.britannia_mod.farming.FruitTreeHarvestService.pick(
@@ -205,6 +213,34 @@ public class WoodChopEventHandler {
         return false;
     }
 
+
+    /**
+     * Cuts a standing plant down and gives nothing back.
+     *
+     * <p>{@code playerWillDestroy} is called explicitly, and that is the load-bearing line. For a
+     * grape arbor it is the whole-plant cleanup: it finds the plot under whichever segment was
+     * struck, clears the sibling segments and resets the crop. Neither
+     * {@code Level#destroyBlock} nor NeoForge's {@code onDestroyedByPlayer} default invokes it —
+     * vanilla calls it separately from {@code ServerPlayerGameMode#destroyBlock}, which this path
+     * has already cancelled — so removing the block alone leaves the arbor's other segments
+     * standing: invisible, solid, owned by nothing, and impossible for a player to clear.
+     *
+     * <p>The explicit removal afterwards is for the plant that has no plot behind it, such as a
+     * retired standalone vine in an old save: there the cleanup has nothing to act on and the block
+     * still has to come down.
+     *
+     * <p>Nothing drops. {@code playerDestroy} is never called, so no loot table is consulted, and
+     * the arbor ships {@code noLootTable()} in any case; there is no weighted wood, no grape, no
+     * sapling and no tree karma. That is the whole intended behaviour: the mature crop is lost when
+     * somebody takes an axe to the vine.
+     */
+    private static boolean severPlant(ServerLevel serverLevel, BlockPos pos, BlockState state, Player player) {
+        state.getBlock().playerWillDestroy(serverLevel, pos, state, player);
+        if (serverLevel.getBlockState(pos).is(state.getBlock())) {
+            state.getBlock().onDestroyedByPlayer(state, serverLevel, pos, player, false, state.getFluidState());
+        }
+        return !serverLevel.getBlockState(pos).is(state.getBlock());
+    }
 
     private static WeightedWoodType deduceWoodType(BlockState state) {
         // e.g. "block.minecraft.oak_log"

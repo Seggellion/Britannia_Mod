@@ -1,0 +1,216 @@
+{
+  "source": "986ed746866dc944b7b496ab9428b670f65e15c0",
+  "candidate_sha256": "f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd",
+  "prior_evidence_preserved": "docs\\hotfixes\\plaster-corner-0.1.8d\\implementation\\acceptance-resume",
+  "rows": [
+    {
+      "id": 1,
+      "check": "Full false-branch four facings x two mirrors (8 exact lower/upper renders)",
+      "prior_result": "PASS_RENDER_ONLY",
+      "status": "PASS_UNCHANGED_RESOURCE_EVIDENCE_REUSED",
+      "evidence": "FORCED_STATES.json; RENDER_FRAMES.json; JOIN_FRAMES.json",
+      "reason": "All 17 support-family packaged resources match source and the retained mesh repair; no model/selector/texture changed in shared Java repair. These legal forced renders do not certify placement or normalization."
+    },
+    {
+      "id": 2,
+      "check": "Full true-branch four facings x two mirrors (8 controls)",
+      "prior_result": "PASS_RENDER_CONTROL",
+      "status": "PASS_UNCHANGED_RESOURCE_EVIDENCE_REUSED",
+      "evidence": "RENDER_FRAMES.json",
+      "reason": "All 17 support-family packaged resources match source and the retained mesh repair; no model/selector/texture changed in shared Java repair. These legal forced renders do not certify placement or normalization."
+    },
+    {
+      "id": 3,
+      "check": "Both visible vertical sections and Y16 join; upper air/no duplicate post",
+      "prior_result": "PASS_MESH",
+      "status": "PASS_UNCHANGED_RESOURCE_EVIDENCE_REUSED",
+      "evidence": "join-scene-00-2026-10-07_04.40.27.png",
+      "reason": "All 17 support-family packaged resources match source and the retained mesh repair; no model/selector/texture changed in shared Java repair. These legal forced renders do not certify placement or normalization."
+    },
+    {
+      "id": 4,
+      "check": "Half false-branch four facings",
+      "prior_result": "PASS_RENDER_ONLY",
+      "status": "PASS_UNCHANGED_RESOURCE_EVIDENCE_REUSED",
+      "evidence": "RENDER_FRAMES.json; join-scene-01-2026-10-07_04.48.59.png",
+      "reason": "All 17 support-family packaged resources match source and the retained mesh repair; no model/selector/texture changed in shared Java repair. These legal forced renders do not certify placement or normalization."
+    },
+    {
+      "id": 5,
+      "check": "Half true-branch four facings",
+      "prior_result": "PASS_RENDER_CONTROL",
+      "status": "PASS_UNCHANGED_RESOURCE_EVIDENCE_REUSED",
+      "evidence": "RENDER_FRAMES.json",
+      "reason": "All 17 support-family packaged resources match source and the retained mesh repair; no model/selector/texture changed in shared Java repair. These legal forced renders do not certify placement or normalization."
+    },
+    {
+      "id": 6,
+      "check": "Valid straight/T controls, orientations/branch/mirror representatives",
+      "prior_result": "COMPLETED_WITH_PRE_EXISTING_FAILURE",
+      "status": "PASS_CURRENT_RENDER_AND_STATE_WITH_APPLICABLE_REUSED_EVIDENCE",
+      "evidence": "evidence/current-client/CLIENT_STATES.json; evidence/current-client/JOIN_FRAMES.json; evidence/no-desktop/FRAMES.json; FINAL_GATES.json",
+      "reason": "Current normalized fixture states/renders and actual item GameTests cover changed shared behavior. Rows 7/8 reuse prior actual BlockItem placement plus current derived/reloaded states and unchanged BlockItem pathway; no fresh placement-order mouse trace is claimed."
+    },
+    {
+      "id": 7,
+      "check": "Corner-first actual BlockItem placement",
+      "prior_result": "PASS_ACTUAL_CLICK",
+      "status": "PASS_CURRENT_RENDER_AND_STATE_WITH_APPLICABLE_REUSED_EVIDENCE",
+      "evidence": "evidence/current-client/CLIENT_STATES.json; evidence/current-client/JOIN_FRAMES.json; evidence/no-desktop/FRAMES.json; FINAL_GATES.json",
+      "reason": "Current normalized fixture states/renders and actual item GameTests cover changed shared behavior. Rows 7/8 reuse prior actual BlockItem placement plus current derived/reloaded states and unchanged BlockItem pathway; no fresh placement-order mouse trace is claimed."
+    },
+    {
+      "id": 8,
+      "check": "Reversed arm placement order",
+      "prior_result": "PASS_ACTUAL_CLICK",
+      "status": "PASS_CURRENT_RENDER_AND_STATE_WITH_APPLICABLE_REUSED_EVIDENCE",
+      "evidence": "evidence/current-client/CLIENT_STATES.json; evidence/current-client/JOIN_FRAMES.json; evidence/no-desktop/FRAMES.json; FINAL_GATES.json",
+      "reason": "Current normalized fixture states/renders and actual item GameTests cover changed shared behavior. Rows 7/8 reuse prior actual BlockItem placement plus current derived/reloaded states and unchanged BlockItem pathway; no fresh placement-order mouse trace is claimed."
+    },
+    {
+      "id": 9,
+      "check": "Support-arm neighboring joins",
+      "prior_result": "PASS_OBSERVED_RULE",
+      "status": "PASS_CURRENT_RENDER_AND_STATE_WITH_APPLICABLE_REUSED_EVIDENCE",
+      "evidence": "evidence/current-client/CLIENT_STATES.json; evidence/current-client/JOIN_FRAMES.json; evidence/no-desktop/FRAMES.json; FINAL_GATES.json",
+      "reason": "Current normalized fixture states/renders and actual item GameTests cover changed shared behavior. Rows 7/8 reuse prior actual BlockItem placement plus current derived/reloaded states and unchanged BlockItem pathway; no fresh placement-order mouse trace is claimed."
+    },
+    {
+      "id": 10,
+      "check": "Door neighboring joins",
+      "prior_result": "PASS_OBSERVED_RULE",
+      "status": "PASS_CURRENT_RENDER_AND_STATE_WITH_APPLICABLE_REUSED_EVIDENCE",
+      "evidence": "evidence/current-client/CLIENT_STATES.json; evidence/current-client/JOIN_FRAMES.json; evidence/no-desktop/FRAMES.json; FINAL_GATES.json",
+      "reason": "Current normalized fixture states/renders and actual item GameTests cover changed shared behavior. Rows 7/8 reuse prior actual BlockItem placement plus current derived/reloaded states and unchanged BlockItem pathway; no fresh placement-order mouse trace is claimed."
+    },
+    {
+      "id": 11,
+      "check": "Tagged-gate neighboring joins",
+      "prior_result": "PASS_OBSERVED_RULE",
+      "status": "PASS_CURRENT_RENDER_AND_STATE_WITH_APPLICABLE_REUSED_EVIDENCE",
+      "evidence": "evidence/current-client/CLIENT_STATES.json; evidence/current-client/JOIN_FRAMES.json; evidence/no-desktop/FRAMES.json; FINAL_GATES.json",
+      "reason": "Current normalized fixture states/renders and actual item GameTests cover changed shared behavior. Rows 7/8 reuse prior actual BlockItem placement plus current derived/reloaded states and unchanged BlockItem pathway; no fresh placement-order mouse trace is claimed."
+    },
+    {
+      "id": 12,
+      "check": "Unrelated solid/post non-connections",
+      "prior_result": "PASS_OBSERVED_RULE",
+      "status": "PASS_CURRENT_RENDER_AND_STATE_WITH_APPLICABLE_REUSED_EVIDENCE",
+      "evidence": "evidence/current-client/CLIENT_STATES.json; evidence/current-client/JOIN_FRAMES.json; evidence/no-desktop/FRAMES.json; FINAL_GATES.json",
+      "reason": "Current normalized fixture states/renders and actual item GameTests cover changed shared behavior. Rows 7/8 reuse prior actual BlockItem placement plus current derived/reloaded states and unchanged BlockItem pathway; no fresh placement-order mouse trace is claimed."
+    },
+    {
+      "id": 13,
+      "check": "Full/half neighboring joins",
+      "prior_result": "COMPLETED_OBSERVATION",
+      "status": "PASS_CURRENT_RENDER_AND_STATE_WITH_APPLICABLE_REUSED_EVIDENCE",
+      "evidence": "evidence/current-client/CLIENT_STATES.json; evidence/current-client/JOIN_FRAMES.json; evidence/no-desktop/FRAMES.json; FINAL_GATES.json",
+      "reason": "Current normalized fixture states/renders and actual item GameTests cover changed shared behavior. Rows 7/8 reuse prior actual BlockItem placement plus current derived/reloaded states and unchanged BlockItem pathway; no fresh placement-order mouse trace is claimed."
+    },
+    {
+      "id": 14,
+      "check": "Neighbor addition and removal/normalization",
+      "prior_result": "PASS_OBSERVED_RULE",
+      "status": "PASS_CURRENT_RENDER_AND_STATE_WITH_APPLICABLE_REUSED_EVIDENCE",
+      "evidence": "evidence/current-client/CLIENT_STATES.json; evidence/current-client/JOIN_FRAMES.json; evidence/no-desktop/FRAMES.json; FINAL_GATES.json",
+      "reason": "Current normalized fixture states/renders and actual item GameTests cover changed shared behavior. Rows 7/8 reuse prior actual BlockItem placement plus current derived/reloaded states and unchanged BlockItem pathway; no fresh placement-order mouse trace is claimed."
+    },
+    {
+      "id": 15,
+      "check": "Offhand decorator mirror on lower",
+      "prior_result": "COMPLETED_FAIL_PRE_EXISTING",
+      "status": "PASS_ACTUAL_CURRENT_CANDIDATE_DECORATOR_CLICKS",
+      "evidence": "evidence/no-desktop/CLIENT_COMPLETE.log; evidence/no-desktop/FRAMES.json; evidence/current-client/COMMAND_STORAGE.json",
+      "reason": "Actual lower/upper offhand mirror and main-hand rotate clicks produced matching pairs. Connected neighbors normalize to equivalent physical joined slabs. Lower mirror timer first captured before the click and is not a pass assertion; subsequent upper-mirror before state confirms both halves mirrored."
+    },
+    {
+      "id": 16,
+      "check": "Offhand decorator mirror on upper",
+      "prior_result": "COMPLETED_FAIL_PRE_EXISTING",
+      "status": "PASS_ACTUAL_CURRENT_CANDIDATE_DECORATOR_CLICKS",
+      "evidence": "evidence/no-desktop/CLIENT_COMPLETE.log; evidence/no-desktop/FRAMES.json; evidence/current-client/COMMAND_STORAGE.json",
+      "reason": "Actual lower/upper offhand mirror and main-hand rotate clicks produced matching pairs. Connected neighbors normalize to equivalent physical joined slabs. Lower mirror timer first captured before the click and is not a pass assertion; subsequent upper-mirror before state confirms both halves mirrored."
+    },
+    {
+      "id": 17,
+      "check": "Main-hand decorator rotation on lower",
+      "prior_result": "COMPLETED_FAIL_PRE_EXISTING",
+      "status": "PASS_ACTUAL_CURRENT_CANDIDATE_DECORATOR_CLICKS",
+      "evidence": "evidence/no-desktop/CLIENT_COMPLETE.log; evidence/no-desktop/FRAMES.json; evidence/current-client/COMMAND_STORAGE.json",
+      "reason": "Actual lower/upper offhand mirror and main-hand rotate clicks produced matching pairs. Connected neighbors normalize to equivalent physical joined slabs. Lower mirror timer first captured before the click and is not a pass assertion; subsequent upper-mirror before state confirms both halves mirrored."
+    },
+    {
+      "id": 18,
+      "check": "Main-hand decorator rotation on upper",
+      "prior_result": "COMPLETED_FAIL_PRE_EXISTING",
+      "status": "PASS_ACTUAL_CURRENT_CANDIDATE_DECORATOR_CLICKS",
+      "evidence": "evidence/no-desktop/CLIENT_COMPLETE.log; evidence/no-desktop/FRAMES.json; evidence/current-client/COMMAND_STORAGE.json",
+      "reason": "Actual lower/upper offhand mirror and main-hand rotate clicks produced matching pairs. Connected neighbors normalize to equivalent physical joined slabs. Lower mirror timer first captured before the click and is not a pass assertion; subsequent upper-mirror before state confirms both halves mirrored."
+    },
+    {
+      "id": 19,
+      "check": "Structure rotations",
+      "prior_result": "COMPLETED_OBSERVATION",
+      "status": "PASS_CURRENT_RENDER_AND_STATE_WITH_APPLICABLE_REUSED_EVIDENCE",
+      "evidence": "evidence/current-client/CLIENT_STATES.json; evidence/current-client/JOIN_FRAMES.json; evidence/no-desktop/FRAMES.json; FINAL_GATES.json",
+      "reason": "Current normalized fixture states/renders and actual item GameTests cover changed shared behavior. Rows 7/8 reuse prior actual BlockItem placement plus current derived/reloaded states and unchanged BlockItem pathway; no fresh placement-order mouse trace is claimed."
+    },
+    {
+      "id": 20,
+      "check": "Structure mirrors",
+      "prior_result": "COMPLETED_FAIL_PRE_EXISTING",
+      "status": "PASS_CURRENT_RENDER_AND_STATE_WITH_APPLICABLE_REUSED_EVIDENCE",
+      "evidence": "evidence/current-client/CLIENT_STATES.json; evidence/current-client/JOIN_FRAMES.json; evidence/no-desktop/FRAMES.json; FINAL_GATES.json",
+      "reason": "Current normalized fixture states/renders and actual item GameTests cover changed shared behavior. Rows 7/8 reuse prior actual BlockItem placement plus current derived/reloaded states and unchanged BlockItem pathway; no fresh placement-order mouse trace is claimed."
+    },
+    {
+      "id": 21,
+      "check": "Walking and jumping against both arms",
+      "prior_result": "NOT_COMPLETED_UI_HOLD",
+      "status": "PASS_OWNER_REPORTED_SUSTAINED_MOVEMENT",
+      "evidence": "MEDALLION_UI_APPROVAL.json; owner six-case reply: Yes I am complete, and all of it looks good. I approve."
+    },
+    {
+      "id": 22,
+      "check": "Hit outlines at both heights",
+      "prior_result": "COMPLETED_WITH_PRE_EXISTING_FAILURE",
+      "status": "PASS_AUTOMATED_PHYSICS_CURRENT_TARGETING; PENDING_HUMAN_LOADED_APPEARANCE_OUTLINE",
+      "evidence": "LEGACY_PHYSICS.json; FINAL_GATES.json; MANUAL_SESSION.md"
+    },
+    {
+      "id": 23,
+      "check": "F3+T resource reload",
+      "prior_result": "PASS_RESOURCE_RELOAD",
+      "status": "PASS_ACTUAL_FINAL_CANDIDATE_RESOURCE_RELOAD",
+      "evidence": "evidence/no-desktop/CLIENT_COMPLETE.log (11:49:38 to 11:49:42)"
+    },
+    {
+      "id": 24,
+      "check": "Owner pack/shader configuration if available",
+      "prior_result": "NOT_SUPPLIED",
+      "status": "CONDITIONAL_FOLLOWUP_NO_KNOWN_OVERRIDE_FAILURE",
+      "reason": "Default candidate resource pack evidence applies; no supplied conflicting override is a concrete release failure."
+    },
+    {
+      "id": 25,
+      "check": "Disposable dedicated saved-world restart where applicable",
+      "prior_result": "PASS_PERSISTENCE",
+      "status": "PASS_REAL_FINAL_CANDIDATE_CLIENT_SAVE_DEDICATED_LOAD_SAVE",
+      "evidence": "evidence/no-desktop/WALL_PERSISTENCE_RESULTS.json"
+    },
+    {
+      "id": 26,
+      "check": "Minimal pair mismatch reproduction",
+      "prior_result": "COMPLETED_REPRODUCED",
+      "status": "PASS_DIAGNOSIS_AND_REPAIRED_AUTOMATED_AND_ACTUAL_EDIT_PATH",
+      "evidence": "../plaster-corner-0.1.8d/WALL_PAIR_REPAIR.md; LEGACY_PHYSICS.json; FINAL_GATES.json; evidence/no-desktop/FRAMES.json"
+    },
+    {
+      "id": 27,
+      "check": "Mismatch render/collision/neighbor/persistence disposition",
+      "prior_result": "COMPLETED_BLOCKING_DISPOSITION",
+      "status": "PRE_EXISTING_BLOCKING_REPAIRED; FINAL_HUMAN_LOADED_APPEARANCE_PENDING",
+      "evidence": "LEGACY_PHYSICS.json; evidence/no-desktop/WALL_PERSISTENCE_RESULTS.json; MANUAL_SESSION.md"
+    }
+  ]
+}

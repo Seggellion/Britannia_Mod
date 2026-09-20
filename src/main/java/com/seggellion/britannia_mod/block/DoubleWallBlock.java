@@ -26,6 +26,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
+import java.util.function.UnaryOperator;
 
 /**
  * Two-block-tall architectural wall built from edge-aligned segments.
@@ -63,7 +64,9 @@ public class DoubleWallBlock extends Block {
     private static final VoxelShape EDGE_EAST  = Block.box(9.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
 
     public DoubleWallBlock(BlockBehaviour.Properties properties) {
-        super(properties);
+        // Upper collision depends on the matching lower owner. Vanilla's per-state cache builds
+        // shapes in an empty BlockGetter and would otherwise retain the divergent upper geometry.
+        super(properties.dynamicShape());
         this.registerDefaultState(this.defaultBlockState()
             .setValue(FACING, Direction.NORTH)
             .setValue(SHAPE, WallShape.STRAIGHT)
@@ -113,7 +116,59 @@ public class DoubleWallBlock extends Block {
             }
         }
 
-        return deriveConnections(state, level, currentPos);
+        return deriveConnections(canonicalPairState(state, level, currentPos), level, currentPos);
+    }
+
+    /** Lower owns the 32-pixel model. Read it for valid pairs, without writing during queries. */
+    protected BlockState canonicalPairState(BlockState state, BlockGetter level, BlockPos pos) {
+        if (state.getValue(HALF) == DoubleBlockHalf.UPPER) {
+            BlockState lower = level.getBlockState(pos.below());
+            if (lower.is(this) && lower.getValue(HALF) == DoubleBlockHalf.LOWER) {
+                return lower.setValue(HALF, DoubleBlockHalf.UPPER);
+            }
+        }
+        return state;
+    }
+
+    /** Decorate the complete validated pair, from either hit, before notifying any neighbor. */
+    public boolean decoratePair(Level level, BlockPos clicked, UnaryOperator<BlockState> edit) {
+        BlockState hit = level.getBlockState(clicked);
+        if (!hit.is(this)) return false;
+        BlockPos base = hit.getValue(HALF) == DoubleBlockHalf.UPPER ? clicked.below() : clicked;
+        BlockState lower = level.getBlockState(base), upper = level.getBlockState(base.above());
+        if (!lower.is(this) || lower.getValue(HALF) != DoubleBlockHalf.LOWER
+                || !upper.is(this) || upper.getValue(HALF) != DoubleBlockHalf.UPPER) return false;
+        // Resolve old divergent saves from the state which actually owns the visible geometry.
+        BlockState next = deriveConnections(edit.apply(lower), level, base);
+        BlockState nextUpper = next.setValue(HALF, DoubleBlockHalf.UPPER);
+        int flags = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
+        boolean complete = false;
+        try {
+            level.setBlock(base, next, flags);
+            level.setBlock(base.above(), nextUpper, flags);
+            complete = level.getBlockState(base) == next && level.getBlockState(base.above()) == nextUpper;
+        } finally {
+            if (!complete) {
+                level.setBlock(base, lower, flags);
+                level.setBlock(base.above(), upper, flags);
+            }
+        }
+        if (!complete) return false;
+        next.updateNeighbourShapes(level, base, Block.UPDATE_ALL);
+        nextUpper.updateNeighbourShapes(level, base.above(), Block.UPDATE_ALL);
+        level.updateNeighborsAt(base, this);
+        level.updateNeighborsAt(base.above(), this);
+        return true;
+    }
+
+    /** Physical branch convention; asymmetric art overrides the stored selector convention. */
+    protected boolean physicalBranchRight(BlockState state) {
+        return state.getValue(BRANCH_RIGHT);
+    }
+
+    public static WallConnection physicalRun(BlockState state) {
+        DoubleWallBlock wall = (DoubleWallBlock) state.getBlock();
+        return new WallConnection(state.getValue(SHAPE), state.getValue(FACING), wall.physicalBranchRight(state));
     }
 
     /* ─── connection derivation ──────────────────────────────── */
@@ -165,10 +220,9 @@ public class DoubleWallBlock extends Block {
      * run adopts an edge from.
      */
     @Nullable
-    private static WallConnection runOf(BlockState neighbour) {
+    protected static WallConnection runOf(BlockState neighbour) {
         if (neighbour.getBlock() instanceof DoubleWallBlock) {
-            return new WallConnection(neighbour.getValue(SHAPE), neighbour.getValue(FACING),
-                                      neighbour.getValue(BRANCH_RIGHT));
+            return physicalRun(neighbour);
         }
         return connectsTo(neighbour)
             ? new WallConnection(WallShape.STRAIGHT, Direction.NORTH, false) : null;
@@ -234,6 +288,7 @@ public class DoubleWallBlock extends Block {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        state = canonicalPairState(state, level, pos);
         Direction facing = state.getValue(FACING);
         VoxelShape main = edge(facing);
 
@@ -244,9 +299,9 @@ public class DoubleWallBlock extends Block {
     }
 
     /** The perpendicular edge a state currently describes. */
-    private static Direction secondaryOf(BlockState state) {
+    private Direction secondaryOf(BlockState state) {
         Direction facing = state.getValue(FACING);
-        return state.getValue(BRANCH_RIGHT) ? facing.getClockWise() : facing.getCounterClockWise();
+        return physicalBranchRight(state) ? facing.getClockWise() : facing.getCounterClockWise();
     }
 
     @Override

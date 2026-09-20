@@ -1,0 +1,22 @@
+{
+  "baseline_count": 88,
+  "corrected_count": 73,
+  "added": [],
+  "removed": [
+    "WARN  src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner.json: elements 0 and 5 both declare a 'down' face at 0 with overlapping footprints - these will z-fight",
+    "WARN  src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner.json: elements 0 and 5 both declare a 'north' face at 0 with overlapping footprints - these will z-fight",
+    "WARN  src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner.json: elements 2 and 5 both declare a 'down' face at 0 with overlapping footprints - these will z-fight",
+    "WARN  src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner.json: elements 2 and 5 both declare a 'up' face at 1 with overlapping footprints - these will z-fight",
+    "WARN  src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner.json: elements 5 and 6 both declare a 'down' face at 0 with overlapping footprints - these will z-fight",
+    "WARN  src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored.json: elements 0 and 5 both declare a 'down' face at 0 with overlapping footprints - these will z-fight",
+    "WARN  src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored.json: elements 0 and 5 both declare a 'north' face at 0 with overlapping footprints - these will z-fight",
+    "WARN  src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored.json: elements 2 and 5 both declare a 'down' face at 0 with overlapping footprints - these will z-fight",
+    "WARN  src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored.json: elements 2 and 5 both declare a 'up' face at 1 with overlapping footprints - these will z-fight",
+    "WARN  src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored.json: elements 5 and 6 both declare a 'down' face at 0 with overlapping footprints - these will z-fight",
+    "WARN  src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_corner.json: elements 0 and 5 both declare a 'down' face at 0 with overlapping footprints - these will z-fight",
+    "WARN  src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_corner.json: elements 0 and 5 both declare a 'north' face at 0 with overlapping footprints - these will z-fight",
+    "WARN  src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_corner.json: elements 2 and 5 both declare a 'down' face at 0 with overlapping footprints - these will z-fight",
+    "WARN  src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_corner.json: elements 2 and 5 both declare a 'up' face at 1 with overlapping footprints - these will z-fight",
+    "WARN  src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_corner.json: elements 5 and 6 both declare a 'down' face at 0 with overlapping footprints - these will z-fight"
+  ]
+}

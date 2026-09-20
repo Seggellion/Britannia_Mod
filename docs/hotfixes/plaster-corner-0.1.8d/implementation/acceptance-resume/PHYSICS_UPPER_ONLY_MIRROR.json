@@ -1,0 +1,47 @@
+{
+  "pair": "south/corner/false; lower mirrored=false, upper mirrored=true",
+  "results": {
+    "lower_e": [
+      49.125,
+      80.2,
+      84.35
+    ],
+    "control_e": [
+      49.587395432924346,
+      81.2,
+      86.1
+    ],
+    "main_s_upper": [
+      48.5,
+      81.2,
+      85.125
+    ],
+    "control_w": [
+      51.412604567075654,
+      81.2,
+      86.1
+    ],
+    "upper_e": [
+      48.5625,
+      81.2,
+      84.35
+    ],
+    "upper_w": [
+      47.875,
+      81.2,
+      84.35
+    ],
+    "lower_w": [
+      48.4375,
+      80.2,
+      84.35
+    ],
+    "main_s_lower": [
+      48.5,
+      80.2,
+      85.125
+    ]
+  },
+  "log": "[07Oct2026 04:17:29.910] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Storage plaster_probe:acceptance has the following contents: {lower_e: [49.125d, 80.2d, 84.35d], control_e: [49.587395432924346d, 81.2d, 86.1d], main_s_upper: [48.5d, 81.2d, 85.125d], control_w: [51.412604567075654d, 81.2d, 86.1d], upper_e: [48.5625d, 81.2d, 84.35d], upper_w: [47.875d, 81.2d, 84.35d], lower_w: [48.4375d, 80.2d, 84.35d], main_s_lower: [48.5d, 80.2d, 85.125d]}",
+  "main_control": "both heights stop at Z85.125; branch collision swaps without visible upper mesh change"
+}

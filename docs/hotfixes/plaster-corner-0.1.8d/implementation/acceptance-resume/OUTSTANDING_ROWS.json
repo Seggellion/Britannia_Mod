@@ -1,0 +1,146 @@
+{
+  "extracted_from": [
+    "CLIENT_ACCEPTANCE.md",
+    "implementation/STATUS.md",
+    "RELEASE_HANDOFF.md",
+    "ULTIMACRAFT_PATCH18_0.1.8d_PLASTER_CORNER_HOTFIX_PLAYBOOK.md"
+  ],
+  "checkpoint": "f29548d77c03163e16321f120e28904685fdbdab",
+  "rows": [
+    {
+      "id": 1,
+      "check": "Full false-branch four facings x two mirrors (8 exact lower/upper renders)",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 2,
+      "check": "Full true-branch four facings x two mirrors (8 controls)",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 3,
+      "check": "Both visible vertical sections and Y16 join; upper air/no duplicate post",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 4,
+      "check": "Half false-branch four facings",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 5,
+      "check": "Half true-branch four facings",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 6,
+      "check": "Valid straight/T controls, orientations/branch/mirror representatives",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 7,
+      "check": "Corner-first actual BlockItem placement",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 8,
+      "check": "Reversed arm placement order",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 9,
+      "check": "Support-arm neighboring joins",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 10,
+      "check": "Door neighboring joins",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 11,
+      "check": "Tagged-gate neighboring joins",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 12,
+      "check": "Unrelated solid/post non-connections",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 13,
+      "check": "Full/half neighboring joins",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 14,
+      "check": "Neighbor addition and removal/normalization",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 15,
+      "check": "Offhand decorator mirror on lower",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 16,
+      "check": "Offhand decorator mirror on upper",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 17,
+      "check": "Main-hand decorator rotation on lower",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 18,
+      "check": "Main-hand decorator rotation on upper",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 19,
+      "check": "Structure rotations",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 20,
+      "check": "Structure mirrors",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 21,
+      "check": "Walking and jumping against both arms",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 22,
+      "check": "Hit outlines at both heights",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 23,
+      "check": "F3+T resource reload",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 24,
+      "check": "Owner pack/shader configuration if available",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 25,
+      "check": "Disposable dedicated saved-world restart where applicable",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 26,
+      "check": "Minimal pair mismatch reproduction",
+      "status": "pending_at_resume"
+    },
+    {
+      "id": 27,
+      "check": "Mismatch render/collision/neighbor/persistence disposition",
+      "status": "pending_at_resume"
+    }
+  ]
+}

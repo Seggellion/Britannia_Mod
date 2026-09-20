@@ -1,0 +1,952 @@
+{
+  "candidate_sha256": "f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd",
+  "setup_failure_is_candidate_failure": false,
+  "logs": {
+    "HEADLESS_LAUNCH.log": {
+      "sha256": "bab4b05d3146e748022d44861e16dc0a918bf2e269aaca9776a46d47f5bfac5a",
+      "success": false,
+      "reload_passes": 0,
+      "reload_failures": [],
+      "lone_half_passes": 0,
+      "lone_half_failures": [],
+      "runtime_identity": []
+    },
+    "HEADLESS_LAUNCH_2.log": {
+      "sha256": "b4a5e9ef39ec676a2ae8386310c113a6f429e6c7a9e9740c6115493fe4446c1f",
+      "success": false,
+      "reload_passes": 0,
+      "reload_failures": [],
+      "lone_half_passes": 0,
+      "lone_half_failures": [],
+      "runtime_identity": []
+    },
+    "HEADLESS_LAUNCH_3.log": {
+      "sha256": "88e3689a1736873c85db9835322af728665a7b3396b6da4e76163bd6143dc105",
+      "success": false,
+      "reload_passes": 0,
+      "reload_failures": [],
+      "lone_half_passes": 0,
+      "lone_half_failures": [],
+      "runtime_identity": []
+    },
+    "HEADLESS_LAUNCH_4.log": {
+      "sha256": "1855cf2d5824a01d2ba1cb4f3f66a046fcd6a63c5b96d3fcec1b74b70a30ff6a",
+      "success": true,
+      "reload_passes": 0,
+      "reload_failures": [],
+      "lone_half_passes": 0,
+      "lone_half_failures": [],
+      "runtime_identity": [
+        "[15:17:08] [Server thread/INFO] [co.se.br.gr.di.GrabbyEnvironmentReport/]: [grabby-hands][env] artifact: britannia_mod 0.1.8d britannia_mod-0.1.8d-all.jar 36142668B modified=2026-10-07T17:45:12.518Z sha256=f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd",
+        "[15:17:08] [Server thread/INFO] [co.se.br.gr.di.GrabbyEnvironmentReport/]: [grabby-hands][env] build: version=0.1.8d commit=986ed746866dc944b7b496ab9428b670f65e15c0 branch=HEAD dirtyWorkingTree=false built=2026-10-07T17:43:56.051245600Z",
+        "[15:17:08] [Server thread/INFO] [co.se.br.gr.di.GrabbyEnvironmentReport/]: [grabby-hands][env] neoforge: 21.1.72  minecraft: 1.21.1",
+        "[15:17:08] [Server thread/INFO] [co.se.br.gr.di.GrabbyEnvironmentReport/]: [grabby-hands][env] server: dedicated (DedicatedServer)"
+      ]
+    },
+    "HEADLESS_RESTART.log": {
+      "sha256": "4301e854b4663e1464edca7be451ea246b3fc86ac087ce61fb982fca35522d32",
+      "success": false,
+      "reload_passes": 0,
+      "reload_failures": [],
+      "lone_half_passes": 0,
+      "lone_half_failures": [],
+      "runtime_identity": []
+    },
+    "HEADLESS_RESTART_2.log": {
+      "sha256": "641332e4e67437adb30d93aebaf671e6031bb44b3216c93affccc35bb7bd1bf0",
+      "success": true,
+      "reload_passes": 40,
+      "reload_failures": [],
+      "lone_half_passes": 8,
+      "lone_half_failures": [],
+      "runtime_identity": [
+        "[15:21:10] [Server thread/INFO] [co.se.br.gr.di.GrabbyEnvironmentReport/]: [grabby-hands][env] artifact: britannia_mod 0.1.8d britannia_mod-0.1.8d-all.jar 36142668B modified=2026-10-07T17:45:12.518Z sha256=f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd",
+        "[15:21:10] [Server thread/INFO] [co.se.br.gr.di.GrabbyEnvironmentReport/]: [grabby-hands][env] build: version=0.1.8d commit=986ed746866dc944b7b496ab9428b670f65e15c0 branch=HEAD dirtyWorkingTree=false built=2026-10-07T17:43:56.051245600Z",
+        "[15:21:10] [Server thread/INFO] [co.se.br.gr.di.GrabbyEnvironmentReport/]: [grabby-hands][env] neoforge: 21.1.72  minecraft: 1.21.1",
+        "[15:21:10] [Server thread/INFO] [co.se.br.gr.di.GrabbyEnvironmentReport/]: [grabby-hands][env] server: dedicated (DedicatedServer)"
+      ]
+    }
+  },
+  "state_findings": [
+    {
+      "case": 0,
+      "position": [
+        8,
+        80,
+        8
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": true,
+      "blank_to_support_changes": {},
+      "blank_physical_edges": [
+        "east",
+        "south"
+      ],
+      "support_physical_edges": [
+        "east",
+        "south"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": true,
+      "support_pair_matches": true
+    },
+    {
+      "case": 1,
+      "position": [
+        20,
+        80,
+        8
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": true,
+      "blank_to_support_changes": {},
+      "blank_physical_edges": [
+        "south",
+        "west"
+      ],
+      "support_physical_edges": [
+        "south",
+        "west"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": true,
+      "support_pair_matches": true
+    },
+    {
+      "case": 2,
+      "position": [
+        32,
+        80,
+        8
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": true,
+      "blank_to_support_changes": {},
+      "blank_physical_edges": [
+        "north",
+        "west"
+      ],
+      "support_physical_edges": [
+        "north",
+        "west"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": true,
+      "support_pair_matches": true
+    },
+    {
+      "case": 3,
+      "position": [
+        44,
+        80,
+        8
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": true,
+      "blank_to_support_changes": {},
+      "blank_physical_edges": [
+        "east",
+        "north"
+      ],
+      "support_physical_edges": [
+        "east",
+        "north"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": true,
+      "support_pair_matches": true
+    },
+    {
+      "case": 4,
+      "position": [
+        8,
+        80,
+        20
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": true,
+      "blank_to_support_changes": {},
+      "blank_physical_edges": [
+        "east",
+        "north"
+      ],
+      "support_physical_edges": [
+        "east",
+        "north"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": true,
+      "support_pair_matches": true
+    },
+    {
+      "case": 5,
+      "position": [
+        20,
+        80,
+        20
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": true,
+      "blank_to_support_changes": {},
+      "blank_physical_edges": [
+        "north",
+        "west"
+      ],
+      "support_physical_edges": [
+        "north",
+        "west"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": true,
+      "support_pair_matches": true
+    },
+    {
+      "case": 6,
+      "position": [
+        32,
+        80,
+        20
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": false,
+      "blank_to_support_changes": {
+        "facing": [
+          "east",
+          "north"
+        ],
+        "branch_right": [
+          "false",
+          "true"
+        ]
+      },
+      "blank_physical_edges": [
+        "east",
+        "north"
+      ],
+      "support_physical_edges": [
+        "east",
+        "north"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": true,
+      "support_pair_matches": true
+    },
+    {
+      "case": 7,
+      "position": [
+        44,
+        80,
+        20
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": false,
+      "blank_to_support_changes": {
+        "facing": [
+          "east",
+          "south"
+        ],
+        "branch_right": [
+          "false",
+          "true"
+        ]
+      },
+      "blank_physical_edges": [
+        "east",
+        "south"
+      ],
+      "support_physical_edges": [
+        "east",
+        "south"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": true,
+      "support_pair_matches": true
+    },
+    {
+      "case": 8,
+      "position": [
+        8,
+        80,
+        32
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": false,
+      "blank_to_support_changes": {
+        "facing": [
+          "east",
+          "south"
+        ],
+        "branch_right": [
+          "true",
+          "false"
+        ]
+      },
+      "blank_physical_edges": [
+        "east",
+        "south"
+      ],
+      "support_physical_edges": [
+        "east",
+        "south"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": true,
+      "support_pair_matches": true
+    },
+    {
+      "case": 9,
+      "position": [
+        20,
+        80,
+        32
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": false,
+      "blank_to_support_changes": {
+        "facing": [
+          "east",
+          "north"
+        ],
+        "branch_right": [
+          "true",
+          "false"
+        ]
+      },
+      "blank_physical_edges": [
+        "east",
+        "north"
+      ],
+      "support_physical_edges": [
+        "east",
+        "north"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": true,
+      "support_pair_matches": true
+    },
+    {
+      "case": 10,
+      "position": [
+        32,
+        80,
+        32
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": true,
+      "blank_to_support_changes": {},
+      "blank_physical_edges": [
+        "south",
+        "west"
+      ],
+      "support_physical_edges": [
+        "south",
+        "west"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": true,
+      "support_pair_matches": true
+    },
+    {
+      "case": 11,
+      "position": [
+        44,
+        80,
+        32
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": true,
+      "blank_to_support_changes": {},
+      "blank_physical_edges": [
+        "east",
+        "south"
+      ],
+      "support_physical_edges": [
+        "east",
+        "south"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": true,
+      "support_pair_matches": true
+    },
+    {
+      "case": 12,
+      "position": [
+        8,
+        80,
+        44
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": false,
+      "blank_to_support_changes": {
+        "facing": [
+          "west",
+          "south"
+        ],
+        "branch_right": [
+          "false",
+          "true"
+        ]
+      },
+      "blank_physical_edges": [
+        "south",
+        "west"
+      ],
+      "support_physical_edges": [
+        "south",
+        "west"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": true,
+      "support_pair_matches": true
+    },
+    {
+      "case": 13,
+      "position": [
+        20,
+        80,
+        44
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": false,
+      "blank_to_support_changes": {
+        "facing": [
+          "west",
+          "north"
+        ],
+        "branch_right": [
+          "false",
+          "true"
+        ]
+      },
+      "blank_physical_edges": [
+        "north",
+        "west"
+      ],
+      "support_physical_edges": [
+        "north",
+        "west"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": true,
+      "support_pair_matches": true
+    },
+    {
+      "case": 14,
+      "position": [
+        32,
+        80,
+        44
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": false,
+      "blank_to_support_changes": {
+        "facing": [
+          "west",
+          "north"
+        ],
+        "branch_right": [
+          "true",
+          "false"
+        ]
+      },
+      "blank_physical_edges": [
+        "north",
+        "west"
+      ],
+      "support_physical_edges": [
+        "north",
+        "west"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": true,
+      "support_pair_matches": true
+    },
+    {
+      "case": 15,
+      "position": [
+        44,
+        80,
+        44
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": false,
+      "blank_to_support_changes": {
+        "facing": [
+          "west",
+          "south"
+        ],
+        "branch_right": [
+          "true",
+          "false"
+        ]
+      },
+      "blank_physical_edges": [
+        "south",
+        "west"
+      ],
+      "support_physical_edges": [
+        "south",
+        "west"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": true,
+      "support_pair_matches": true
+    },
+    {
+      "case": 16,
+      "position": [
+        8,
+        80,
+        56
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": true,
+      "blank_to_support_changes": {},
+      "blank_physical_edges": [
+        "north",
+        "west"
+      ],
+      "support_physical_edges": [
+        "north",
+        "west"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": null,
+      "support_pair_matches": null
+    },
+    {
+      "case": 17,
+      "position": [
+        20,
+        80,
+        56
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": true,
+      "blank_to_support_changes": {},
+      "blank_physical_edges": [
+        "east",
+        "north"
+      ],
+      "support_physical_edges": [
+        "east",
+        "north"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": null,
+      "support_pair_matches": null
+    },
+    {
+      "case": 18,
+      "position": [
+        32,
+        80,
+        56
+      ],
+      "blank_matches_requested": false,
+      "support_matches_requested": false,
+      "blank_to_support_changes": {},
+      "blank_physical_edges": [
+        "east",
+        "north"
+      ],
+      "support_physical_edges": [
+        "east",
+        "north"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": null,
+      "support_pair_matches": null
+    },
+    {
+      "case": 19,
+      "position": [
+        44,
+        80,
+        56
+      ],
+      "blank_matches_requested": false,
+      "support_matches_requested": false,
+      "blank_to_support_changes": {},
+      "blank_physical_edges": [
+        "east",
+        "south"
+      ],
+      "support_physical_edges": [
+        "east",
+        "south"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": null,
+      "support_pair_matches": null
+    },
+    {
+      "case": 20,
+      "position": [
+        8,
+        80,
+        68
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": true,
+      "blank_to_support_changes": {},
+      "blank_physical_edges": [
+        "east",
+        "south"
+      ],
+      "support_physical_edges": [
+        "east",
+        "south"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": null,
+      "support_pair_matches": null
+    },
+    {
+      "case": 21,
+      "position": [
+        20,
+        80,
+        68
+      ],
+      "blank_matches_requested": true,
+      "support_matches_requested": true,
+      "blank_to_support_changes": {},
+      "blank_physical_edges": [
+        "south",
+        "west"
+      ],
+      "support_physical_edges": [
+        "south",
+        "west"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": null,
+      "support_pair_matches": null
+    },
+    {
+      "case": 22,
+      "position": [
+        32,
+        80,
+        68
+      ],
+      "blank_matches_requested": false,
+      "support_matches_requested": false,
+      "blank_to_support_changes": {},
+      "blank_physical_edges": [
+        "south",
+        "west"
+      ],
+      "support_physical_edges": [
+        "south",
+        "west"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": null,
+      "support_pair_matches": null
+    },
+    {
+      "case": 23,
+      "position": [
+        44,
+        80,
+        68
+      ],
+      "blank_matches_requested": false,
+      "support_matches_requested": false,
+      "blank_to_support_changes": {},
+      "blank_physical_edges": [
+        "north",
+        "west"
+      ],
+      "support_physical_edges": [
+        "north",
+        "west"
+      ],
+      "physical_edges_retained": true,
+      "blank_pair_matches": null,
+      "support_pair_matches": null
+    }
+  ],
+  "all_physical_edges_retained": true,
+  "all_full_pairs_match": true,
+  "normal_BlockItem_placement_executed": false,
+  "new_visual_observation_executed": false,
+  "actual_owner_neighbors_captured": false,
+  "lone_half_saved_states": [
+    {
+      "case": 0,
+      "position": [
+        8,
+        80,
+        100
+      ],
+      "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=north,shape=corner,branch_right=false]",
+      "full_neighbor_position": [
+        7,
+        80,
+        100
+      ],
+      "full_neighbor_facing": "east",
+      "seed_shape": "straight",
+      "setup_kind": "command seed + normal neighbor notifications, not BlockItem",
+      "saved_state": {
+        "Properties": {
+          "shape": "corner",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+      },
+      "saved_full_neighbor": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    },
+    {
+      "case": 1,
+      "position": [
+        20,
+        80,
+        100
+      ],
+      "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=north,shape=corner,branch_right=true]",
+      "full_neighbor_position": [
+        21,
+        80,
+        100
+      ],
+      "full_neighbor_facing": "west",
+      "seed_shape": "straight",
+      "setup_kind": "command seed + normal neighbor notifications, not BlockItem",
+      "saved_state": {
+        "Properties": {
+          "shape": "corner",
+          "facing": "north",
+          "branch_right": "true"
+        },
+        "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+      },
+      "saved_full_neighbor": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    },
+    {
+      "case": 2,
+      "position": [
+        32,
+        80,
+        100
+      ],
+      "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=east,shape=corner,branch_right=false]",
+      "full_neighbor_position": [
+        32,
+        80,
+        99
+      ],
+      "full_neighbor_facing": "south",
+      "seed_shape": "straight",
+      "setup_kind": "command seed + normal neighbor notifications, not BlockItem",
+      "saved_state": {
+        "Properties": {
+          "shape": "corner",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+      },
+      "saved_full_neighbor": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    },
+    {
+      "case": 3,
+      "position": [
+        44,
+        80,
+        100
+      ],
+      "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=east,shape=corner,branch_right=true]",
+      "full_neighbor_position": [
+        44,
+        80,
+        101
+      ],
+      "full_neighbor_facing": "north",
+      "seed_shape": "straight",
+      "setup_kind": "command seed + normal neighbor notifications, not BlockItem",
+      "saved_state": {
+        "Properties": {
+          "shape": "corner",
+          "facing": "east",
+          "branch_right": "true"
+        },
+        "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+      },
+      "saved_full_neighbor": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    },
+    {
+      "case": 4,
+      "position": [
+        8,
+        80,
+        108
+      ],
+      "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=south,shape=corner,branch_right=false]",
+      "full_neighbor_position": [
+        9,
+        80,
+        108
+      ],
+      "full_neighbor_facing": "west",
+      "seed_shape": "straight",
+      "setup_kind": "command seed + normal neighbor notifications, not BlockItem",
+      "saved_state": {
+        "Properties": {
+          "shape": "corner",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+      },
+      "saved_full_neighbor": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    },
+    {
+      "case": 5,
+      "position": [
+        20,
+        80,
+        108
+      ],
+      "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=south,shape=corner,branch_right=true]",
+      "full_neighbor_position": [
+        19,
+        80,
+        108
+      ],
+      "full_neighbor_facing": "east",
+      "seed_shape": "straight",
+      "setup_kind": "command seed + normal neighbor notifications, not BlockItem",
+      "saved_state": {
+        "Properties": {
+          "shape": "corner",
+          "facing": "south",
+          "branch_right": "true"
+        },
+        "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+      },
+      "saved_full_neighbor": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    },
+    {
+      "case": 6,
+      "position": [
+        32,
+        80,
+        108
+      ],
+      "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=west,shape=corner,branch_right=false]",
+      "full_neighbor_position": [
+        32,
+        80,
+        109
+      ],
+      "full_neighbor_facing": "north",
+      "seed_shape": "straight",
+      "setup_kind": "command seed + normal neighbor notifications, not BlockItem",
+      "saved_state": {
+        "Properties": {
+          "shape": "corner",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+      },
+      "saved_full_neighbor": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    },
+    {
+      "case": 7,
+      "position": [
+        44,
+        80,
+        108
+      ],
+      "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=west,shape=corner,branch_right=true]",
+      "full_neighbor_position": [
+        44,
+        80,
+        107
+      ],
+      "full_neighbor_facing": "south",
+      "seed_shape": "straight",
+      "setup_kind": "command seed + normal neighbor notifications, not BlockItem",
+      "saved_state": {
+        "Properties": {
+          "shape": "corner",
+          "facing": "west",
+          "branch_right": "true"
+        },
+        "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+      },
+      "saved_full_neighbor": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    }
+  ],
+  "scope": "New command-state / ordinary neighbor-notification / save-load evidence. Not player, decorator, structure-transform or render proof."
+}

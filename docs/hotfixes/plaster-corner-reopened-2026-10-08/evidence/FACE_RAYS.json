@@ -1,0 +1,545 @@
+{
+  "method": "First intersection of outward-facing authored quads along a ray to junction-post center. Analytical directional sample, NOT rendered acceptance or complete visibility proof. Neighbor geometry omitted.",
+  "results": [
+    {
+      "model": "plaster_wall_and_support_blank_corner",
+      "view": "exterior",
+      "height": 8,
+      "camera_authored": [
+        -32,
+        8,
+        -32
+      ],
+      "target": [
+        2.95,
+        8,
+        1.4
+      ],
+      "junction_post": 8,
+      "first_quad": {
+        "element": 8,
+        "face": "north",
+        "texture": "#2",
+        "point": [
+          1.38039,
+          8.0,
+          -0.1
+        ]
+      },
+      "hits_expected_post": true
+    },
+    {
+      "model": "plaster_wall_and_support_blank_corner",
+      "view": "interior",
+      "height": 8,
+      "camera_authored": [
+        48,
+        8,
+        48
+      ],
+      "target": [
+        2.95,
+        8,
+        1.4
+      ],
+      "junction_post": 8,
+      "first_quad": {
+        "element": 5,
+        "face": "south",
+        "texture": "#1",
+        "point": [
+          6.43026,
+          8.0,
+          5.0
+        ]
+      },
+      "hits_expected_post": false
+    },
+    {
+      "model": "plaster_wall_and_support_blank_corner",
+      "view": "exterior",
+      "height": 24,
+      "camera_authored": [
+        -32,
+        24,
+        -32
+      ],
+      "target": [
+        2.95,
+        24,
+        1.4
+      ],
+      "junction_post": 8,
+      "first_quad": {
+        "element": 8,
+        "face": "north",
+        "texture": "#2",
+        "point": [
+          1.38039,
+          24.0,
+          -0.1
+        ]
+      },
+      "hits_expected_post": true
+    },
+    {
+      "model": "plaster_wall_and_support_blank_corner",
+      "view": "interior",
+      "height": 24,
+      "camera_authored": [
+        48,
+        24,
+        48
+      ],
+      "target": [
+        2.95,
+        24,
+        1.4
+      ],
+      "junction_post": 8,
+      "first_quad": {
+        "element": 5,
+        "face": "south",
+        "texture": "#1",
+        "point": [
+          6.43026,
+          24.0,
+          5.0
+        ]
+      },
+      "hits_expected_post": false
+    },
+    {
+      "model": "plaster_wall_and_support_blank_corner_mirrored",
+      "view": "exterior",
+      "height": 8,
+      "camera_authored": [
+        48,
+        8,
+        -32
+      ],
+      "target": [
+        13.05,
+        8,
+        1.4
+      ],
+      "junction_post": 8,
+      "first_quad": {
+        "element": 8,
+        "face": "north",
+        "texture": "#2",
+        "point": [
+          14.61961,
+          8.0,
+          -0.1
+        ]
+      },
+      "hits_expected_post": true
+    },
+    {
+      "model": "plaster_wall_and_support_blank_corner_mirrored",
+      "view": "interior",
+      "height": 8,
+      "camera_authored": [
+        -32,
+        8,
+        48
+      ],
+      "target": [
+        13.05,
+        8,
+        1.4
+      ],
+      "junction_post": 8,
+      "first_quad": {
+        "element": 5,
+        "face": "south",
+        "texture": "#1",
+        "point": [
+          9.56974,
+          8.0,
+          5.0
+        ]
+      },
+      "hits_expected_post": false
+    },
+    {
+      "model": "plaster_wall_and_support_blank_corner_mirrored",
+      "view": "exterior",
+      "height": 24,
+      "camera_authored": [
+        48,
+        24,
+        -32
+      ],
+      "target": [
+        13.05,
+        24,
+        1.4
+      ],
+      "junction_post": 8,
+      "first_quad": {
+        "element": 8,
+        "face": "north",
+        "texture": "#2",
+        "point": [
+          14.61961,
+          24.0,
+          -0.1
+        ]
+      },
+      "hits_expected_post": true
+    },
+    {
+      "model": "plaster_wall_and_support_blank_corner_mirrored",
+      "view": "interior",
+      "height": 24,
+      "camera_authored": [
+        -32,
+        24,
+        48
+      ],
+      "target": [
+        13.05,
+        24,
+        1.4
+      ],
+      "junction_post": 8,
+      "first_quad": {
+        "element": 5,
+        "face": "south",
+        "texture": "#1",
+        "point": [
+          9.56974,
+          24.0,
+          5.0
+        ]
+      },
+      "hits_expected_post": false
+    },
+    {
+      "model": "plaster_wall_and_support_blank_corner_branch_right",
+      "view": "exterior",
+      "height": 8,
+      "camera_authored": [
+        48,
+        8,
+        -32
+      ],
+      "target": [
+        13.05,
+        8,
+        1.4
+      ],
+      "junction_post": 7,
+      "first_quad": {
+        "element": 7,
+        "face": "north",
+        "texture": "#2",
+        "point": [
+          14.61961,
+          8.0,
+          -0.1
+        ]
+      },
+      "hits_expected_post": true
+    },
+    {
+      "model": "plaster_wall_and_support_blank_corner_branch_right",
+      "view": "interior",
+      "height": 8,
+      "camera_authored": [
+        -32,
+        8,
+        48
+      ],
+      "target": [
+        13.05,
+        8,
+        1.4
+      ],
+      "junction_post": 7,
+      "first_quad": {
+        "element": 0,
+        "face": "south",
+        "texture": "#1",
+        "point": [
+          9.56974,
+          8.0,
+          5.0
+        ]
+      },
+      "hits_expected_post": false
+    },
+    {
+      "model": "plaster_wall_and_support_blank_corner_branch_right",
+      "view": "exterior",
+      "height": 24,
+      "camera_authored": [
+        48,
+        24,
+        -32
+      ],
+      "target": [
+        13.05,
+        24,
+        1.4
+      ],
+      "junction_post": 7,
+      "first_quad": {
+        "element": 7,
+        "face": "north",
+        "texture": "#2",
+        "point": [
+          14.61961,
+          24.0,
+          -0.1
+        ]
+      },
+      "hits_expected_post": true
+    },
+    {
+      "model": "plaster_wall_and_support_blank_corner_branch_right",
+      "view": "interior",
+      "height": 24,
+      "camera_authored": [
+        -32,
+        24,
+        48
+      ],
+      "target": [
+        13.05,
+        24,
+        1.4
+      ],
+      "junction_post": 7,
+      "first_quad": {
+        "element": 0,
+        "face": "south",
+        "texture": "#1",
+        "point": [
+          9.56974,
+          24.0,
+          5.0
+        ]
+      },
+      "hits_expected_post": false
+    },
+    {
+      "model": "plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "view": "exterior",
+      "height": 8,
+      "camera_authored": [
+        -32,
+        8,
+        -32
+      ],
+      "target": [
+        2.95,
+        8,
+        1.4
+      ],
+      "junction_post": 7,
+      "first_quad": {
+        "element": 7,
+        "face": "north",
+        "texture": "#2",
+        "point": [
+          1.38039,
+          8.0,
+          -0.1
+        ]
+      },
+      "hits_expected_post": true
+    },
+    {
+      "model": "plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "view": "interior",
+      "height": 8,
+      "camera_authored": [
+        48,
+        8,
+        48
+      ],
+      "target": [
+        2.95,
+        8,
+        1.4
+      ],
+      "junction_post": 7,
+      "first_quad": {
+        "element": 0,
+        "face": "south",
+        "texture": "#1",
+        "point": [
+          6.43026,
+          8.0,
+          5.0
+        ]
+      },
+      "hits_expected_post": false
+    },
+    {
+      "model": "plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "view": "exterior",
+      "height": 24,
+      "camera_authored": [
+        -32,
+        24,
+        -32
+      ],
+      "target": [
+        2.95,
+        24,
+        1.4
+      ],
+      "junction_post": 7,
+      "first_quad": {
+        "element": 7,
+        "face": "north",
+        "texture": "#2",
+        "point": [
+          1.38039,
+          24.0,
+          -0.1
+        ]
+      },
+      "hits_expected_post": true
+    },
+    {
+      "model": "plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "view": "interior",
+      "height": 24,
+      "camera_authored": [
+        48,
+        24,
+        48
+      ],
+      "target": [
+        2.95,
+        24,
+        1.4
+      ],
+      "junction_post": 7,
+      "first_quad": {
+        "element": 0,
+        "face": "south",
+        "texture": "#1",
+        "point": [
+          6.43026,
+          24.0,
+          5.0
+        ]
+      },
+      "hits_expected_post": false
+    },
+    {
+      "model": "plaster_wall_and_support_blank_half_corner",
+      "view": "exterior",
+      "height": 8,
+      "camera_authored": [
+        -32,
+        8,
+        -32
+      ],
+      "target": [
+        2.95,
+        8,
+        1.4
+      ],
+      "junction_post": 8,
+      "first_quad": {
+        "element": 8,
+        "face": "north",
+        "texture": "#2",
+        "point": [
+          1.38039,
+          8.0,
+          -0.1
+        ]
+      },
+      "hits_expected_post": true
+    },
+    {
+      "model": "plaster_wall_and_support_blank_half_corner",
+      "view": "interior",
+      "height": 8,
+      "camera_authored": [
+        48,
+        8,
+        48
+      ],
+      "target": [
+        2.95,
+        8,
+        1.4
+      ],
+      "junction_post": 8,
+      "first_quad": {
+        "element": 5,
+        "face": "south",
+        "texture": "#1",
+        "point": [
+          6.43026,
+          8.0,
+          5.0
+        ]
+      },
+      "hits_expected_post": false
+    },
+    {
+      "model": "plaster_wall_and_support_blank_half_corner_branch_right",
+      "view": "exterior",
+      "height": 8,
+      "camera_authored": [
+        48,
+        8,
+        -32
+      ],
+      "target": [
+        13.05,
+        8,
+        1.4
+      ],
+      "junction_post": 7,
+      "first_quad": {
+        "element": 7,
+        "face": "north",
+        "texture": "#2",
+        "point": [
+          14.61961,
+          8.0,
+          -0.1
+        ]
+      },
+      "hits_expected_post": true
+    },
+    {
+      "model": "plaster_wall_and_support_blank_half_corner_branch_right",
+      "view": "interior",
+      "height": 8,
+      "camera_authored": [
+        -32,
+        8,
+        48
+      ],
+      "target": [
+        13.05,
+        8,
+        1.4
+      ],
+      "junction_post": 7,
+      "first_quad": {
+        "element": 0,
+        "face": "south",
+        "texture": "#1",
+        "point": [
+          9.56974,
+          8.0,
+          5.0
+        ]
+      },
+      "hits_expected_post": false
+    }
+  ]
+}

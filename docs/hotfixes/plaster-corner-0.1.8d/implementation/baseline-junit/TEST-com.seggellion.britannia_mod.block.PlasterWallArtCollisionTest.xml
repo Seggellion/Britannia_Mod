@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.seggellion.britannia_mod.block.PlasterWallArtCollisionTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-10-07T03:26:25" hostname="MSI" time="0.041">
+  <properties/>
+  <testcase name="collisionDoesNotStandWhereTheArtDrawsNothing()" classname="com.seggellion.britannia_mod.block.PlasterWallArtCollisionTest" time="0.016"/>
+  <testcase name="theBranchRightJunctionDrawsBothItsRuns()" classname="com.seggellion.britannia_mod.block.PlasterWallArtCollisionTest" time="0.004"/>
+  <testcase name="collisionCoversEveryWallTheArtDraws()" classname="com.seggellion.britannia_mod.block.PlasterWallArtCollisionTest" time="0.01"/>
+  <testcase name="theJunctionShapeTurnsWithItsFacing()" classname="com.seggellion.britannia_mod.block.PlasterWallArtCollisionTest" time="0.009"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

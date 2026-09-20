@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.seggellion.britannia_mod.block.PlasterSupportCornerContractTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-07T03:38:14" hostname="MSI" time="0.098">
+  <properties/>
+  <testcase name="allSavedMappingsAndSevenPixelShapesRetainTheirContract()" classname="com.seggellion.britannia_mod.block.PlasterSupportCornerContractTest" time="0.061"/>
+  <testcase name="reflectedCornerPreservesFacesAndTextureGrainSemantics()" classname="com.seggellion.britannia_mod.block.PlasterSupportCornerContractTest" time="0.009"/>
+  <testcase name="finishedPlasterCoversTheVacatedPostSegmentAndBranch()" classname="com.seggellion.britannia_mod.block.PlasterSupportCornerContractTest" time="0.014"/>
+  <testcase name="halfCornerHasJunctionTimberAndExplicitCutCaps()" classname="com.seggellion.britannia_mod.block.PlasterSupportCornerContractTest" time="0.006"/>
+  <testcase name="singleJunctionPillarAcrossAllAffectedRotationsMirrorsAndVerticalSections()" classname="com.seggellion.britannia_mod.block.PlasterSupportCornerContractTest" time="0.004"/>
+  <system-out><![CDATA[WARN StatusConsoleListener Advanced terminal features are not available in this environment
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

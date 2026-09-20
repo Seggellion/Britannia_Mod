@@ -1,0 +1,40 @@
+{
+  "client_equals_first_dedicated_save": true,
+  "first_equals_dedicated_restart_save": true,
+  "fixtures": {
+    "SCENE_MANIFEST": 26,
+    "STRUCTURES": 12,
+    "NEIGHBORS": 9,
+    "CONTROLS": 4,
+    "ACTUAL_PLACEMENT_AND_DECORATOR": 3
+  },
+  "loaded_chunks": 90,
+  "server_ip": "127.0.0.1",
+  "server_port": 25579,
+  "runs": [
+    {
+      "log": "SERVER_FIRST.log",
+      "launch_log": "tmp/plaster-corner-0.1.8d/server-resume-launch-1.log",
+      "exit": 0
+    },
+    {
+      "log": "SERVER_RESTART.log",
+      "launch_log": "tmp/plaster-corner-0.1.8d/server-resume-launch-2.log",
+      "exit": 0
+    }
+  ],
+  "candidate_copies": {
+    "tmp\\plaster-corner-0.1.8d\\release\\britannia_mod-0.1.8d-all.jar": {
+      "bytes": 36140726,
+      "sha256": "de563ecfcb8f9067248ec09ae0578f7776ea5c1beefa4f1c182b9ac255a5df2e"
+    },
+    "tmp\\plaster-corner-0.1.8d\\client-resume\\mods\\britannia_mod-0.1.8d-all.jar": {
+      "bytes": 36140726,
+      "sha256": "de563ecfcb8f9067248ec09ae0578f7776ea5c1beefa4f1c182b9ac255a5df2e"
+    },
+    "tmp\\plaster-corner-0.1.8d\\server-resume\\mods\\britannia_mod-0.1.8d-all.jar": {
+      "bytes": 36140726,
+      "sha256": "de563ecfcb8f9067248ec09ae0578f7776ea5c1beefa4f1c182b9ac255a5df2e"
+    }
+  }
+}

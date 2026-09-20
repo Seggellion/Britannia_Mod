@@ -1,0 +1,132 @@
+[
+  {
+    "case": 5,
+    "file": "render-case-05-2026-10-07_03.43.17.png",
+    "capture_log": "[07Oct2026 03:43:17.396] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.43.17.png"
+  },
+  {
+    "case": 1,
+    "file": "render-case-01-2026-10-07_03.46.51.png",
+    "capture_log": "[07Oct2026 03:46:51.873] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.46.51.png"
+  },
+  {
+    "case": 2,
+    "file": "render-case-02-2026-10-07_03.47.15.png",
+    "capture_log": "[07Oct2026 03:47:15.373] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.47.15.png"
+  },
+  {
+    "case": 3,
+    "file": "render-case-03-2026-10-07_03.47.22.png",
+    "capture_log": "[07Oct2026 03:47:22.878] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.47.22.png"
+  },
+  {
+    "case": 4,
+    "file": "render-case-04-2026-10-07_03.47.37.png",
+    "capture_log": "[07Oct2026 03:47:37.905] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.47.37.png"
+  },
+  {
+    "case": 5,
+    "file": "render-case-05-2026-10-07_03.47.52.png",
+    "capture_log": "[07Oct2026 03:47:52.889] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.47.52.png"
+  },
+  {
+    "case": 6,
+    "file": "render-case-06-2026-10-07_03.48.07.png",
+    "capture_log": "[07Oct2026 03:48:07.866] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.48.07.png"
+  },
+  {
+    "case": 7,
+    "file": "render-case-07-2026-10-07_03.48.22.png",
+    "capture_log": "[07Oct2026 03:48:22.843] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.48.22.png"
+  },
+  {
+    "case": 8,
+    "file": "render-case-08-2026-10-07_03.48.37.png",
+    "capture_log": "[07Oct2026 03:48:37.861] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.48.37.png"
+  },
+  {
+    "case": 9,
+    "file": "render-case-09-2026-10-07_03.48.52.png",
+    "capture_log": "[07Oct2026 03:48:52.902] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.48.52.png"
+  },
+  {
+    "case": 10,
+    "file": "render-case-10-2026-10-07_03.49.07.png",
+    "capture_log": "[07Oct2026 03:49:07.843] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.49.07.png"
+  },
+  {
+    "case": 11,
+    "file": "render-case-11-2026-10-07_03.49.22.png",
+    "capture_log": "[07Oct2026 03:49:22.890] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.49.22.png"
+  },
+  {
+    "case": 12,
+    "file": "render-case-12-2026-10-07_03.49.37.png",
+    "capture_log": "[07Oct2026 03:49:37.867] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.49.37.png"
+  },
+  {
+    "case": 13,
+    "file": "render-case-13-2026-10-07_03.49.52.png",
+    "capture_log": "[07Oct2026 03:49:52.872] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.49.52.png"
+  },
+  {
+    "case": 14,
+    "file": "render-case-14-2026-10-07_03.50.07.png",
+    "capture_log": "[07Oct2026 03:50:07.870] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.50.07.png"
+  },
+  {
+    "case": 15,
+    "file": "render-case-15-2026-10-07_03.50.22.png",
+    "capture_log": "[07Oct2026 03:50:22.861] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.50.22.png"
+  },
+  {
+    "case": 16,
+    "file": "render-case-16-2026-10-07_03.50.37.png",
+    "capture_log": "[07Oct2026 03:50:37.882] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.50.37.png"
+  },
+  {
+    "case": 17,
+    "file": "render-case-17-2026-10-07_03.50.52.png",
+    "capture_log": "[07Oct2026 03:50:52.864] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.50.52.png"
+  },
+  {
+    "case": 18,
+    "file": "render-case-18-2026-10-07_03.51.11.png",
+    "capture_log": "[07Oct2026 03:51:11.845] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.51.11.png"
+  },
+  {
+    "case": 19,
+    "file": "render-case-19-2026-10-07_03.51.22.png",
+    "capture_log": "[07Oct2026 03:51:22.852] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.51.22.png"
+  },
+  {
+    "case": 20,
+    "file": "render-case-20-2026-10-07_03.51.37.png",
+    "capture_log": "[07Oct2026 03:51:37.893] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.51.37.png"
+  },
+  {
+    "case": 21,
+    "file": "render-case-21-2026-10-07_03.51.52.png",
+    "capture_log": "[07Oct2026 03:51:52.876] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.51.52.png"
+  },
+  {
+    "case": 22,
+    "file": "render-case-22-2026-10-07_03.52.07.png",
+    "capture_log": "[07Oct2026 03:52:07.887] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.52.07.png"
+  },
+  {
+    "case": 23,
+    "file": "render-case-23-2026-10-07_03.52.22.png",
+    "capture_log": "[07Oct2026 03:52:22.871] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.52.22.png"
+  },
+  {
+    "case": 24,
+    "file": "render-case-24-2026-10-07_03.52.37.png",
+    "capture_log": "[07Oct2026 03:52:37.882] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.52.37.png"
+  },
+  {
+    "case": 25,
+    "file": "render-case-25-2026-10-07_03.52.52.png",
+    "capture_log": "[07Oct2026 03:52:52.845] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-10-07_03.52.52.png"
+  }
+]

@@ -1,0 +1,182 @@
+[
+  {
+    "case": 0,
+    "rotation": "none",
+    "mirror": "none",
+    "origin": [
+      0,
+      80,
+      100
+    ],
+    "position": [
+      3,
+      80,
+      103
+    ]
+  },
+  {
+    "case": 1,
+    "rotation": "clockwise_90",
+    "mirror": "none",
+    "origin": [
+      12,
+      80,
+      100
+    ],
+    "position": [
+      9,
+      80,
+      103
+    ]
+  },
+  {
+    "case": 2,
+    "rotation": "180",
+    "mirror": "none",
+    "origin": [
+      24,
+      80,
+      100
+    ],
+    "position": [
+      21,
+      80,
+      97
+    ]
+  },
+  {
+    "case": 3,
+    "rotation": "counterclockwise_90",
+    "mirror": "none",
+    "origin": [
+      36,
+      80,
+      100
+    ],
+    "position": [
+      39,
+      80,
+      97
+    ]
+  },
+  {
+    "case": 4,
+    "rotation": "none",
+    "mirror": "left_right",
+    "origin": [
+      0,
+      80,
+      112
+    ],
+    "position": [
+      3,
+      80,
+      109
+    ]
+  },
+  {
+    "case": 5,
+    "rotation": "clockwise_90",
+    "mirror": "left_right",
+    "origin": [
+      12,
+      80,
+      112
+    ],
+    "position": [
+      15,
+      80,
+      115
+    ]
+  },
+  {
+    "case": 6,
+    "rotation": "180",
+    "mirror": "left_right",
+    "origin": [
+      24,
+      80,
+      112
+    ],
+    "position": [
+      21,
+      80,
+      115
+    ]
+  },
+  {
+    "case": 7,
+    "rotation": "counterclockwise_90",
+    "mirror": "left_right",
+    "origin": [
+      36,
+      80,
+      112
+    ],
+    "position": [
+      33,
+      80,
+      109
+    ]
+  },
+  {
+    "case": 8,
+    "rotation": "none",
+    "mirror": "front_back",
+    "origin": [
+      0,
+      80,
+      124
+    ],
+    "position": [
+      -3,
+      80,
+      127
+    ]
+  },
+  {
+    "case": 9,
+    "rotation": "clockwise_90",
+    "mirror": "front_back",
+    "origin": [
+      12,
+      80,
+      124
+    ],
+    "position": [
+      9,
+      80,
+      121
+    ]
+  },
+  {
+    "case": 10,
+    "rotation": "180",
+    "mirror": "front_back",
+    "origin": [
+      24,
+      80,
+      124
+    ],
+    "position": [
+      27,
+      80,
+      121
+    ]
+  },
+  {
+    "case": 11,
+    "rotation": "counterclockwise_90",
+    "mirror": "front_back",
+    "origin": [
+      36,
+      80,
+      124
+    ],
+    "position": [
+      39,
+      80,
+      127
+    ]
+  }
+]

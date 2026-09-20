@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.seggellion.britannia_mod.block.PlasterHalfWallArtCollisionTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-10-07T17:20:47" hostname="MSI" time="0.208">
+  <properties/>
+  <testcase name="formsACornerWhereAHalfWallRunMeetsAPerpendicularFullPlasterWall()" classname="com.seggellion.britannia_mod.block.PlasterHalfWallArtCollisionTest" time="0.001"/>
+  <testcase name="aCornerOrJunctionDrawsSomethingAStraightRunDoesNot()" classname="com.seggellion.britannia_mod.block.PlasterHalfWallArtCollisionTest" time="0.006"/>
+  <testcase name="offsetReturnModelsActuallyDrawAcrossTheElevenPixelGap()" classname="com.seggellion.britannia_mod.block.PlasterHalfWallArtCollisionTest" time="0.008"/>
+  <testcase name="collisionDoesNotStandWhereTheArtDrawsNothing()" classname="com.seggellion.britannia_mod.block.PlasterHalfWallArtCollisionTest" time="0.129"/>
+  <testcase name="collisionCoversEveryWallTheArtDraws()" classname="com.seggellion.britannia_mod.block.PlasterHalfWallArtCollisionTest" time="0.053"/>
+  <testcase name="anOffsetPerpendicularFullWallStillProducesTheCornerReturn()" classname="com.seggellion.britannia_mod.block.PlasterHalfWallArtCollisionTest" time="0.0"/>
+  <testcase name="blankHalfWallExtendsItsOffsetReturnAcrossTheFarEdgeGapOnly()" classname="com.seggellion.britannia_mod.block.PlasterHalfWallArtCollisionTest" time="0.004"/>
+  <testcase name="everyStateStillCollidesAndStaysInsideItsOwnBlock()" classname="com.seggellion.britannia_mod.block.PlasterHalfWallArtCollisionTest" time="0.001"/>
+  <testcase name="aLonePerpendicularFullPlasterWallProducesAVisibleReturn()" classname="com.seggellion.britannia_mod.block.PlasterHalfWallArtCollisionTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

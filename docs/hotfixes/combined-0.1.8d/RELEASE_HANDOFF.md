@@ -1,0 +1,130 @@
+# Combined Patch 18 0.1.8d release handoff
+
+## Source publication and branch synchronization — 2026-10-10
+
+The owner reports that the combined 0.1.8d fixes are now live on the server and requests only sanitized source publication and local/remote Patch 19 rebasing. No deployment, installation, desktop test, production/server/world change or repeated acceptance is performed. Historical runtime/visual records below remain historical, not new publication gates. Effective final production implementation remains in integrated `cf49b170`, with all cumulative fence/plaster/shared-wall/network/medallion/alligator changes preserved.
+
+The public CI RunUO initialization failures are repaired by exact mirrored test-resource JSON contracts and classpath loading; all existing accounting/coverage assertions remain. Development loading also rejects drift from the internal canonical matrix. No runtime source or version change is needed. Fresh snapshot must include current integrated test/tools/source additions and preserve every retained Git object/type/mode under the established exclusion manifest. Main signatures/restricted updates remain enforced without bypass. See the [current publication/rebase handoff](../../source-publication-2026-10-10/HANDOFF.md); actual final refs and gate outcomes are recorded in its task receipt, not inferred from the old PR.
+
+## One fence/plaster recovery coordinated — 2026-10-09
+
+**COMBINED_CANDIDATE_VERIFIED; INSTALLED_FILE_MATCH; PRODUCTION_ACCEPTANCE_PENDING.** The fence task's completed report and final handoff were received; its prior separately authorized replacement had already finished after Minecraft closed. Fresh read-only coordination verifies the active one-JAR installation, preserved old backup, existing matching localhost server and both fixes in clean `cf49b170` / full SHA `e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70`, 36,142,686 bytes. No duplicate installation or server/client launch, new repair, rebuild, repeated passing suite or desktop control occurs.
+
+Current effective production source matches selected source. All 10,698 archive names match historical f02, and 10,697 entries (including all classes/assets/dependencies/other hotfix payload) are byte-identical; only embedded provenance differs. The final chosen identity supersedes the earlier plaster f02 installation default. Actual client loaded identity, fence mouse/corner/decorator/reload and plaster both-branch exterior/paired-wall appearance remain pending; medallion/movement approvals are reused. Alligator playback remains its independent release hold. Main/PR #501 public CI/signing restrictions are separate and unchanged.
+
+The [combined installation handoff](../combined-installation-0.1.8d-2026-10-09/INSTALLATION_HANDOFF.md) and [one approximately five-minute owner session](../combined-installation-0.1.8d-2026-10-09/MANUAL_SESSION.md) replace earlier separate fence/plaster launch or install checklists. Server **127.0.0.1:25583** is already ready for Seggellion. Production, live worlds, profile settings and unrelated mods are unchanged by this coordination; no production deployment, tag or release is performed.
+
+## Local client replacement completed — 2026-10-09
+
+**INSTALLED_FILE_MATCH; LOCAL_RUNTIME_PENDING_ACCEPTANCE; production unchanged.**
+The old Minecraft client exited before the guarded replacement. The actual
+CurseForge instance now contains exactly one active `britannia_mod-0.1.8d-all.jar`,
+36,142,686 bytes, SHA **e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70**,
+clean source cf49b1700d1a8992f39396f2ae531f0cb26502d7. The original backup and
+retired old active jar are preserved outside mods; all 10 other mod files hash
+unchanged. Version remains 0.1.8d and no candidate rebuild was needed.
+
+Windows interaction initialization and one retry failed before input; no new
+client launch/load, actual mouse placement or visual pass is claimed. Matching
+disposable server **127.0.0.1:25583** still loads the selected identity; Seggellion
+operator access was explicitly approved and granted only there. Fence/wall,
+both-branch plaster exterior and alligator scenes are prepared. Prior automated
+checks remain separately recorded; medallion/movement approvals and all pending
+visual observations stay accurate. Timing stays follow-up.
+
+See [manual continuation](../../projects/patch18-edge-fence-hotfix/MANUAL_RECOVERY_CHECKLIST.md), [matrix](../../projects/patch18-edge-fence-hotfix/RUNTIME_IDENTITY_MATRIX.json) and [exact deployment packet](../../projects/patch18-edge-fence-hotfix/PRODUCTION_RECOVERY_PACKET.md). Production deployment remains explicitly prohibited. The older running-client guard status below is historical.
+
+
+## Fence runtime recovery and selected upload identity — 2026-10-09
+
+**LOCAL_RUNTIME_PENDING_ACCEPTANCE; production unchanged.** The owner's remote `/grabby env` confirms old source **4435912197fba84630d6e5a0544f29fc3a736450**, full SHA **c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6**, matching the observed active client. Remote identity is known; no production replacement/restart is authorized or performed.
+
+Selected combined recovery jar: `C:/projects/britannia/mod/Britannia_Mod/tmp/fence-runtime-recovery-2026-10-09/release/britannia_mod-0.1.8d-all.jar`, **36,142,686 bytes**, SHA **e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70**, clean source **cf49b1700d1a8992f39396f2ae531f0cb26502d7**. All 10,698 archive entries match the October 7 combined candidate except provenance. Current application/resources/dependencies match; later tools/tests/docs require no rebuild/version bump. This selected identity supersedes older candidate defaults for fence recovery; historical evidence and all integrated hotfixes remain.
+
+Read-only installed-file preflight passes 12 new tests. The original client jar is backed up outside active mods and full-hash verified. Guarded replacement awaits the actual client's normal exit (PID47684); the Windows interaction helper failed before input. No active-profile replacement occurred. A matching disposable DedicatedServer at **127.0.0.1:25583** loads the selected hash/source. Four command-created owners pass 20 same-coordinate full-state phases across neighbor addition/ticks/removal; four saved owners match after save and a fresh JVM restart. These engine/persistence checks are zero registered GameTests and do not certify actual client clicks/rendering.
+
+Prepared 48 manual scenes retain A/B coordinates and support/endpoint/ground, direction and oblique variants. Client restart/load identity, reported mouse interaction, corner/decorator/rails/UVs/outline/reconnect/F3+T remain pending. Plaster still requires continuous exterior junction timber in **both branches**, preserving the interior, and reopened appearance/outline acceptance. Alligator playback remains pending; medallion UI and sustained movement remain approved. Timing repetitions stay follow-up. Existing main/ruleset/signing and current CI limitations below remain unchanged.
+
+See the [exact backup/replacement/restart/verification packet](../../projects/patch18-edge-fence-hotfix/PRODUCTION_RECOVERY_PACKET.md), [identity matrix](../../projects/patch18-edge-fence-hotfix/RUNTIME_IDENTITY_MATRIX.json), and [executed versus pending acceptance](../../projects/patch18-edge-fence-hotfix/RUNTIME_ACCEPTANCE.md). Source integration/normal remote backup is recorded separately in the retained task CLOSEOUT.json and never closes the owner complaint. The copied world/worktree and verified artifacts are retained for acceptance.
+
+## Plaster exterior follow-up and current publication — 2026-10-09
+
+**SOURCE_PUBLICATION_AUTHORIZED; PRODUCTION_ACCEPTANCE_PENDING.** Plaster is `INSTALLATION_DISCREPANCY_CONFIRMED; EXTERIOR_A_B_PENDING`. The owner requires continuous exterior junction timber in both branches; the interior is preserved. The active selected client remains older `44359121` / `c04f3092...8981c6`; unchanged clean candidate `986ed746` / `f02d2876...482bd` is staged in an isolated unlaunched profile with a verified rollback copy. Fresh exterior-face/static/package/preparation checks pass, but do not establish actual candidate appearance. No application change, rebuild or repeated passing suite occurred. [Follow-up handoff](../plaster-corner-followup-2026-10-09/FOLLOWUP_HANDOFF.md), [short owner comparison](../plaster-corner-followup-2026-10-09/OWNER_COMPARISON.md).
+
+Medallion UI and sustained movement owner acceptance remain complete. Fence corner/decorator/reconnect appearance and deployment identity remain independent holds; alligator playback remains pending. No unrelated hold is cleared by plaster analysis. Timing repetitions remain follow-up confidence measurements, not a newly imposed requirement.
+
+Fresh GitHub inspection supersedes the historical CI-in-progress receipt: existing [PR #501](https://github.com/Seggellion/Britannia_Mod/pull/501) is OPEN/BLOCKED and unsigned; main remains `f039c4b259d925872618bfe64ee574b20776856c`. Remote GameTests passed, but build CI failed three RunUO initialization tests whose fixtures are excluded internal documents; local ancestor lookup concealed that standalone public checkout gap. Current whole-tree public snapshot parity is also not claimed because the concurrent fence GameTest harness is retained by export policy. This task changes internal documentation/analysis/preparation only, so no artificial sanitized snapshot/build is produced. Normal development publication proceeds independently; main signing/restricted-update rules are preserved without bypass. [Current evidence and publication receipt](../plaster-corner-followup-2026-10-09/PUBLICATION.md).
+
+No desktop input/focus/client launch, active profile replacement, server restart, live-world change, production deployment, tag or GitHub Release occurred. The candidate's absolute source-specific path/hash and installation instructions are in the [installation manifest](../plaster-corner-followup-2026-10-09/evidence/INSTALLATION_MANIFEST.json).
+
+## Reopened plaster discovery — 2026-10-08
+
+**PRODUCTION_ACCEPTANCE_PENDING; PLASTER_VISUAL_DEFECT_REOPENED.** A new owner branch-pair observation is under [dated discovery](../plaster-corner-reopened-2026-10-08/DISCOVERY_REPORT.md). The selected accessible client installation has the earlier `44359121` / `c04f3092...8981c6` artifact and old false-branch corner mesh. The verified `986ed746` / `f02d2876...482bd` candidate is unchanged; current art contains junction timber for both branches, but the owner-view/neighbor/server identity and interior/exterior visible contract remain unverified. New disposable packaged state/restart evidence is not a visual acceptance pass. No further application repair or publication occurred during discovery.
+
+The existing fence corner/decorator/reload and alligator playback holds remain independent. Medallion owner UI acceptance and accepted sustained movement remain preserved. Historical source-publication/main-review status below is not changed by this discovery. See [reopened status](../plaster-corner-reopened-2026-10-08/STATUS.md) and [conditional implementation proposal](../plaster-corner-reopened-2026-10-08/IMPLEMENTATION_PROPOSAL.md).
+
+## Current closeout — 2026-10-07
+
+Status: **SOURCE_PUBLICATION_AUTHORIZED; PRODUCTION_ACCEPTANCE_PENDING**. This section supersedes the historical checkpoint below. The owner ended desktop automation and authorized source publication independently of remaining human acceptance. No live deployment/world edit, launcher update, release tag or GitHub Release occurred.
+
+GitHub publication result: normal non-force development push verified at **a80af0fdcfc26342aeaec6d52a173c677709d61d**; sanitized review branch verified at **fd90bff209d47addf6667c4576bd2053890127f2**. [PR #501](https://github.com/Seggellion/Britannia_Mod/pull/501) is OPEN and GitHub reports **BLOCKED**. Main remains **f039c4b259d925872618bfe64ee574b20776856c**: **MAIN_NOT_UPDATED_RULESET_HOLD**. Snapshot verification is `verified=false, reason=unsigned`; restricted updates have only the prohibited administrator bypass. No merge/update/bypass was attempted. Remote CI was automatically triggered and was still running when the receipt was captured, not claimed passed. This receipt/evidence follow-up is a documentation-only descendant pushed normally; final advertised development SHA is verified afterward in the task closeout receipt, avoiding a self-referential commit hash.
+
+Candidate unchanged: `C:\projects\britannia\mod\Britannia_Mod\tmp\combined-0.1.8d\release\britannia_mod-0.1.8d-all.jar`; clean embedded source **986ed746866dc944b7b496ab9428b670f65e15c0**, **36,142,668 bytes**, SHA-256 **f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd**. No application change, candidate rebuild or passing-suite rerun during this closeout. Original candidates/evidence and owner work remain preserved.
+
+| Component | Current acceptance |
+| --- | --- |
+| Network | COMPLETE current-source integration audit and named tests; exact deployed C boundary/live backend parity not claimed. |
+| Medallion | COMPLETE OWNER_APPROVED_UI_ACCEPTANCE; functional evidence retained. Do not repeat UI/movement. |
+| Plaster/shared walls | Actual both-half mirror/rotation and current joins/12 transforms pass; prior legal renders reused as forced-state evidence. Real copied actual client save passes 108 loaded half assertions; all 54 rows/neighbors survive load/save unchanged. Legacy probes give matching lower-owned collision without query save rewrites. Owner sustained both-arm movement passes. **One upper edit and post-reconnect/F3+T appearance/outline remains human acceptance.** |
+| Fence | Final matching dedicated actual mouse placement in four facings/support/endpoint and native F2/state traces pass; six actual saved fence placements match after process restart. Engine physics/layout/UV/art gates and owner sustained barrier movement pass. **Fresh two-panel corner/decorator and reconnect/F3+T visual agreement remain.** Earlier interrupted single-panel fixture is not a corner pass. |
+| Alligator | Server gates retained; 160 preflight samples over exactly 1,600 ticks show dry/grounded wading movement, forced stopped controls, actual AI descent/ascent/bank exit and land reset. **Actual gait/bind-pose/reset/aim playback remains human acceptance.** |
+
+The prior wall divergence was pre-existing and blocking (0.5625-block upper collider displacement), and was repaired rather than waived. No known implementation failure remains open. Automated state/physics/persistence, actual packet/render evidence and owner observations are distinguished; one does not prove the other. Plaster is not fully complete until its final loaded visual/outline observation. Combined production acceptance also retains fence/alligator observations.
+
+Complete existing normal clean build/artifact checks, **4,129 JUnit with zero failures/errors/23 inherited skips**, and **1,366 required GameTests** remain successful/applicable. [Gate reassessment and failure detected by each check](GATE_REASSESSMENT.md), [updated plaster rows](PLASTER_ACCEPTANCE_ROWS.json), [wall persistence](evidence/no-desktop/WALL_PERSISTENCE_RESULTS.json), [fence restart](evidence/no-desktop/FENCE_RESTART_RESULTS.json), [alligator trace](evidence/no-desktop/ALLIGATOR_PREFLIGHT_SUMMARY.json), [current F2 evidence](evidence/no-desktop/FRAMES.json).
+
+Repeated startup/isolated bake/frame timings are **FOLLOW_UP_MEASUREMENTS**, not source/current production-acceptance blockers: no established threshold/demonstrated timing regression. The measured +8.32 MiB total median heap cost, +2,048 states/cache entries, +28 baked models/+1,248 quads remain reported. Original single startup/reload pair does not establish variance/improvement. Native/GPU/frame cost is unmeasured. Meaningful client repetitions would interfere with the desktop; no new performance pass is claimed.
+
+One existing disposable server is ready at **127.0.0.1:25569**; its latest identity and loaded fence/wall fixture assertions are in [ready log](evidence/no-desktop/SERVER_READY.log). Existing client remains under owner control. See [one approximately five-minute manual session](MANUAL_SESSION.md); no repeated medallion or sustained movement. Fixture parse/entity-health calibration failures are preserved separately, corrected and never counted as candidate passes. The alligator sequence uses stationary spectator viewpoints then returns creative.
+
+Prepared sanitized snapshot **fd90bff209d47addf6667c4576bd2053890127f2** remains a sole child of remote main **f039c4b259d925872618bfe64ee574b20776856c**. Exact retained source object/type/mode parity and clean public build/full JUnit pass; further closeout changes are excluded documentation/evidence. Publication receipt records actual verified refs and review URL. Normal non-force Patch 18 push is independently authorized; `main` publication must honor ruleset **17373102** (signatures/linear history/restricted updates), without administrator exception or ruleset changes. Local snapshot is unsigned (`%G?=N`); no configured signing workflow has been established. [GitHub's rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets) evaluate unsigned head commits even for squash, so a signed final squash cannot simply be assumed to cure them. An open PR is **not updated main**. Current permitted publication outcome belongs in [receipt](PUBLICATION_RECEIPT.json).
+
+---
+
+## Historical checkpoint before gate reassessment
+
+Current status: **CANDIDATE_PREPARED_RELEASE_HELD**. Plaster acceptance: **REPAIR_IMPLEMENTED_PENDING_PACKAGED_ACCEPTANCE**. Combined acceptance and source publication remain held by the concrete client gates below. No live deployment, launcher change, production-world edit, release tag or GitHub Release occurred.
+
+## Integrated source and candidate
+
+Exact `patch-18` continues from `d858bb4542a1a034d222f05bc10ca3602bec8804`, without reset or importing another branch. Bounded shared-wall repair is `5a6734ba78a1541cf8629b35980a2f403d90ea5c`; portable required test fixtures are `986ed746866dc944b7b496ab9428b670f65e15c0`. Owner untracked kickoffs/playbooks, owner fence evidence and unrelated worktrees remain preserved.
+
+The clean integrated candidate is `tmp/combined-0.1.8d/release/britannia_mod-0.1.8d-all.jar`, **36,142,668 bytes**, SHA-256 **f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd**. Embedded source is **986ed746866dc944b7b496ab9428b670f65e15c0**, branch `HEAD`, dirty=false, timestamp `2026-10-07T17:43:56.051245600Z`. Minecraft 1.21.1, NeoForge 21.1.72, Java 21, Gradle 8.9 and GeckoLib 4.6.6 remain pinned. Both bundled dependencies and all 17 support model/blockstate resources match source. See [candidate identity](CANDIDATE_IDENTITY.json).
+
+This replaces the held plaster-only candidate for acceptance. Original `ac6b2e80` / `de563ecfcb8f9067248ec09ae0578f7776ea5c1beefa4f1c182b9ac255a5df2e` bytes and all old evidence remain intact. The intermediate clean `5a6734ba` candidate is separately retained under `tmp/combined-0.1.8d/release/pre-fixture`; its packaged contents differ from the final candidate only in build identity. Documentation-only closeout will not rebuild or relabel these bytes.
+
+## Component gates
+
+| Component | Implementation/integration | Executed verification | Genuine remaining acceptance |
+| --- | --- | --- | --- |
+| Network | Applicable NPC executor, quest transport and grape bootstrap fixes are present and effective in current source. NPC/quest already precede evidenced B/C boundaries; grape sync precedes the C source reference. | Fresh full JUnit/GameTests; named network suites have zero failures/errors/skips. [Network verification](NETWORK_VERIFICATION.json), [release delta](RELEASE_DELTA.md). | No standalone network source gate remains. Live Rails/Rowan deployment parity was not exercised or claimed; it is a separate deployment workflow. Exact deployed C boundary remains unproven, with stronger B publication evidence retained. |
+| Plaster/shared walls | Prior one-post/finished-plaster mesh repair retained; either-half paired editing, lower-owned legacy collision, mirror-aware physical runs and transforms implemented. | Three red geometry regressions and a red actual-item GameTest reproduce the old defect; corrected focused 70 JUnit and four required wall-pair GameTests pass. Fresh complete gates pass. [Repair](../plaster-corner-0.1.8d/WALL_PAIR_REPAIR.md). | Affected packaged actual item edits, normalization, joins, transforms, outlines, persistence and sustained player movement are being executed on final candidate. Owner overrides conditional on availability. |
+| Fences | Existing saved-layout/endpoint repair retained unchanged. | Fresh complete gates; resource checks retain 64 legacy mappings, 2,112 states, 1,536 transformed UV/vertex comparisons, seven authored hashes. Existing codec/restart/eviction and synthetic placement/physics evidence remains applicable. | Matching dedicated actual mouse packets, state/render/UV/outlines, support/endpoint/ground/sequential corner scene, decorator/reconnect/reload and sustained walk/jump. Repeated startup/model-bake/frame timing remains to be measured. |
+| Medallion | `4a0feb03` wearable/lore/assets retained unchanged. | Fresh lifecycle/contracts and complete gates; prior static/item/shader checks retained. Final packaged Seggellion public UUID actually loads its cape and renders the owner-stamped medallion. | **COMPLETE — OWNER_APPROVED_UI_ACCEPTANCE** on 2026-10-07. Owner-tested UI accepted explicitly; functional/lifecycle verification remains green. [Approval](MEDALLION_UI_APPROVAL.json). No repeated medallion UI test is required. Optional second-profile multiplayer remains optional. |
+| Alligator | Amphibious intent, air and thin-water wading retained unchanged. | Fresh complete server movement/survival/performance GameTests; no invented swim/idle/attack asset. | Actual >=1,200-tick playback: dry/wading gait, stopped surface/underwater pose, dive/ascent/submerged hold, land/water reset and attack aim. |
+
+## Actual automated gates
+
+Clean detached integrated `986ed746` ran **clean/build/artifactIdentity/runGameTestServer** with normal compilation and the complete default namespace set. **4,129 JUnit cases, zero failures/errors, 23 inherited skips; all 1,366 required GameTests passed**. See [final gates](FINAL_GATES.json); full log remains `tmp/combined-0.1.8d/release/FINAL_GATES.log` and XML remains in the clean candidate-source checkout.
+
+Scoped half generation/freshness and all four generation regressions pass. Scoped support resource validation has zero errors and 73 inherited warnings. Fence resource/art oracle passes. No test-only wall-pair classes/template namespace leaks into the release JAR. No dirty-build or development flag was used to package this candidate.
+
+## Packaged runtime and publication
+
+Disposable client `tmp/plaster-corner-0.1.8d/combined-client` contains only the verified bundled candidate in `mods`. SDK smoke excludes compiled project classes/resources, clears MOD_CLASSES and removes separate GeckoLib/nanohttpd dependencies from both runtime classpaths. Actual loaded environment reports source `986ed746`, dirty=false and SHA-256 `f02d2876...482bd`. The copied world and test-only datapacks do not certify command setup as player placement. Seggellion's public profile UUID is used solely for visual testing; no authenticated session or production credential is supplied. Missing isolated backend credentials are not backend parity evidence.
+
+Sanitized public snapshot **fd90bff209d47addf6667c4576bd2053890127f2** is a sole child of freshly fetched public main **f039c4b259d925872618bfe64ee574b20776856c**. It retains 10,385 source entries, excludes 509 internal/local paths, contains zero Markdown/docs paths, and preserves exact retained Git object/type/mode parity. Its clean build, full JUnit and artifact check pass: 4,129 cases, zero failures/errors, 31 skips (23 inherited plus eight assumption-guarded checks of deliberately excluded internal documents; those eight passed in the development tree). Packaged entries equal the development candidate except embedded build identity. See [public gates](PUBLIC_GATES.json), [snapshot/exclusions](PUBLIC_SNAPSHOT.json) and [policy](SANITIZATION.md).
+
+**No release push or PR has occurred.** Last verified remote refs are `origin/patch-18=7ca44a78d2438ae2204c4f64271ef84bb0672740` and `origin/main=f039c4b259d925872618bfe64ee574b20776856c`. Re-fetch before publication. Main ruleset 17373102 restricts updates and requires signatures; the owner's no-bypass instruction prevents using its administrator exception. Prepare the permitted review path when component gates pass. An unmerged review snapshot must not be reported as an updated main.
+
+Task-created worktrees/worlds and prior candidates remain retained for acceptance and reproducibility. No broad cleanup, force-push, local main branch or unrelated source changes were introduced.

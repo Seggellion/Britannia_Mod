@@ -1,0 +1,274 @@
+[
+  {
+    "case": 0,
+    "position": [
+      8,
+      80,
+      100
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=north,shape=corner,branch_right=false]",
+    "full_neighbor_position": [
+      7,
+      80,
+      100
+    ],
+    "full_neighbor_facing": "east",
+    "seed_shape": "straight",
+    "setup_kind": "command seed + normal neighbor notifications, not BlockItem",
+    "saved_state": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "saved_full_neighbor": {
+      "Properties": {
+        "half": "lower",
+        "shape": "straight",
+        "facing": "east",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_blank"
+    }
+  },
+  {
+    "case": 1,
+    "position": [
+      20,
+      80,
+      100
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=north,shape=corner,branch_right=true]",
+    "full_neighbor_position": [
+      21,
+      80,
+      100
+    ],
+    "full_neighbor_facing": "west",
+    "seed_shape": "straight",
+    "setup_kind": "command seed + normal neighbor notifications, not BlockItem",
+    "saved_state": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "saved_full_neighbor": {
+      "Properties": {
+        "half": "lower",
+        "shape": "straight",
+        "facing": "west",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_blank"
+    }
+  },
+  {
+    "case": 2,
+    "position": [
+      32,
+      80,
+      100
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=east,shape=corner,branch_right=false]",
+    "full_neighbor_position": [
+      32,
+      80,
+      99
+    ],
+    "full_neighbor_facing": "south",
+    "seed_shape": "straight",
+    "setup_kind": "command seed + normal neighbor notifications, not BlockItem",
+    "saved_state": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "east",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "saved_full_neighbor": {
+      "Properties": {
+        "half": "lower",
+        "shape": "straight",
+        "facing": "south",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_blank"
+    }
+  },
+  {
+    "case": 3,
+    "position": [
+      44,
+      80,
+      100
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=east,shape=corner,branch_right=true]",
+    "full_neighbor_position": [
+      44,
+      80,
+      101
+    ],
+    "full_neighbor_facing": "north",
+    "seed_shape": "straight",
+    "setup_kind": "command seed + normal neighbor notifications, not BlockItem",
+    "saved_state": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "east",
+        "branch_right": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "saved_full_neighbor": {
+      "Properties": {
+        "half": "lower",
+        "shape": "straight",
+        "facing": "north",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_blank"
+    }
+  },
+  {
+    "case": 4,
+    "position": [
+      8,
+      80,
+      108
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=south,shape=corner,branch_right=false]",
+    "full_neighbor_position": [
+      9,
+      80,
+      108
+    ],
+    "full_neighbor_facing": "west",
+    "seed_shape": "straight",
+    "setup_kind": "command seed + normal neighbor notifications, not BlockItem",
+    "saved_state": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "saved_full_neighbor": {
+      "Properties": {
+        "half": "lower",
+        "shape": "straight",
+        "facing": "west",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_blank"
+    }
+  },
+  {
+    "case": 5,
+    "position": [
+      20,
+      80,
+      108
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=south,shape=corner,branch_right=true]",
+    "full_neighbor_position": [
+      19,
+      80,
+      108
+    ],
+    "full_neighbor_facing": "east",
+    "seed_shape": "straight",
+    "setup_kind": "command seed + normal neighbor notifications, not BlockItem",
+    "saved_state": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "saved_full_neighbor": {
+      "Properties": {
+        "half": "lower",
+        "shape": "straight",
+        "facing": "east",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_blank"
+    }
+  },
+  {
+    "case": 6,
+    "position": [
+      32,
+      80,
+      108
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=west,shape=corner,branch_right=false]",
+    "full_neighbor_position": [
+      32,
+      80,
+      109
+    ],
+    "full_neighbor_facing": "north",
+    "seed_shape": "straight",
+    "setup_kind": "command seed + normal neighbor notifications, not BlockItem",
+    "saved_state": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "west",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "saved_full_neighbor": {
+      "Properties": {
+        "half": "lower",
+        "shape": "straight",
+        "facing": "north",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_blank"
+    }
+  },
+  {
+    "case": 7,
+    "position": [
+      44,
+      80,
+      108
+    ],
+    "expected_state": "britannia_mod:plaster_wall_and_support_blank_half[facing=west,shape=corner,branch_right=true]",
+    "full_neighbor_position": [
+      44,
+      80,
+      107
+    ],
+    "full_neighbor_facing": "south",
+    "seed_shape": "straight",
+    "setup_kind": "command seed + normal neighbor notifications, not BlockItem",
+    "saved_state": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "west",
+        "branch_right": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "saved_full_neighbor": {
+      "Properties": {
+        "half": "lower",
+        "shape": "straight",
+        "facing": "south",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_blank"
+    }
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": "e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70",
+  "loaded_source": "cf49b1700d1a8992f39396f2ae531f0cb26502d7",
+  "server_kind": "DedicatedServer",
+  "owners": 4,
+  "full_state_phase_assertions": 20,
+  "registered_gametests_run": 0,
+  "blockitem_mouse_placement": "not run; command setup/update checks only",
+  "new_client_states_and_render": "unobserved",
+  "saved_owners_match": 4,
+  "new_jvm_saved_owner_assertions": 4,
+  "restart_trace": "DEDICATED_RESTART_TRACE.txt"
+}

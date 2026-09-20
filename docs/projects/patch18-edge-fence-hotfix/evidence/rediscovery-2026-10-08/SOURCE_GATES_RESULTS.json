@@ -1,0 +1,22 @@
+{
+  "normal_source_gates_log": "tmp/fence-runtime-rediscovery-2026-10-08/evidence/source-gates.log.gz",
+  "junit_executed": {
+    "tests": 4129,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 23,
+    "suites": 516
+  },
+  "focused_required_gametests_executed": 24,
+  "focused_namespaces": [
+    "britannia_edge_fence",
+    "britannia_edge_fence_lifecycle"
+  ],
+  "lifecycle_phase": "write",
+  "final_clean_build_log": "tmp/fence-runtime-rediscovery-2026-10-08/evidence/clean-source-build.log.gz",
+  "clean_compile_note": "Initial normal compileJava executed in old-artifact.log; final explicit clean build restored Gradle compilation/test outputs FROM-CACHE. No manual javac or -x compileJava used.",
+  "entire_zip_parity_with_combined_except": [
+    "britannia_mod_build.properties"
+  ],
+  "release_test_helper_excluded": true
+}

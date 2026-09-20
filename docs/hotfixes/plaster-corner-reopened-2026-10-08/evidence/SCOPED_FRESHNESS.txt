@@ -1,0 +1,8 @@
+Discovery command executed 2026-10-08 in current canonical patch-18 at 71de2312:
+python tools/generate_half_walls.py --support-corner-only --check
+
+Exit code: 0
+Actual stdout:
+fresh: plaster_wall_and_support_blank_half_corner.json
+
+This verifies the existing false half derivative only. No generator write or whole-suite rerun was performed.

@@ -1,0 +1,7 @@
+{
+  "head": "5a8cab9a38fac52253dea20431dea60cd15812c0",
+  "entry_head": "71de2312a552ebf4dad3ecf147efd1de4bd815db",
+  "production_diff_excluding_gametest": "",
+  "concurrent_test_harness_delta": "src/main/java/com/seggellion/britannia_mod/gametest/FenceRuntimeIdentityGameTests.java",
+  "packaging_excludes": "build.gradle lines 286 and 297 exclude com/seggellion/britannia_mod/gametest/**"
+}

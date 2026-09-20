@@ -1,0 +1,16 @@
+{
+  "integrated_development_head": "a80af0fdcfc26342aeaec6d52a173c677709d61d",
+  "application_candidate_source": "986ed746866dc944b7b496ab9428b670f65e15c0",
+  "public_snapshot": "fd90bff209d47addf6667c4576bd2053890127f2",
+  "main_parent": "f039c4b259d925872618bfe64ee574b20776856c",
+  "retained_entries": 10385,
+  "retained_object_type_mode_parity": "PASS",
+  "closeout_changes_excluded_from_public_tree": true,
+  "normal_development_ancestry": "PASS",
+  "candidate_path": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\combined-0.1.8d\\release\\britannia_mod-0.1.8d-all.jar",
+  "candidate_bytes": 36142668,
+  "candidate_sha256": "f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd",
+  "embedded": "mod.version=0.1.8d\ngit.head=986ed746866dc944b7b496ab9428b670f65e15c0\ngit.branch=HEAD\ngit.dirty=false\nbuild.timestamp=2026-10-07T17:43:56.051245600Z\n",
+  "client_and_server_mod_folder_hash_match": true,
+  "production_acceptance": "PENDING_THREE_HUMAN_OBSERVATIONS"
+}

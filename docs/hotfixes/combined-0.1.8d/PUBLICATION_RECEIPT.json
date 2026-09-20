@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-07",
+  "source_publication": "DEVELOPMENT_PUSHED_SANITIZED_REVIEW_PUBLISHED_MAIN_HELD",
+  "production_acceptance": "PENDING_THREE_SHORT_HUMAN_OBSERVATIONS",
+  "development_remote_before": "7ca44a78d2438ae2204c4f64271ef84bb0672740",
+  "main_remote": "f039c4b259d925872618bfe64ee574b20776856c",
+  "sanitized_snapshot": "fd90bff209d47addf6667c4576bd2053890127f2",
+  "review_branch": "codex/patch18-0.1.8d-source",
+  "main_status": "NOT_UPDATED_RULESET_HOLD",
+  "ruleset_id": 17373102,
+  "main_holds": [
+    "Restricted update rule only permits administrator bypass; owner forbids bypass",
+    "Unsigned snapshot head; required verified signatures and no configured signer established"
+  ],
+  "candidate_unchanged": true,
+  "candidate_source": "986ed746866dc944b7b496ab9428b670f65e15c0",
+  "candidate_sha256": "f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd",
+  "development_remote_verified": "a80af0fdcfc26342aeaec6d52a173c677709d61d",
+  "development_update": "NORMAL_NON_FORCE_PRESERVED_HISTORY",
+  "review_remote_verified": "fd90bff209d47addf6667c4576bd2053890127f2",
+  "review_url": "https://github.com/Seggellion/Britannia_Mod/pull/501",
+  "review_state": "OPEN",
+  "merge_state": "BLOCKED",
+  "snapshot_signature": {
+    "verified": false,
+    "reason": "unsigned"
+  },
+  "main_updated": false,
+  "bypass_used": false,
+  "automatic_remote_CI": "IN_PROGRESS_AT_CAPTURE_NOT_CLAIMED_PASSED",
+  "documentation_followup": "This receipt and remaining evidence are a normal descendant commit; final advertised ref is captured after the receipt push in tmp/combined-0.1.8d/FINAL_REMOTE_VERIFICATION.json, not self-referentially inside this commit."
+}

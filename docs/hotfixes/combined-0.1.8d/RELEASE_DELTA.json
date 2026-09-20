@@ -1,0 +1,263 @@
+{
+  "audited_head": "d858bb4542a1a034d222f05bc10ca3602bec8804",
+  "c_reference": "c1f2b5b819834ab971a2fc65b86fcd484d31e7c9",
+  "c_exact_released_source_proven": false,
+  "c_limitation": "Retained C artifact is dirty; no C release tag, publication receipt or installed runtime identity establishes the exact deployed tree.",
+  "b_published_source": "339cc70bb78cb1b99de114e57ca0f8e75f8e8a80",
+  "b_public_snapshot": "f039c4b259d925872618bfe64ee574b20776856c",
+  "b_receipt": "C:/projects/britannia/patch18-closeout/20260914-161120/release-final-20260914-223029/PUBLICATION-RECEIPT.txt",
+  "b_live_deployment_proven": false,
+  "artifacts": [
+    {
+      "path": "C:\\projects\\britannia\\mod\\Britannia_Mod\\build\\libs\\britannia_mod-0.1.8c-all.jar",
+      "size": 36104234,
+      "sha256": "7d9674bf1b0f242a9e211b6b787415e3c860eb1ecb89e66a7a584fb86938d607",
+      "identity": {
+        "mod.version": "0.1.8c",
+        "git.head": "c1f2b5b819834ab971a2fc65b86fcd484d31e7c9",
+        "git.branch": "patch-18",
+        "git.dirty": "true",
+        "build.timestamp": "2026-09-23T01:46:31.276198Z"
+      }
+    },
+    {
+      "path": "C:\\projects\\britannia\\patch18-closeout\\20260914-161120\\release-final-20260914-223029\\P-britannia_mod-0.1.8b-all-339cc70b.jar",
+      "size": 36068198,
+      "sha256": "803e8a5c6cee25aecbc78ef804217efddabda25199e4d7aa126e0cf77836a2e3",
+      "identity": {
+        "mod.version": "0.1.8b",
+        "git.head": "339cc70bb78cb1b99de114e57ca0f8e75f8e8a80",
+        "git.branch": "patch-18",
+        "git.dirty": "false",
+        "build.timestamp": "2026-09-15T02:36:48.871535200Z"
+      }
+    },
+    {
+      "path": "C:\\projects\\britannia\\backup\\mod_files\\britannia_mod-0.1.8b.jar",
+      "size": 36069315,
+      "sha256": "3ee24e75996a80eb3fe77bde3b58dda5894ff05b6f43579c92079a2465d0a8a6",
+      "identity": {
+        "mod.version": "0.1.8b",
+        "git.head": "8efcce7abfe292a58682d2b424f33a5c88d17dc8",
+        "git.branch": "patch-18",
+        "git.dirty": "true",
+        "build.timestamp": "2026-09-10T00:46:27.746106Z"
+      }
+    }
+  ],
+  "network_fixes": [
+    {
+      "commit": "9baa6e4298eb487869e0bafbbc11503a722b3ba4",
+      "subject": "fix(npc-sync): stop the NPC heartbeat blocking the server tick",
+      "integrated": true,
+      "present_at_c_source": true,
+      "present_at_published_b_source": true,
+      "implementation_paths": [
+        "src/main/java/com/seggellion/britannia_mod/block/entity/MerchantSpawnBlockEntity.java",
+        "src/main/java/com/seggellion/britannia_mod/block/entity/TraderSpawnBlockEntity.java",
+        "src/main/java/com/seggellion/britannia_mod/city/CityDataSync.java"
+      ],
+      "implementation_paths_changed_since_c": []
+    },
+    {
+      "commit": "7ce2de4e7daf38cf553ade164db4c48d6cf9b2f0",
+      "subject": "fix(npc-sync): take the remaining Rails waits off the server tick",
+      "integrated": true,
+      "present_at_c_source": true,
+      "present_at_published_b_source": true,
+      "implementation_paths": [
+        "src/main/java/com/seggellion/britannia_mod/block/StoneSpawnBlockEntity.java",
+        "src/main/java/com/seggellion/britannia_mod/block/entity/HorseSpawnBlockEntity.java",
+        "src/main/java/com/seggellion/britannia_mod/block/entity/MerchantSpawnBlockEntity.java",
+        "src/main/java/com/seggellion/britannia_mod/block/entity/TraderSpawnBlockEntity.java",
+        "src/main/java/com/seggellion/britannia_mod/block/entity/WoodSpawnBlockEntity.java",
+        "src/main/java/com/seggellion/britannia_mod/city/CityDataSync.java",
+        "src/main/java/com/seggellion/britannia_mod/network/CityFoodSupplyCache.java"
+      ],
+      "implementation_paths_changed_since_c": []
+    },
+    {
+      "commit": "e4418d6fd93d90e8e786231ede102b1e8f34bc97",
+      "subject": "fix(npc-sync): take the legacy spawn blocks' Rails waits off the tick too",
+      "integrated": true,
+      "present_at_c_source": true,
+      "present_at_published_b_source": true,
+      "implementation_paths": [
+        "src/main/java/com/seggellion/britannia_mod/block/MetalSpawnBlockEntity.java",
+        "src/main/java/com/seggellion/britannia_mod/block/StoneSpawnBlockEntity.java",
+        "src/main/java/com/seggellion/britannia_mod/block/entity/ArchitectSpawnBlockEntity.java",
+        "src/main/java/com/seggellion/britannia_mod/block/entity/BlacksmithSpawnBlockEntity.java",
+        "src/main/java/com/seggellion/britannia_mod/block/entity/HorseSpawnBlockEntity.java",
+        "src/main/java/com/seggellion/britannia_mod/block/entity/WoodSpawnBlockEntity.java",
+        "src/main/java/com/seggellion/britannia_mod/city/CityDataSync.java",
+        "src/main/java/com/seggellion/britannia_mod/entity/EntityMetalMerchant.java",
+        "src/main/java/com/seggellion/britannia_mod/entity/EntityStoneMerchant.java",
+        "src/main/java/com/seggellion/britannia_mod/network/CityFoodSupplyCache.java"
+      ],
+      "implementation_paths_changed_since_c": []
+    },
+    {
+      "commit": "96b7127ad1caaece60fe5596912566c1a8111997",
+      "subject": "feat(quests): signed transport for the two hand-in endpoints",
+      "integrated": true,
+      "present_at_c_source": true,
+      "present_at_published_b_source": true,
+      "implementation_paths": [
+        "src/main/java/com/seggellion/britannia_mod/quest/handin/QuestItemHandinClient.java",
+        "src/main/java/com/seggellion/britannia_mod/quest/handin/QuestItemHandinProtocol.java",
+        "src/main/java/com/seggellion/britannia_mod/server/http/RailsApiUrlResolver.java"
+      ],
+      "implementation_paths_changed_since_c": []
+    },
+    {
+      "commit": "57136c93e7c37cbc5ab1448d1d687151fee581db",
+      "subject": "fix(quests): three parallel audits, and the dead end the strand argument was hiding",
+      "integrated": true,
+      "present_at_c_source": true,
+      "present_at_published_b_source": true,
+      "implementation_paths": [
+        "src/main/java/com/seggellion/britannia_mod/client/gui/QuestDecisionScreen.java",
+        "src/main/java/com/seggellion/britannia_mod/player/PlayerDataStore.java",
+        "src/main/java/com/seggellion/britannia_mod/quest/RowanFarmingMaterials.java",
+        "src/main/java/com/seggellion/britannia_mod/quest/delivery/QuestRewardDeliveryService.java",
+        "src/main/java/com/seggellion/britannia_mod/quest/equipment/QuestEquipmentReissuePolicy.java",
+        "src/main/java/com/seggellion/britannia_mod/quest/handin/QuestItemHandinClient.java",
+        "src/main/java/com/seggellion/britannia_mod/quest/handin/QuestItemHandinProtocol.java",
+        "src/main/java/com/seggellion/britannia_mod/quest/handin/QuestItemHandinReconciler.java"
+      ],
+      "implementation_paths_changed_since_c": []
+    },
+    {
+      "commit": "bed34811c0577d9b87ebc62d2dd22a28fe451a31",
+      "subject": "fix(grapes): sync colours and halve growth rate",
+      "integrated": true,
+      "present_at_c_source": true,
+      "present_at_published_b_source": false,
+      "implementation_paths": [
+        "src/main/java/com/seggellion/britannia_mod/commands/FarmingDebugCommand.java",
+        "src/main/java/com/seggellion/britannia_mod/event/ClientEventHandler.java",
+        "src/main/java/com/seggellion/britannia_mod/event/WorldBootstrapHandler.java",
+        "src/main/java/com/seggellion/britannia_mod/farming/CropRegistry.java",
+        "src/main/java/com/seggellion/britannia_mod/farming/CropVisualModels.java",
+        "src/main/java/com/seggellion/britannia_mod/farming/GrapeVisualResolver.java",
+        "src/main/java/com/seggellion/britannia_mod/network/NetworkHandler.java",
+        "src/main/java/com/seggellion/britannia_mod/network/payload/ClientboundSyncGrapeColorsPayload.java",
+        "src/main/java/com/seggellion/britannia_mod/winery/GrapeColor.java",
+        "src/main/java/com/seggellion/britannia_mod/winery/GrapeVarietyManager.java"
+      ],
+      "implementation_paths_changed_since_c": []
+    }
+  ],
+  "delta_from_c": {
+    "commits": [
+      "d858bb4542a1a034d222f05bc10ca3602bec8804 Preserve native packaged plaster acceptance logs",
+      "6bf7f920840b9eb03df20d78985351ec01057dfe Document packaged plaster acceptance blocker and persistence checks",
+      "f29548d77c03163e16321f120e28904685fdbdab Record clean plaster candidate and outstanding client acceptance",
+      "ac6b2e80e1dac33d48dfd0b48b52543deab5cb2d Fix plaster support corner pillar and bounded half derivation",
+      "7ca44a78d2438ae2204c4f64271ef84bb0672740 docs(wooden-fence): record complete gates, candidate and pending client acceptance",
+      "07359f98277417b8ffdafd9d57b55b828804ab5b test(wooden-fence): isolate fence and lifecycle GameTest batches",
+      "0fe906d7699a5e227467faa343d5438948969baa fix(wooden-fence): pin saved layouts and derive local endpoint contacts",
+      "c8044e4565281514253e290167c555413c7a5293 fix(alligator): keep thin-water wading on ordinary movement",
+      "071a4c2fb4dc0bc11ccd3d4cfff90d4e771299e0 test(alligator): isolate hotfix batches from shared restoration fixtures",
+      "cb5ea1e5c84a12f47f12e8069ec07cab61a47d7f fix(alligator): add finite-air amphibious movement and safe water intent",
+      "e350a67b7f5be33afed665387ec1a2fe74e0125e test(alligator): reproduce aquatic failures and retain calibrated land baseline",
+      "4435912197fba84630d6e5a0544f29fc3a736450 docs(release): identify 0.1.8d as an undeployed Patch 18 recovery candidate",
+      "4b060fcfc67192d2744a4d844386dec01036e9e7 chore(release): bump Patch 18 recovery build to 0.1.8d",
+      "df170a4fb0c5b9f2541336588f779038b2beb6cf docs(starfarer): record Phase 2 acceptance and release hold",
+      "4a0feb03707e5c584551f722a33e96a5b01ca3c7 feat(starfarer): complete Patch-18 wearable medallion"
+    ],
+    "implementation": [
+      "src/main/java/com/seggellion/britannia_mod/ClientModSetup.java",
+      "src/main/java/com/seggellion/britannia_mod/blessed/BlessedItemLifecycleMetadata.java",
+      "src/main/java/com/seggellion/britannia_mod/block/WoodenFenceBlock.java",
+      "src/main/java/com/seggellion/britannia_mod/block/WoodenFenceGeometry.java",
+      "src/main/java/com/seggellion/britannia_mod/block/WoodenFenceLoadHandler.java",
+      "src/main/java/com/seggellion/britannia_mod/client/renderer/StarfarersMedallionLayer.java",
+      "src/main/java/com/seggellion/britannia_mod/entity/AlligatorEntity.java",
+      "src/main/java/com/seggellion/britannia_mod/entity/ai/AlligatorAirBudget.java",
+      "src/main/java/com/seggellion/britannia_mod/entity/ai/AlligatorMoveControl.java",
+      "src/main/java/com/seggellion/britannia_mod/entity/ai/AlligatorNavigation.java",
+      "src/main/java/com/seggellion/britannia_mod/entity/ai/AlligatorWaterGoals.java",
+      "src/main/java/com/seggellion/britannia_mod/gametest/AlligatorMovementGameTests.java",
+      "src/main/java/com/seggellion/britannia_mod/gametest/AlligatorSurvivalGameTests.java",
+      "src/main/java/com/seggellion/britannia_mod/gametest/EdgeFenceCompatibilityGameTests.java",
+      "src/main/java/com/seggellion/britannia_mod/gametest/EdgeFenceLifecycleGameTests.java",
+      "src/main/java/com/seggellion/britannia_mod/gametest/EdgeFencePlacementGameTests.java",
+      "src/main/java/com/seggellion/britannia_mod/gametest/GameplayFenceGameTests.java",
+      "src/main/java/com/seggellion/britannia_mod/gametest/StarfarersMedallionGameTests.java",
+      "src/main/java/com/seggellion/britannia_mod/gametest/WoodenFenceGameTests.java",
+      "src/main/java/com/seggellion/britannia_mod/item/InteriorDecoratorToolItem.java",
+      "src/main/java/com/seggellion/britannia_mod/item/StarfarersMedallionItem.java",
+      "src/main/java/com/seggellion/britannia_mod/util/BlessedItemInventorySync.java",
+      "src/main/resources/assets/britannia_mod/blockstates/wooden_fence.json",
+      "src/main/resources/assets/britannia_mod/lang/en_us.json",
+      "src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner.json",
+      "src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored.json",
+      "src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_corner.json",
+      "src/main/resources/assets/britannia_mod/models/block/structure/wooden_fence/corner_reflected.json",
+      "src/main/resources/assets/britannia_mod/models/block/structure/wooden_fence/cross_reflected.json",
+      "src/main/resources/assets/britannia_mod/models/block/structure/wooden_fence/end_mirrored_reflected.json",
+      "src/main/resources/assets/britannia_mod/models/block/structure/wooden_fence/end_reflected.json",
+      "src/main/resources/assets/britannia_mod/models/block/structure/wooden_fence/isolated_reflected.json",
+      "src/main/resources/assets/britannia_mod/models/block/structure/wooden_fence/straight_reflected.json",
+      "src/main/resources/assets/britannia_mod/models/block/structure/wooden_fence/t_junction_reflected.json",
+      "src/main/resources/assets/britannia_mod/models/item/starfarers_medallion.bbmodel",
+      "src/main/resources/assets/britannia_mod/models/item/starfarers_medallion.json",
+      "src/main/resources/assets/britannia_mod/textures/item/starfarers_medallion.png"
+    ],
+    "tests": [
+      "src/test/java/com/seggellion/britannia_mod/blessed/BlessedItemLifecycleMetadataTest.java",
+      "src/test/java/com/seggellion/britannia_mod/block/PlasterSupportCornerContractTest.java",
+      "src/test/java/com/seggellion/britannia_mod/entity/ai/AlligatorAirBudgetTest.java",
+      "src/test/java/com/seggellion/britannia_mod/entity/ai/AlligatorAnimationAssetsTest.java",
+      "src/test/java/com/seggellion/britannia_mod/packaging/DeployableArtifactPackagingTest.java",
+      "src/test/java/com/seggellion/britannia_mod/starfarer/StarfarersMedallionContractTest.java",
+      "src/test/java/com/seggellion/britannia_mod/woodenfence/WoodenFenceContractTest.java"
+    ],
+    "tooling": [
+      "build.gradle",
+      "gradle.properties",
+      "tools/alligator/inspect-candidate.py",
+      "tools/alligator/run-isolated.ps1",
+      "tools/alligator/summarize.py",
+      "tools/edge-fence/run-isolated.ps1",
+      "tools/edge-fence/verify-resources.py",
+      "tools/generate_half_walls.py",
+      "tools/plaster-corner/collect_runtime_evidence.py",
+      "tools/plaster-corner/dump_scene.py",
+      "tools/plaster-corner/packaged-client.gradle",
+      "tools/plaster-corner/prepare_acceptance_views.py",
+      "tools/plaster-corner/prepare_control_acceptance.py",
+      "tools/plaster-corner/prepare_forced_acceptance.py",
+      "tools/plaster-corner/prepare_runtime_acceptance.py",
+      "tools/plaster-corner/prepare_scene.py",
+      "tools/plaster-corner/run-isolated.ps1",
+      "tools/plaster-corner/test_generation.py",
+      "tools/plaster-corner/verify_candidate.py",
+      "tools/scaffolding/gen_wooden_fence.py"
+    ]
+  },
+  "delta_from_published_b": [
+    "d858bb4542a1a034d222f05bc10ca3602bec8804 Preserve native packaged plaster acceptance logs",
+    "6bf7f920840b9eb03df20d78985351ec01057dfe Document packaged plaster acceptance blocker and persistence checks",
+    "f29548d77c03163e16321f120e28904685fdbdab Record clean plaster candidate and outstanding client acceptance",
+    "ac6b2e80e1dac33d48dfd0b48b52543deab5cb2d Fix plaster support corner pillar and bounded half derivation",
+    "7ca44a78d2438ae2204c4f64271ef84bb0672740 docs(wooden-fence): record complete gates, candidate and pending client acceptance",
+    "07359f98277417b8ffdafd9d57b55b828804ab5b test(wooden-fence): isolate fence and lifecycle GameTest batches",
+    "0fe906d7699a5e227467faa343d5438948969baa fix(wooden-fence): pin saved layouts and derive local endpoint contacts",
+    "c8044e4565281514253e290167c555413c7a5293 fix(alligator): keep thin-water wading on ordinary movement",
+    "071a4c2fb4dc0bc11ccd3d4cfff90d4e771299e0 test(alligator): isolate hotfix batches from shared restoration fixtures",
+    "cb5ea1e5c84a12f47f12e8069ec07cab61a47d7f fix(alligator): add finite-air amphibious movement and safe water intent",
+    "e350a67b7f5be33afed665387ec1a2fe74e0125e test(alligator): reproduce aquatic failures and retain calibrated land baseline",
+    "4435912197fba84630d6e5a0544f29fc3a736450 docs(release): identify 0.1.8d as an undeployed Patch 18 recovery candidate",
+    "4b060fcfc67192d2744a4d844386dec01036e9e7 chore(release): bump Patch 18 recovery build to 0.1.8d",
+    "df170a4fb0c5b9f2541336588f779038b2beb6cf docs(starfarer): record Phase 2 acceptance and release hold",
+    "4a0feb03707e5c584551f722a33e96a5b01ca3c7 feat(starfarer): complete Patch-18 wearable medallion",
+    "c1f2b5b819834ab971a2fc65b86fcd484d31e7c9 fix(grapes): allow axes to sever grape vines",
+    "5a9b28e92fa35b4d302f972a76e14a8df8eac58f fix(vegetation): slow managed plant growth",
+    "bed34811c0577d9b87ebc62d2dd22a28fe451a31 fix(grapes): sync colours and halve growth rate",
+    "a4ed88cf5a03435c01eed049810898ea98b18ebf fix(spawn): preserve legacy traders until type is spawnable",
+    "d09229ba4f894067735d1dc959d88844b9b04c3c chore(release): bump Patch 18 to 0.1.8c",
+    "52f09ba5710296da586302285f66d11a58d453f4 fix(economy): settle nested trader sale receipts"
+  ]
+}

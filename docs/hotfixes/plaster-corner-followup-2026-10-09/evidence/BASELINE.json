@@ -1,0 +1,9 @@
+{
+  "entry_branch": "patch-18",
+  "entry_head": "5a8cab9a38fac52253dea20431dea60cd15812c0",
+  "owner_contract": "Both A/B continuous exterior junction timber; preserve interior design and existing one-post A/two-post B style.",
+  "candidate_source": "986ed746866dc944b7b496ab9428b670f65e15c0",
+  "production_delta_since_candidate": "",
+  "new_runtime_tests": "None; reuse artifact-bound prior evidence. Isolated profile not launched.",
+  "actual_owner_server_identity": "Unavailable; not needed to compare candidate art in isolated singleplayer."
+}

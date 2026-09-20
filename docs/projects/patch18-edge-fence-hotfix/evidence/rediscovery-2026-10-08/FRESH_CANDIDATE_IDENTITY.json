@@ -1,0 +1,22 @@
+{
+  "path": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\fence-runtime-rediscovery-2026-10-08\\release\\britannia_mod-0.1.8d-all.jar",
+  "built_path": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\fence-runtime-rediscovery-2026-10-08\\source\\build\\libs\\britannia_mod-0.1.8d-all.jar",
+  "bytes": 36142686,
+  "sha256": "e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70",
+  "provenance": "mod.version=0.1.8d\ngit.head=cf49b1700d1a8992f39396f2ae531f0cb26502d7\ngit.branch=codex/fence-runtime-rediscovery-2026-10-08\ngit.dirty=false\nbuild.timestamp=2026-10-08T22:31:37.806305200Z\n",
+  "zip_entries": 10698,
+  "gold_difference_entries": [
+    "britannia_mod_build.properties"
+  ],
+  "forbidden_entries": [],
+  "junit": {
+    "tests": 4129,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 23,
+    "suites": 516
+  },
+  "focused_required_gametests": 24,
+  "clean_build": true,
+  "compile_note": "Initial normal compileJava executed in old-artifact.log; final explicit clean build restored Gradle compilation/test outputs FROM-CACHE. No manual javac or -x compileJava used."
+}

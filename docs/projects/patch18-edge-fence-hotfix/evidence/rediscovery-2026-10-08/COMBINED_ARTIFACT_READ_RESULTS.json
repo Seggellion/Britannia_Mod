@@ -1,0 +1,10 @@
+{
+  "registeredRequiredTests": 1,
+  "passed": 1,
+  "artifact": "f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd",
+  "summary": {
+    "fixtures": 112,
+    "exactSavedStatesMatch": true,
+    "phase": "summary-read"
+  }
+}
