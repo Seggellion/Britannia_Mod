@@ -25,6 +25,8 @@ import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -296,15 +298,208 @@ public final class LegacySpawnBlockMigrationGameTests {
     }
 
     /**
+     * Patch 18 live hotfix, half one. Rails publishes the type, with a real entity mapping, but
+     * has it switched OFF. The old gate asked only "published, and names an entity", so this
+     * shape converted: the working trader was despawned and its block replaced, and Rails then
+     * refused the registration with 422 ECONOMIC_NPC_TYPE_INACTIVE -- a permanent failure the
+     * outbox never retries. That is precisely how production lost the Serpent's Hold Wood
+     * Trader, and it is the scene this test now refuses to reproduce.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void anInactiveEconomicTypeKeepsItsLegacyTraderStanding(GameTestHelper helper) {
+        parkedTraderKeepsLegacyBehavior(helper, false, true);
+    }
+
+    /**
+     * The same invariant on the other flag. {@code spawnable} is the next Rails gate and also
+     * defaults false, so a type can be switched on and still be refused; both must hold.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void anUnspawnableEconomicTypeKeepsItsLegacyTraderStanding(GameTestHelper helper) {
+        parkedTraderKeepsLegacyBehavior(helper, true, false);
+    }
+
+    private static void parkedTraderKeepsLegacyBehavior(GameTestHelper helper,
+                                                        boolean active, boolean spawnable) {
+        ServerLevel level = helper.getLevel();
+        BlockPos relative = new BlockPos(1, 1, 1);
+        BlockPos absolute = helper.absolutePos(relative);
+        BootstrapCityRegistryCache.replace(BootstrapCityRegistrySnapshot.available(List.of(
+                new BootstrapCityDefinition(UUID.randomUUID(), "Serpent's Hold")
+        )));
+        // The city resolves and the entity mapping is real, so every earlier guard is satisfied
+        // and only the new registration gate can be what refuses.
+        installEconomicRegistry("wood_trader", "trader", "britannia_mod:wood_merchant",
+                active, spawnable);
+        try {
+            helper.setBlock(relative, BlockRegistry.TRADER_SPAWN_BLOCK.get());
+            TraderSpawnBlockEntity legacy = requireTrader(level, absolute);
+            legacy.setCityName("Serpent's Hold");
+            legacy.setTraderType("wood_trader");
+            Entity trader = placeLegacyTrader(level, legacy, absolute);
+
+            check(!LegacySpawnBlockMigrator.migrateTraderBlock(level, legacy),
+                    "a type Rails will not register must not migrate");
+
+            check(level.getBlockEntity(absolute) instanceof TraderSpawnBlockEntity,
+                    "the legacy trader block must remain in place");
+            check("wood_trader".equals(requireTrader(level, absolute).getTraderType()),
+                    "the refused block must keep its trader configuration");
+            check(trader.isAlive(),
+                    "the working legacy trader must survive a refusal: nothing else can staff this post");
+            check(LegacySpawnBlockMigrationLedger.get(level)
+                            .find(level.dimension().location().toString(), absolute) == null,
+                    "a refused migration must write no rollback receipt");
+            check(LegacySpawnBlockMigrator.parkedTypeGateReportsForGameTesting(level, absolute) == 1L,
+                    "one refusal must report exactly once");
+        } finally {
+            BootstrapCityRegistryCache.clear();
+            EconomicNpcRegistryCache.clear();
+        }
+        helper.succeed();
+    }
+
+    /**
+     * The whole parked lifecycle in one scene, which is what the production recovery runbook
+     * leans on: a blocked block may tick as long as it likes without duplicating anything or
+     * flooding the console, it speaks up again when the flags actually move, and the moment Rails
+     * will take the registration the very same block -- not a new one -- converts, once.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void aParkedTraderTicksQuietlyThenConvertsExactlyOnce(GameTestHelper helper) {
+        com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.installForGameTesting(
+                helper.getLevel().getServer(),
+                com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                        java.net.URI.create("http://127.0.0.1"), java.util.UUID.randomUUID(),
+                        "gametest_shard_identity"));
+        try {
+        ServerLevel level = helper.getLevel();
+        BlockPos relative = new BlockPos(3, 1, 3);
+        BlockPos absolute = helper.absolutePos(relative);
+        UUID cityId = UUID.randomUUID();
+        BootstrapCityRegistryCache.replace(BootstrapCityRegistrySnapshot.available(List.of(
+                new BootstrapCityDefinition(cityId, "Serpent's Hold")
+        )));
+        // Production's captured state: published, mapped, and both flags down.
+        installEconomicRegistry("wood_trader", "trader", "britannia_mod:wood_merchant", false, false);
+        try {
+            helper.setBlock(relative, BlockRegistry.TRADER_SPAWN_BLOCK.get());
+            TraderSpawnBlockEntity legacy = requireTrader(level, absolute);
+            legacy.setCityName("Serpent's Hold");
+            legacy.setTraderType("wood_trader");
+            Entity trader = placeLegacyTrader(level, legacy, absolute);
+
+            // Ten maintenance passes against a type Rails will not take.
+            for (int tick = 0; tick < 10; tick++) {
+                check(!LegacySpawnBlockMigrator.migrateTraderBlock(level, legacy),
+                        "a parked block must refuse on every tick");
+            }
+            check(level.getBlockEntity(absolute) instanceof TraderSpawnBlockEntity,
+                    "repeated ticks must not replace the legacy block");
+            check(trader.isAlive(), "repeated ticks must not despawn the legacy trader");
+            check(countWoodMerchants(level, absolute) == 1,
+                    "repeated ticks must not duplicate the legacy trader");
+            check(LegacySpawnBlockMigrationLedger.get(level)
+                            .find(level.dimension().location().toString(), absolute) == null,
+                    "repeated ticks must write no rollback receipt");
+            check(LegacySpawnBlockMigrator.parkedTypeGateReportsForGameTesting(level, absolute) == 1L,
+                    "ten refusals at one flag state must warn once, not ten times");
+
+            // Half the repair is not the repair. A genuinely new flag state is worth one more
+            // line -- and is still refused.
+            installEconomicRegistry("wood_trader", "trader", "britannia_mod:wood_merchant", true, false);
+            check(!LegacySpawnBlockMigrator.migrateTraderBlock(level, legacy),
+                    "active alone must not let the conversion through");
+            check(trader.isAlive(), "a half-repaired type must still keep its legacy trader");
+            check(LegacySpawnBlockMigrator.parkedTypeGateReportsForGameTesting(level, absolute) == 2L,
+                    "a changed flag state must be reported once more");
+
+            // Both flags set: the conversion resumes by itself, exactly as the runbook promises.
+            installEconomicRegistry("wood_trader", "trader", "britannia_mod:wood_merchant", true, true);
+            check(LegacySpawnBlockMigrator.migrateTraderBlock(level, legacy),
+                    "the conversion must resume once Rails will register the type");
+
+            ServiceNpcSpawnBlockEntity post = requirePost(level, absolute);
+            check(EconomicNpcTypeKeys.prefixed("wood_trader").equals(post.getServiceNpcTypeKey()),
+                    "the resumed migration must carry economic:wood_trader");
+            check(cityId.equals(post.getCityPublicId()), "the resumed migration lost the city");
+            UUID postId = post.getSpawnPointId();
+            check(postId != null, "the migrated post has no claimed identity");
+            check(!trader.isAlive(),
+                    "the legacy-managed trader must be despawned once the post really takes over");
+            check(countWoodMerchants(level, absolute) == 0,
+                    "the conversion must leave no duplicate or orphaned legacy merchant");
+            check(LegacySpawnBlockMigrator.parkedTypeGateReportsForGameTesting(level, absolute) == 0L,
+                    "a converted post must stop being tracked as parked");
+
+            ServiceNpcSpawnPendingRecord pending =
+                    ServiceNpcSpawnPendingData.get(level).findPending(postId);
+            check(pending != null && pending.operation() == ServiceNpcSpawnPendingOperation.UPSERT,
+                    "the resumed migration staged no pending Rails registration");
+
+            // Exactly once, and against the pre-existing block: one receipt, naming this post.
+            LegacySpawnBlockMigrationLedger.Receipt receipt = LegacySpawnBlockMigrationLedger.get(level)
+                    .find(level.dimension().location().toString(), absolute);
+            check(receipt != null, "the conversion recorded no rollback receipt");
+            check(postId.equals(receipt.migratedPostId()), "the receipt must name the replacing post");
+            check("britannia_mod:trader_spawn_block".equals(receipt.legacyBlockId()),
+                    "the receipt lost the legacy block id, got " + receipt.legacyBlockId());
+            check(LegacySpawnBlockMigrator.OUTCOME_CONFIGURED.equals(receipt.outcome()),
+                    "unexpected outcome " + receipt.outcome());
+        } finally {
+            BootstrapCityRegistryCache.clear();
+            EconomicNpcRegistryCache.clear();
+        }
+        helper.succeed();
+        } finally {
+            // Cleared so the rest of the run does not inherit credentials: their presence is
+            // what makes every mock-player join attempt a real Rails fetch.
+            com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.clear(
+                    helper.getLevel().getServer());
+        }
+    }
+
+    /** A legacy-MANAGED trader, tagged the way the legacy block's own spawner tags one. */
+    private static Entity placeLegacyTrader(ServerLevel level, TraderSpawnBlockEntity legacy,
+                                            BlockPos absolute) {
+        Entity trader = EntityRegistry.WOOD_MERCHANT_ENTITY.get().create(level);
+        check(trader != null, "could not create legacy wood merchant");
+        trader.moveTo(absolute.getX(), absolute.getY(), absolute.getZ(), 0, 0);
+        trader.addTag("britannia_trader_spawn");
+        trader.addTag("trader_source_" + legacy.getSourceId().toString().replace("-", ""));
+        check(level.addFreshEntity(trader), "could not add legacy wood merchant");
+        return trader;
+    }
+
+    /**
+     * Wood merchants standing at this post. The radius is deliberately tight: GameTest arenas sit
+     * close together and a generous box would count a neighbouring test's entities as duplicates.
+     */
+    private static int countWoodMerchants(ServerLevel level, BlockPos around) {
+        return level.getEntitiesOfClass(Mob.class, new AABB(around).inflate(3.0D),
+                mob -> mob.getType() == EntityRegistry.WOOD_MERCHANT_ENTITY.get()).size();
+    }
+
+    /**
      * States the Rails economic rows a migration now requires before it will destroy a legacy
      * block: the authoritative side must be able to rebuild the NPC, or the conversion strands an
      * unstaffable post. Production receives these through the world bootstrap; a GameTest has no
      * Rails, so the rows are declared here.
      */
     static void installEconomicRegistry(String key, String kind, String entityTypeKey) {
+        installEconomicRegistry(key, kind, entityTypeKey, true, true);
+    }
+
+    /**
+     * The same rows with the two staffing flags stated outright. Production's Wood Trader was
+     * published with an entity mapping and both flags down, which is the one shape the migrator
+     * used to accept and Rails then refused.
+     */
+    static void installEconomicRegistry(String key, String kind, String entityTypeKey,
+                                        boolean active, boolean spawnable) {
         EconomicNpcRegistryCache.replace(new EconomicNpcRegistrySnapshot(1, "gametest", Map.of(
                 key, new EconomicNpcTypeDefinition(
-                        key, key, kind, key, entityTypeKey, true, true, 1L)
+                        key, key, kind, key, entityTypeKey, active, spawnable, 1L)
         )));
     }
 
