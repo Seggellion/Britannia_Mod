@@ -7,6 +7,7 @@ import com.seggellion.britannia_mod.city.BootstrapCityRegistrySnapshot;
 import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.client.RegionCache;
 import com.seggellion.britannia_mod.inventory.CityInventory;
+import com.seggellion.britannia_mod.network.payload.ClientboundSyncGrapeColorsPayload;
 import com.seggellion.britannia_mod.network.payload.ClientboundSyncQuestsPayload;
 import com.seggellion.britannia_mod.player.PlayerData;
 import com.seggellion.britannia_mod.player.PlayerDataStore;
@@ -22,6 +23,8 @@ import com.seggellion.britannia_mod.service.ServiceNpcAssignmentsCache;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistryCache;
 import com.seggellion.britannia_mod.sync.WorldBootstrapAPI;
 import com.seggellion.britannia_mod.util.FishCatalog;
+import com.seggellion.britannia_mod.winery.GrapeColor;
+import com.seggellion.britannia_mod.winery.GrapeVariety;
 import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -30,6 +33,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEven
 import net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent;
 import org.slf4j.Logger;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -113,7 +117,7 @@ public final class WorldBootstrapHandler {
         FishCatalog.clear();
         data.fish().forEach(FishCatalog::put);
         RegionCache.update(data.regions(), data.shard(), data.httpStatus(), data.status());
-        GrapeVarietyManager.loadFromBootstrap(data.grapes());
+        ClientboundSyncGrapeColorsPayload.send(player, installGrapeCatalogue(data.grapes()));
 
         if (data.shardUser() != null) {
             PlayerData playerData = PlayerDataStore.get(player);
@@ -148,6 +152,21 @@ public final class WorldBootstrapHandler {
         QuestRewardDeliveryReconciler.onLogin(player, data.pendingRewardDeliveries());
         LOGGER.info("World bootstrap applied: {} fish, {} regions, {} cities, {} pending reward deliveries",
             data.fish().size(), data.regions().size(), data.cities().size(), data.pendingRewardDeliveries().size());
+    }
+
+    /**
+     * Installs the shard's grape catalogue and returns the slice a client needs to colour a vine.
+     *
+     * <p>Both halves live in one call so the snapshot cannot be taken before the install. Sending
+     * first would have shipped the two compiled-in Concords and left the client treating that as
+     * the shard's entire catalogue -- the same two-entry view that made every variety render green
+     * in the first place.
+     *
+     * @return the id-to-colour pairs to send, already reflecting {@code grapes}
+     */
+    static Map<String, GrapeColor> installGrapeCatalogue(List<GrapeVariety> grapes) {
+        GrapeVarietyManager.loadFromBootstrap(grapes);
+        return GrapeVarietyManager.colorCatalogue();
     }
 
     /**

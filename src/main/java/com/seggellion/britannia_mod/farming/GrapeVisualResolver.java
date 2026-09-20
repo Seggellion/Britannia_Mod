@@ -3,7 +3,6 @@ package com.seggellion.britannia_mod.farming;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.item.GrapesItem;
 import com.seggellion.britannia_mod.winery.GrapeColor;
-import com.seggellion.britannia_mod.winery.GrapeVariety;
 import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
 import net.minecraft.resources.ResourceLocation;
 
@@ -35,13 +34,34 @@ public final class GrapeVisualResolver {
 
     public static GrapeVisualInfo resolve(CropDefinition crop, int growthAge, String varietyId) {
         String safeVarietyId = varietyId == null || varietyId.isBlank() ? GrapesItem.DEFAULT_VARIETY_ID : varietyId;
-        GrapeVariety variety = GrapeVarietyManager.getVariety(safeVarietyId);
+        GrapeVarietyManager.GrapeColorResolution resolution = GrapeVarietyManager.resolveColor(safeVarietyId);
         int visualAge = crop == null ? 0 : Math.max(0, Math.min(crop.maxGrowthAge(), growthAge));
-        GrapeColor color = variety.colorType() == null ? FALLBACK_COLOR : variety.colorType();
-        boolean fallbackVariety = !safeVarietyId.equals(variety.id());
-        boolean fallbackColor = variety.colorType() == null;
+        GrapeColor color = resolution.color() == null ? FALLBACK_COLOR : resolution.color();
         ResourceLocation model = model(modelName(visualAge, color));
-        return new GrapeVisualInfo(safeVarietyId, variety.id(), variety.getFormattedName(), color, visualAge, model, fallbackVariety, fallbackColor);
+        return new GrapeVisualInfo(
+                safeVarietyId,
+                resolution.varietyId(),
+                resolution.displayName(),
+                color,
+                visualAge,
+                model,
+                resolution.fallback(),
+                resolution.color() == null);
+    }
+
+    /**
+     * The authored vine stage a gameplay age draws, which is what diagnostics must report: the
+     * generic crop helper's one-based stage is not this number, and grapes never reach it.
+     */
+    public static int visualStage(CropDefinition crop, int growthAge) {
+        int visualAge = crop == null ? 0 : Math.max(0, Math.min(crop.maxGrowthAge(), growthAge));
+        int clampedAge = Math.max(0, Math.min(AGE_TO_VISUAL_STAGE.length - 1, visualAge));
+        return AGE_TO_VISUAL_STAGE[clampedAge];
+    }
+
+    /** How many authored vine stages exist, which is not the crop's age count -- ages 0 and 1 share one. */
+    public static int visualStageCount() {
+        return LAST_VISUAL_STAGE;
     }
 
     public static List<ResourceLocation> allModelLocations() {
@@ -63,8 +83,8 @@ public final class GrapeVisualResolver {
 
     private static GrapeColor resolvedColor(String varietyId) {
         String safeVarietyId = varietyId == null || varietyId.isBlank() ? GrapesItem.DEFAULT_VARIETY_ID : varietyId;
-        GrapeVariety variety = GrapeVarietyManager.getVariety(safeVarietyId);
-        return variety.colorType() == null ? FALLBACK_COLOR : variety.colorType();
+        GrapeColor color = GrapeVarietyManager.resolveColor(safeVarietyId).color();
+        return color == null ? FALLBACK_COLOR : color;
     }
 
     private static String modelName(int visualAge, GrapeColor color) {

@@ -112,12 +112,12 @@ public class ClientEventHandler {
                     // 1. Get the Variety ID from the Item NBT
                     String varietyId = com.seggellion.britannia_mod.item.GrapesItem.getVariety(stack);
                     
-                    // 2. Get the Variety Object
-                    com.seggellion.britannia_mod.winery.GrapeVariety variety = 
-                        com.seggellion.britannia_mod.winery.GrapeVarietyManager.getVariety(varietyId);
-                    
-                    // 3. Determine if it should use the dark grape item texture or the green item texture.
-                    return isDarkGrape(variety.colorType()) ? 1.0f : 0.0f;
+                    // 2. Determine if it should use the dark grape item texture or the green one.
+                    //    On a dedicated client this reads the colour catalogue the server synced at
+                    //    login; without it every variety looked like a Concord and dark grapes
+                    //    showed the green item art.
+                    return com.seggellion.britannia_mod.winery.GrapeVarietyManager
+                        .isDarkGrapeVariety(varietyId) ? 1.0f : 0.0f;
                 });
             LOGGER.info("Registered grape item property britannia_mod:grape_type");
 
@@ -219,6 +219,9 @@ public static void onClientLogout(ClientPlayerNetworkEvent.LoggingOut event) {
     ClientSkillTable.clear();
     ClientFarmingPresentationRefresh.reset();
     com.seggellion.britannia_mod.client.house.ClientHouseBuildRights.clear();
+    // A catalogue belongs to the shard that published it, so the next server's login sync starts
+    // from the built-ins rather than from whatever the last one happened to list.
+    com.seggellion.britannia_mod.winery.GrapeVarietyManager.clearSyncedColors();
 }
 
 public static void onRenderNameTag(RenderNameTagEvent event) {
@@ -242,10 +245,6 @@ public static void onRenderNameTag(RenderNameTagEvent event) {
     }
 }
 
-
-    private static boolean isDarkGrape(com.seggellion.britannia_mod.winery.GrapeColor color) {
-        return com.seggellion.britannia_mod.winery.GrapeVarietyManager.isDarkGrapeColor(color);
-    }
 
 public static void onBlockRightClick(PlayerInteractEvent.RightClickBlock event) {
         // 1. Safety Checks
