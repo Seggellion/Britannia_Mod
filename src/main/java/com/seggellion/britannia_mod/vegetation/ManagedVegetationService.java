@@ -31,11 +31,7 @@ public final class ManagedVegetationService {
     }
 
     public static boolean registerNode(ServerLevel level, BlockPos position) {
-        return registerNode(
-                level,
-                position,
-                level.getGameTime() + ManagedVegetationConfig.cutRegrowDelay(level.random)
-        );
+        return registerNode(level, position, germinationTime(level));
     }
 
     /** Called only from vanilla grass random ticks; never replaces the substrate or occupied space. */
@@ -43,7 +39,24 @@ public final class ManagedVegetationService {
         if (!ManagedVegetationConfig.shouldNaturallyGrow(random)) {
             return false;
         }
-        return registerNode(level, position, level.getGameTime());
+        return registerNode(level, position, germinationTime(level));
+    }
+
+    /**
+     * When a newly registered node first picks a plant and becomes visible.
+     *
+     * <p>Natural discovery used to pass {@code level.getGameTime()} here, so a successful roll put a
+     * finished plant in the world on the very next server tick: there was no moment at which a
+     * player could see anything growing, only vegetation that had always been there. It now waits
+     * the same spread a cut node waits before it regrows, which is the only germination period this
+     * system has ever had a number for — reused rather than duplicated so the two can never drift.
+     *
+     * <p>This delays the <em>first</em> appearance only. The short-grass-to-tall-grass stage that
+     * follows is scheduled separately, by {@code ManagedVegetationConfig.grassGrowthDelay}, and is
+     * unaffected.
+     */
+    private static long germinationTime(ServerLevel level) {
+        return level.getGameTime() + ManagedVegetationConfig.cutRegrowDelay(level.random);
     }
 
     private static boolean registerNode(ServerLevel level, BlockPos position, long firstTransitionTime) {
@@ -72,9 +85,7 @@ public final class ManagedVegetationService {
                 position,
                 state -> state.isAir() || state.is(BlockRegistry.MANAGED_VEGETATION_CONTROLLER.get())
         );
-        return valid && data.register(ManagedVegetationNode.regrowing(
-                position, level.getGameTime() + ManagedVegetationConfig.cutRegrowDelay(level.random)
-        ));
+        return valid && data.register(ManagedVegetationNode.regrowing(position, germinationTime(level)));
     }
 
     public static boolean removeNode(ServerLevel level, BlockPos position) {
@@ -218,6 +229,12 @@ public final class ManagedVegetationService {
                 .append(" natural_growth=").append(ManagedVegetationConfig.naturalGrowthEnabled())
                 .append(" natural_roll=1/")
                 .append(ManagedVegetationConfig.effectiveNaturalGrowthChanceDenominator())
+                // The effective stage window, not the stored one: on a world whose serverconfig was
+                // written before this hotfix the two differ, and the effective pair is the only
+                // number that answers "did the slowdown actually reach this world?".
+                .append(" short_to_tall_ticks=")
+                .append(ManagedVegetationConfig.effectiveGrassGrowthMinTicks()).append("..")
+                .append(ManagedVegetationConfig.effectiveGrassGrowthMaxTicks())
                 .append(" discovery=random-grass-ticks lifecycle=normal-server-ticks");
         return report.toString();
     }
