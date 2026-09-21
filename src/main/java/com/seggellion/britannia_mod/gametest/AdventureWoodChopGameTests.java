@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -161,7 +162,7 @@ public final class AdventureWoodChopGameTests {
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Wood and leaves only                                               */
+    /*  Wood, leaves and severable plants — and nothing else               */
     /* ------------------------------------------------------------------ */
 
     private static boolean covers(GameTestHelper helper, AdventureModePredicate predicate, Block block) {
@@ -169,8 +170,16 @@ public final class AdventureWoodChopGameTests {
         return predicate.test(new BlockInWorld(helper.getLevel(), helper.absolutePos(NODE), false));
     }
 
+    /**
+     * The axe's scope, stated positively and negatively.
+     *
+     * <p>Severable plants — the grape vine and the retired standalone vine — were added to the
+     * original wood-and-leaves rule because an axe could not cut a grape vine at all. They are a
+     * deliberate widening and are listed here as such; everything in the negative half is unchanged,
+     * which is what proves the widening did not turn the axe into a general-purpose breaking tool.
+     */
     @GameTest(template = TEMPLATE, batch = "adventure_woodchop", timeoutTicks = 60)
-    public static void axePredicateIsWoodAndLeavesOnly(GameTestHelper helper) {
+    public static void axePredicateIsWoodLeavesAndSeverablePlantsOnly(GameTestHelper helper) {
         AdventureModePredicate predicate = ExtractionToolPredicates.predicateFor(axe());
         check(predicate != null, "the axe earns a predicate");
 
@@ -182,12 +191,68 @@ public final class AdventureWoodChopGameTests {
                 BlockRegistry.ORANGE_TREE_LEAF_BLOCK.get())) {
             check(covers(helper, predicate, wood), wood + " is wood or leaves and must be covered");
         }
+        for (Block severable : List.of(
+                BlockRegistry.GRAPE_ARBOR_BLOCK.get(),
+                BlockRegistry.GRAPE_VINE_BLOCK.get())) {
+            check(covers(helper, predicate, severable),
+                    severable + " is a severable plant and must be covered");
+        }
         for (Block other : List.of(Blocks.STONE, Blocks.DIRT, Blocks.COBBLESTONE,
                 Blocks.BOOKSHELF, Blocks.CRAFTING_TABLE, Blocks.OAK_PLANKS,
                 BlockRegistry.SILVER_ORE.get(), BlockRegistry.CLAY_DEPOSIT.get())) {
             check(!covers(helper, predicate, other),
-                    other + " is not wood or leaves and must not be covered");
+                    other + " is neither wood, leaves nor a severable plant and must not be covered");
         }
+        helper.succeed();
+    }
+
+    /**
+     * An axe minted before this change heals itself.
+     *
+     * <p>{@code ExtractionToolPredicates} caches the desired predicate per item type and only
+     * rewrites a stack whose component differs, so a tool already sitting in an inventory is exactly
+     * the case that could have been left behind with the old wood-and-leaves grant.
+     */
+    @GameTest(template = TEMPLATE, batch = "adventure_woodchop", timeoutTicks = 60)
+    public static void anExistingAxeStackIsRefreshedWithTheWidenedPredicate(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        ExtractionToolPredicates.forgetDesiredPredicates();
+
+        // A stack as it existed before the change: the old grant, without severable plants.
+        ItemStack stale = axe();
+        stale.set(DataComponents.CAN_BREAK, new AdventureModePredicate(
+                List.of(new BlockPredicate(
+                        Optional.of(HolderSet.direct(Blocks.OAK_LOG.builtInRegistryHolder())),
+                        Optional.empty(), Optional.empty())),
+                false));
+        check(!stale.get(DataComponents.CAN_BREAK).equals(ExtractionToolPredicates.predicateFor(axe())),
+                "the fixture must start from a genuinely stale predicate");
+
+        ServerPlayer holder = ManagedResourceTestPlayers.survival(level, "stale-axe-holder");
+        holder.setGameMode(GameType.ADVENTURE);
+        holder.getInventory().add(stale);
+
+        new ExtractionToolPredicates().onPlayerTick(new PlayerTickEvent.Post(holder));
+
+        // The refresh rewrites the stack the inventory holds, which is not the reference handed to
+        // add(): Inventory#add empties the argument as it stores its own copy.
+        ItemStack carried = ItemStack.EMPTY;
+        for (int slot = 0; slot < holder.getInventory().getContainerSize(); slot++) {
+            ItemStack candidate = holder.getInventory().getItem(slot);
+            if (candidate.is(ItemRegistry.TWO_HANDED_AXE.get())) {
+                carried = candidate;
+                break;
+            }
+        }
+        check(!carried.isEmpty(), "the axe never reached the inventory");
+        AdventureModePredicate refreshed = carried.get(DataComponents.CAN_BREAK);
+        check(refreshed != null, "the refresh removed the predicate entirely");
+        helper.setBlock(NODE, BlockRegistry.GRAPE_ARBOR_BLOCK.get());
+        check(refreshed.test(new BlockInWorld(level, helper.absolutePos(NODE), false)),
+                "an axe already in an inventory did not receive the severable-plant grant");
+        helper.setBlock(NODE, Blocks.STONE);
+        check(!refreshed.test(new BlockInWorld(level, helper.absolutePos(NODE), false)),
+                "the refresh widened the axe beyond its category");
         helper.succeed();
     }
 

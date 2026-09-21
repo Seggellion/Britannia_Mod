@@ -50,12 +50,18 @@ import java.util.concurrent.ConcurrentHashMap;
  *       the one resource catalogue. The pickaxe therefore covers the Mining-family blocks —
  *       vanilla stones and ores included, because those ARE catalogued resources — and the shovel
  *       covers the two sediment beds and nothing else. No block list is maintained here.</li>
- *   <li><b>The two-handed axe</b>: wood and leaves only, the owner's firm rule, expressed as tag
- *       references — vanilla {@code #minecraft:logs} and {@code #minecraft:leaves}, the project's
- *       {@code #britannia_mod:logs} (which adds the weighted wood block), and the fruit-tree
- *       log/trunk/branch/leaf tags. Fruit blocks are deliberately absent: fruit is harvested by
- *       the interaction handlers, not felled. Tag references keep the stack component tiny and
- *       track datapack contents on their own.</li>
+ *   <li><b>The two-handed axe</b>: wood, leaves and severable plants, expressed as tag references —
+ *       vanilla {@code #minecraft:logs} and {@code #minecraft:leaves}, the project's
+ *       {@code #britannia_mod:logs} (which adds the weighted wood block), the fruit-tree
+ *       log/trunk/branch/leaf tags, and {@code #britannia_mod:axe_severable_plants}. Fruit blocks
+ *       are deliberately absent: fruit is harvested by the interaction handlers, not felled. Tag
+ *       references keep the stack component tiny and track datapack contents on their own.
+ *
+ *       <p>Severable plants are the one deliberate widening of the original wood-and-leaves rule,
+ *       and they are a separate tag precisely so it stays one: a grape vine can be cut down, but it
+ *       is not timber, yields nothing and is routed away from the wood handler. Nothing mineable
+ *       joined the axe — the negative half of {@code AdventureWoodChopGameTests} still holds stone,
+ *       ore, planks and the deposits outside it.</li>
  * </ul>
  *
  * <p>The component is a lifecycle key, not an authority: permission to <em>finish</em> a break is
@@ -126,7 +132,8 @@ public final class ExtractionToolPredicates {
             for (TagKey<Block> tag : List.of(
                     BlockTags.LOGS, BlockTags.LEAVES, BRITANNIA_LOGS,
                     ModTags.Blocks.FRUIT_TREE_LOGS, ModTags.Blocks.FRUIT_TREE_TRUNKS,
-                    ModTags.Blocks.FRUIT_TREE_BRANCHES, ModTags.Blocks.FRUIT_TREE_LEAVES)) {
+                    ModTags.Blocks.FRUIT_TREE_BRANCHES, ModTags.Blocks.FRUIT_TREE_LEAVES,
+                    ModTags.Blocks.AXE_SEVERABLE_PLANTS)) {
                 predicates.add(blocks(BuiltInRegistries.BLOCK.getOrCreateTag(tag)));
             }
         }
