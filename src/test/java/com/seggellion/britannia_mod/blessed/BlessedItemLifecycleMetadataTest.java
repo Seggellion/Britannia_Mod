@@ -51,6 +51,7 @@ class BlessedItemLifecycleMetadataTest {
         assertEquals(instance, metadata.instanceUuid());
         assertEquals(DEED_ID, metadata.deedId());
         assertEquals(owner, metadata.ownerUuid());
+        assertEquals(Optional.of(owner), BlessedItemLifecycleMetadata.ownerOf(stack));
     }
 
     // A non-uuid-shaped legacy entitlement id must be accepted verbatim: deed_id is Rails'
@@ -83,9 +84,10 @@ class BlessedItemLifecycleMetadataTest {
 
     @Test
     void aLegacyBlessedItemWithNoInstanceUuidIsBlessedButHasNoLifecycleIdentity() {
+        UUID owner = UUID.randomUUID();
         CompoundTag tag = new CompoundTag();
         tag.putBoolean("blessed", true);
-        tag.putString("owner", UUID.randomUUID().toString());
+        tag.putString("owner", owner.toString());
         tag.putString("deed_id", DEED_ID);
         // No instance_uuid at all -- the exact pre-M6 shape.
         ItemStack legacy = withCustomData(tag);
@@ -94,14 +96,18 @@ class BlessedItemLifecycleMetadataTest {
             "rescue and protection must still cover a blessed item issued before M6");
         assertTrue(BlessedItemLifecycleMetadata.of(legacy).isEmpty(),
             "a legacy item has no materialization identity and must never enter the M7 protocol");
+        assertEquals(Optional.of(owner), BlessedItemLifecycleMetadata.ownerOf(legacy),
+            "legacy items still have an owner who may wear them");
     }
 
     @Test
     void aBlankInstanceUuidIsTreatedAsLegacyRatherThanAsCorruption() {
-        ItemStack blank = stamped("   ", DEED_ID, UUID.randomUUID().toString());
+        UUID owner = UUID.randomUUID();
+        ItemStack blank = stamped("   ", DEED_ID, owner.toString());
 
         assertTrue(BlessedItemLifecycleMetadata.isBlessed(blank));
         assertTrue(BlessedItemLifecycleMetadata.of(blank).isEmpty());
+        assertEquals(Optional.of(owner), BlessedItemLifecycleMetadata.ownerOf(blank));
     }
 
     @Test
@@ -121,6 +127,7 @@ class BlessedItemLifecycleMetadataTest {
         assertTrue(BlessedItemLifecycleMetadata.isBlessed(stack),
             "a corrupt lifecycle field must not strip protection from a genuinely blessed item");
         assertTrue(BlessedItemLifecycleMetadata.of(stack).isEmpty());
+        assertTrue(BlessedItemLifecycleMetadata.ownerOf(stack).isEmpty());
     }
 
     @Test
@@ -129,6 +136,7 @@ class BlessedItemLifecycleMetadataTest {
 
         assertTrue(BlessedItemLifecycleMetadata.isBlessed(stack));
         assertTrue(BlessedItemLifecycleMetadata.of(stack).isEmpty());
+        assertTrue(BlessedItemLifecycleMetadata.ownerOf(stack).isEmpty());
     }
 
     @Test
@@ -136,6 +144,7 @@ class BlessedItemLifecycleMetadataTest {
         ItemStack stack = stamped("nope", DEED_ID, "also-nope");
 
         assertTrue(BlessedItemLifecycleMetadata.of(stack).isEmpty());
+        assertTrue(BlessedItemLifecycleMetadata.ownerOf(stack).isEmpty());
     }
 
     @Test
@@ -145,6 +154,7 @@ class BlessedItemLifecycleMetadataTest {
 
         assertTrue(BlessedItemLifecycleMetadata.of(stamped(instance.toString(), "  ", owner.toString())).isEmpty());
         assertTrue(BlessedItemLifecycleMetadata.of(stamped(instance.toString(), "", owner.toString())).isEmpty());
+        assertTrue(BlessedItemLifecycleMetadata.ownerOf(stamped(instance.toString(), "  ", owner.toString())).isEmpty());
 
         CompoundTag noDeed = new CompoundTag();
         noDeed.putBoolean("blessed", true);
@@ -153,6 +163,7 @@ class BlessedItemLifecycleMetadataTest {
         ItemStack stack = withCustomData(noDeed);
         assertTrue(BlessedItemLifecycleMetadata.isBlessed(stack));
         assertTrue(BlessedItemLifecycleMetadata.of(stack).isEmpty());
+        assertTrue(BlessedItemLifecycleMetadata.ownerOf(stack).isEmpty());
     }
 
     @Test
@@ -251,6 +262,7 @@ class BlessedItemLifecycleMetadataTest {
         assertTrue(BlessedItemLifecycleMetadata.isBlessed(stack));
         assertTrue(BlessedItemLifecycleMetadata.of(stack).isEmpty(),
             "wrong-typed lifecycle fields must resolve to empty, not to a thrown exception");
+        assertTrue(BlessedItemLifecycleMetadata.ownerOf(stack).isEmpty());
     }
 
     // ---------- the record's own invariants ----------

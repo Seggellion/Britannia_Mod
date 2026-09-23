@@ -262,13 +262,14 @@ public final class BlessedItemInventorySync {
     }
 
     /**
-     * Main inventory plus offhand, for logging only. Deliberately not a container, world or
+     * Main inventory, offhand and armor, for logging only. Deliberately not a container, world or
      * ender-chest search: widening the scan would rebuild the architecture this milestone
      * removed, at greater cost and with the same false confidence.
      */
     private static boolean visibleInCarriedInventory(ServerPlayer player, UUID instanceUuid) {
         Inventory inventory = player.getInventory();
-        return carries(inventory.items, instanceUuid) || carries(inventory.offhand, instanceUuid);
+        return carries(inventory.items, instanceUuid) || carries(inventory.offhand, instanceUuid)
+                || carries(inventory.armor, instanceUuid);
     }
 
     private static boolean carries(List<ItemStack> slots, UUID instanceUuid) {

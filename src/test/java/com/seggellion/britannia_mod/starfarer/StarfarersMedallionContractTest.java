@@ -1,12 +1,16 @@
 package com.seggellion.britannia_mod.starfarer;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.seggellion.britannia_mod.block.DisplayCaseBlock;
 import com.seggellion.britannia_mod.block.entity.DisplayCaseBlockEntity;
+import com.seggellion.britannia_mod.blessed.BlessedItemLifecycleMetadata;
+import com.seggellion.britannia_mod.client.renderer.StarfarersMedallionLayer;
 import com.seggellion.britannia_mod.item.StarfarersMedallionItem;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.SharedConstants;
+import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -15,9 +19,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Equipable;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -27,20 +36,27 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.awt.image.BufferedImage;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
+import java.util.Base64;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import javax.imageio.ImageIO;
 
 /**
- * Starfarer M5. The medallion exists, resolves under its canonical id, and does
- * nothing.
+ * Starfarer M5 and Phase 2 equipment contract. The medallion resolves under its
+ * canonical id and can be worn by its stamped owner without granting stats.
  *
  * <p>"Does nothing" is the substance of this test, not a throwaway line. The item is
  * desirable because of what it records, so any capability it accidentally gained would
@@ -53,17 +69,7 @@ class StarfarersMedallionContractTest {
     private static final Path ASSETS = RESOURCES.resolve("assets/britannia_mod");
     private static final Path DATA = RESOURCES.resolve("data/britannia_mod");
 
-    /**
-     * The texture the model points at TODAY. It is a vanilla stand-in, not approved art.
-     *
-     * <p>This constant is the reason a placeholder cannot ship silently: when real
-     * medallion art lands it must be added at
-     * {@code assets/britannia_mod/textures/item/starfarers_medallion.png}, the model
-     * repointed to {@code britannia_mod:item/starfarers_medallion}, and this line
-     * changed by hand. Nobody can swap the art without noticing this test, and nobody
-     * can call the placeholder finished without editing a constant that says it is not.
-     */
-    private static final String PLACEHOLDER_TEXTURE = "minecraft:item/gold_ingot";
+    private static final String PRODUCTION_TEXTURE = "britannia_mod:item/starfarers_medallion";
 
     /**
      * A real registered instance of the production class, built with the production
@@ -97,7 +103,90 @@ class StarfarersMedallionContractTest {
                 "exactly one registration, so a medallion is never ambiguous");
     }
 
-    // --- it does nothing ------------------------------------------------------
+    // --- wearable, but no gameplay advantage --------------------------------
+
+    @Test
+    void itIsAVanillaChestWearableButNotArmor() {
+        assertTrue(medallion instanceof Equipable);
+        assertEquals(EquipmentSlot.CHEST, ((Equipable) medallion).getEquipmentSlot());
+        assertEquals(SoundEvents.ARMOR_EQUIP_GENERIC, ((Equipable) medallion).getEquipSound());
+        assertFalse(medallion instanceof ArmorItem);
+    }
+
+    @Test
+    void theSlotGateRequiresTheStampedOwnerAndTheChestSlot() {
+        UUID owner = UUID.randomUUID();
+        ItemStack stack = new ItemStack(medallion);
+        CompoundTag tag = new CompoundTag();
+        tag.putBoolean("blessed", true);
+        tag.putString("owner", owner.toString());
+        tag.putString("deed_id", "deed-for-wearing");
+        tag.putString("instance_uuid", UUID.randomUUID().toString());
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+
+        assertEquals(owner, BlessedItemLifecycleMetadata.ownerOf(stack).orElseThrow());
+        assertFalse(((StarfarersMedallionItem) medallion).canEquip(stack, EquipmentSlot.HEAD, null));
+        assertFalse(((StarfarersMedallionItem) medallion).canEquip(stack, EquipmentSlot.CHEST, null),
+                "an item with no player cannot bypass owner validation");
+        tag.putString("owner", "not-a-uuid");
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        assertTrue(BlessedItemLifecycleMetadata.ownerOf(stack).isEmpty());
+    }
+
+    @Test
+    void theCommonItemHasNoClientRendererDependency() throws IOException {
+        String source = Files.readString(SOURCES.resolve("item/StarfarersMedallionItem.java"),
+                StandardCharsets.UTF_8);
+        assertFalse(source.contains("net.minecraft.client."));
+        assertFalse(source.contains("IClientItemExtensions"));
+        assertFalse(source.contains("initializeClient"));
+        assertFalse(source.contains("StarfarersMedallionLayer"));
+    }
+
+    @Test
+    void theWornLayerFailsClosedForAbsentCorruptAndForeignEquipment() {
+        UUID owner = UUID.randomUUID();
+        ItemStack stack = new ItemStack(medallion);
+        assertFalse(StarfarersMedallionLayer.shouldRender(stack, owner));
+        assertFalse(StarfarersMedallionLayer.shouldRender(new ItemStack(Items.GOLD_INGOT), owner));
+
+        CompoundTag tag = new CompoundTag();
+        tag.putBoolean("blessed", true);
+        tag.putString("owner", owner.toString());
+        tag.putString("deed_id", "worn-layer-test");
+        tag.putString("instance_uuid", UUID.randomUUID().toString());
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        assertTrue(StarfarersMedallionLayer.shouldRender(stack, owner));
+        assertFalse(StarfarersMedallionLayer.shouldRender(stack, UUID.randomUUID()));
+
+        tag.putString("instance_uuid", "corrupt-instance");
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        assertFalse(StarfarersMedallionLayer.shouldRender(stack, owner));
+    }
+
+    @Test
+    void theVanillaWornLayerIsClientOnlyAndRegisteredForBothSkins() throws IOException {
+        String setup = Files.readString(SOURCES.resolve("ClientModSetup.java"), StandardCharsets.UTF_8);
+        String layer = Files.readString(SOURCES.resolve("client/renderer/StarfarersMedallionLayer.java"),
+                StandardCharsets.UTF_8);
+
+        assertTrue(setup.contains("value = Dist.CLIENT"));
+        assertTrue(setup.contains("EntityRenderersEvent.AddLayers"));
+        assertTrue(setup.contains("PlayerSkin.Model.WIDE"));
+        assertTrue(setup.contains("PlayerSkin.Model.SLIM"));
+        assertTrue(setup.contains("renderer.addLayer(new StarfarersMedallionLayer("));
+        assertTrue(layer.contains("@OnlyIn(Dist.CLIENT)"));
+        assertTrue(layer.contains("getItemBySlot(EquipmentSlot.CHEST)"));
+        assertTrue(layer.contains("getParentModel().body.translateAndRotate(poseStack)"));
+        assertTrue(layer.contains("ItemDisplayContext.FIXED"));
+        assertTrue(layer.contains("poseStack.translate(0.0D, 0.22D, -0.18D)"),
+                "the upright bail needs clearance below the player's head");
+        int uprightRoll = layer.indexOf("poseStack.mulPose(Axis.ZP.rotationDegrees(180.0F))");
+        assertTrue(uprightRoll > layer.indexOf("getParentModel().body.translateAndRotate(poseStack)"));
+        assertTrue(uprightRoll < layer.indexOf("itemRenderer.renderStatic("));
+        assertFalse(layer.contains("geckolib"));
+        assertFalse(layer.contains("GeoRender"));
+    }
 
     @Test
     void itGrantsNoCombatGatheringOrMovementAdvantage() {
@@ -115,8 +204,7 @@ class StarfarersMedallionContractTest {
         ItemStack stack = new ItemStack(medallion);
 
         assertFalse(stack.has(DataComponents.FOOD));
-        // 1.21.1 has no CONSUMABLE component; an item with no use animation is one
-        // nothing happens when you hold right-click on.
+        // Equipping is instantaneous; it must not acquire a food/drink use animation.
         assertEquals(UseAnim.NONE, stack.getUseAnimation());
     }
 
@@ -188,19 +276,88 @@ class StarfarersMedallionContractTest {
     // --- assets ---------------------------------------------------------------
 
     @Test
-    void theItemModelResolvesAndItsArtIsStillAnAdmittedPlaceholder() throws IOException {
+    void theProductionItemModelUsesOneVanillaModelAndTextureContract() throws IOException {
         JsonObject model = readJson(ASSETS.resolve("models/item/starfarers_medallion.json"));
 
-        assertTrue(model.get("parent").getAsString().endsWith("item/generated"));
-        assertEquals(PLACEHOLDER_TEXTURE,
-                model.getAsJsonObject("textures").get("layer0").getAsString(),
-                "the model still points at a vanilla stand-in. When real art lands, add "
-                        + "textures/item/starfarers_medallion.png, repoint the model, and update "
-                        + "PLACEHOLDER_TEXTURE -- deliberately by hand, so approved artwork is "
-                        + "never something that happened by accident.");
+        assertEquals("minecraft:block/block", model.get("parent").getAsString());
+        assertEquals(PRODUCTION_TEXTURE,
+                model.getAsJsonObject("textures").get("medallion").getAsString());
+        assertEquals(PRODUCTION_TEXTURE,
+                model.getAsJsonObject("textures").get("particle").getAsString());
+        assertFalse(model.toString().contains("minecraft:item/gold_ingot"));
+        assertDoesNotThrow(() -> BlockModel.fromString(model.toString()),
+                "the production JSON must parse through Minecraft's real model loader");
+        JsonArray elements = model.getAsJsonArray("elements");
+        assertTrue(elements.size() > 0 && elements.size() <= 12,
+                "the ceremonial model stays within the vanilla element budget");
+        assertEquals(Set.of("north", "south"),
+                elements.get(0).getAsJsonObject().getAsJsonObject("faces").keySet(),
+                "square side faces would show as detached bars around the round texture");
+        for (var entry : elements) {
+            JsonObject faces = entry.getAsJsonObject().getAsJsonObject("faces");
+            assertFalse(faces.isEmpty());
+            for (var face : faces.entrySet()) {
+                assertEquals("#medallion", face.getValue().getAsJsonObject()
+                        .get("texture").getAsString());
+            }
+        }
+        for (String context : List.of("gui", "ground", "fixed",
+                "firstperson_righthand", "firstperson_lefthand",
+                "thirdperson_righthand", "thirdperson_lefthand")) {
+            assertTrue(model.getAsJsonObject("display").has(context), context);
+        }
+    }
 
-        assertFalse(Files.exists(ASSETS.resolve("textures/item/starfarers_medallion.png")),
-                "a real texture exists but the model still points at the placeholder");
+    @Test
+    void theProductionTextureIsSmallTransparentAndNonempty() throws IOException {
+        Path texture = ASSETS.resolve("textures/item/starfarers_medallion.png");
+        assertTrue(Files.isRegularFile(texture), texture.toString());
+        BufferedImage image = ImageIO.read(texture.toFile());
+        assertNotNull(image, "the production PNG decodes");
+        assertEquals(64, image.getWidth());
+        assertEquals(64, image.getHeight());
+        assertTrue(image.getColorModel().hasAlpha());
+        assertEquals(0, image.getRGB(0, 0) >>> 24, "transparent silhouette corners");
+        assertTrue((image.getRGB(32, 32) >>> 24) > 0, "the medallion face is visible");
+    }
+
+    @Test
+    void theEditableBlockbenchSourceMatchesTheRuntimeExport() throws IOException {
+        JsonObject source = readJson(ASSETS.resolve("models/item/starfarers_medallion.bbmodel"));
+        JsonObject model = readJson(ASSETS.resolve("models/item/starfarers_medallion.json"));
+        assertEquals("java_block", source.getAsJsonObject("meta")
+                .get("model_format").getAsString());
+        assertEquals(64, source.getAsJsonObject("resolution").get("width").getAsInt());
+        assertEquals(64, source.getAsJsonObject("resolution").get("height").getAsInt());
+        assertEquals(model.getAsJsonObject("display"), source.getAsJsonObject("display"));
+
+        JsonArray sourceElements = source.getAsJsonArray("elements");
+        JsonArray modelElements = model.getAsJsonArray("elements");
+        assertEquals(modelElements.size(), sourceElements.size());
+        for (int i = 0; i < modelElements.size(); i++) {
+            JsonObject editable = sourceElements.get(i).getAsJsonObject();
+            JsonObject exported = modelElements.get(i).getAsJsonObject();
+            assertEquals(exported.get("name"), editable.get("name"));
+            assertEquals(exported.get("from"), editable.get("from"));
+            assertEquals(exported.get("to"), editable.get("to"));
+            JsonObject exportedFaces = exported.getAsJsonObject("faces");
+            JsonObject editableFaces = editable.getAsJsonObject("faces");
+            for (var face : exportedFaces.entrySet()) {
+                JsonArray exportedUv = face.getValue().getAsJsonObject().getAsJsonArray("uv");
+                JsonArray editableUv = editableFaces.getAsJsonObject(face.getKey()).getAsJsonArray("uv");
+                for (int n = 0; n < 4; n++) {
+                    assertEquals(exportedUv.get(n).getAsDouble(),
+                            editableUv.get(n).getAsDouble() / 4.0, 0.00001,
+                            "Blockbench pixel UV and vanilla 0–16 UV differ at " + i + "/" + face.getKey());
+                }
+            }
+        }
+
+        String embedded = source.getAsJsonArray("textures").get(0).getAsJsonObject()
+                .get("source").getAsString();
+        assertTrue(embedded.startsWith("data:image/png;base64,"));
+        assertArrayEquals(Files.readAllBytes(ASSETS.resolve("textures/item/starfarers_medallion.png")),
+                Base64.getDecoder().decode(embedded.substring("data:image/png;base64,".length())));
     }
 
     @Test
@@ -210,13 +367,20 @@ class StarfarersMedallionContractTest {
         for (String key : List.of(
                 "item.britannia_mod.starfarers_medallion",
                 "item.britannia_mod.starfarers_medallion.lore",
+                "item.britannia_mod.starfarers_medallion.provenance",
                 "item.britannia_mod.starfarers_medallion.occasion")) {
             assertTrue(language.has(key), key);
             assertFalse(language.get(key).getAsString().isBlank(), key);
         }
 
-        assertEquals("Starfarer's Medallion",
+        assertEquals("Starfarer’s Medallion",
                 language.get("item.britannia_mod.starfarers_medallion").getAsString());
+        assertEquals("Bestowed upon travelers who answered a call from beyond the skies of Britannia.",
+                language.get("item.britannia_mod.starfarers_medallion.lore").getAsString());
+        assertEquals("Struck for those who answered the call.",
+                language.get("item.britannia_mod.starfarers_medallion.provenance").getAsString());
+        assertEquals("Squadron 42 - Manchester, 2956",
+                language.get("item.britannia_mod.starfarers_medallion.occasion").getAsString());
     }
 
     /**
@@ -231,8 +395,11 @@ class StarfarersMedallionContractTest {
         assertTrue(source.contains("appendHoverText"), "the item renders lore");
         assertFalse(source.contains("flag.isAdvanced()"),
                 "lore must show to every player, not only with advanced tooltips");
-        assertTrue(source.contains("starfarers_medallion.lore"));
-        assertTrue(source.contains("starfarers_medallion.occasion"));
+        int lore = source.indexOf("starfarers_medallion.lore");
+        int provenance = source.indexOf("starfarers_medallion.provenance");
+        int occasion = source.indexOf("starfarers_medallion.occasion");
+        assertTrue(lore >= 0 && lore < provenance && provenance < occasion,
+                "the restrained tooltip shows lore, provenance, then occasion");
     }
 
     @Test
