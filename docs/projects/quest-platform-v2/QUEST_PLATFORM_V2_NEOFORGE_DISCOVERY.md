@@ -169,7 +169,7 @@ The recorded build command `./gradlew build --console=plain` also exited 1 befor
 
 A separate local offline diagnostic was not a gate: a temporary untracked cache and init mapping advanced through Gradle configuration, but `neoFormListLibraries` still failed because required Minecraft library assets were unavailable in offline mode. It does not establish unit or build success. Source: task-session output from `./gradlew -I .uc/foojay-offline.init.gradle test --console=plain --offline --no-daemon`; `.uc/context/policy/repos.toml` `[repos.neoforge.gates]` defines the unit gate as `.\gradlew.bat test --rerun`.
 
-The harness ran that policy gate at reviewed commit `f30d669e82857c539fa49edbc053db50a821e636`; it exited 0, and the harness counted 4,114 tests in 512 fresh reports. Its output ended:
+The harness ran that policy gate at reviewed commit `1230263470dce01971dd0aba7f29472a943af3d1`; it exited 0, and the harness counted 4,114 tests in 512 fresh reports. Its output ended:
 
 ```text
 > Task :test
