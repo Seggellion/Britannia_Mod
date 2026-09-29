@@ -120,12 +120,15 @@ The quest subsystem has these durable stores and markers:
 | Player persistent NBT `britannia_player.applied_delivery_uuids` | `src/main/java/com/seggellion/britannia_mod/player/PlayerDataStore.java` `hasAppliedDelivery`/`markDeliveryApplied` own up to 256 UUID strings proving local insertion. | No version field in this marker list. |
 | Player persistent NBT `britannia_player.handin_removals` | `PlayerDataStore.markHandinRemoved`/`handinRemovals` own up to 64 compounds containing `HandinUuid`, `RequestUuid`, `RemovedAt`, and `Proof`; `QuestHandinRemovalNbt` owns proof fields `Item`, `Count`, `RequirementIndex`, optional `Resolver`, and optional `FlagValue`. | No version field in this marker list or proof. |
 | Item `DataComponents.CUSTOM_DATA` quest stamp | `src/main/java/com/seggellion/britannia_mod/quest/QuestItemStamp.java` and `QuestRewardService.stampTemporary` read/write `quest_item`, `quest_owner_uuid`, legacy `quest_owner_name`, `quest_id`, `quest_state_id`, `quest_key`, `quest_trigger_key`, and `quest_min_x/y/z` plus `quest_max_x/y/z`. | No version field. |
+| Player advancement file, criterion state for `britannia_mod:quest/<key>` | `src/main/java/com/seggellion/britannia_mod/quest/achievement/QuestAchievementAward.java` owns quest-key resolution and calls `PlayerAdvancements.award` in `grant`; its class documentation identifies the persisted player advancement as the durable per-player first-time token used by `grantAndFilter` to suppress replayed achievement announcements. | No quest-owned version field: `QuestAchievementAward` reads or writes no schema/version value and delegates persistence to Minecraft's `PlayerAdvancements`. |
 
-The process-local maps in `ClientQuestTable`, `ServerQuestTable`, `QuestManager`, `QuestJournalRefresh`, `QuestObjectiveWatcher`, and the dispatcher/reconciler scheduling maps are not durable surfaces because their declarations are ordinary static fields and their lifecycle methods clear/forget them; the three `*Store extends SavedData` classes and `PlayerDataStore`/item `CUSTOM_DATA` are the persistence-bearing code paths listed above. Sources: those class declarations and their `clear`/`forget` methods; command `Select-String -Path src/main/java/com/seggellion/britannia_mod/quest/**/*.java -Pattern 'extends SavedData'` identifies the three stores.
+The process-local maps in `ClientQuestTable`, `ServerQuestTable`, `QuestManager`, `QuestJournalRefresh`, `QuestObjectiveWatcher`, and the dispatcher/reconciler scheduling maps are not durable surfaces because their declarations are ordinary static fields and their lifecycle methods clear/forget them; the three `*Store extends SavedData` classes, `PlayerDataStore`/item `CUSTOM_DATA`, and the advancement-backed achievement token are the persistence-bearing code paths listed above. Sources: those class declarations and their `clear`/`forget` methods; `QuestAchievementAward` class documentation and methods `grantAndFilter`/`grant`; command `Select-String -Path src/main/java/com/seggellion/britannia_mod/quest/**/*.java -Pattern 'extends SavedData'` identifies the three stores.
 
 ## Existing effect, delivery, hand-in, and reissue machinery
 
 There is no generic v2 effect-occurrence store or codec in this tree. The existing occurrence-like identity is the v1 action `event_uuid`, minted locally with `UUID.randomUUID()` in `QuestActionDispatcher.publish` and stored as `EventUuid` by `QuestActionOutboxEntry.toNbt`; request attempts mint a separate request UUID in `QuestActionDispatcher.attempt`. Sources: `src/main/java/com/seggellion/britannia_mod/quest/action/QuestActionDispatcher.java` `publish` and `attempt`; `QuestActionOutboxEntry.toNbt`; command `Get-ChildItem ... | Select-String 'effect_occurrence'` returned no quest implementation. This observation does not answer OD-07.
+
+Achievement granting is an existing authoritative effect path: `QuestProxyService.applyQuestResponse` and `QuestActionDispatcher.installState` call `QuestAchievementAward.grantAndFilter`; `QuestAchievementAward.grant` calls `PlayerAdvancements.award` for each criterion, and `grantAndFilter` removes an already-earned achievement from the forwarded `client_actions`. The persisted advancement criterion is the existing per-player first-time token for replay suppression; this records its current role and does not assign it a v2 identity. Sources: `src/main/java/com/seggellion/britannia_mod/quest/QuestProxyService.java` `applyQuestResponse`; `src/main/java/com/seggellion/britannia_mod/quest/action/QuestActionDispatcher.java` `installState`; `src/main/java/com/seggellion/britannia_mod/quest/achievement/QuestAchievementAward.java` class documentation and methods `grantAndFilter`, `grant`, and `withoutAnnouncements`.
 
 Delivery is implemented by `QuestRewardService`, every class in `quest/delivery/`, and `PlayerDataStore`'s applied marker. `delivery_uuid` is not produced by NeoForge: `QuestRewardDeliveryParser.parseDelivery` reads it from Rails' `delivery_uuid`; `QuestRewardDeliveryLedgerEntry.toNbt` stores it as `DeliveryUuid`; `PlayerDataStore.markDeliveryApplied` stores its string in `applied_delivery_uuids`; `QuestRewardDeliveryProtocol.encodeResult` returns it in an acknowledgement. Sources: those exact methods in `QuestRewardDeliveryParser.java`, `QuestRewardDeliveryLedgerEntry.java`, `PlayerDataStore.java`, and `QuestRewardDeliveryProtocol.java`.
 
@@ -160,9 +163,21 @@ at org.gradle.wrapper.GradleWrapperMain.main(SourceFile:67)
 
 The recorded build command `./gradlew build --console=plain` also exited 1 before compilation or tests and printed the same download line, `java.net.SocketException: Permission denied: getsockopt`, and wrapper-stack ending. Source: task-session output captured for those exact commands before the document was created.
 
-A separate local offline diagnostic was not a gate: a temporary untracked cache and init mapping advanced through Gradle configuration, but `neoFormListLibraries` still failed because required Minecraft library assets were unavailable in offline mode. It does not establish unit or build success. Source: task-session output from `./gradlew -I .uc/foojay-offline.init.gradle test --console=plain --offline --no-daemon`; `.uc/context/policy/repos.toml` still defines the unit gate as `./gradlew test`.
+A separate local offline diagnostic was not a gate: a temporary untracked cache and init mapping advanced through Gradle configuration, but `neoFormListLibraries` still failed because required Minecraft library assets were unavailable in offline mode. It does not establish unit or build success. Source: task-session output from `./gradlew -I .uc/foojay-offline.init.gradle test --console=plain --offline --no-daemon`; `.uc/context/policy/repos.toml` `[repos.neoforge.gates]` defines the unit gate as `.\gradlew.bat test --rerun`.
 
-The final required gate remains `./gradlew test` per policy; this discovery does not reinterpret a wrapper/network failure as a passing gate. Sources: `.uc/context/policy/repos.toml` `[repos.neoforge.gates]`; the recorded command output above.
+The harness ran that policy gate at reviewed commit `f30d669e82857c539fa49edbc053db50a821e636`; it exited 0, and the harness counted 4,114 tests in 512 fresh reports. Its output ended:
+
+```text
+> Task :test
+
+BUILD SUCCESSFUL in 3m 5s
+35 actionable tasks: 4 executed, 4 from cache, 27 up-to-date
+Configuration cache entry reused.
+```
+
+Sources: command `.\gradlew.bat test --rerun`; harness records `state/tasks/questv2-m15-101/tests/index.json` and `state/tasks/questv2-m15-101/tests/neoforge-unit-20260929T223102Z.log`.
+
+The final required gate is `.\gradlew.bat test --rerun`. Policy records that exact Windows form because the harness invokes gates through `cmd.exe /c`, while the repository's POSIX `gradlew` is for the Linux CI runner and cannot be invoked by that Windows path. The earlier POSIX-wrapper failure above is therefore only an observed checkout diagnostic, not the policy gate result. Source: `.uc/context/policy/repos.toml` `[repos.neoforge.gates]` and its Windows gate comments.
 
 ## Facts intentionally left unknown
 
