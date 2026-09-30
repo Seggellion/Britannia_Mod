@@ -154,7 +154,7 @@ Trigger/action-result delivery likewise pushes presentation and journal progress
 
 ## Tests, GameTests, and observed gates
 
-Static inventory found 538 top-level Java source types under `src/test/java`. Quest-related unit tests are under `src/test/java/com/seggellion/britannia_mod/quest/`, including the contract test above. Static inventory found all `@GameTest` classes under `src/main/java/com/seggellion/britannia_mod/gametest/`: 176 source files containing 1,301 actual `@GameTest` annotation lines. A raw `@GameTest` token scan returns 1,305 hits because four are in comments: one in `GrabbyServerPacketPathGameTests.java` and three in `WorldStateSyncGameTests.java`. Sources: `Get-ChildItem src/test/java -Recurse -File -Filter *.java` plus the top-level-type declaration scan; `Get-ChildItem src/main/java -Recurse -File -Filter *.java | Select-String -Pattern '@GameTest\b' -List`; and the annotation-token scan under `src/main/java/com/seggellion/britannia_mod/gametest/`, partitioned by whether each matching line starts with `//`, `/*`, `*`, or `*/` after optional whitespace.
+Static inventory found 538 `.java` files under `src/test/java`, each declaring one top-level Java type, so the file count and the type count agree at 538. Quest-related unit tests are under `src/test/java/com/seggellion/britannia_mod/quest/`, including the contract test above. Every `@GameTest` class in this tree lives under `src/main/java/com/seggellion/britannia_mod/gametest/`, and nowhere else: that directory holds 181 `.java` files, of which 177 carry at least one `@GameTest` annotation. No annotation-occurrence total is given here, because the count depends on which occurrences are counted - annotations written with an argument list differ from bare ones, and both differ from a raw text scan that also matches Javadoc and comments - and this inventory needs the classes and their location, not a token tally. Sources: `git ls-tree -r --name-only task/questv2-m15-101 -- src/test/java` filtered to `.java`, with the top-level-type declaration scan agreeing at the same number; `git grep -lE '^\s*@GameTest' task/questv2-m15-101 -- src/main/java`, which returns the same 177 files whether the pattern is anchored to an annotation line or matches the token anywhere.
 
 On an unmodified checkout, the task's recorded test command was `./gradlew test --console=plain`; it exited 1 before compilation or tests and printed:
 
@@ -169,7 +169,7 @@ The recorded build command `./gradlew build --console=plain` also exited 1 befor
 
 A separate local offline diagnostic was not a gate: a temporary untracked cache and init mapping advanced through Gradle configuration, but `neoFormListLibraries` still failed because required Minecraft library assets were unavailable in offline mode. It does not establish unit or build success. Source: task-session output from `./gradlew -I .uc/foojay-offline.init.gradle test --console=plain --offline --no-daemon`; `.uc/context/policy/repos.toml` `[repos.neoforge.gates]` defines the unit gate as `.\gradlew.bat test --rerun`.
 
-The harness ran that policy gate at reviewed commit `1230263470dce01971dd0aba7f29472a943af3d1`; it exited 0, and the harness counted 4,114 tests in 512 fresh reports. Its output ended:
+An INTERMEDIATE HISTORICAL RUN of that policy gate, recorded while this task was still being revised, ran at commit `f30d669e82857c539fa49edbc053db50a821e636`; it exited 0, and the harness counted 4,114 tests in 512 fresh reports. That commit is not this document's commit and is not the reviewed commit: it is quoted here only as an observation that the repaired Windows gate command executes and reports real test counts. Its output ended:
 
 ```text
 > Task :test
@@ -179,7 +179,9 @@ BUILD SUCCESSFUL in 3m 5s
 Configuration cache entry reused.
 ```
 
-Sources: command `.\gradlew.bat test --rerun`; harness records `state/tasks/questv2-m15-101/tests/index.json` and `state/tasks/questv2-m15-101/tests/neoforge-unit-20260929T223102Z.log`.
+That quoted output and log are the same run as the commit named above. Sources: command `.\gradlew.bat test --rerun`; harness records `state/tasks/questv2-m15-101/tests/index.json` and `state/tasks/questv2-m15-101/tests/neoforge-unit-20260929T223102Z.log`.
+
+This document deliberately quotes no gate run of its own commit, because none can exist when the commit is written: the required `neoforge/unit` gate runs after a commit exists, and its result is recorded in Harness evidence under `state/tasks/questv2-m15-101/tests/` against that exact commit. The authority for whether the required gate passed at the final commit is that Harness record, not this passage.
 
 The final required gate is `.\gradlew.bat test --rerun`. Policy records that exact Windows form because the harness invokes gates through `cmd.exe /c`, while the repository's POSIX `gradlew` is for the Linux CI runner and cannot be invoked by that Windows path. The earlier POSIX-wrapper failure above is therefore only an observed checkout diagnostic, not the policy gate result. Source: `.uc/context/policy/repos.toml` `[repos.neoforge.gates]` and its Windows gate comments.
 
