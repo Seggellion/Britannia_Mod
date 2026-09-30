@@ -252,9 +252,9 @@ public final class QuestRewardDeliveryService {
 
         // Step 4: the marker and the PERMANENT proof both join the inserted items in the same
         // in-memory player state, then the vanilla player-file write persists all of them or none.
-        // The proof is recorded here and nowhere else, so no path can grant items without it.
-        PlayerDataStore.markDeliveryApplied(player, uuid);
-        PlayerDataStore.recordDeliveryProof(player, uuid);
+        // ONE call, so neither record can be written without the other, and it is the same function
+        // the unit tests drive.
+        PlayerDataStore.recordDeliveryApplied(player, uuid);
         try {
             playerSaver.save(player);
         } catch (RuntimeException saveFailure) {

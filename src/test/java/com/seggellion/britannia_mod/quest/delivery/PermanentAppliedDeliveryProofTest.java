@@ -264,8 +264,9 @@ class PermanentAppliedDeliveryProofTest {
         PlayerDataStore.recordDeliveryProofIn(data, UUID.randomUUID());
 
         assertArrayEquals(unreadable,
-            data.getIntArray(PlayerDataStore.APPLIED_DELIVERY_PROOF_QUARANTINE),
+            data.getCompound(PlayerDataStore.APPLIED_DELIVERY_PROOF_QUARANTINE).getIntArray("0"),
             "the unreadable bytes must be kept verbatim, not erased");
+        assertEquals(1, PlayerDataStore.quarantinedProofCount(data));
         assertEquals(1, PlayerDataStore.deliveryProofCount(data), "and the new uuid is still recorded");
     }
 
@@ -285,5 +286,70 @@ class PermanentAppliedDeliveryProofTest {
         assertEquals(Action.RECORD_AND_INSERT,
             QuestRewardDeliveryReconciliationDecision.decideForPlayerData(null, data, UUID.randomUUID()),
             "and must still insert a delivery it has never seen");
+    }
+
+    // ---- second review round --------------------------------------------------------------------
+
+    @Test
+    void theApplicationSEQUENCEneverGrantsTheSameUuidTwice() {
+        // The decisive property driven through the two functions the service actually calls, in the
+        // order it calls them: decideForPlayerData to choose, recordDeliveryAppliedIn to record. A test
+        // that called the two-boolean table with literal inputs stayed green regardless of the
+        // service's wiring; this one does not.
+        CompoundTag data = new CompoundTag();
+        UUID old = UUID.randomUUID();
+        int grants = 0;
+
+        if (inserting(QuestRewardDeliveryReconciliationDecision.decideForPlayerData(null, data, old))) {
+            PlayerDataStore.recordDeliveryAppliedIn(data, old);
+            grants++;
+        }
+        assertEquals(1, grants, "the first delivery must be granted exactly once");
+
+        // The player earns more than the bounded marker can hold, each through the same sequence.
+        for (int i = 0; i < MORE_THAN_THE_BOUND; i++) {
+            UUID later = UUID.randomUUID();
+            if (inserting(QuestRewardDeliveryReconciliationDecision.decideForPlayerData(null, data, later))) {
+                PlayerDataStore.recordDeliveryAppliedIn(data, later);
+            }
+        }
+        assertFalse(markerNames(data, old), "precondition: the bounded marker must have evicted it");
+
+        // Rails adopts the acknowledged row and re-hands the uuid; its ledger row was pruned, so the
+        // entry is null. This is the exact defect path.
+        if (inserting(QuestRewardDeliveryReconciliationDecision.decideForPlayerData(null, data, old))) {
+            PlayerDataStore.recordDeliveryAppliedIn(data, old);
+            grants++;
+        }
+        assertEquals(1, grants, "a re-handed uuid was granted a second time");
+    }
+
+    @Test
+    void aSecondUnreadableProofIsAlsoKept() {
+        // The first quarantine attempt removed the tag without copying it whenever a quarantine
+        // already existed, which discarded the very bytes it existed to preserve.
+        CompoundTag data = new CompoundTag();
+
+        data.putIntArray(PlayerDataStore.APPLIED_DELIVERY_PROOF, new int[]{1, 2, 3});
+        PlayerDataStore.recordDeliveryProofIn(data, UUID.randomUUID());
+        assertEquals(1, PlayerDataStore.quarantinedProofCount(data));
+
+        // A second unreadable representation arrives later, of a different tag type this time.
+        data.putString(PlayerDataStore.APPLIED_DELIVERY_PROOF, "not an int array at all");
+        UUID second = UUID.randomUUID();
+        PlayerDataStore.recordDeliveryProofIn(data, second);
+
+        assertEquals(2, PlayerDataStore.quarantinedProofCount(data),
+            "both unreadable representations must be kept; neither may overwrite the other");
+        // NOT two recorded uuids: putString above replaced the readable array that held the first one,
+        // so it was destroyed by the writer before quarantine could see it. Nothing this method does
+        // can recover a tag that was overwritten before it ran, and pretending otherwise would be the
+        // sort of claim this whole task exists to stop making.
+        assertEquals(1, PlayerDataStore.deliveryProofCount(data));
+        assertTrue(PlayerDataStore.hasDeliveryProofIn(data, second));
+    }
+
+    private static boolean inserting(Action action) {
+        return action == Action.RECORD_AND_INSERT || action == Action.INSERT;
     }
 }

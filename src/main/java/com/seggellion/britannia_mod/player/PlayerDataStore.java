@@ -123,15 +123,13 @@ public final class PlayerDataStore {
         if (!handins.isEmpty()) out.put(HANDIN_REMOVALS, handins.copy());
         // The permanent proof is carried across for the same reason and more strictly: dropping it
         // would re-open the duplicate grant this record exists to refuse.
-        int[] proof = proofArray(existing);
-        if (proof.length > 0) out.put(APPLIED_DELIVERY_PROOF, new IntArrayTag(proof.clone()));
-        // Unreadable proof bytes are carried across verbatim for the same reason: a profile save must
-        // never be the thing that discards them.
+        // Copied VERBATIM, never reconstructed from a parsed view: a save must not be able to
+        // narrow, reorder or drop either tag, readable or not.
+        if (existing.contains(APPLIED_DELIVERY_PROOF)) {
+            out.put(APPLIED_DELIVERY_PROOF, existing.get(APPLIED_DELIVERY_PROOF).copy());
+        }
         if (existing.contains(APPLIED_DELIVERY_PROOF_QUARANTINE)) {
             out.put(APPLIED_DELIVERY_PROOF_QUARANTINE, existing.get(APPLIED_DELIVERY_PROOF_QUARANTINE).copy());
-        } else if (existing.contains(APPLIED_DELIVERY_PROOF) && proof.length == 0) {
-            // Present but unreadable, and not yet quarantined: preserve it as it stands.
-            out.put(APPLIED_DELIVERY_PROOF_QUARANTINE, existing.get(APPLIED_DELIVERY_PROOF).copy());
         }
         root.put(KEY, out);
     }
@@ -388,11 +386,20 @@ public final class PlayerDataStore {
      */
     public static void quarantineUnreadableProof(CompoundTag dataTag) {
         if (dataTag == null || !dataTag.contains(APPLIED_DELIVERY_PROOF)) return;
-        if (proofArray(dataTag).length > 0 || !dataTag.contains(APPLIED_DELIVERY_PROOF_QUARANTINE)) {
-            if (proofArray(dataTag).length > 0) return;                // readable: nothing to do
-            dataTag.put(APPLIED_DELIVERY_PROOF_QUARANTINE, dataTag.get(APPLIED_DELIVERY_PROOF).copy());
-        }
+        if (proofArray(dataTag).length > 0) return;                    // readable: nothing to quarantine
+        // A COMPOUND of numbered entries, not one slot and not a list: a second unreadable proof must
+        // not overwrite the first, and a ListTag cannot hold two different tag types, which is exactly
+        // what "unreadable" may produce. The first version of this method removed the tag without
+        // copying it whenever a quarantine already existed - it discarded the bytes it existed to keep.
+        CompoundTag kept = dataTag.getCompound(APPLIED_DELIVERY_PROOF_QUARANTINE);
+        kept.put(String.valueOf(kept.size()), dataTag.get(APPLIED_DELIVERY_PROOF).copy());
+        dataTag.put(APPLIED_DELIVERY_PROOF_QUARANTINE, kept);
         dataTag.remove(APPLIED_DELIVERY_PROOF);
+    }
+
+    /** How many unreadable proof representations are being kept. For tests and diagnostics. */
+    public static int quarantinedProofCount(CompoundTag dataTag) {
+        return dataTag == null ? 0 : dataTag.getCompound(APPLIED_DELIVERY_PROOF_QUARANTINE).size();
     }
 
     /**
@@ -441,6 +448,23 @@ public final class PlayerDataStore {
     public static boolean hasDeliveryProof(ServerPlayer player, UUID deliveryUuid) {
         if (player == null) return false;
         return hasDeliveryProofIn(player.getPersistentData().getCompound(KEY), deliveryUuid);
+    }
+
+    /**
+     * The player-data half of APPLYING a delivery: the bounded marker and the permanent proof, both
+     * written together. This is the seam the delivery service calls in the same in-memory step as the
+     * item insertion, and the seam the unit tests drive, so a test cannot pass while the service
+     * records only one of the two.
+     */
+    public static void recordDeliveryAppliedIn(CompoundTag dataTag, UUID deliveryUuid) {
+        markDeliveryAppliedIn(dataTag, deliveryUuid);
+        recordDeliveryProofIn(dataTag, deliveryUuid);
+    }
+
+    /** As above, for a live player. Call before the forced player-file write. */
+    public static void recordDeliveryApplied(ServerPlayer player, UUID deliveryUuid) {
+        if (player == null || deliveryUuid == null) return;
+        recordDeliveryAppliedIn(modDataOf(player), deliveryUuid);
     }
 
     /**
