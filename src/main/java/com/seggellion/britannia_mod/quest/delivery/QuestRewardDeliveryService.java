@@ -130,8 +130,10 @@ public final class QuestRewardDeliveryService {
         }
 
         boolean marker = PlayerDataStore.hasAppliedDelivery(player, uuid);
+        // D-0102: the permanent proof outlives both bounded records, so it is consulted every time.
+        boolean proof = PlayerDataStore.hasDeliveryProof(player, uuid);
         QuestRewardDeliveryReconciliationDecision.Action action =
-            QuestRewardDeliveryReconciliationDecision.decide(existing.orElse(null), marker);
+            QuestRewardDeliveryReconciliationDecision.decide(existing.orElse(null), marker, proof);
         long now = now();
 
         switch (action) {
@@ -246,9 +248,11 @@ public final class QuestRewardDeliveryService {
         }
         player.inventoryMenu.broadcastChanges();
 
-        // Step 4: the marker joins the inserted items in the same in-memory player state, then the
-        // vanilla player-file write persists both or neither.
+        // Step 4: the marker and the PERMANENT proof both join the inserted items in the same
+        // in-memory player state, then the vanilla player-file write persists all of them or none.
+        // The proof is recorded here and nowhere else, so no path can grant items without it.
         PlayerDataStore.markDeliveryApplied(player, uuid);
+        PlayerDataStore.recordDeliveryProof(player, uuid);
         try {
             playerSaver.save(player);
         } catch (RuntimeException saveFailure) {

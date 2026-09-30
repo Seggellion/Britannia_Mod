@@ -13,6 +13,14 @@ import javax.annotation.Nullable;
  * separately, can therefore lag the player file in exactly one direction -- it may say
  * {@code pending_local} or {@code queued} for an insertion whose player file already landed --
  * and that is the case the table repairs without a second insertion.
+ *
+ * <p>D-0102 ADDS A THIRD INPUT, and it is the only one that is permanent. The ledger row and the
+ * marker are both bounded per player, so for an old uuid BOTH can be absent while the items were
+ * in fact granted - and Rails can re-hand that uuid indefinitely, because
+ * {@code Publish#find_existing} has no state filter. Read with two inputs this table answered
+ * {@code RECORD_AND_INSERT} for that case and granted the items twice.
+ * {@code PlayerDataStore.APPLIED_DELIVERY_PROOF} never evicts, so when it names the uuid the
+ * answer is never an insertion, whatever the two bounded records say.
  */
 public final class QuestRewardDeliveryReconciliationDecision {
     private QuestRewardDeliveryReconciliationDecision() {}
@@ -32,12 +40,16 @@ public final class QuestRewardDeliveryReconciliationDecision {
         NOTHING
     }
 
-    public static Action decide(@Nullable QuestRewardDeliveryLedgerEntry entry, boolean markerPresent) {
+    public static Action decide(@Nullable QuestRewardDeliveryLedgerEntry entry, boolean markerPresent,
+                               boolean proofPresent) {
+        // Either durable record proves the items landed. The proof is the one that is still there
+        // after the ledger row was pruned and the marker evicted, which is the whole point of it.
+        boolean granted = markerPresent || proofPresent;
         if (entry == null) {
-            return markerPresent ? Action.RECORD_APPLIED_THEN_ACKNOWLEDGE : Action.RECORD_AND_INSERT;
+            return granted ? Action.RECORD_APPLIED_THEN_ACKNOWLEDGE : Action.RECORD_AND_INSERT;
         }
         return switch (entry.localState()) {
-            case PENDING_LOCAL, QUEUED -> markerPresent
+            case PENDING_LOCAL, QUEUED -> granted
                 ? Action.REPAIR_APPLIED_THEN_ACKNOWLEDGE
                 : Action.INSERT;
             case APPLIED -> entry.acknowledgementOutstanding() ? Action.ACKNOWLEDGE_ONLY : Action.NOTHING;

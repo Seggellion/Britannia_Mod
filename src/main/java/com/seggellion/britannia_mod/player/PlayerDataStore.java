@@ -4,7 +4,9 @@ package com.seggellion.britannia_mod.player;
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.quest.handin.QuestHandinRemoval;
 import com.seggellion.britannia_mod.quest.handin.QuestHandinRemovalNbt;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
@@ -42,6 +44,26 @@ public final class PlayerDataStore {
      */
     public static final String APPLIED_DELIVERY_UUIDS = "applied_delivery_uuids";
     public static final int MAX_APPLIED_DELIVERY_MARKERS = 256;
+
+    /**
+     * D-0102: the PERMANENT record of every delivery whose items this player received. The list
+     * above is a bounded operational view and evicts its oldest entries; this one never evicts,
+     * never expires and is never pruned, because Rails can re-hand an acknowledged
+     * {@code delivery_uuid} indefinitely - {@code QuestRewardDeliveries::Publish#find_existing}
+     * has no state filter, and {@code publish.rb} records having handed back a uuid whose items
+     * were already granted. Once both bounded records for such a uuid had aged out, the
+     * reconciliation table read it as new and granted the items a second time. This is the record
+     * that refuses that, and it is the reason the bounded list is allowed to stay bounded.
+     *
+     * <p>Stored as ONE flat {@code IntArrayTag} of four ints per uuid ({@link UUIDUtil}), which is
+     * 16 bytes each rather than the ~40 a string entry costs, because this list is unbounded and
+     * lives in the player file. It is appended in the same in-memory step as the item insertion,
+     * so the vanilla player-file write persists the items and the proof together or not at all.
+     */
+    public static final String APPLIED_DELIVERY_PROOF = "applied_delivery_proof";
+
+    /** Four ints per uuid, so a proof array is always a multiple of this. */
+    private static final int PROOF_STRIDE = 4;
 
     public static PlayerData get(ServerPlayer player) {
         CompoundTag root = player.getPersistentData();
@@ -91,6 +113,10 @@ public final class PlayerDataStore {
         if (!markers.isEmpty()) out.put(APPLIED_DELIVERY_UUIDS, markers.copy());
         ListTag handins = handinList(existing);
         if (!handins.isEmpty()) out.put(HANDIN_REMOVALS, handins.copy());
+        // The permanent proof is carried across for the same reason and more strictly: dropping it
+        // would re-open the duplicate grant this record exists to refuse.
+        int[] proof = proofArray(existing);
+        if (proof.length > 0) out.put(APPLIED_DELIVERY_PROOF, new IntArrayTag(proof.clone()));
         root.put(KEY, out);
     }
 
@@ -256,15 +282,9 @@ public final class PlayerDataStore {
     public static void markDeliveryApplied(ServerPlayer player, UUID deliveryUuid) {
         if (player == null || deliveryUuid == null) return;
         get(player);
-        CompoundTag dataTag = player.getPersistentData().getCompound(KEY);
-        ListTag markers = markerList(dataTag);
-        String value = deliveryUuid.toString();
-        for (Tag tag : markers) {
-            if (value.equals(tag.getAsString())) return;
-        }
-        markers.add(StringTag.valueOf(value));
-        while (markers.size() > MAX_APPLIED_DELIVERY_MARKERS) markers.remove(0);
-        dataTag.put(APPLIED_DELIVERY_UUIDS, markers);
+        // One copy of the eviction rule, in markDeliveryAppliedIn. Two would drift, and the bound is
+        // exactly the thing D-0102's permanent proof has to be trusted to backstop.
+        markDeliveryAppliedIn(player.getPersistentData().getCompound(KEY), deliveryUuid);
     }
 
     /**
@@ -284,5 +304,83 @@ public final class PlayerDataStore {
     private static ListTag markerList(CompoundTag dataTag) {
         if (dataTag == null || !dataTag.contains(APPLIED_DELIVERY_UUIDS, Tag.TAG_LIST)) return new ListTag();
         return dataTag.getList(APPLIED_DELIVERY_UUIDS, Tag.TAG_STRING);
+    }
+
+    // --- permanent applied-delivery proof (D-0102) -----------------------------------------------
+    //
+    // These operate on the mod compound directly rather than on a ServerPlayer, so the property that
+    // matters - a uuid whose bounded records have aged out is still refused - is provable in a unit
+    // test with no server. The ServerPlayer facades below are thin on purpose.
+
+    private static int[] proofArray(CompoundTag dataTag) {
+        if (dataTag == null || !dataTag.contains(APPLIED_DELIVERY_PROOF, Tag.TAG_INT_ARRAY)) return new int[0];
+        int[] found = dataTag.getIntArray(APPLIED_DELIVERY_PROOF);
+        // A length that is not a whole number of uuids is unreadable rather than partially readable:
+        // guessing which ints pair would invent a uuid nobody recorded.
+        return found.length % PROOF_STRIDE == 0 ? found : new int[0];
+    }
+
+    /** Does this mod compound permanently record the delivery's items as inserted? */
+    public static boolean hasDeliveryProofIn(CompoundTag dataTag, UUID deliveryUuid) {
+        if (deliveryUuid == null) return false;
+        int[] proof = proofArray(dataTag);
+        int[] want = UUIDUtil.uuidToIntArray(deliveryUuid);
+        for (int at = 0; at + PROOF_STRIDE <= proof.length; at += PROOF_STRIDE) {
+            if (proof[at] == want[0] && proof[at + 1] == want[1]
+                    && proof[at + 2] == want[2] && proof[at + 3] == want[3]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Permanently records that the delivery's items were inserted. Idempotent, and UNBOUNDED: there
+     * is deliberately no cap, no expiry and no pruning here. Only mutates the compound; the caller
+     * forces the player-file write in the same step as the insertion.
+     */
+    public static void recordDeliveryProofIn(CompoundTag dataTag, UUID deliveryUuid) {
+        if (dataTag == null || deliveryUuid == null) return;
+        if (hasDeliveryProofIn(dataTag, deliveryUuid)) return;
+        int[] existing = proofArray(dataTag);
+        int[] want = UUIDUtil.uuidToIntArray(deliveryUuid);
+        int[] grown = new int[existing.length + PROOF_STRIDE];
+        System.arraycopy(existing, 0, grown, 0, existing.length);
+        System.arraycopy(want, 0, grown, existing.length, PROOF_STRIDE);
+        dataTag.put(APPLIED_DELIVERY_PROOF, new IntArrayTag(grown));
+    }
+
+    /** How many deliveries this compound permanently records. For tests and diagnostics. */
+    public static int deliveryProofCount(CompoundTag dataTag) {
+        return proofArray(dataTag).length / PROOF_STRIDE;
+    }
+
+    /** The bounded marker append, on a compound, so the eviction is testable without a server. */
+    public static void markDeliveryAppliedIn(CompoundTag dataTag, UUID deliveryUuid) {
+        if (dataTag == null || deliveryUuid == null) return;
+        ListTag markers = markerList(dataTag);
+        String value = deliveryUuid.toString();
+        for (Tag tag : markers) {
+            if (value.equals(tag.getAsString())) return;
+        }
+        markers.add(StringTag.valueOf(value));
+        while (markers.size() > MAX_APPLIED_DELIVERY_MARKERS) markers.remove(0);
+        dataTag.put(APPLIED_DELIVERY_UUIDS, markers);
+    }
+
+    /** Whether this player's persistent data PERMANENTLY records the delivery as applied. */
+    public static boolean hasDeliveryProof(ServerPlayer player, UUID deliveryUuid) {
+        if (player == null) return false;
+        return hasDeliveryProofIn(player.getPersistentData().getCompound(KEY), deliveryUuid);
+    }
+
+    /**
+     * Permanently records the delivery as applied. Call in the SAME server-thread step as the item
+     * insertion, before the forced player-file write, so the items and the proof persist together.
+     */
+    public static void recordDeliveryProof(ServerPlayer player, UUID deliveryUuid) {
+        if (player == null || deliveryUuid == null) return;
+        get(player);
+        recordDeliveryProofIn(player.getPersistentData().getCompound(KEY), deliveryUuid);
     }
 }

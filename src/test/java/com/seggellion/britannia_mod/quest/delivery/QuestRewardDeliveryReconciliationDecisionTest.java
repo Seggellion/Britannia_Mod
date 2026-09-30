@@ -39,7 +39,10 @@ class QuestRewardDeliveryReconciliationDecisionTest {
         return rows.entrySet().stream().map(row -> DynamicTest.dynamicTest(row.getKey(), () -> {
             QuestRewardDeliveryLedgerEntry entry = (QuestRewardDeliveryLedgerEntry) row.getValue()[0];
             boolean marker = (Boolean) row.getValue()[1];
-            assertEquals(row.getValue()[2], QuestRewardDeliveryReconciliationDecision.decide(entry, marker));
+            // Every row here describes a NO-PROOF case: the permanent D-0102 record is exercised by
+            // PermanentAppliedDeliveryProofTest, which is where the post-eviction property lives.
+            assertEquals(row.getValue()[2],
+                QuestRewardDeliveryReconciliationDecision.decide(entry, marker, false));
         }));
     }
 
