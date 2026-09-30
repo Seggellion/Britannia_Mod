@@ -47,14 +47,19 @@ public final class QuestRewardDeliveryReconciliationDecision {
 
     /**
      * The form production uses: it reads BOTH durable records from the player's own mod data, so a
-     * caller cannot consult one and forget the other. It also migrates any pre-D-0102 marker to a
-     * permanent proof first, while that marker is still present to migrate.
+     * caller cannot consult one and forget the other.
+     *
+     * <p>READ-ONLY, like the rest of this class. An earlier version migrated pre-D-0102 markers here,
+     * which made the decision path write to the player NBT and contradicted both this class's own
+     * documentation and the task's acceptance criterion. Migration is a persistence step and belongs
+     * to the caller: {@code QuestRewardDeliveryService} runs
+     * {@code PlayerDataStore.migrateLegacyMarkersIn} before it decides, while the legacy marker is
+     * still present to migrate.
      *
      * <p>The two-boolean form below stays for the table tests, which enumerate states directly.
      */
     public static Action decideForPlayerData(@Nullable QuestRewardDeliveryLedgerEntry entry,
                                              CompoundTag playerModData, UUID deliveryUuid) {
-        PlayerDataStore.migrateLegacyMarkersIn(playerModData);
         boolean marker = PlayerDataStore.hasAppliedDeliveryIn(playerModData, deliveryUuid);
         boolean proof = PlayerDataStore.hasDeliveryProofIn(playerModData, deliveryUuid);
         return decide(entry, marker, proof);

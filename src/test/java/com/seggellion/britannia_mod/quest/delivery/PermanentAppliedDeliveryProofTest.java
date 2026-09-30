@@ -226,7 +226,9 @@ class PermanentAppliedDeliveryProofTest {
         PlayerDataStore.markDeliveryAppliedIn(data, legacy);
         assertEquals(0, PlayerDataStore.deliveryProofCount(data), "precondition: legacy data has no proof");
 
-        // The next delivery for this player goes through the production seam, which migrates first.
+        // The service migrates, then decides. Both steps here, in that order, because the decision
+        // itself is read-only.
+        PlayerDataStore.migrateLegacyMarkersIn(data);
         assertEquals(Action.RECORD_APPLIED_THEN_ACKNOWLEDGE,
             QuestRewardDeliveryReconciliationDecision.decideForPlayerData(null, data, legacy));
         assertTrue(PlayerDataStore.hasDeliveryProofIn(data, legacy), "the legacy marker must be migrated");
@@ -347,6 +349,60 @@ class PermanentAppliedDeliveryProofTest {
         // sort of claim this whole task exists to stop making.
         assertEquals(1, PlayerDataStore.deliveryProofCount(data));
         assertTrue(PlayerDataStore.hasDeliveryProofIn(data, second));
+    }
+
+    @Test
+    void theDecisionPathDoesNotWriteToPlayerData() {
+        // It used to migrate legacy markers, which made the reconciliation decision mutate the player
+        // NBT and contradicted this class's own "pure function" contract.
+        CompoundTag data = new CompoundTag();
+        UUID legacy = UUID.randomUUID();
+        PlayerDataStore.markDeliveryAppliedIn(data, legacy);
+        String before = data.toString();
+
+        QuestRewardDeliveryReconciliationDecision.decideForPlayerData(null, data, legacy);
+
+        assertEquals(before, data.toString(), "deciding must not change the player's data");
+        assertEquals(0, PlayerDataStore.deliveryProofCount(data), "and must not migrate anything");
+    }
+
+    @Test
+    void theOldLedgerRowIsGENUINELYprunedAndTheUuidStillCannotInsert() {
+        // The precondition proved rather than assumed: a REAL ledger store, the old row acknowledged
+        // so it is prunable, and more than the per-player bound of later acknowledged rows, so
+        // pruneAcknowledged actually removes it.
+        QuestRewardDeliveryLedgerStore store = new QuestRewardDeliveryLedgerStore();
+        CompoundTag data = new CompoundTag();
+        UUID player = UUID.randomUUID();
+        UUID old = UUID.randomUUID();
+
+        store.record(entryFor(old, player).withApplied(2L)
+            .withAcknowledged(QuestRewardDeliveryProtocol.Outcome.APPLIED, 3L));
+        PlayerDataStore.recordDeliveryAppliedIn(data, old);
+        assertTrue(store.find(old).isPresent(), "precondition: the old row starts in the ledger");
+
+        for (int i = 0; i < MORE_THAN_THE_BOUND; i++) {
+            UUID later = UUID.randomUUID();
+            store.record(entryFor(later, player).withApplied(10L + i)
+                .withAcknowledged(QuestRewardDeliveryProtocol.Outcome.APPLIED, 11L + i));
+            PlayerDataStore.recordDeliveryAppliedIn(data, later);
+        }
+
+        assertTrue(store.find(old).isEmpty(),
+            "precondition: more than the bound of later acknowledged rows must have pruned the old one");
+        assertFalse(markerNames(data, old), "precondition: the bounded marker must have evicted it too");
+
+        // Rails adopts the acknowledged row and re-hands the uuid. Both bounded records are gone.
+        Action action = QuestRewardDeliveryReconciliationDecision.decideForPlayerData(
+            store.find(old).orElse(null), data, old);
+        assertFalse(inserting(action), "a re-handed uuid whose bounded records were pruned must not insert");
+        assertEquals(Action.RECORD_APPLIED_THEN_ACKNOWLEDGE, action);
+    }
+
+    private static QuestRewardDeliveryLedgerEntry entryFor(UUID deliveryUuid, UUID playerUuid) {
+        QuestRewardDelivery delivery = new QuestRewardDelivery(deliveryUuid, 41L, "9001", "k",
+            List.of(new QuestRewardDeliveryItem("britannia_mod:gold_coin", 2, false)), "pending", "");
+        return QuestRewardDeliveryLedgerEntry.pendingLocal(delivery, playerUuid, 1L);
     }
 
     private static boolean inserting(Action action) {

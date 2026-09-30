@@ -130,9 +130,13 @@ public final class QuestRewardDeliveryService {
             return ApplyOutcome.REJECTED;
         }
 
-        // D-0102: ONE seam reads both durable records and migrates any pre-D-0102 marker, so this
-        // call site cannot consult the bounded marker and forget the permanent proof.
+        // D-0102, in two explicit steps. The migration is a WRITE and happens here, in the service,
+        // because the reconciliation decision is read-only; it runs first so a pre-D-0102 marker is
+        // given its permanent proof while that marker is still present. The decision then reads both
+        // durable records through one seam, so this call site cannot consult the bounded marker and
+        // forget the permanent proof.
         CompoundTag playerModData = PlayerDataStore.modDataOf(player);
+        PlayerDataStore.migrateLegacyMarkersIn(playerModData);
         QuestRewardDeliveryReconciliationDecision.Action action =
             QuestRewardDeliveryReconciliationDecision.decideForPlayerData(
                 existing.orElse(null), playerModData, uuid);
