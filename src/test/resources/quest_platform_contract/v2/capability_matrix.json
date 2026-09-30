@@ -1,0 +1,54 @@
+{
+  "contract_version": 2,
+  "fixture_kind": "capability_matrix",
+  "manifest": {
+    "manifest_version": 1,
+    "required": [
+      "comparator:at_least:1",
+      "contract:2",
+      "graph:acyclic:1",
+      "graph:single_token:1",
+      "group:optional:1",
+      "group:sequence:1",
+      "objective:action:1",
+      "progress:event_count:1",
+      "quantity:target_set:1",
+      "reference:action:1",
+      "schema:1",
+      "terminal:success:1"
+    ]
+  },
+  "enabled": [
+    "schema:1",
+    "contract:2",
+    "graph:single_token:1",
+    "graph:acyclic:1",
+    "terminal:success:1",
+    "terminal:failure:1",
+    "group:all:1",
+    "group:any:1",
+    "group:sequence:1",
+    "quantity:target_set:1",
+    "comparator:at_least:1",
+    "comparator:exactly:1",
+    "comparator:at_most:1",
+    "progress:event_count:1",
+    "progress:current_possession:1",
+    "progress:consumption:1",
+    "objective:action:1",
+    "objective:skill_attainment:1",
+    "reference:action:1",
+    "reference:skill:1"
+  ],
+  "publication_eligible": false,
+  "http_status": 422,
+  "refusal": {
+    "contract_version": 2,
+    "run_public_id": "40000000-0000-4000-8000-000000000001",
+    "request_uuid": "90000000-0000-4000-8000-000000000005",
+    "result": "refused",
+    "reason": "unsupported_capability",
+    "run_revision": 4
+  },
+  "partial_application": false
+}

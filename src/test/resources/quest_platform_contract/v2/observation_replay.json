@@ -1,0 +1,24 @@
+{
+  "contract_version": 2,
+  "fixture_kind": "observation_replay",
+  "audience": "server",
+  "event_uuid": "a0000000-0000-4000-8000-000000000001",
+  "request_uuid": "90000000-0000-4000-8000-000000000002",
+  "run_public_id": "40000000-0000-4000-8000-000000000001",
+  "objective_public_id": "70000000-0000-4000-8000-000000000001",
+  "occurred_at": "2026-09-26T12:01:00Z",
+  "observation": {
+    "kind": "action",
+    "action": "crop_harvest"
+  },
+  "application": {
+    "result": "applied",
+    "progress_before": 0,
+    "progress_after": 1
+  },
+  "replay_cases": {
+    "same_event_same_payload": "replay_recorded_outcome",
+    "same_event_different_payload": "conflict",
+    "different_event_same_run_revision": "independent_observation"
+  }
+}

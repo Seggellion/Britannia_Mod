@@ -1,0 +1,65 @@
+{
+  "contract_version": 2,
+  "fixture_kind": "command_replay",
+  "original_request": {
+    "contract_version": 2,
+    "run_public_id": "40000000-0000-4000-8000-000000000001",
+    "command_replay_identity": "80000000-0000-4000-8000-000000000001",
+    "request_uuid": "90000000-0000-4000-8000-000000000001",
+    "expected_revision": 3,
+    "command": {
+      "kind": "choose",
+      "choice_key": "continue"
+    }
+  },
+  "original_response": {
+    "contract_version": 2,
+    "run_public_id": "40000000-0000-4000-8000-000000000001",
+    "command_replay_identity": "80000000-0000-4000-8000-000000000001",
+    "request_uuid": "90000000-0000-4000-8000-000000000001",
+    "result": "applied",
+    "run_revision": 4,
+    "replayed": false
+  },
+  "replay_request": {
+    "contract_version": 2,
+    "run_public_id": "40000000-0000-4000-8000-000000000001",
+    "command_replay_identity": "80000000-0000-4000-8000-000000000001",
+    "request_uuid": "91000000-0000-4000-8000-000000000009",
+    "expected_revision": 3,
+    "command": {
+      "kind": "choose",
+      "choice_key": "continue"
+    }
+  },
+  "replay_response": {
+    "contract_version": 2,
+    "run_public_id": "40000000-0000-4000-8000-000000000001",
+    "command_replay_identity": "80000000-0000-4000-8000-000000000001",
+    "request_uuid": "91000000-0000-4000-8000-000000000009",
+    "original_request_uuid": "90000000-0000-4000-8000-000000000001",
+    "result": "applied",
+    "run_revision": 4,
+    "replayed": true
+  },
+  "conflicting_request": {
+    "contract_version": 2,
+    "run_public_id": "40000000-0000-4000-8000-000000000001",
+    "command_replay_identity": "80000000-0000-4000-8000-000000000001",
+    "request_uuid": "92000000-0000-4000-8000-000000000009",
+    "expected_revision": 3,
+    "command": {
+      "kind": "choose",
+      "choice_key": "stop"
+    }
+  },
+  "conflict_response": {
+    "contract_version": 2,
+    "run_public_id": "40000000-0000-4000-8000-000000000001",
+    "request_uuid": "92000000-0000-4000-8000-000000000009",
+    "result": "refused",
+    "reason": "conflict",
+    "run_revision": 4
+  },
+  "command_digest": "6a4a3aae537d18d9838e3e1bce55bbf595417de76f58052a4615b1dad972cb28"
+}

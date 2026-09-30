@@ -1,0 +1,47 @@
+{
+  "contract_version": 2,
+  "run": {
+    "public_id": "40000000-0000-4000-8000-000000000001",
+    "status": "active",
+    "revision": 3,
+    "quest_definition_public_id": "10000000-0000-4000-8000-000000000001",
+    "quest_version_public_id": "20000000-0000-4000-8000-000000000001",
+    "quest_publication_public_id": "30000000-0000-4000-8000-000000000001"
+  },
+  "current_position": {
+    "node_public_id": "50000000-0000-4000-8000-000000000001",
+    "objective_groups": [
+      {
+        "public_id": "60000000-0000-4000-8000-000000000001",
+        "composition": "sequence",
+        "objectives": [
+          {
+            "public_id": "70000000-0000-4000-8000-000000000001",
+            "progress": 1,
+            "target": 3,
+            "complete": false
+          }
+        ]
+      },
+      {
+        "public_id": "60000000-0000-4000-8000-000000000002",
+        "composition": "count",
+        "required_count": 1,
+        "objectives": [
+          {
+            "public_id": "70000000-0000-4000-8000-000000000002",
+            "progress": 0,
+            "target": 1,
+            "complete": false
+          }
+        ]
+      }
+    ],
+    "choices": [
+      {
+        "key": "continue",
+        "locked": false
+      }
+    ]
+  }
+}
