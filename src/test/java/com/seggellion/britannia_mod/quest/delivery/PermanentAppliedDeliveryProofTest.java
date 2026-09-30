@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.seggellion.britannia_mod.quest.delivery.QuestRewardDeliveryReconciliationDecision.Action;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -211,5 +212,78 @@ class PermanentAppliedDeliveryProofTest {
 
     private static QuestRewardDeliveryLedgerEntry acknowledged() {
         return pendingLocal().withApplied(2L).withAcknowledged(QuestRewardDeliveryProtocol.Outcome.APPLIED, 3L);
+    }
+
+    // ---- review findings on the first attempt ---------------------------------------------------
+
+    @Test
+    void aPreUpgradeMarkerIsMigratedSoItSurvivesItsOwnEviction() {
+        // P1. Player data written before D-0102 carries a marker and no proof. Left alone, the uuid was
+        // refused only while that marker survived; 256 later deliveries evict it and the uuid became
+        // insertable again. Migration closes that, and it happens while the marker is still there.
+        CompoundTag data = new CompoundTag();
+        UUID legacy = UUID.randomUUID();
+        PlayerDataStore.markDeliveryAppliedIn(data, legacy);
+        assertEquals(0, PlayerDataStore.deliveryProofCount(data), "precondition: legacy data has no proof");
+
+        // The next delivery for this player goes through the production seam, which migrates first.
+        assertEquals(Action.RECORD_APPLIED_THEN_ACKNOWLEDGE,
+            QuestRewardDeliveryReconciliationDecision.decideForPlayerData(null, data, legacy));
+        assertTrue(PlayerDataStore.hasDeliveryProofIn(data, legacy), "the legacy marker must be migrated");
+
+        // Now evict it, as 256+ later deliveries would.
+        for (int i = 0; i < MORE_THAN_THE_BOUND; i++) {
+            UUID later = UUID.randomUUID();
+            PlayerDataStore.markDeliveryAppliedIn(data, later);
+            PlayerDataStore.recordDeliveryProofIn(data, later);
+        }
+        assertFalse(markerNames(data, legacy), "precondition: the legacy marker must have evicted");
+        assertTrue(PlayerDataStore.hasDeliveryProofIn(data, legacy),
+            "the migrated proof must outlive the marker it came from");
+        assertNotEquals(Action.RECORD_AND_INSERT,
+            QuestRewardDeliveryReconciliationDecision.decideForPlayerData(null, data, legacy));
+    }
+
+    @Test
+    void migrationIsIdempotentAndBounded() {
+        CompoundTag data = new CompoundTag();
+        for (int i = 0; i < 10; i++) PlayerDataStore.markDeliveryAppliedIn(data, UUID.randomUUID());
+        assertEquals(10, PlayerDataStore.migrateLegacyMarkersIn(data));
+        assertEquals(0, PlayerDataStore.migrateLegacyMarkersIn(data), "a second pass migrates nothing");
+        assertEquals(10, PlayerDataStore.deliveryProofCount(data));
+    }
+
+    @Test
+    void unreadableProofIsQuarantinedVerbatimAndNeverDiscarded() {
+        // P2. proofArray() cannot parse a wrong-length array, and appending used to overwrite the tag
+        // with only the new uuid. "No silent pruning" has to hold for bytes this build cannot read too.
+        CompoundTag data = new CompoundTag();
+        int[] unreadable = {7, 8, 9};
+        data.putIntArray(PlayerDataStore.APPLIED_DELIVERY_PROOF, unreadable);
+
+        PlayerDataStore.recordDeliveryProofIn(data, UUID.randomUUID());
+
+        assertArrayEquals(unreadable,
+            data.getIntArray(PlayerDataStore.APPLIED_DELIVERY_PROOF_QUARANTINE),
+            "the unreadable bytes must be kept verbatim, not erased");
+        assertEquals(1, PlayerDataStore.deliveryProofCount(data), "and the new uuid is still recorded");
+    }
+
+    @Test
+    void theProductionSeamReadsBothRecordsSoACallerCannotForgetTheProof() {
+        // P2. The earlier decisive test called the two-boolean form directly, so it stayed green even
+        // if the service passed "no proof". decideForPlayerData is the form the service calls, and it
+        // derives both records from the player's own data.
+        CompoundTag data = new CompoundTag();
+        UUID granted = UUID.randomUUID();
+        PlayerDataStore.recordDeliveryProofIn(data, granted);        // proof only; no marker
+
+        assertFalse(markerNames(data, granted), "precondition: the bounded marker does not name it");
+        assertEquals(Action.RECORD_APPLIED_THEN_ACKNOWLEDGE,
+            QuestRewardDeliveryReconciliationDecision.decideForPlayerData(null, data, granted),
+            "the seam must find the proof even with no marker");
+        assertEquals(Action.RECORD_AND_INSERT,
+            QuestRewardDeliveryReconciliationDecision.decideForPlayerData(null, data, UUID.randomUUID()),
+            "and must still insert a delivery it has never seen");
     }
 }

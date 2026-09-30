@@ -1,5 +1,10 @@
 package com.seggellion.britannia_mod.quest.delivery;
 
+import com.seggellion.britannia_mod.player.PlayerDataStore;
+import net.minecraft.nbt.CompoundTag;
+
+import java.util.UUID;
+
 import javax.annotation.Nullable;
 
 /**
@@ -38,6 +43,21 @@ public final class QuestRewardDeliveryReconciliationDecision {
         ACKNOWLEDGE_ONLY,
         /** Nothing left to do. */
         NOTHING
+    }
+
+    /**
+     * The form production uses: it reads BOTH durable records from the player's own mod data, so a
+     * caller cannot consult one and forget the other. It also migrates any pre-D-0102 marker to a
+     * permanent proof first, while that marker is still present to migrate.
+     *
+     * <p>The two-boolean form below stays for the table tests, which enumerate states directly.
+     */
+    public static Action decideForPlayerData(@Nullable QuestRewardDeliveryLedgerEntry entry,
+                                             CompoundTag playerModData, UUID deliveryUuid) {
+        PlayerDataStore.migrateLegacyMarkersIn(playerModData);
+        boolean marker = PlayerDataStore.hasAppliedDeliveryIn(playerModData, deliveryUuid);
+        boolean proof = PlayerDataStore.hasDeliveryProofIn(playerModData, deliveryUuid);
+        return decide(entry, marker, proof);
     }
 
     public static Action decide(@Nullable QuestRewardDeliveryLedgerEntry entry, boolean markerPresent,

@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.player.PlayerDataStore;
 import com.seggellion.britannia_mod.quest.QuestRewardService;
+import net.minecraft.nbt.CompoundTag;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -129,11 +130,12 @@ public final class QuestRewardDeliveryService {
             return ApplyOutcome.REJECTED;
         }
 
-        boolean marker = PlayerDataStore.hasAppliedDelivery(player, uuid);
-        // D-0102: the permanent proof outlives both bounded records, so it is consulted every time.
-        boolean proof = PlayerDataStore.hasDeliveryProof(player, uuid);
+        // D-0102: ONE seam reads both durable records and migrates any pre-D-0102 marker, so this
+        // call site cannot consult the bounded marker and forget the permanent proof.
+        CompoundTag playerModData = PlayerDataStore.modDataOf(player);
         QuestRewardDeliveryReconciliationDecision.Action action =
-            QuestRewardDeliveryReconciliationDecision.decide(existing.orElse(null), marker, proof);
+            QuestRewardDeliveryReconciliationDecision.decideForPlayerData(
+                existing.orElse(null), playerModData, uuid);
         long now = now();
 
         switch (action) {

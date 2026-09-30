@@ -65,6 +65,14 @@ public final class PlayerDataStore {
     /** Four ints per uuid, so a proof array is always a multiple of this. */
     private static final int PROOF_STRIDE = 4;
 
+    /**
+     * Where an unreadable proof tag is kept verbatim rather than being dropped, modelled on
+     * {@code QuestRewardDeliveryLedgerStore}'s per-entry quarantine. "No silent pruning" has to hold
+     * for data this build cannot parse as well as for data it can: erasing it would destroy the only
+     * evidence that some delivery was granted, which is the opposite of what this record is for.
+     */
+    public static final String APPLIED_DELIVERY_PROOF_QUARANTINE = "applied_delivery_proof_quarantine";
+
     public static PlayerData get(ServerPlayer player) {
         CompoundTag root = player.getPersistentData();
         CompoundTag dataTag = root.getCompound(KEY);
@@ -117,6 +125,14 @@ public final class PlayerDataStore {
         // would re-open the duplicate grant this record exists to refuse.
         int[] proof = proofArray(existing);
         if (proof.length > 0) out.put(APPLIED_DELIVERY_PROOF, new IntArrayTag(proof.clone()));
+        // Unreadable proof bytes are carried across verbatim for the same reason: a profile save must
+        // never be the thing that discards them.
+        if (existing.contains(APPLIED_DELIVERY_PROOF_QUARANTINE)) {
+            out.put(APPLIED_DELIVERY_PROOF_QUARANTINE, existing.get(APPLIED_DELIVERY_PROOF_QUARANTINE).copy());
+        } else if (existing.contains(APPLIED_DELIVERY_PROOF) && proof.length == 0) {
+            // Present but unreadable, and not yet quarantined: preserve it as it stands.
+            out.put(APPLIED_DELIVERY_PROOF_QUARANTINE, existing.get(APPLIED_DELIVERY_PROOF).copy());
+        }
         root.put(KEY, out);
     }
 
@@ -252,12 +268,9 @@ public final class PlayerDataStore {
 
     /** Whether this player's persistent data records the delivery's items as inserted. */
     public static boolean hasAppliedDelivery(ServerPlayer player, UUID deliveryUuid) {
-        if (player == null || deliveryUuid == null) return false;
-        String value = deliveryUuid.toString();
-        for (Tag tag : markerList(player.getPersistentData().getCompound(KEY))) {
-            if (value.equals(tag.getAsString())) return true;
-        }
-        return false;
+        if (player == null) return false;
+        // One copy of the marker scan, in hasAppliedDeliveryIn.
+        return hasAppliedDeliveryIn(player.getPersistentData().getCompound(KEY), deliveryUuid);
     }
 
     /** The marker list, oldest first. */
@@ -342,6 +355,7 @@ public final class PlayerDataStore {
     public static void recordDeliveryProofIn(CompoundTag dataTag, UUID deliveryUuid) {
         if (dataTag == null || deliveryUuid == null) return;
         if (hasDeliveryProofIn(dataTag, deliveryUuid)) return;
+        quarantineUnreadableProof(dataTag);
         int[] existing = proofArray(dataTag);
         int[] want = UUIDUtil.uuidToIntArray(deliveryUuid);
         int[] grown = new int[existing.length + PROOF_STRIDE];
@@ -368,10 +382,76 @@ public final class PlayerDataStore {
         dataTag.put(APPLIED_DELIVERY_UUIDS, markers);
     }
 
+    /**
+     * Moves a proof tag this build cannot read into the quarantine key, verbatim, so appending a new
+     * uuid cannot overwrite it. Does nothing when the tag is absent or readable.
+     */
+    public static void quarantineUnreadableProof(CompoundTag dataTag) {
+        if (dataTag == null || !dataTag.contains(APPLIED_DELIVERY_PROOF)) return;
+        if (proofArray(dataTag).length > 0 || !dataTag.contains(APPLIED_DELIVERY_PROOF_QUARANTINE)) {
+            if (proofArray(dataTag).length > 0) return;                // readable: nothing to do
+            dataTag.put(APPLIED_DELIVERY_PROOF_QUARANTINE, dataTag.get(APPLIED_DELIVERY_PROOF).copy());
+        }
+        dataTag.remove(APPLIED_DELIVERY_PROOF);
+    }
+
+    /**
+     * Gives every uuid in the BOUNDED marker list a permanent proof entry, once.
+     *
+     * <p>Player data written before D-0102 carries markers and no proof. Left alone, such a uuid is
+     * refused only while its marker survives; 256 later deliveries evict it, and with its acknowledged
+     * ledger row pruned too the uuid becomes insertable again - the very defect this record exists to
+     * close. Migrating is safe in a way that seeding from Rails would NOT be: a marker is the shard's
+     * OWN durable evidence that the items reached the player file, which is exactly what
+     * {@code decide} already trusts it for. Rails' `acknowledged` is a different and weaker claim and
+     * is never used here.
+     *
+     * <p>Idempotent and bounded by the marker cap, and it runs before a delivery is considered, so a
+     * legacy marker is migrated while it is still present rather than after it has gone.
+     */
+    public static int migrateLegacyMarkersIn(CompoundTag dataTag) {
+        if (dataTag == null) return 0;
+        int migrated = 0;
+        for (Tag tag : markerList(dataTag)) {
+            try {
+                UUID uuid = UUID.fromString(tag.getAsString());
+                if (!hasDeliveryProofIn(dataTag, uuid)) {
+                    recordDeliveryProofIn(dataTag, uuid);
+                    migrated++;
+                }
+            } catch (IllegalArgumentException ignored) {
+                // A marker this build cannot read names no delivery it could match, so it migrates
+                // nothing. It is left in place rather than dropped.
+            }
+        }
+        return migrated;
+    }
+
+    /** Whether this compound's BOUNDED marker list names the delivery. */
+    public static boolean hasAppliedDeliveryIn(CompoundTag dataTag, UUID deliveryUuid) {
+        if (deliveryUuid == null) return false;
+        String value = deliveryUuid.toString();
+        for (Tag tag : markerList(dataTag)) {
+            if (value.equals(tag.getAsString())) return true;
+        }
+        return false;
+    }
+
     /** Whether this player's persistent data PERMANENTLY records the delivery as applied. */
     public static boolean hasDeliveryProof(ServerPlayer player, UUID deliveryUuid) {
         if (player == null) return false;
         return hasDeliveryProofIn(player.getPersistentData().getCompound(KEY), deliveryUuid);
+    }
+
+    /**
+     * The mod compound for this player, for the callers that decide about a delivery. Exposed so the
+     * delivery service can read BOTH durable records through one seam, which is what stops a caller
+     * silently passing "no proof".
+     */
+    public static CompoundTag modDataOf(ServerPlayer player) {
+        if (player == null) return new CompoundTag();
+        get(player);
+        return player.getPersistentData().getCompound(KEY);
     }
 
     /**
