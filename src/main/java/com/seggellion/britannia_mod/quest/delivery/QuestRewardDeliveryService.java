@@ -429,14 +429,36 @@ public final class QuestRewardDeliveryService {
     private static boolean persistPlayer(ServerPlayer player, UUID deliveryUuid, String requestUuid, Source source) {
         try {
             playerSaver.save(player);
-            return true;
         } catch (RuntimeException saveFailure) {
-            LOGGER.warn("event=quest_delivery_player_save_failed delivery_uuid={} player_uuid={} "
-                    + "outcome=unavailable local_state={} request_uuid={} source={} error={}",
-                deliveryUuid, player.getStringUUID(), QuestRewardDeliveryLocalState.PENDING_LOCAL.wireName(),
-                requestUuid, source, saveFailure.toString());
+            saveFailed(player, deliveryUuid, requestUuid, source, "threw", saveFailure.toString());
             return false;
         }
+        // A RETURN IS NOT A WRITE. `PlayerList.saveAll` reports nothing useful: vanilla's
+        // `PlayerDataStorage.save` handles its own serialization, temp-file and replace failures and
+        // logs them, so this call can come back normally having written nothing. Catching an exception
+        // alone would guard the one failure mode vanilla may not even have.
+        //
+        // So the write is VERIFIED, not trusted: the proof is read back out of the file the save was
+        // supposed to produce. That is independent of how vanilla reports, and it is the only check
+        // that establishes what this ordering actually needs - the items and the proof ON DISK before
+        // the ledger or Rails says applied.
+        //
+        // The cost is reading one compressed NBT file per delivery, on a path that already accepts a
+        // whole `PlayerList.saveAll()`. Deliveries are rare: one per quest transition.
+        if (!PlayerDataStore.deliveryProofIsOnDisk(player, deliveryUuid)) {
+            saveFailed(player, deliveryUuid, requestUuid, source, "not_on_disk",
+                "the save returned but the proof is not in the player file");
+            return false;
+        }
+        return true;
+    }
+
+    private static void saveFailed(ServerPlayer player, UUID deliveryUuid, String requestUuid, Source source,
+                                   String reason, String detail) {
+        LOGGER.warn("event=quest_delivery_player_save_failed delivery_uuid={} player_uuid={} "
+                + "outcome=unavailable local_state={} reason={} request_uuid={} source={} error={}",
+            deliveryUuid, player.getStringUUID(), QuestRewardDeliveryLocalState.PENDING_LOCAL.wireName(),
+            reason, requestUuid, source, detail);
     }
 
     private static void rejected(ServerPlayer player, QuestRewardDelivery delivery, Source source, String requestUuid,

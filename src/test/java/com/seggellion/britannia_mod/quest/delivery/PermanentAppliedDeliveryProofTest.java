@@ -300,8 +300,20 @@ class PermanentAppliedDeliveryProofTest {
 
     // ---- second review round --------------------------------------------------------------------
 
+    /**
+     * The two functions the service calls, in the order it calls them - NOT the service.
+     *
+     * <p>Renamed in round 8, which was right to object: as "theApplicationSEQUENCE..." this claimed
+     * to cover the application path, and a regression that stopped passing the proof into
+     * reconciliation while keeping the recording call would have left it green. What it actually
+     * proves is the function pair, which is worth having and is not the decisive proof.
+     *
+     * <p>The decisive property is proved through {@code QuestRewardDeliveryService.apply} itself by
+     * {@code QuestRewardDeliveryGameTests.aRehandedUuidInsertsNothingAfterBothBoundedRecordsAreGone},
+     * under the {@code gametest} gate, because the service needs a real {@code ServerPlayer}.
+     */
     @Test
-    void theApplicationSEQUENCEneverGrantsTheSameUuidTwice() {
+    void theApplicationFUNCTIONPAIRneverGrantsTheSameUuidTwice() {
         // The decisive property driven through the two functions the service actually calls, in the
         // order it calls them: decideForPlayerData to choose, recordDeliveryAppliedIn to record. A test
         // that called the two-boolean table with literal inputs stayed green regardless of the

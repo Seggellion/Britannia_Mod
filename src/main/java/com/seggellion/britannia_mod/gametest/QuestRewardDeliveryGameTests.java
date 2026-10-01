@@ -596,6 +596,101 @@ public final class QuestRewardDeliveryGameTests {
         helper.succeed();
     }
 
+    /**
+     * 6: THE SAVE THAT SILENTLY DID NOTHING. This is the production failure mode, not an injected
+     * exception.
+     *
+     * <p>Round 8 of review: {@code PlayerList.saveAll} reports nothing useful, because vanilla's
+     * {@code PlayerDataStorage.save} handles its own serialization, temp-file and replace failures and
+     * logs them. A saver that returns normally having written nothing is therefore exactly what a real
+     * disk failure looks like from the caller - and catching an exception would have missed it
+     * entirely, leaving the ledger marked applied and Rails told.
+     *
+     * <p>The saver here throws nothing. It simply does not write. The repair has to notice anyway, by
+     * reading the proof back off disk rather than trusting the return.
+     */
+    @GameTest(template = TEMPLATE, batch = "delivery_aSaveThatSilentlyWroteNothingIsNotTreatedAsPersisted")
+    public static void aSaveThatSilentlyWroteNothingIsNotTreatedAsPersisted(GameTestHelper helper) {
+        ServerPlayer player = prepare(helper);
+        Acknowledgements acks = install();
+        UUID uuid = UUID.randomUUID();
+        try {
+            QuestRewardDeliveryService.installPlayerSaver(p -> { /* returns normally, writes nothing */ });
+
+            QuestRewardDeliveryService.ApplyOutcome outcome = QuestRewardDeliveryService.apply(
+                player, delivery(uuid, SHOVEL, 1), QuestRewardDeliveryService.Source.BOOTSTRAP);
+
+            check(outcome == QuestRewardDeliveryService.ApplyOutcome.UNAVAILABLE,
+                "a save that wrote nothing must not be treated as persisted, got " + outcome);
+            check(state(player, uuid) == QuestRewardDeliveryLocalState.PENDING_LOCAL,
+                "the row must stay owed, got " + state(player, uuid));
+            check(acks.requests.isEmpty(), "and Rails must not be told applied, got " + acks.requests);
+            check(!proofIsInThePlayerFile(player, uuid),
+                "precondition of this test: the proof really is not on disk");
+            check(PlayerDataStore.hasDeliveryProofIn(PlayerDataStore.modDataOf(player), uuid),
+                "while it IS in memory - which is why trusting the return was wrong");
+        } finally {
+            cleanup(helper, player, uuid);
+        }
+        helper.succeed();
+    }
+
+    /**
+     * 7: THE DECISIVE ACCEPTANCE SCENARIO, through the production application path.
+     *
+     * <p>More than 256 later deliveries for one player, so the bounded marker has evicted the old uuid,
+     * and its acknowledged ledger row removed, so neither bounded record remains. Rails re-hands that
+     * uuid - which {@code Publish#find_existing} can do indefinitely - and the permanent proof is the
+     * only thing left to refuse it. Driven through {@code QuestRewardDeliveryService.apply}, not through
+     * the function pair that mirrors it.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 400, batch = "delivery_aRehandedUuidInsertsNothingAfterBothBoundedRecordsAreGone")
+    public static void aRehandedUuidInsertsNothingAfterBothBoundedRecordsAreGone(GameTestHelper helper) {
+        ServerPlayer player = prepare(helper);
+        Acknowledgements acks = install();
+        MinecraftServer server = player.server;
+        UUID old = UUID.randomUUID();
+        try {
+            // The genuine grant, through the service, with a working save.
+            check(QuestRewardDeliveryService.apply(player, delivery(old, SHOVEL, 1),
+                    QuestRewardDeliveryService.Source.BOOTSTRAP)
+                        == QuestRewardDeliveryService.ApplyOutcome.APPLIED,
+                "precondition: the first grant applies");
+            check(count(player, SHOVEL) == 1, "precondition: one shovel: " + counts(player));
+            check(proofIsInThePlayerFile(player, old), "precondition: the proof is on disk");
+
+            // 307 later deliveries for the SAME player: past the 256 marker cap, so the old uuid's
+            // bounded marker is evicted. The permanent proof is unbounded and keeps all of them.
+            for (int i = 0; i < 307; i++) {
+                PlayerDataStore.recordDeliveryApplied(player, UUID.randomUUID());
+            }
+            check(!PlayerDataStore.hasAppliedDeliveryIn(PlayerDataStore.modDataOf(player), old),
+                "the bounded marker must have evicted the old uuid");
+            check(PlayerDataStore.hasDeliveryProofIn(PlayerDataStore.modDataOf(player), old),
+                "the permanent proof must NOT have evicted");
+
+            // And the acknowledged ledger row is gone, as pruning leaves it.
+            QuestRewardDeliveryLedger.store(server).removeForTesting(old);
+            check(entry(player, old).isEmpty(), "the ledger row must be gone");
+            simulateRestart(server);
+
+            int acksBefore = acks.requests.size();
+            QuestRewardDeliveryService.ApplyOutcome outcome = QuestRewardDeliveryService.apply(
+                player, delivery(old, SHOVEL, 1), QuestRewardDeliveryService.Source.PENDING_LISTING);
+
+            check(count(player, SHOVEL) == 1,
+                "THE PROPERTY: with both bounded records gone, a re-handed uuid inserts NOTHING - got "
+                    + counts(player));
+            check(outcome == QuestRewardDeliveryService.ApplyOutcome.ALREADY_APPLIED,
+                "and it is reported as already applied, got " + outcome);
+            check(acks.requests.size() == acksBefore + 1,
+                "it is acknowledged rather than re-granted: " + acks.requests);
+        } finally {
+            cleanup(helper, player, old);
+        }
+        helper.succeed();
+    }
+
     /** 5: D-0102's historical row - applied, no proof, no marker - must not be reinserted. */
     @GameTest(template = TEMPLATE, batch = "delivery_aHistoricalAppliedRowWithoutProofIsNeverReinserted")
     public static void aHistoricalAppliedRowWithoutProofIsNeverReinserted(GameTestHelper helper) {

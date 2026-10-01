@@ -10,9 +10,15 @@ import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.storage.LevelResource;
 import org.slf4j.Logger;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -332,6 +338,34 @@ public final class PlayerDataStore {
     }
 
     /** Does this mod compound permanently record the delivery's items as inserted? */
+    /**
+     * Is the permanent proof for this delivery in the player's file ON DISK?
+     *
+     * <p>Reads back {@code <level>/playerdata/<uuid>.dat} - the file vanilla's
+     * {@code PlayerDataStorage.save} writes - and looks for the proof inside this mod's compound.
+     * It lives here because the file layout and the compound key are this class's business.
+     *
+     * <p>It exists because a forced save RETURNING is not the same as a forced save having happened:
+     * vanilla handles its own serialization, temp-file and replace failures and logs them, so the
+     * caller cannot tell from the call. {@code QuestRewardDeliveryService} needs to know, because
+     * nothing may report {@code applied} until the items and this proof are durable.
+     *
+     * <p>An absent or unreadable file answers NO. That is the safe direction: it keeps the delivery
+     * owed rather than settling it on a write nobody can confirm.
+     */
+    public static boolean deliveryProofIsOnDisk(ServerPlayer player, UUID deliveryUuid) {
+        if (player == null || player.server == null || deliveryUuid == null) return false;
+        try {
+            Path file = player.server.getWorldPath(LevelResource.PLAYER_DATA_DIR)
+                .resolve(player.getStringUUID() + ".dat");
+            if (!Files.isRegularFile(file)) return false;
+            CompoundTag saved = NbtIo.readCompressed(file, NbtAccounter.unlimitedHeap());
+            return hasDeliveryProofIn(saved.getCompound("NeoForgeData").getCompound(KEY), deliveryUuid);
+        } catch (IOException | RuntimeException unreadable) {
+            return false;
+        }
+    }
+
     public static boolean hasDeliveryProofIn(CompoundTag dataTag, UUID deliveryUuid) {
         if (deliveryUuid == null) return false;
         int[] proof = proofArray(dataTag);

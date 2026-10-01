@@ -28,7 +28,7 @@ import org.slf4j.Logger;
  * {@code britannia_player}, so without this handler it does not survive dying.
  *
  * <h2>What that cost</h2>
- * Two durable markers live in that compound, and both are load-bearing.
+ * THREE durable records live in that compound, and all of them are load-bearing.
  *
  * <p>The <b>hand-in removal marker</b> is the player-file half of the crash-safety argument for a
  * strict item hand-in: it records what left the pack, written in the same step as the shrink so the
@@ -37,11 +37,21 @@ import org.slf4j.Logger;
  * is stranded -- items gone, quest unfinished, no refund. Dying at the wrong second is not an
  * acceptable way to lose an item.
  *
- * <p>The <b>reward delivery marker</b> is the same idea for an insertion, and loses it the other
- * way: a marker missing beside a ledger row that says {@code applied} is read as "the insertion
- * never reached disk", and the delivery is applied again. This handler was written for the hand-in
- * and repairs that one too, because both live in the one compound and fixing only half of it would
- * be an arbitrary place to stop.
+ * <p>The <b>reward delivery marker</b> is the same idea for an insertion. It is bounded, so its
+ * absence proves nothing by itself; what reads a missing record as "the insertion never reached
+ * disk" is a ledger row still saying {@code pending_local} or {@code queued}. A row that says
+ * {@code applied} or {@code acknowledged} is decided by the ledger alone and never inserts again,
+ * whatever either player-side record says - which is what stops a pre-D-0102 history, whose
+ * player-side records are long gone, from being re-granted.
+ *
+ * <p>The <b>permanent applied-delivery proof</b> (D-0102) is the third, and the only one that never
+ * evicts. It is what still refuses a second application after the bounded marker has evicted and the
+ * ledger row has been pruned - a case Rails can still produce, because
+ * {@code Publish#find_existing} has no state filter. Losing it in a clone would reopen exactly the
+ * duplicate grant it exists to prevent.
+ *
+ * <p>This handler was written for the hand-in and repairs the others too, because they live in the
+ * one compound and fixing only part of it would be an arbitrary place to stop.
  *
  * <p>The rest of the compound -- gender, fame, karma, contributions -- is re-synced from Rails at
  * the next login, so losing it was survivable rather than silent. It is carried across here as
