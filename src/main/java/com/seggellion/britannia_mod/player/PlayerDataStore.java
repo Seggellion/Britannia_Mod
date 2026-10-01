@@ -35,11 +35,22 @@ public final class PlayerDataStore {
      *
      * <p>Public because a respawn does not carry it: {@code ServerPlayer#restoreFrom} copies only
      * the {@code PlayerPersisted} sub-tag, so {@code PlayerDataCloneHandler} has to move this one
-     * across by hand. THREE durable records below live in here, and they fail in two different
-     * directions: losing the hand-in removal marker or the bounded delivery marker to a death is how
-     * a player loses an item, while losing the PERMANENT applied-delivery proof (D-0102) risks the
-     * opposite - a delivery Rails re-hands being granted a second time, because the proof is the only
-     * record that outlives the bounded ones.
+     * across by hand. THREE durable records below live in here, and they fail in two directions,
+     * stated from the reconciliation table rather than from intuition:
+     *
+     * <ul>
+     *   <li>The <b>hand-in removal marker</b> guards against ITEM LOSS. Losing it strands a removal:
+     *       items gone, quest unfinished, no refund.</li>
+     *   <li>Both DELIVERY-side records - the <b>bounded marker</b> and the <b>permanent proof</b>
+     *       (D-0102) - guard against a DUPLICATE GRANT. {@code decide} reads
+     *       {@code granted = markerPresent || proofPresent}, and for a {@code pending_local} or
+     *       {@code queued} row an absent {@code granted} means INSERT - so losing either record for a
+     *       delivery whose items did reach the player is read as "never inserted" and grants again. The
+     *       permanent proof is the one that still answers after the bounded marker has evicted.</li>
+     * </ul>
+     *
+     * <p>For an {@code applied} or {@code acknowledged} row neither delivery-side record is consulted
+     * at all, which is what keeps a pre-D-0102 history from being re-granted.
      */
     public static final String PERSISTENT_KEY = KEY;
 

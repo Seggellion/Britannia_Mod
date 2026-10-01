@@ -39,7 +39,9 @@ import org.slf4j.Logger;
  *
  * <p>The <b>reward delivery marker</b> is the same idea for an insertion. It is bounded, so its
  * absence proves nothing by itself; what reads a missing record as "the insertion never reached
- * disk" is a ledger row still saying {@code pending_local} or {@code queued}. A row that says
+ * disk" is a ledger row still saying {@code pending_local} or {@code queued} - and then the answer is
+ * INSERT, so losing this marker for a delivery whose items DID reach the player is a duplicate grant,
+ * not an item loss. That is the opposite direction from the hand-in marker above. A row that says
  * {@code applied} or {@code acknowledged} is decided by the ledger alone and never inserts again,
  * whatever either player-side record says - which is what stops a pre-D-0102 history, whose
  * player-side records are long gone, from being re-granted.

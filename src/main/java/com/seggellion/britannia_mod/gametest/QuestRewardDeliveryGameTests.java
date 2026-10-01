@@ -169,6 +169,14 @@ public final class QuestRewardDeliveryGameTests {
             check(acks.requests.size() == 1 && acks.requests.get(0).outcome() == QuestRewardDeliveryProtocol.Outcome.QUEUED,
                 "expected one queued acknowledgement, got " + acks.requests);
             check(!PlayerDataStore.hasAppliedDelivery(player, uuid), "no marker before the items exist");
+            // D-0102 timing, on the REAL queued path: receiving or queuing is NOT application, so the
+            // permanent proof must not exist yet either. If the queued branch ever recorded it, a later
+            // retry would be decided as already-granted and would insert NOTHING - the items would be
+            // lost, which is the opposite failure from the one the proof exists to prevent. Asserted
+            // here rather than only at the pure decision function, which cannot see the production
+            // branch at all.
+            check(!PlayerDataStore.hasDeliveryProof(player, uuid),
+                "a QUEUED delivery must record NO permanent proof: queuing is not application");
 
             // The player makes room: the periodic pass notices the inventory change and delivers.
             inventory.items.set(0, ItemStack.EMPTY);
@@ -184,6 +192,8 @@ public final class QuestRewardDeliveryGameTests {
                 check(droppedNearby(helper, player) == 0, "delivery must never drop on the ground");
                 check(state(player, uuid) == QuestRewardDeliveryLocalState.ACKNOWLEDGED, "expected acknowledged, got " + state(player, uuid));
                 check(PlayerDataStore.hasAppliedDelivery(player, uuid), "the marker must name the delivery once inserted");
+                check(PlayerDataStore.hasDeliveryProof(player, uuid),
+                    "and the permanent proof must be recorded AT the moment of application, not before");
                 check(acks.requests.size() == 2 && acks.requests.get(1).outcome() == QuestRewardDeliveryProtocol.Outcome.APPLIED,
                     "expected the applied upgrade after queued, got " + acks.requests);
             } catch (GameTestAssertException pending) {
