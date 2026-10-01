@@ -5,6 +5,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,6 +33,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * what lets the neoforge/unit gate prove the property rather than a game test asserting it in passing.
  */
 class PermanentAppliedDeliveryProofTest {
+    private static final Path MAIN = Path.of(
+            System.getProperty("britannia.projectDir", "."),
+            "src/main/java/com/seggellion/britannia_mod"
+    );
+
 
     /** One more than the bounded marker list can hold, so the oldest entry is certain to be gone. */
     private static final int MORE_THAN_THE_BOUND = PlayerDataStore.MAX_APPLIED_DELIVERY_MARKERS + 50;
@@ -407,5 +415,60 @@ class PermanentAppliedDeliveryProofTest {
 
     private static boolean inserting(Action action) {
         return action == Action.RECORD_AND_INSERT || action == Action.INSERT;
+    }
+
+    // ---------------------------------------------------------------- the production call site
+
+    /**
+     * THE PRODUCTION APPLY PATH RECORDS THE PROOF, asserted on the service's own source.
+     *
+     * <p>Round 5 of independent review measured the real gap in the tests above: they drive
+     * {@code decideForPlayerData} and {@code recordDeliveryAppliedIn} - the same two functions the
+     * service calls, in the same order - but not {@link QuestRewardDeliveryService} itself, so deleting
+     * the production call at step 4 would have left every one of them green.
+     *
+     * <p>It cannot be closed by driving the service here. {@code apply} needs a real
+     * {@code ServerPlayer}, and no unit test in this repository has one: all eight that mention the type
+     * say so in a comment, and {@code QuestAchievementAwardTest} states the convention outright - "the
+     * grant itself needs a real ServerPlayer and lives in QuestAchievementGameTests; everything
+     * decidable without a server is decided here". There is no mocking library on the test classpath.
+     *
+     * <p>So this uses the repository's other existing answer for a call site that cannot be driven:
+     * read the source and assert its shape, as {@code WildResourceHarvestEventContractTest} and
+     * {@code DyeTubPreviewRoutingTest} already do. It is a weaker instrument than executing the path and
+     * is not offered as a substitute for one - what it does is make the mutation FAIL: delete step 4's
+     * call and this test goes red. Executing the path with a live inventory belongs to
+     * {@code QuestRewardDeliveryGameTests}, which is outside this task's write lane and outside the
+     * {@code neoforge/unit} tier.
+     */
+    @Test
+    void theServiceRecordsTheProofAtStepFourBeforeItForcesThePlayerSave() throws IOException {
+        String service = Files.readString(MAIN.resolve("quest/delivery/QuestRewardDeliveryService.java"));
+
+        int record = service.indexOf("PlayerDataStore.recordDeliveryApplied(player, uuid);");
+        assertTrue(record >= 0,
+            "step 4 must call PlayerDataStore.recordDeliveryApplied, which writes the marker AND the "
+                + "permanent proof in one call; without it an applied delivery leaves no proof");
+
+        int save = service.indexOf("playerSaver.save(player)", record);
+        assertTrue(save > record,
+            "the proof must be recorded BEFORE the forced player-file write, so the vanilla save "
+                + "persists the items and both durable records together or not at all");
+
+        int insert = service.indexOf("QuestRewardDeliveryInventoryInsertion.insertAll");
+        assertTrue(insert >= 0 && insert < record,
+            "the insertion must precede the recording in the same in-memory step");
+    }
+
+    /** The one call the test above pins does write both records, so pinning it is worth something. */
+    @Test
+    void theOneCallTheServiceMakesWritesBothDurableRecords() {
+        CompoundTag data = new CompoundTag();
+        UUID uuid = UUID.randomUUID();
+
+        PlayerDataStore.recordDeliveryAppliedIn(data, uuid);
+
+        assertTrue(PlayerDataStore.hasAppliedDeliveryIn(data, uuid), "the bounded marker");
+        assertTrue(PlayerDataStore.hasDeliveryProofIn(data, uuid), "the permanent proof");
     }
 }
