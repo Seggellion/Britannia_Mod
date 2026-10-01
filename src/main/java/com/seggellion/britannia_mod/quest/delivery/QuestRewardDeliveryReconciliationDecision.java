@@ -17,11 +17,15 @@ import javax.annotation.Nullable;
  * as the inserted items, so the vanilla player-file write persists them with the items or not at
  * all: whichever one names the uuid, the items were persisted. The converse does not hold for the
  * marker, which is bounded per player and may be absent after eviction for a delivery that was
- * genuinely granted. Only the absence of BOTH leaves the question open, and then the answer is
- * that the items are still owed. The ledger, flushed separately, can lag the player file in
- * exactly one direction -- it may say {@code pending_local} or {@code queued} for an insertion
- * whose player file already landed -- and that is the case the table repairs without a second
- * insertion.
+ * genuinely granted.
+ *
+ * <p>THE TWO PLAYER-SIDE RECORDS ARE CONSULTED ONLY WHERE THE LEDGER HAS NOT ALREADY SETTLED IT.
+ * They decide the answer when the row is absent, {@code pending_local} or {@code queued}; for an
+ * {@code applied} or {@code acknowledged} row the ledger is authoritative and neither boolean is
+ * read at all, so the absence of both is NOT a universal "the items are still owed". The ledger,
+ * flushed separately, can lag the player file in exactly one direction -- it may say
+ * {@code pending_local} or {@code queued} for an insertion whose player file already landed -- and
+ * that is the case the table repairs without a second insertion.
  *
  * <p>D-0102 ADDED THE THIRD INPUT, and it is the only one that is permanent. The ledger row and
  * the marker are both bounded per player, so for an old uuid BOTH can be absent while the items

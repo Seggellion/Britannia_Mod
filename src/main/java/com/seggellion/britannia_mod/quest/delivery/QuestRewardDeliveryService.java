@@ -26,12 +26,18 @@ import java.util.function.LongSupplier;
  * The durable apply sequence of protocol section 1.8, per delivery, on the server thread:
  *
  * <ol>
- *   <li>If the ledger holds the uuid as {@code applied}/{@code acknowledged}, or the player marker
- *       holds it: do not insert; ensure acknowledgement.</li>
+ *   <li>If the ledger holds the uuid as {@code applied}/{@code acknowledged}, or EITHER player-side
+ *       durable record names it - the bounded marker or the permanent
+ *       {@code PlayerDataStore.APPLIED_DELIVERY_PROOF} (D-0102) - do not insert; ensure
+ *       acknowledgement. The proof is the record that survives the row being pruned and the marker
+ *       evicting, so it is the only one that still refuses an old uuid Rails re-hands.</li>
  *   <li>Record {@code pending_local} in the ledger and flush.</li>
  *   <li>Insert the items. If they do not ALL fit, insert none, record {@code queued} (flush),
- *       keep the items in the entry, acknowledge with {@code queued}, tell the player.</li>
- *   <li>Append the uuid to the player marker and force the player-data save.</li>
+ *       keep the items in the entry, acknowledge with {@code queued}, tell the player. A queued
+ *       delivery records NO proof: receiving is not application.</li>
+ *   <li>Append the uuid to BOTH the bounded player marker and the permanent proof, in the same
+ *       in-memory step as the insertion, then force the player-data save - so the vanilla
+ *       player-file write persists the items and both records together or not at all.</li>
  *   <li>Mark {@code applied}, flush.</li>
  *   <li>POST the acknowledgement; on success mark {@code acknowledged}; on failure retry on the
  *       reconciliation schedule ({@link QuestRewardDeliveryBackoff}).</li>
