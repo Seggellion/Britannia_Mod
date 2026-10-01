@@ -35,8 +35,11 @@ public final class PlayerDataStore {
      *
      * <p>Public because a respawn does not carry it: {@code ServerPlayer#restoreFrom} copies only
      * the {@code PlayerPersisted} sub-tag, so {@code PlayerDataCloneHandler} has to move this one
-     * across by hand. Both durable markers below live in here, and losing either to a death is how
-     * a player loses an item.
+     * across by hand. THREE durable records below live in here, and they fail in two different
+     * directions: losing the hand-in removal marker or the bounded delivery marker to a death is how
+     * a player loses an item, while losing the PERMANENT applied-delivery proof (D-0102) risks the
+     * opposite - a delivery Rails re-hands being granted a second time, because the proof is the only
+     * record that outlives the bounded ones.
      */
     public static final String PERSISTENT_KEY = KEY;
 
@@ -337,7 +340,6 @@ public final class PlayerDataStore {
         return found.length % PROOF_STRIDE == 0 ? found : new int[0];
     }
 
-    /** Does this mod compound permanently record the delivery's items as inserted? */
     /**
      * Is the permanent proof for this delivery in the player's file ON DISK?
      *
@@ -366,6 +368,7 @@ public final class PlayerDataStore {
         }
     }
 
+    /** Does this mod compound permanently record the delivery's items as inserted? */
     public static boolean hasDeliveryProofIn(CompoundTag dataTag, UUID deliveryUuid) {
         if (deliveryUuid == null) return false;
         int[] proof = proofArray(dataTag);

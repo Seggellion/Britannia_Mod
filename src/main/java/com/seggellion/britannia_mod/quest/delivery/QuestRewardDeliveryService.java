@@ -186,7 +186,7 @@ public final class QuestRewardDeliveryService {
                 // attempt's pending_local row comes back through. So persist BEFORE the ledger says
                 // applied, and do not insert again: the items are already in the inventory, and
                 // inserting here is exactly the duplicate grant D-0102 exists to refuse.
-                if (!persistPlayer(player, uuid, rid, source)) return ApplyOutcome.UNAVAILABLE;
+                if (!persistPlayer(player, uuid, rid, source, before.localState())) return ApplyOutcome.UNAVAILABLE;
                 QuestRewardDeliveryLedger.transition(server, uuid, entry -> entry.withApplied(now));
                 reconciled(player, delivery, source, rid, "repaired_applied_from_marker",
                     before.localState().wireName() + "->" + QuestRewardDeliveryLocalState.APPLIED.wireName());
@@ -196,7 +196,8 @@ public final class QuestRewardDeliveryService {
             case RECORD_APPLIED_THEN_ACKNOWLEDGE -> {
                 // Same rule as the repair above: the proof that reached this decision may still be in
                 // memory, so the player file is written before a ledger row is created claiming applied.
-                if (!persistPlayer(player, uuid, rid, source)) return ApplyOutcome.UNAVAILABLE;
+                // No row exists yet, so there is no state to report.
+                if (!persistPlayer(player, uuid, rid, source, null)) return ApplyOutcome.UNAVAILABLE;
                 QuestRewardDeliveryLedgerEntry entry = QuestRewardDeliveryLedgerEntry.pendingLocal(delivery, player.getUUID(), now)
                     .withApplied(now);
                 QuestRewardDeliveryLedger.record(server, entry);
@@ -274,7 +275,9 @@ public final class QuestRewardDeliveryService {
         // ONE call, so neither record can be written without the other, and it is the same function
         // the unit tests drive.
         PlayerDataStore.recordDeliveryApplied(player, uuid);
-        if (!persistPlayer(player, uuid, requestUuid, source)) {
+        // `entry` is this row as it was read: pending_local on a first insertion, queued on the
+        // queued-to-applied path. Either way it is the state the delivery stays owed in.
+        if (!persistPlayer(player, uuid, requestUuid, source, entry.localState())) {
             // NOTHING durable may claim this delivery yet. The row stays as it is - pending_local, so
             // itemsOwed() is true - and the reconciler sweeps it again. The items and both records are
             // in memory, so the retry persists them rather than inserting a second time; if the server
@@ -426,11 +429,12 @@ public final class QuestRewardDeliveryService {
      * <p>It stays non-fatal: a save the operating system refuses is not a reason to throw out of the
      * server thread. What changes is that the caller is TOLD, and keeps the delivery owed.
      */
-    private static boolean persistPlayer(ServerPlayer player, UUID deliveryUuid, String requestUuid, Source source) {
+    private static boolean persistPlayer(ServerPlayer player, UUID deliveryUuid, String requestUuid, Source source,
+                                        @Nullable QuestRewardDeliveryLocalState localState) {
         try {
             playerSaver.save(player);
         } catch (RuntimeException saveFailure) {
-            saveFailed(player, deliveryUuid, requestUuid, source, "threw", saveFailure.toString());
+            saveFailed(player, deliveryUuid, requestUuid, source, localState, "threw", saveFailure.toString());
             return false;
         }
         // A RETURN IS NOT A WRITE. `PlayerList.saveAll` reports nothing useful: vanilla's
@@ -446,18 +450,28 @@ public final class QuestRewardDeliveryService {
         // The cost is reading one compressed NBT file per delivery, on a path that already accepts a
         // whole `PlayerList.saveAll()`. Deliveries are rare: one per quest transition.
         if (!PlayerDataStore.deliveryProofIsOnDisk(player, deliveryUuid)) {
-            saveFailed(player, deliveryUuid, requestUuid, source, "not_on_disk",
+            saveFailed(player, deliveryUuid, requestUuid, source, localState, "not_on_disk",
                 "the save returned but the proof is not in the player file");
             return false;
         }
         return true;
     }
 
+    /**
+     * The state the row is ACTUALLY in, not a guess.
+     *
+     * <p>It used to hard-code {@code pending_local}, which is wrong on the queued-to-applied path: a
+     * queued delivery that finally fits is inserted while its row still says {@code queued}, and if
+     * that save fails the row stays {@code queued}. Operational evidence for a crash-sensitive path
+     * has to say which state the delivery is really owed in, because that is what the reconciler will
+     * come back to.
+     */
     private static void saveFailed(ServerPlayer player, UUID deliveryUuid, String requestUuid, Source source,
-                                   String reason, String detail) {
+                                   @Nullable QuestRewardDeliveryLocalState localState, String reason, String detail) {
         LOGGER.warn("event=quest_delivery_player_save_failed delivery_uuid={} player_uuid={} "
                 + "outcome=unavailable local_state={} reason={} request_uuid={} source={} error={}",
-            deliveryUuid, player.getStringUUID(), QuestRewardDeliveryLocalState.PENDING_LOCAL.wireName(),
+            deliveryUuid, player.getStringUUID(),
+            localState == null ? "" : localState.wireName(),
             reason, requestUuid, source, detail);
     }
 
