@@ -181,6 +181,12 @@ public final class QuestRewardDeliveryService {
             }
             case REPAIR_APPLIED_THEN_ACKNOWLEDGE -> {
                 QuestRewardDeliveryLedgerEntry before = existing.orElseThrow();
+                // THE IN-PROCESS RETRY. A durable record says the items landed, but it may be the
+                // in-memory one written by an attempt whose forced save failed - this is the path that
+                // attempt's pending_local row comes back through. So persist BEFORE the ledger says
+                // applied, and do not insert again: the items are already in the inventory, and
+                // inserting here is exactly the duplicate grant D-0102 exists to refuse.
+                if (!persistPlayer(player, uuid, rid, source)) return ApplyOutcome.UNAVAILABLE;
                 QuestRewardDeliveryLedger.transition(server, uuid, entry -> entry.withApplied(now));
                 reconciled(player, delivery, source, rid, "repaired_applied_from_marker",
                     before.localState().wireName() + "->" + QuestRewardDeliveryLocalState.APPLIED.wireName());
@@ -188,6 +194,9 @@ public final class QuestRewardDeliveryService {
                 return ApplyOutcome.ALREADY_APPLIED;
             }
             case RECORD_APPLIED_THEN_ACKNOWLEDGE -> {
+                // Same rule as the repair above: the proof that reached this decision may still be in
+                // memory, so the player file is written before a ledger row is created claiming applied.
+                if (!persistPlayer(player, uuid, rid, source)) return ApplyOutcome.UNAVAILABLE;
                 QuestRewardDeliveryLedgerEntry entry = QuestRewardDeliveryLedgerEntry.pendingLocal(delivery, player.getUUID(), now)
                     .withApplied(now);
                 QuestRewardDeliveryLedger.record(server, entry);
@@ -265,11 +274,13 @@ public final class QuestRewardDeliveryService {
         // ONE call, so neither record can be written without the other, and it is the same function
         // the unit tests drive.
         PlayerDataStore.recordDeliveryApplied(player, uuid);
-        try {
-            playerSaver.save(player);
-        } catch (RuntimeException saveFailure) {
-            LOGGER.warn("event=quest_delivery_player_save_failed delivery_uuid={} player_uuid={} error={}",
-                uuid, player.getStringUUID(), saveFailure.toString());
+        if (!persistPlayer(player, uuid, requestUuid, source)) {
+            // NOTHING durable may claim this delivery yet. The row stays as it is - pending_local, so
+            // itemsOwed() is true - and the reconciler sweeps it again. The items and both records are
+            // in memory, so the retry persists them rather than inserting a second time; if the server
+            // stops first, no proof reaches disk and the pending row inserts exactly once on restart.
+            // Rails is NOT told applied, which is the acknowledgement ADR-17 orders after the marker.
+            return ApplyOutcome.UNAVAILABLE;
         }
 
         // Step 5.
@@ -396,6 +407,36 @@ public final class QuestRewardDeliveryService {
 
     static long now() {
         return clock.getAsLong();
+    }
+
+    /**
+     * Force the vanilla player-file write and say whether it SUCCEEDED.
+     *
+     * <p>ADR-17 states the order: Minecraft "applies on its server thread using durable ledger and
+     * player marker, THEN acknowledges". Neither the ledger nor Rails may say {@code applied} before
+     * this has returned true, because until it does the items, the bounded marker and the permanent
+     * proof exist only in memory.
+     *
+     * <p>The failure used to be caught and only logged, after which execution fell through to the
+     * durable {@code applied} transition and the acknowledgement. A stop before the next autosave then
+     * left the player file holding neither the items nor the proof while the ledger reloaded as
+     * {@code applied} - and the reconciliation table does not consult either player-side record for an
+     * {@code applied} row, so the delivery was never inserted again and the player lost it.
+     *
+     * <p>It stays non-fatal: a save the operating system refuses is not a reason to throw out of the
+     * server thread. What changes is that the caller is TOLD, and keeps the delivery owed.
+     */
+    private static boolean persistPlayer(ServerPlayer player, UUID deliveryUuid, String requestUuid, Source source) {
+        try {
+            playerSaver.save(player);
+            return true;
+        } catch (RuntimeException saveFailure) {
+            LOGGER.warn("event=quest_delivery_player_save_failed delivery_uuid={} player_uuid={} "
+                    + "outcome=unavailable local_state={} request_uuid={} source={} error={}",
+                deliveryUuid, player.getStringUUID(), QuestRewardDeliveryLocalState.PENDING_LOCAL.wireName(),
+                requestUuid, source, saveFailure.toString());
+            return false;
+        }
     }
 
     private static void rejected(ServerPlayer player, QuestRewardDelivery delivery, Source source, String requestUuid,

@@ -464,6 +464,171 @@ public final class QuestRewardDeliveryGameTests {
         helper.succeed();
     }
 
+    // --- the forced player save must succeed before anything says applied (P2, round 7) -------------
+    //
+    // ADR-17: Minecraft "applies on its server thread using durable ledger and player marker, THEN
+    // acknowledges". The save failure used to be caught and only logged, after which the ledger was
+    // marked applied and Rails was told - so a stop before the next autosave left the player file with
+    // neither the items nor the proof while the ledger reloaded as applied, and an applied row is
+    // decided without consulting either player-side record. The delivery was lost.
+    //
+    // These five drive QuestRewardDeliveryService.apply itself, against a real ServerPlayer, a real
+    // inventory and the real SavedData ledger. Nothing here asserts the shape of any source file.
+
+    /** 1: the first failed save leaves the delivery owed, unacknowledged, and inserted exactly once. */
+    @GameTest(template = TEMPLATE, batch = "delivery_aFailedForcedSaveLeavesTheDeliveryOwedAndUnacknowledged")
+    public static void aFailedForcedSaveLeavesTheDeliveryOwedAndUnacknowledged(GameTestHelper helper) {
+        ServerPlayer player = prepare(helper);
+        Acknowledgements acks = install();
+        UUID uuid = UUID.randomUUID();
+        try {
+            QuestRewardDeliveryService.installPlayerSaver(p -> { throw new RuntimeException("disk full"); });
+
+            QuestRewardDeliveryService.ApplyOutcome outcome = QuestRewardDeliveryService.apply(
+                player, delivery(uuid, SHOVEL, 1), QuestRewardDeliveryService.Source.BOOTSTRAP);
+
+            check(outcome == QuestRewardDeliveryService.ApplyOutcome.UNAVAILABLE,
+                "a failed forced save must report UNAVAILABLE, got " + outcome);
+            check(count(player, SHOVEL) == 1, "the items are inserted in memory exactly once: " + counts(player));
+            check(state(player, uuid) == QuestRewardDeliveryLocalState.PENDING_LOCAL,
+                "the row must stay owed so the reconciler retries, got " + state(player, uuid));
+            check(acks.requests.isEmpty(),
+                "Rails must NOT be told applied before the save succeeded, got " + acks.requests);
+            check(PlayerDataStore.hasDeliveryProofIn(PlayerDataStore.modDataOf(player), uuid),
+                "the proof is recorded in memory; what failed is persisting it");
+        } finally {
+            cleanup(helper, player, uuid);
+        }
+        helper.succeed();
+    }
+
+    /** 2: it keeps failing. The retry must not insert a second time, and must not settle the row. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 200, batch = "delivery_aRepeatedlyFailingSaveNeverInsertsTwiceAndNeverSettles")
+    public static void aRepeatedlyFailingSaveNeverInsertsTwiceAndNeverSettles(GameTestHelper helper) {
+        ServerPlayer player = prepare(helper);
+        Acknowledgements acks = install();
+        UUID uuid = UUID.randomUUID();
+        try {
+            QuestRewardDeliveryService.installPlayerSaver(p -> { throw new RuntimeException("disk still full"); });
+            QuestRewardDeliveryService.apply(player, delivery(uuid, SHOVEL, 1),
+                QuestRewardDeliveryService.Source.BOOTSTRAP);
+            check(count(player, SHOVEL) == 1, "precondition: inserted once: " + counts(player));
+
+            // The reconciler's own path, twice. This is where the in-memory proof is seen.
+            QuestRewardDeliveryReconciler.reconcileNow(player);
+            QuestRewardDeliveryReconciler.reconcileNow(player);
+
+            check(count(player, SHOVEL) == 1,
+                "a retry that sees the in-memory proof must NOT insert again: " + counts(player));
+            check(state(player, uuid) == QuestRewardDeliveryLocalState.PENDING_LOCAL,
+                "while the save keeps failing the row stays owed, got " + state(player, uuid));
+            check(acks.requests.isEmpty(), "and Rails is still not told applied, got " + acks.requests);
+        } finally {
+            cleanup(helper, player, uuid);
+        }
+        helper.succeed();
+    }
+
+    /** 3: the save recovers in-process. The retry persists what is already there and settles it once. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 200, batch = "delivery_aRecoveredSaveSettlesTheExistingGrantWithoutInsertingAgain")
+    public static void aRecoveredSaveSettlesTheExistingGrantWithoutInsertingAgain(GameTestHelper helper) {
+        ServerPlayer player = prepare(helper);
+        Acknowledgements acks = install();
+        UUID uuid = UUID.randomUUID();
+        try {
+            QuestRewardDeliveryService.installPlayerSaver(p -> { throw new RuntimeException("transient"); });
+            QuestRewardDeliveryService.apply(player, delivery(uuid, SHOVEL, 1),
+                QuestRewardDeliveryService.Source.BOOTSTRAP);
+            check(state(player, uuid) == QuestRewardDeliveryLocalState.PENDING_LOCAL, "precondition: owed");
+
+            QuestRewardDeliveryService.resetPlayerSaver();          // the real vanilla write, working
+            QuestRewardDeliveryReconciler.reconcileNow(player);
+
+            check(count(player, SHOVEL) == 1,
+                "the items were already inserted; the retry persists them rather than granting again: "
+                    + counts(player));
+            check(state(player, uuid) == QuestRewardDeliveryLocalState.ACKNOWLEDGED,
+                "once the save succeeds the row settles, got " + state(player, uuid));
+            check(acks.requests.size() == 1
+                    && acks.requests.get(0).outcome() == QuestRewardDeliveryProtocol.Outcome.APPLIED,
+                "exactly one acknowledgement, applied, and only after the save: " + acks.requests);
+            check(proofIsInThePlayerFile(player, uuid),
+                "the permanent proof must now be in the vanilla player file");
+        } finally {
+            cleanup(helper, player, uuid);
+        }
+        helper.succeed();
+    }
+
+    /** 4: the save never succeeded and the server stopped. The pending row grants exactly once. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 200, batch = "delivery_aRestartAfterAFailedSaveGrantsExactlyOnce")
+    public static void aRestartAfterAFailedSaveGrantsExactlyOnce(GameTestHelper helper) {
+        ServerPlayer player = prepare(helper);
+        Acknowledgements acks = install();
+        MinecraftServer server = player.server;
+        UUID uuid = UUID.randomUUID();
+        try {
+            QuestRewardDeliveryService.installPlayerSaver(p -> {
+                throw new RuntimeException("stopped before the write");
+            });
+            QuestRewardDeliveryService.apply(player, delivery(uuid, SHOVEL, 1),
+                QuestRewardDeliveryService.Source.BOOTSTRAP);
+            check(state(player, uuid) == QuestRewardDeliveryLocalState.PENDING_LOCAL, "precondition: owed");
+
+            // The restart: the player file never received the items or the proof, so neither comes
+            // back. The ledger did reach disk, as pending_local, and is reloaded from its own bytes.
+            player.getInventory().clearContent();
+            PlayerDataStore.modDataOf(player).remove(PlayerDataStore.APPLIED_DELIVERY_PROOF);
+            PlayerDataStore.modDataOf(player).remove(PlayerDataStore.APPLIED_DELIVERY_UUIDS);
+            QuestRewardDeliveryService.resetPlayerSaver();
+            simulateRestart(server);
+
+            QuestRewardDeliveryReconciler.reconcileNow(player);
+
+            check(count(player, SHOVEL) == 1,
+                "with no proof on disk the pending row must insert, exactly once: " + counts(player));
+            check(state(player, uuid) == QuestRewardDeliveryLocalState.ACKNOWLEDGED,
+                "and then settle, got " + state(player, uuid));
+            check(acks.requests.size() == 1, "one acknowledgement for the one grant: " + acks.requests);
+        } finally {
+            cleanup(helper, player, uuid);
+        }
+        helper.succeed();
+    }
+
+    /** 5: D-0102's historical row - applied, no proof, no marker - must not be reinserted. */
+    @GameTest(template = TEMPLATE, batch = "delivery_aHistoricalAppliedRowWithoutProofIsNeverReinserted")
+    public static void aHistoricalAppliedRowWithoutProofIsNeverReinserted(GameTestHelper helper) {
+        ServerPlayer player = prepare(helper);
+        Acknowledgements acks = install();
+        MinecraftServer server = player.server;
+        UUID uuid = UUID.randomUUID();
+        QuestRewardDelivery delivery = delivery(uuid, SHOVEL, 1);
+        try {
+            // Pre-upgrade state: the shard applied it and both bounded records are long gone. There is
+            // no shard data left to migrate, which is the residual D-0102 states and does not close.
+            long stamp = System.currentTimeMillis();
+            QuestRewardDeliveryLedger.record(server,
+                QuestRewardDeliveryLedgerEntry.pendingLocal(delivery, player.getUUID(), stamp).withApplied(stamp));
+            check(!PlayerDataStore.hasDeliveryProofIn(PlayerDataStore.modDataOf(player), uuid),
+                "precondition: no proof");
+            simulateRestart(server);
+
+            QuestRewardDeliveryReconciler.reconcileNow(player);
+
+            check(count(player, SHOVEL) == 0,
+                "an applied row without proof must NOT be reinserted - that is the lost-grant shape "
+                    + "D-0102 refuses, and the save-ordering repair must not have changed it: "
+                    + counts(player));
+            check(acks.requests.size() == 1
+                    && acks.requests.get(0).outcome() == QuestRewardDeliveryProtocol.Outcome.APPLIED,
+                "it is acknowledged, not re-granted: " + acks.requests);
+        } finally {
+            cleanup(helper, player, uuid);
+        }
+        helper.succeed();
+    }
+
     /** A journal refresh fetches Rails' pending listing on demand and applies it. */
     @GameTest(template = TEMPLATE, timeoutTicks = 200, batch = "delivery_aJournalRefreshFetchesThePendingListingAndAppliesIt")
     public static void aJournalRefreshFetchesThePendingListingAndAppliesIt(GameTestHelper helper) {
@@ -539,6 +704,21 @@ public final class QuestRewardDeliveryGameTests {
     private static void applyTransition(ServerPlayer player, JsonObject root, String requestUuid) {
         QuestModels.QuestResponse response = GSON.fromJson(root, QuestModels.QuestResponse.class);
         QuestRewardService.apply(player, response, root, requestUuid);
+    }
+
+    /** Does the vanilla player file on disk carry the permanent proof for this uuid? */
+    private static boolean proofIsInThePlayerFile(ServerPlayer player, UUID uuid) {
+        Path file = player.server.getWorldPath(LevelResource.PLAYER_DATA_DIR)
+            .resolve(player.getStringUUID() + ".dat");
+        if (!Files.isRegularFile(file)) return false;
+        CompoundTag saved;
+        try {
+            saved = NbtIo.readCompressed(file, NbtAccounter.unlimitedHeap());
+        } catch (java.io.IOException unreadable) {
+            throw new GameTestAssertException("player file unreadable: " + unreadable);
+        }
+        CompoundTag mod = saved.getCompound("NeoForgeData").getCompound("britannia_player");
+        return PlayerDataStore.hasDeliveryProofIn(mod, uuid);
     }
 
     private static ServerPlayer prepare(GameTestHelper helper) {
