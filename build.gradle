@@ -74,7 +74,7 @@ runs {
     }
 
     server {
-        workingDirectory = file("run/server")
+        workingDirectory = file(providers.gradleProperty('edgeFenceServerRunDirectory').getOrElse("run/server"))
         arguments "--nogui"
         systemProperty "neoforge.enabledGameTestNamespaces", mod_id
         dependencies {
@@ -84,7 +84,8 @@ runs {
 
     gameTestServer {
         workingDirectory = file(providers.gradleProperty('gameTestRunDirectory').getOrElse("run/gametest"))
-        systemProperty "neoforge.enabledGameTestNamespaces", providers.gradleProperty('gameTestNamespaces').getOrElse("${mod_id},britannia_alligator,britannia_alligator_idle,britannia_alligator_performance")
+        systemProperty "neoforge.enabledGameTestNamespaces", providers.gradleProperty('gameTestNamespaces').getOrElse("${mod_id},britannia_edge_fence,britannia_alligator,britannia_alligator_idle,britannia_alligator_performance")
+        systemProperty "britannia.edgeFenceLifecyclePhase", providers.gradleProperty('edgeFenceLifecyclePhase').getOrElse('')
         dependencies {
             runtime 'org.nanohttpd:nanohttpd:2.2.0'
         }
@@ -170,6 +171,23 @@ tasks.register('generateServiceNpcSpawnGameTestStructure') {
     }
 }
 
+tasks.register('generateEdgeFenceGameTestStructure') {
+    def source = layout.projectDirectory.file('src/gametest/service_npc_spawn_test_empty.nbt.b64')
+    def target = layout.buildDirectory.file('generated/gametest/data/britannia_edge_fence/structure/service_npc_spawn_test_empty.nbt')
+    def lifecycle = layout.buildDirectory.file('generated/gametest/data/britannia_edge_fence_lifecycle/structure/service_npc_spawn_test_empty.nbt')
+    inputs.file source
+    outputs.file target
+    outputs.file lifecycle
+    doLast {
+        def file = target.get().asFile
+        file.parentFile.mkdirs()
+        file.bytes = Base64.decoder.decode(source.asFile.text.trim())
+        def extra = lifecycle.get().asFile
+        extra.parentFile.mkdirs()
+        extra.bytes = file.bytes
+    }
+}
+
 tasks.register('generateAlligatorGameTestStructure') {
     def encoded = layout.projectDirectory.file('src/gametest/alligator_tank.nbt.b64')
     def generated = layout.buildDirectory.file('generated/gametest/data/britannia_alligator/structure/alligator_tank.nbt')
@@ -237,6 +255,7 @@ tasks.register('validateTrainingDummyGeo') {
 }
 
 tasks.named('processResources') {
+    dependsOn tasks.named('generateEdgeFenceGameTestStructure')
     dependsOn tasks.named('generateAlligatorGameTestStructure')
     dependsOn tasks.named('generateServiceNpcSpawnGameTestStructure')
     dependsOn tasks.named('validateTrainingDummyGeo')
@@ -252,6 +271,8 @@ tasks.named('jar', Jar) {
     archiveClassifier = 'thin'
     exclude 'com/seggellion/britannia_mod/gametest/**'
     exclude 'data/britannia_mod/structure/service_npc_spawn_test_empty.nbt'
+    exclude 'data/britannia_edge_fence/**'
+    exclude 'data/britannia_edge_fence_lifecycle/**'
     exclude 'data/britannia_alligator/**'
     exclude 'data/britannia_alligator_idle/**'
     exclude 'data/britannia_alligator_performance/**'
@@ -260,6 +281,8 @@ tasks.named('jar', Jar) {
 tasks.withType(Jar).configureEach {
     exclude 'com/seggellion/britannia_mod/gametest/**'
     exclude 'data/britannia_mod/structure/service_npc_spawn_test_empty.nbt'
+    exclude 'data/britannia_edge_fence/**'
+    exclude 'data/britannia_edge_fence_lifecycle/**'
     exclude 'data/britannia_alligator/**'
     exclude 'data/britannia_alligator_idle/**'
     exclude 'data/britannia_alligator_performance/**'

@@ -37,11 +37,28 @@ class WoodenFenceContractTest {
     void blockstateCoversEveryFacingAndConnectionCombination() throws IOException {
         JsonObject variants = json(ASSETS.resolve("blockstates/wooden_fence.json"))
             .getAsJsonObject("variants");
-        assertEquals(64, variants.size(), "four facings x sixteen cardinal connection masks");
+        assertEquals(192, variants.size(), "64 sentinel mappings + 128 concrete physical layouts");
+        JsonObject legacy = json(PROJECT.resolve("docs/projects/patch18-edge-fence-hotfix/oracle/legacy-blockstate.json"))
+            .getAsJsonObject("variants");
+        for (var old : legacy.entrySet()) {
+            String[] facingAndBits = old.getKey().split(",", 2);
+            assertEquals(old.getValue(), variants.get(facingAndBits[0]+",layout_code=32,"+facingAndBits[1]), old.getKey());
+            int mask=0;
+            String[] dirs={"north","east","south","west"};
+            for(int i=0;i<4;i++) if(old.getKey().contains(dirs[i]+"=true")) mask |= 1<<i;
+            assertEquals(old.getValue(), variants.get(facingAndBits[0]+",layout_code="+mask), "materialization "+old.getKey());
+        }
+        for(String facing : new String[]{"north","east","south","west"}) for(int code=0;code<33;code++) for(int mask=0;mask<16;mask++) {
+            final String state="facing="+facing+",layout_code="+code+",north="+((mask&1)!=0)+",east="+((mask&2)!=0)+",south="+((mask&4)!=0)+",west="+((mask&8)!=0);
+            long matching=variants.keySet().stream().filter(key -> java.util.Arrays.stream(key.split(","))
+                .allMatch(pair -> java.util.Arrays.asList(state.split(",")).contains(pair))).count();
+            assertEquals(1, matching, state);
+        }
 
         Map<String, Integer> topologies = new HashMap<>();
         for (Map.Entry<String, JsonElement> variant : variants.entrySet()) {
             String key = variant.getKey();
+            if(!key.contains("layout_code=32,")) continue;
             assertTrue(key.contains("facing=") && key.contains("north=") && key.contains("east=")
                 && key.contains("south=") && key.contains("west="), key);
             String model = variant.getValue().getAsJsonObject().get("model").getAsString();
@@ -152,9 +169,19 @@ class WoodenFenceContractTest {
         String source = Files.readString(PROJECT.resolve(
             "src/main/java/com/seggellion/britannia_mod/block/WoodenFenceBlock.java"));
         assertTrue(source.contains("THICKNESS = 4.0D"));
-        assertTrue(source.contains("Shapes.or(edge("));
+        String geometry=Files.readString(PROJECT.resolve("src/main/java/com/seggellion/britannia_mod/block/WoodenFenceGeometry.java"));
+        assertTrue(geometry.contains("Shapes.or(shape,edges[i])"));
         assertTrue(source.contains("getCollisionShape"));
         assertFalse(source.contains("Block.box(0, 0, 0, 16, 16, 16)"));
+    }
+
+    @Test
+    void authoredMeshesHaveNotBeenRewritten() throws Exception {
+        for(String line:Files.readAllLines(PROJECT.resolve("docs/projects/patch18-edge-fence-hotfix/oracle/AUTHORED_MODEL_SHA256.txt"))) {
+            String[] parts=line.trim().split("\\s+");
+            byte[] bytes=Files.readString(ASSETS.resolve("models/block/structure/wooden_fence/"+parts[1])).replace("\r\n","\n").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            assertEquals(parts[0],java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes)),parts[1]);
+        }
     }
 
     private static JsonObject json(Path path) throws IOException {

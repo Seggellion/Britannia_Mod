@@ -150,6 +150,13 @@ public class InteriorDecoratorToolItem extends Item {
             return InteractionResult.sidedSuccess(level.isClientSide());
         }
 
+        // Wooden fences own a persistent layout as well as facing; rotate the complete state.
+        if (state.getBlock() instanceof com.seggellion.britannia_mod.block.WoodenFenceBlock fence) {
+            if (!level.isClientSide()) level.setBlock(pos,
+                    fence.deriveConnections(state.rotate(net.minecraft.world.level.block.Rotation.CLOCKWISE_90),level,pos), Block.UPDATE_ALL);
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
+
         // Rotate horizontal blocks (except ThinWall, DoubleBedBlock, and BlankSignHolder)
         if (state.hasProperty(HorizontalDirectionalBlock.FACING)) {
             if (!(state.getBlock() instanceof ThinWall) 

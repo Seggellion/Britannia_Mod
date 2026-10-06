@@ -15,7 +15,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /** Server-level connection update and collision coverage for the edge-mounted wooden fence. */
-@GameTestHolder(BritanniaMod.MODID)
+@GameTestHolder("britannia_edge_fence")
 @PrefixGameTestTemplate(false)
 public final class WoodenFenceGameTests {
     private static final String TEMPLATE = "service_npc_spawn_test_empty";
@@ -42,21 +42,21 @@ public final class WoodenFenceGameTests {
         helper.getLevel().removeBlock(straight.east(2), false);
         check(topology(helper, straight.east()).equals("end"), "removal did not terminate the remaining run");
         check(topology(helper, straight.east(3)).equals("isolated"), "removal did not isolate the far section");
-        place(helper, fence, straight.east(2), Direction.SOUTH);
+        place(helper, fence, straight.east(2), Direction.NORTH);
         check(topology(helper, straight.east()).equals("straight"), "replacement did not restore the run");
 
         BlockPos corner = absolute(helper, 8, 3, 2);
-        place(helper, fence, corner, Direction.NORTH);
+        helper.getLevel().setBlock(corner,fence.defaultBlockState().setValue(WoodenFenceBlock.LAYOUT_CODE,6),Block.UPDATE_ALL);
         place(helper, fence, corner.east(), Direction.NORTH);
         place(helper, fence, corner.south(), Direction.WEST);
         check(topology(helper, corner).equals("corner"), "adjacent neighbours did not form a corner");
 
         BlockPos tee = absolute(helper, 9, 3, 7);
-        place(helper, fence, tee, Direction.NORTH);
+        helper.getLevel().setBlock(tee,fence.defaultBlockState().setValue(WoodenFenceBlock.LAYOUT_CODE,6),Block.UPDATE_ALL);
         place(helper, fence, tee.east(), Direction.NORTH);
         place(helper, fence, tee.west(), Direction.NORTH);
         place(helper, fence, tee.south(), Direction.WEST);
-        check(topology(helper, tee).equals("t_junction"), "three neighbours did not form a T junction");
+        check(topology(helper, tee).equals("t_junction"), "pinned L should contact both north-rail ends and west-rail end");
 
         BlockPos cross = absolute(helper, 5, 3, 10);
         place(helper, fence, cross, Direction.NORTH);
@@ -64,7 +64,8 @@ public final class WoodenFenceGameTests {
         place(helper, fence, cross.east(), Direction.NORTH);
         place(helper, fence, cross.south(), Direction.WEST);
         place(helper, fence, cross.west(), Direction.NORTH);
-        check(topology(helper, cross).equals("cross"), "four neighbours did not form a cross");
+        check(topology(helper, cross).equals("t_junction"), "single should contact two continuations and the perpendicular endpoint at its north edge");
+        check(helper.getLevel().getBlockState(cross).getValue(WoodenFenceBlock.LAYOUT_CODE)==0,"neighbors created panels");
 
         helper.succeed();
     }
@@ -87,7 +88,7 @@ public final class WoodenFenceGameTests {
                 "isolated collision became a full cube");
         }
 
-        place(helper, fence, pos, Direction.NORTH);
+        helper.getLevel().setBlock(pos,fence.defaultBlockState().setValue(WoodenFenceBlock.LAYOUT_CODE,6),Block.UPDATE_ALL);
         place(helper, fence, pos.east(), Direction.NORTH);
         place(helper, fence, pos.south(), Direction.WEST);
         var cornerBoxes = helper.getLevel().getBlockState(pos)
@@ -99,7 +100,7 @@ public final class WoodenFenceGameTests {
     private static void place(GameTestHelper helper, WoodenFenceBlock fence,
                               BlockPos pos, Direction facing) {
         helper.getLevel().setBlock(pos,
-            fence.defaultBlockState().setValue(WoodenFenceBlock.FACING, facing), Block.UPDATE_ALL);
+            fence.defaultBlockState().setValue(WoodenFenceBlock.FACING, facing).setValue(WoodenFenceBlock.LAYOUT_CODE,0), Block.UPDATE_ALL);
     }
 
     private static BlockPos absolute(GameTestHelper helper, int x, int y, int z) {
