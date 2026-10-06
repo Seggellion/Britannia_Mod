@@ -27,10 +27,10 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class EdgeFencePlacementGameTests {
     private static final String TEMPLATE = "service_npc_spawn_test_empty";
-    @GameTest(template=TEMPLATE, timeoutTicks=300) public static void northAnchor(GameTestHelper h) { scenario(h,Direction.NORTH,0); }
-    @GameTest(template=TEMPLATE, timeoutTicks=300) public static void eastAnchor(GameTestHelper h) { scenario(h,Direction.EAST,0); }
-    @GameTest(template=TEMPLATE, timeoutTicks=300) public static void southAnchor(GameTestHelper h) { scenario(h,Direction.SOUTH,0); }
-    @GameTest(template=TEMPLATE, timeoutTicks=300) public static void westAnchor(GameTestHelper h) { scenario(h,Direction.WEST,0); }
+    @GameTest(batch="edge_fence", template=TEMPLATE, timeoutTicks=300) public static void northAnchor(GameTestHelper h) { scenario(h,Direction.NORTH,0); }
+    @GameTest(batch="edge_fence", template=TEMPLATE, timeoutTicks=300) public static void eastAnchor(GameTestHelper h) { scenario(h,Direction.EAST,0); }
+    @GameTest(batch="edge_fence", template=TEMPLATE, timeoutTicks=300) public static void southAnchor(GameTestHelper h) { scenario(h,Direction.SOUTH,0); }
+    @GameTest(batch="edge_fence", template=TEMPLATE, timeoutTicks=300) public static void westAnchor(GameTestHelper h) { scenario(h,Direction.WEST,0); }
 
     private static void scenario(GameTestHelper h, Direction facing, int index) {
         if(index==6) { h.succeed(); return; }
@@ -87,7 +87,7 @@ public final class EdgeFencePlacementGameTests {
         var result=((BlockItem)p.getMainHandItem().getItem()).place(ctx);
         h.assertTrue(result.consumesAction(),"BlockItem placement failed "+hit+" "+result);
     }
-    @GameTest(template=TEMPLATE)
+    @GameTest(batch="edge_fence", template=TEMPLATE)
     public static void savedCornerSurvivesFirstUpdateAndRemoval(GameTestHelper h) {
         var pos=h.absolutePos(new BlockPos(4,3,4));
         var fence=BlockRegistry.WOODEN_FENCE.get();
@@ -100,7 +100,7 @@ public final class EdgeFencePlacementGameTests {
         h.succeed();
     }
 
-    @GameTest(template=TEMPLATE)
+    @GameTest(batch="edge_fence", template=TEMPLATE)
     public static void sequentialFourCornerEnclosureAndReplacementWorkflow(GameTestHelper h) {
         var p=ManagedResourceTestPlayers.survival(h.getLevel(),"EdgeEnclosure");
         p.setGameMode(GameType.CREATIVE);
@@ -153,7 +153,7 @@ public final class EdgeFencePlacementGameTests {
         support(h,p,target.below(),Direction.UP);
     }
 
-    @GameTest(template=TEMPLATE)
+    @GameTest(batch="edge_fence", template=TEMPLATE)
     public static void supportIntentWinsConflictsAndReplacementUsesResolvedTarget(GameTestHelper h) {
         var p=ManagedResourceTestPlayers.survival(h.getLevel(),"EdgeIntent");
         var target=h.absolutePos(new BlockPos(5,4,5));

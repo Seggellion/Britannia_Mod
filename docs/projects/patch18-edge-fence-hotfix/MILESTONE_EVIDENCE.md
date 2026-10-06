@@ -82,3 +82,22 @@ cases pass again. New bounded-access proxy also proves exactly four
 availability checks, zero reads with unavailable chunks, four loaded reads,
 no world writes or neighbor materialization. Explicit selector and mutable-
 flag independence assertions were subsequently strengthened for final gates.
+
+## M6 — complete gates and cost/client evidence
+
+Implementation commit: 0fe906d7699a5e227467faa343d5438948969baa.
+`full-gametest.log` normally compiled the application, completed all 1,362
+required GameTests in 3.021min, and failed two shared-scheduler ore fixtures:
+`anUnloadedChunkIsNeverLoadedToRestoreIntoIt` and
+`curatedCoalIsPlacedMinedAndComesBack`. These are the same two fixtures
+documented in the prior Alligator full-run interference. No fence failure.
+Fence tests now use a dedicated `edge_fence` batch; lifecycle uses
+`edge_fence_lifecycle`. All assertions/counts and ore sources remain intact.
+Full clean-source rerun follows this harness isolation change.
+
+Unchanged c804 baseline full JUnit (`unit-baseline.log`) passes in 3m35s:
+4,120 total, 4,096 passes, 24 skips, zero errors/failures. Hotfix adds one
+JUnit contract (authored hash protection) and no skips. Baseline client
+was normally built/launched, observed at main menu, and quit through UI.
+Three post-GC heap histograms have identical model/state/cache counts;
+timing and hotfix comparison will be recorded in the cost ledger.

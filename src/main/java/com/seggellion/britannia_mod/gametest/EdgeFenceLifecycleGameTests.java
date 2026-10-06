@@ -23,7 +23,7 @@ public final class EdgeFenceLifecycleGameTests {
     }
     private static BlockPos fixturePos(int i) { return new BlockPos(120000+(i%8)*3,80,120064+(i/8)*3); }
 
-    @GameTest(template=TEMPLATE,timeoutTicks=300)
+    @GameTest(batch="edge_fence_lifecycle", template=TEMPLATE,timeoutTicks=300)
     public static void saveOrReadAllLegacyLayoutsAcrossRealProcessRestart(GameTestHelper h) {
         String phase=System.getProperty("britannia.edgeFenceLifecyclePhase","");
         h.assertTrue(phase.equals("write") || phase.equals("read"),"Supply -PedgeFenceLifecyclePhase=write then read using the same disposable world");
@@ -47,7 +47,7 @@ public final class EdgeFenceLifecycleGameTests {
         h.succeed();
     }
 
-    @GameTest(template=TEMPLATE,timeoutTicks=1400)
+    @GameTest(batch="edge_fence_lifecycle", template=TEMPLATE,timeoutTicks=1400)
     public static void chunkBoundaryUnloadAndBothLoadOrdersKeepPinnedEdges(GameTestHelper h) { boundary(h,0); }
     private static void boundary(GameTestHelper h,int index) {
         if(index==4) { h.succeed();return; }

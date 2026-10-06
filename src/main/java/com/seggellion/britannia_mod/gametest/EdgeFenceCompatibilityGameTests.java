@@ -51,7 +51,7 @@ public final class EdgeFenceCompatibilityGameTests {
     private static void equal(GameTestHelper h,VoxelShape a,VoxelShape b,String label) {
         h.assertTrue(!Shapes.joinIsNotEmpty(a,b,BooleanOp.NOT_SAME),label+" "+a.toAabbs()+" != "+b.toAabbs());
     }
-    @GameTest(template=TEMPLATE)
+    @GameTest(batch="edge_fence", template=TEMPLATE)
     public static void allLegacyStatesDecodeAndMaterializeBeforeFlagCorrection(GameTestHelper h) {
         var fence=BlockRegistry.WOODEN_FENCE.get();
         h.assertTrue(fence.getStateDefinition().getPossibleStates().size()==2112,"unexpected state count");
@@ -96,7 +96,7 @@ public final class EdgeFenceCompatibilityGameTests {
         }
         return result;
     }
-    @GameTest(template=TEMPLATE)
+    @GameTest(batch="edge_fence", template=TEMPLATE)
     public static void everyLayoutTransformMatchesWorldGeometryAndRoundTrips(GameTestHelper h) {
         var pos=h.absolutePos(new BlockPos(4,4,4));
         for(var facing:DIRS)for(int code=0;code<33;code++) {
@@ -117,7 +117,7 @@ public final class EdgeFenceCompatibilityGameTests {
         }
         h.succeed();
     }
-    @GameTest(template=TEMPLATE)
+    @GameTest(batch="edge_fence", template=TEMPLATE)
     public static void contactsAreSymmetricLocalAndIndependentOfFlags(GameTestHelper h) {
         var fence=BlockRegistry.WOODEN_FENCE.get();
         for(var aFace:DIRS)for(int aCode=0;aCode<32;aCode++)for(var bFace:DIRS)for(int bCode=0;bCode<32;bCode++) {
@@ -144,7 +144,7 @@ public final class EdgeFenceCompatibilityGameTests {
         h.succeed();
     }
 
-    @GameTest(template=TEMPLATE)
+    @GameTest(batch="edge_fence", template=TEMPLATE)
     public static void bothLegacyPatioTemplatesKeepPaletteAndPreviewGeometry(GameTestHelper h) throws java.io.IOException {
         var fence=BlockRegistry.WOODEN_FENCE.get();
         var pos=h.absolutePos(new BlockPos(4,4,4));
@@ -183,7 +183,7 @@ public final class EdgeFenceCompatibilityGameTests {
         h.assertTrue(copies==2,"patio copies"); h.succeed();
     }
 
-    @GameTest(template=TEMPLATE)
+    @GameTest(batch="edge_fence", template=TEMPLATE)
     public static void decoratorRotatesWholeCornerAndSurvivesScheduledUpdates(GameTestHelper h) {
         var p=ManagedResourceTestPlayers.survival(h.getLevel(),"EdgeDecorator");
         var pos=h.absolutePos(new BlockPos(5,4,5));
@@ -203,7 +203,7 @@ public final class EdgeFenceCompatibilityGameTests {
         h.runAfterDelay(10,()->{h.assertTrue(h.getLevel().getBlockState(pos)==expected,"tick/load undid intentional layout");h.succeed();});
     }
 
-    @GameTest(template=TEMPLATE)
+    @GameTest(batch="edge_fence", template=TEMPLATE)
     public static void updateReadsAtMostFourLoadedOwnersAndNeverMutatesNeighbors(GameTestHelper h) {
         var fence=BlockRegistry.WOODEN_FENCE.get();
         var neighbor=legacy(Direction.SOUTH,6); // Querying this sentinel must remain read-only.

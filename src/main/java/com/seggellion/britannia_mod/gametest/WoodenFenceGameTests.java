@@ -23,7 +23,7 @@ public final class WoodenFenceGameTests {
     private WoodenFenceGameTests() {
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch="edge_fence", template = TEMPLATE)
     public static void derivesEveryConnectionTopologyAndDisconnectsAfterRemoval(GameTestHelper helper) {
         WoodenFenceBlock fence = BlockRegistry.WOODEN_FENCE.get();
 
@@ -70,7 +70,7 @@ public final class WoodenFenceGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch="edge_fence", template = TEMPLATE)
     public static void collisionTracksAllFourEdgesAndJunctionStrips(GameTestHelper helper) {
         WoodenFenceBlock fence = BlockRegistry.WOODEN_FENCE.get();
         BlockPos pos = absolute(helper, 4, 3, 4);

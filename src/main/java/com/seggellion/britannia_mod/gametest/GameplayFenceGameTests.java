@@ -22,7 +22,7 @@ public final class GameplayFenceGameTests {
     private static final String TEMPLATE = "service_npc_spawn_test_empty";
     private static final Direction[] DIRECTIONS = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch="edge_fence", template = TEMPLATE)
     public static void equivalentFixedLayoutsConvergeAcrossPlacementOrders(GameTestHelper h) {
         var center = h.absolutePos(new BlockPos(5,3,5));
         for (int mask=0; mask<16; mask++) {
@@ -47,7 +47,7 @@ public final class GameplayFenceGameTests {
         clear(h,center); h.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch="edge_fence", template = TEMPLATE)
     public static void directLAndTemporaryTAreEquivalentInAllRotationsAndMirrors(GameTestHelper h) {
         var center = h.absolutePos(new BlockPos(5,3,5));
         for (var rotation : Rotation.values()) for (var mirror : Mirror.values()) {
@@ -70,7 +70,7 @@ public final class GameplayFenceGameTests {
         clear(h,center); h.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch="edge_fence", template = TEMPLATE)
     public static void everyOccupiedStripHasVanillaHeightWithoutFillingTheInterior(GameTestHelper h) {
         var pos = h.absolutePos(new BlockPos(3,3,3));
         for (int mask=0; mask<16; mask++) for (var facing : DIRECTIONS) {
@@ -92,7 +92,7 @@ public final class GameplayFenceGameTests {
         h.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch="edge_fence", template = TEMPLATE)
     public static void shovelMadePathPersistsUnderCustomFenceWithVanillaControls(GameTestHelper h) {
         var player = ManagedResourceTestPlayers.survival(h.getLevel(), "M8Path");
         var pos = h.absolutePos(new BlockPos(3,2,3));
@@ -119,7 +119,7 @@ public final class GameplayFenceGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 300)
+    @GameTest(batch="edge_fence", template = TEMPLATE, timeoutTicks = 300)
     public static void loadedRunCorrectsFlagsAndPreservesSavedFacingWithoutUpdateLoops(GameTestHelper h) {
         var start = h.absolutePos(new BlockPos(1,4,5));
         var positions = new ArrayList<BlockPos>();
@@ -134,7 +134,7 @@ public final class GameplayFenceGameTests {
                 .thenSucceed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch="edge_fence", template = TEMPLATE)
     public static void ordinaryPlayerCollisionBlocksWalkingAndNormalJumpEnvelope(GameTestHelper h) {
         var player = ManagedResourceTestPlayers.survival(h.getLevel(), "M8Collision");
         var pos = h.absolutePos(new BlockPos(4,3,4));
