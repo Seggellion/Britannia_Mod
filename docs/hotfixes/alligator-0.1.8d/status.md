@@ -17,3 +17,5 @@ M6–M7 handoff: local integration and a clean-source bundled candidate follow r
 Prior recovery bytes remain a held, undeployed reference, not an approved production rollback. No source or binary rollback is executed. A later authorized installation must retain the installed digest and avoid duplicate 0.1.8d JARs.
 
 Existing medallion motion/cape/swimming visual hold and Alligator client visual acceptance remain pending. No push, deployment or installed binary replacement is authorized.
+
+Final clean-source registration review: the first 1,349-case run exposed two existing ore fixture failures from a mock-success scheduler pass consuming another fixture's debt. New Alligator cases now have dedicated movement/survival batches so existing default batches retain their original membership. Assertions/counts and ore sources are unchanged; the full rerun and final candidate identity are recorded in the authoritative closeout. The initial failed log is retained.

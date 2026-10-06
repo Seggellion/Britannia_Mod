@@ -101,7 +101,7 @@ public final class AlligatorMovementGameTests {
                 path != null && path.canReach(), path == null || path.isDone() ? "done" : path.getNextNodePos());
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 225)
+    @GameTest(template = TEMPLATE, batch = "alligator-movement", timeoutTicks = 225)
     public static void verticalDescent(GameTestHelper h) {
         tank(h, true);
         AlligatorEntity a = spawn(h, new Vec3(6, 7, 6), true);
@@ -120,7 +120,7 @@ public final class AlligatorMovementGameTests {
                 h.assertTrue(Math.abs(a.getY() - target.y) <= .5, "Descent must hold for 20 ticks"));
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 260)
+    @GameTest(template = TEMPLATE, batch = "alligator-movement", timeoutTicks = 260)
     public static void eightBlockLandCourse(GameTestHelper h) {
         tank(h, false);
         AlligatorEntity a = spawn(h, new Vec3(3, 1, 6), true);
@@ -141,10 +141,10 @@ public final class AlligatorMovementGameTests {
         }
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 260)
+    @GameTest(template = TEMPLATE, batch = "alligator-movement", timeoutTicks = 260)
     public static void bankExit(GameTestHelper h) { bank(h, false); }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 260)
+    @GameTest(template = TEMPLATE, batch = "alligator-movement", timeoutTicks = 260)
     public static void bankEntry(GameTestHelper h) { bank(h, true); }
 
     private static void bank(GameTestHelper h, boolean entering) {
@@ -166,7 +166,7 @@ public final class AlligatorMovementGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 210)
+    @GameTest(template = TEMPLATE, batch = "alligator-movement", timeoutTicks = 210)
     public static void oneBlockGroundJump(GameTestHelper h) {
         tank(h, false);
         for (int x = 7; x < 15; x++) for (int z = 1; z < 15; z++)
@@ -182,7 +182,7 @@ public final class AlligatorMovementGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 210)
+    @GameTest(template = TEMPLATE, batch = "alligator-movement", timeoutTicks = 210)
     public static void depthHoldWithLookAndKnockback(GameTestHelper h) {
         tank(h, true);
         AlligatorEntity a = spawn(h, new Vec3(6, 4, 6), true);
@@ -203,7 +203,7 @@ public final class AlligatorMovementGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 260)
+    @GameTest(template = TEMPLATE, batch = "alligator-movement", timeoutTicks = 260)
     public static void submergedObstacleBypass(GameTestHelper h) {
         tank(h, true);
         for (int z = 1; z <= 9; z++) for (int y = 1; y <= 8; y++)
@@ -219,7 +219,7 @@ public final class AlligatorMovementGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 115)
+    @GameTest(template = TEMPLATE, batch = "alligator-movement", timeoutTicks = 115)
     public static void blockedPathIsBounded(GameTestHelper h) {
         tank(h, true);
         for (int z = 1; z < 15; z++) for (int y = 1; y < 12; y++)
@@ -235,7 +235,7 @@ public final class AlligatorMovementGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 210)
+    @GameTest(template = TEMPLATE, batch = "alligator-movement", timeoutTicks = 210)
     public static void verticalSteeringWithRandomLook(GameTestHelper h) {
         tank(h, true);
         AlligatorEntity a = spawn(h, new Vec3(6, 7, 6), true);
@@ -249,7 +249,7 @@ public final class AlligatorMovementGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 260)
+    @GameTest(template = TEMPLATE, batch = "alligator-movement", timeoutTicks = 260)
     public static void groundStairs(GameTestHelper h) {
         tank(h, false);
         for (int z = 1; z < 15; z++) {
@@ -269,7 +269,7 @@ public final class AlligatorMovementGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 65)
+    @GameTest(template = TEMPLATE, batch = "alligator-movement", timeoutTicks = 65)
     public static void bubbleColumnsRetainEngineImpulse(GameTestHelper h) {
         tank(h, true);
         h.setBlock(new BlockPos(4, 0, 4), Blocks.SOUL_SAND);
@@ -290,7 +290,7 @@ public final class AlligatorMovementGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 135)
+    @GameTest(template = TEMPLATE, batch = "alligator-movement", timeoutTicks = 135)
     public static void waterBreathingEffectKeepsEngineAirSemantics(GameTestHelper h) {
         tank(h, true);
         for (int x = 0; x < 16; x++) for (int z = 0; z < 16; z++) h.setBlock(new BlockPos(x, 9, z), Blocks.STONE);
@@ -303,7 +303,7 @@ public final class AlligatorMovementGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 65)
+    @GameTest(template = TEMPLATE, batch = "alligator-movement", timeoutTicks = 65)
     public static void flowingWaterRetainsCurrent(GameTestHelper h) {
         tank(h, false);
         for (int x = 1; x < 15; x++) for (int z = 3; z <= 11; z++) {
@@ -322,7 +322,7 @@ public final class AlligatorMovementGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 115)
+    @GameTest(template = TEMPLATE, batch = "alligator-movement", timeoutTicks = 115)
     public static void narrowGapIsNotClaimedReachable(GameTestHelper h) {
         tank(h, true);
         for (int z = 1; z < 15; z++) if (z != 7)

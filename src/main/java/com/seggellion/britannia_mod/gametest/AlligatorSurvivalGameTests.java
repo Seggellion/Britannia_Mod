@@ -72,10 +72,10 @@ public final class AlligatorSurvivalGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 210)
+    @GameTest(template = TEMPLATE, batch = "alligator-survival", timeoutTicks = 210)
     public static void lowAirIdleRecovers(GameTestHelper h) { recover(h, false); }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 210)
+    @GameTest(template = TEMPLATE, batch = "alligator-survival", timeoutTicks = 210)
     public static void lowAirPursuitRecoversAndKeepsTarget(GameTestHelper h) { recover(h, true); }
 
     private static void recover(GameTestHelper h, boolean pursuit) {
@@ -97,7 +97,7 @@ public final class AlligatorSurvivalGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 150)
+    @GameTest(template = TEMPLATE, batch = "alligator-survival", timeoutTicks = 150)
     public static void sealedRoofStillDrowns(GameTestHelper h) {
         AlligatorMovementGameTests.tank(h, true);
         for (int x = 0; x < 16; x++) for (int z = 0; z < 16; z++) h.setBlock(new BlockPos(x, 9, z), Blocks.STONE);
@@ -119,7 +119,7 @@ public final class AlligatorSurvivalGameTests {
         return c;
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 265)
+    @GameTest(template = TEMPLATE, batch = "alligator-survival", timeoutTicks = 265)
     public static void citizenPursuitChangesDepthAndKeepsMeleeCooldown(GameTestHelper h) {
         AlligatorMovementGameTests.tank(h, true);
         AlligatorEntity a = AlligatorMovementGameTests.spawn(h, new Vec3(4, 6, 4), false);
@@ -144,7 +144,7 @@ public final class AlligatorSurvivalGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 100)
+    @GameTest(template = TEMPLATE, batch = "alligator-survival", timeoutTicks = 100)
     public static void playerAcquisitionAndRetaliationStayIntact(GameTestHelper h) {
         AlligatorMovementGameTests.tank(h, false);
         AlligatorEntity a = AlligatorMovementGameTests.spawn(h, new Vec3(4, 1, 4), false);
@@ -174,7 +174,7 @@ public final class AlligatorSurvivalGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 625)
+    @GameTest(template = TEMPLATE, batch = "alligator-survival", timeoutTicks = 625)
     public static void shallowWaterKeepsSupportedIdleRoutes(GameTestHelper h) {
         AlligatorMovementGameTests.tank(h, true);
         for (int x = 1; x < 15; x++) for (int z = 1; z < 15; z++)
@@ -196,7 +196,7 @@ public final class AlligatorSurvivalGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 625)
+    @GameTest(template = TEMPLATE, batch = "alligator-survival", timeoutTicks = 625)
     public static void reducedMovementSpeedRejectsUnsafeOptionalDives(GameTestHelper h) {
         AlligatorMovementGameTests.tank(h, true);
         AlligatorEntity a = AlligatorMovementGameTests.spawn(h, new Vec3(6, 8.3, 6), false);
@@ -230,7 +230,7 @@ public final class AlligatorSurvivalGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 225)
+    @GameTest(template = TEMPLATE, batch = "alligator-survival", timeoutTicks = 225)
     public static void groundedWadingOffersOrdinaryStroll(GameTestHelper h) {
         AlligatorMovementGameTests.tank(h, false);
         var shallow = Blocks.WATER.defaultBlockState().setValue(net.minecraft.world.level.block.LiquidBlock.LEVEL, 6);
@@ -263,7 +263,7 @@ public final class AlligatorSurvivalGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 120)
+    @GameTest(template = TEMPLATE, batch = "alligator-survival", timeoutTicks = 120)
     public static void meleeRequiresSightAndResumesAfterPaneRemoval(GameTestHelper h) {
         AlligatorMovementGameTests.tank(h, true);
         AlligatorEntity a = AlligatorMovementGameTests.spawn(h, new Vec3(6.2, 3, 6.5), false);
@@ -283,7 +283,7 @@ public final class AlligatorSurvivalGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 170)
+    @GameTest(template = TEMPLATE, batch = "alligator-survival", timeoutTicks = 170)
     public static void ordinarySightMemoryLosesAnOccludedCitizen(GameTestHelper h) {
         AlligatorMovementGameTests.tank(h, true);
         AlligatorEntity a = AlligatorMovementGameTests.spawn(h, new Vec3(4, 3, 4), false);
