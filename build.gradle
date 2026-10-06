@@ -62,8 +62,11 @@ tasks.named('test', Test) {
 
 runs {
     client {
-        workingDirectory = file("run")
-        systemProperty "neoforge.enabledGameTestNamespaces", mod_id
+        workingDirectory = file(providers.gradleProperty('alligatorClientRunDirectory').getOrElse("run"))
+        if (providers.gradleProperty('alligatorClientRunDirectory').isPresent()) {
+            systemProperty "neoforge.enableGameTest", "true"
+        }
+        systemProperty "neoforge.enabledGameTestNamespaces", providers.gradleProperty('gameTestNamespaces').getOrElse(mod_id)
         arguments "--username", "Dev"
         dependencies {
             runtime 'org.nanohttpd:nanohttpd:2.2.0'
@@ -81,7 +84,7 @@ runs {
 
     gameTestServer {
         workingDirectory = file(providers.gradleProperty('gameTestRunDirectory').getOrElse("run/gametest"))
-        systemProperty "neoforge.enabledGameTestNamespaces", providers.gradleProperty('gameTestNamespaces').getOrElse("${mod_id},britannia_alligator")
+        systemProperty "neoforge.enabledGameTestNamespaces", providers.gradleProperty('gameTestNamespaces').getOrElse("${mod_id},britannia_alligator,britannia_alligator_idle,britannia_alligator_performance")
         dependencies {
             runtime 'org.nanohttpd:nanohttpd:2.2.0'
         }
@@ -170,12 +173,22 @@ tasks.register('generateServiceNpcSpawnGameTestStructure') {
 tasks.register('generateAlligatorGameTestStructure') {
     def encoded = layout.projectDirectory.file('src/gametest/alligator_tank.nbt.b64')
     def generated = layout.buildDirectory.file('generated/gametest/data/britannia_alligator/structure/alligator_tank.nbt')
+    def idleTemplate = layout.buildDirectory.file('generated/gametest/data/britannia_alligator_idle/structure/alligator_tank.nbt')
+    def performanceTemplate = layout.buildDirectory.file('generated/gametest/data/britannia_alligator_performance/structure/alligator_tank.nbt')
     inputs.file encoded
     outputs.file generated
+    outputs.file idleTemplate
+    outputs.file performanceTemplate
     doLast {
         def output = generated.get().asFile
         output.parentFile.mkdirs()
         output.bytes = Base64.decoder.decode(encoded.asFile.text.trim())
+        def idle = idleTemplate.get().asFile
+        idle.parentFile.mkdirs()
+        idle.bytes = output.bytes
+        def performance = performanceTemplate.get().asFile
+        performance.parentFile.mkdirs()
+        performance.bytes = output.bytes
     }
 }
 
@@ -240,6 +253,16 @@ tasks.named('jar', Jar) {
     exclude 'com/seggellion/britannia_mod/gametest/**'
     exclude 'data/britannia_mod/structure/service_npc_spawn_test_empty.nbt'
     exclude 'data/britannia_alligator/**'
+    exclude 'data/britannia_alligator_idle/**'
+    exclude 'data/britannia_alligator_performance/**'
+}
+
+tasks.withType(Jar).configureEach {
+    exclude 'com/seggellion/britannia_mod/gametest/**'
+    exclude 'data/britannia_mod/structure/service_npc_spawn_test_empty.nbt'
+    exclude 'data/britannia_alligator/**'
+    exclude 'data/britannia_alligator_idle/**'
+    exclude 'data/britannia_alligator_performance/**'
 }
 
 tasks.register("generateModMetadata", ProcessResources) {
