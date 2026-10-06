@@ -251,13 +251,15 @@ public final class AlligatorSurvivalGameTests {
             if (a.isInWater() && a.onGround() && !a.usesWaterMovement()) {
                 for (var wrapped : a.goalSelector.getAvailableGoals()) {
                     if (wrapped.getGoal() instanceof net.minecraft.world.entity.ai.goal.RandomStrollGoal stroll) {
-                        stroll.trigger();
-                        if (stroll.canUse()) offered[0] = true;
+                        if (!wrapped.isRunning()) stroll.trigger();
+                        if (wrapped.isRunning()) offered[0] = true;
                     }
                 }
             }
         });
         h.runAtTickTime(201, () -> {
+            LogUtils.getLogger().info("ALLIGATOR wading runningObserved={} farthest={} waterHeight={} ground={} waterMovement={}",
+                    offered[0], farthest[0], a.getFluidHeight(net.minecraft.tags.FluidTags.WATER), a.onGround(), a.usesWaterMovement());
             h.assertTrue(offered[0] && farthest[0] > 1, "Grounded shallow wading suppressed ordinary stroll");
             h.succeed();
         });

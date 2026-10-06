@@ -38,7 +38,9 @@ public class AlligatorEntity extends BaseBritanniaMonster {
     }
 
     public boolean usesWaterMovement() {
-        return isInWater() && (!onGround() || getFluidHeight(net.minecraft.tags.FluidTags.WATER) >= .4);
+        // A zero-Y collision tick may temporarily clear onGround while wading. Fluid depth
+        // keeps thin water on ordinary control/travel instead of alternating goals and buoyancy.
+        return isInWater() && getFluidHeight(net.minecraft.tags.FluidTags.WATER) >= .4;
     }
 
     @Override
