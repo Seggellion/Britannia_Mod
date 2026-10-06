@@ -80,8 +80,8 @@ runs {
     }
 
     gameTestServer {
-        workingDirectory = file("run/gametest")
-        systemProperty "neoforge.enabledGameTestNamespaces", mod_id
+        workingDirectory = file(providers.gradleProperty('gameTestRunDirectory').getOrElse("run/gametest"))
+        systemProperty "neoforge.enabledGameTestNamespaces", providers.gradleProperty('gameTestNamespaces').getOrElse("${mod_id},britannia_alligator")
         dependencies {
             runtime 'org.nanohttpd:nanohttpd:2.2.0'
         }
@@ -167,6 +167,18 @@ tasks.register('generateServiceNpcSpawnGameTestStructure') {
     }
 }
 
+tasks.register('generateAlligatorGameTestStructure') {
+    def encoded = layout.projectDirectory.file('src/gametest/alligator_tank.nbt.b64')
+    def generated = layout.buildDirectory.file('generated/gametest/data/britannia_alligator/structure/alligator_tank.nbt')
+    inputs.file encoded
+    outputs.file generated
+    doLast {
+        def output = generated.get().asFile
+        output.parentFile.mkdirs()
+        output.bytes = Base64.decoder.decode(encoded.asFile.text.trim())
+    }
+}
+
 tasks.register('validateTrainingDummyGeo') {
     group = 'verification'
     description = 'Fail early when a Blockbench export is incompatible with GeckoLib 4.6.6.'
@@ -212,6 +224,7 @@ tasks.register('validateTrainingDummyGeo') {
 }
 
 tasks.named('processResources') {
+    dependsOn tasks.named('generateAlligatorGameTestStructure')
     dependsOn tasks.named('generateServiceNpcSpawnGameTestStructure')
     dependsOn tasks.named('validateTrainingDummyGeo')
 }
@@ -226,6 +239,7 @@ tasks.named('jar', Jar) {
     archiveClassifier = 'thin'
     exclude 'com/seggellion/britannia_mod/gametest/**'
     exclude 'data/britannia_mod/structure/service_npc_spawn_test_empty.nbt'
+    exclude 'data/britannia_alligator/**'
 }
 
 tasks.register("generateModMetadata", ProcessResources) {
