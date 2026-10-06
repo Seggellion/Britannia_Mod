@@ -1,0 +1,99 @@
+{
+  "unit": {
+    "baseline": {
+      "suites": 514,
+      "counts": {
+        "tests": 4120,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 24
+      },
+      "skippedNames": [
+        "com.seggellion.britannia_mod.bannerdyeing.ExtraSmallGateECloseoutTest.productOwnerEvidenceIsCompleteTrackedAndHasNoUnresolvedCurrentItem()",
+        "com.seggellion.britannia_mod.bannerdyeing.FinalContentIntakeDocumentationTest.checklistCoversTwoFilesAutomatedBoundariesAndManualMatrices()",
+        "com.seggellion.britannia_mod.bannerdyeing.FinalContentIntakeDocumentationTest.guideDefinesTheSingleTwoFileSelectiveRecolourContract()",
+        "com.seggellion.britannia_mod.bannerdyeing.FinalContentIntakeDocumentationTest.intakeGuideChecklistReadmeAndTemplatesExist()",
+        "com.seggellion.britannia_mod.bannerdyeing.FinalContentIntakeDocumentationTest.productionCatalogueKeepsAllApprovedFamiliesComplete()",
+        "com.seggellion.britannia_mod.bannerdyeing.FinalContentIntakeDocumentationTest.readmeAndTemplatesStateTheApproved128PixelStandard()",
+        "com.seggellion.britannia_mod.bannerdyeing.MediumGateECloseoutTest.productOwnerEvidenceMatchesApprovedIntakesAndHasNoUnresolvedResult()",
+        "com.seggellion.britannia_mod.bannerdyeing.ParallelLargeGateECloseoutTest.productOwnerEvidenceBindsEveryPassToTheExactReviewedCommitAndHashes()",
+        "com.seggellion.britannia_mod.bannerdyeing.ParallelMediumGateECloseoutTest.productOwnerEvidenceBindsTheReviewedCommitAssetsAndEveryPassResult()",
+        "com.seggellion.britannia_mod.bannerdyeing.RoadGuardIntegrationTest.roadGuardPreservesHistoricalEvidenceAndRecordsCurrentGateEApproval()",
+        "com.seggellion.britannia_mod.bannerdyeing.SmallGateECloseoutTest.productOwnerEvidenceMatchesApprovedIntakesAndHasNoUnresolvedResult()",
+        "com.seggellion.britannia_mod.farming.FarmingSkillProgressionCloseoutTest.catalogProposalRuntimeCultivationAndPresentationPoliciesReconcile()",
+        "com.seggellion.britannia_mod.farming.FarmingSkillRequirementTest.approvedProposalCatalogDefinitionsAndPlantingMappingsReconcileExactly()",
+        "com.seggellion.britannia_mod.farming.FarmingSkillRequirementTest.everyRequiredSentinelMatchesTheCommittedProposal()",
+        "com.seggellion.britannia_mod.farming.FarmingSkillRequirementTest.missingExtraAndProposalMismatchAreRejectedWithoutASecondValueTable()",
+        "com.seggellion.britannia_mod.farming.FlowerAssetContractTest.allNinetyEightInWorldPngsHonorTheAlignedBaseMaskContract()",
+        "com.seggellion.britannia_mod.farming.FlowerAssetContractTest.manifestAndHistoricalHashLedgerRespectIllustratorOwnedRuntimeTextures()",
+        "com.seggellion.britannia_mod.packaging.DeployableArtifactPackagingTest.anyBuiltDeployableJarBundlesItsRuntimeDependencies()",
+        "com.seggellion.britannia_mod.quest.action.QuestActionEventLiveRailsTest.aSubscribedHarvestAdvancesTheQuestAndOnlyForThePlanter()",
+        "com.seggellion.britannia_mod.quest.action.QuestActionEventLiveRailsTest.anEventForAPlayerNobodyKnowsIsAnsweredOnTheV2TierWithoutChangingAnything()",
+        "com.seggellion.britannia_mod.quest.action.QuestActionEventLiveRailsTest.theSameEventUuidTwiceIsAnsweredDuplicate()",
+        "com.seggellion.britannia_mod.quest.delivery.QuestRewardDeliveryLiveRailsTest.anUnknownDeliveryIsRefusedAsDeliveryNotFound()",
+        "com.seggellion.britannia_mod.quest.delivery.QuestRewardDeliveryLiveRailsTest.theAcknowledgementFlowAgreesEndToEnd()",
+        "com.seggellion.britannia_mod.quest.delivery.QuestRewardDeliveryLiveRailsTest.thePendingListingIsServedOnTheV2Tier()"
+      ]
+    },
+    "hotfix": {
+      "suites": 514,
+      "counts": {
+        "tests": 4121,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 23
+      },
+      "skippedNames": [
+        "com.seggellion.britannia_mod.bannerdyeing.ExtraSmallGateECloseoutTest.productOwnerEvidenceIsCompleteTrackedAndHasNoUnresolvedCurrentItem()",
+        "com.seggellion.britannia_mod.bannerdyeing.FinalContentIntakeDocumentationTest.checklistCoversTwoFilesAutomatedBoundariesAndManualMatrices()",
+        "com.seggellion.britannia_mod.bannerdyeing.FinalContentIntakeDocumentationTest.guideDefinesTheSingleTwoFileSelectiveRecolourContract()",
+        "com.seggellion.britannia_mod.bannerdyeing.FinalContentIntakeDocumentationTest.intakeGuideChecklistReadmeAndTemplatesExist()",
+        "com.seggellion.britannia_mod.bannerdyeing.FinalContentIntakeDocumentationTest.productionCatalogueKeepsAllApprovedFamiliesComplete()",
+        "com.seggellion.britannia_mod.bannerdyeing.FinalContentIntakeDocumentationTest.readmeAndTemplatesStateTheApproved128PixelStandard()",
+        "com.seggellion.britannia_mod.bannerdyeing.MediumGateECloseoutTest.productOwnerEvidenceMatchesApprovedIntakesAndHasNoUnresolvedResult()",
+        "com.seggellion.britannia_mod.bannerdyeing.ParallelLargeGateECloseoutTest.productOwnerEvidenceBindsEveryPassToTheExactReviewedCommitAndHashes()",
+        "com.seggellion.britannia_mod.bannerdyeing.ParallelMediumGateECloseoutTest.productOwnerEvidenceBindsTheReviewedCommitAssetsAndEveryPassResult()",
+        "com.seggellion.britannia_mod.bannerdyeing.RoadGuardIntegrationTest.roadGuardPreservesHistoricalEvidenceAndRecordsCurrentGateEApproval()",
+        "com.seggellion.britannia_mod.bannerdyeing.SmallGateECloseoutTest.productOwnerEvidenceMatchesApprovedIntakesAndHasNoUnresolvedResult()",
+        "com.seggellion.britannia_mod.farming.FarmingSkillProgressionCloseoutTest.catalogProposalRuntimeCultivationAndPresentationPoliciesReconcile()",
+        "com.seggellion.britannia_mod.farming.FarmingSkillRequirementTest.approvedProposalCatalogDefinitionsAndPlantingMappingsReconcileExactly()",
+        "com.seggellion.britannia_mod.farming.FarmingSkillRequirementTest.everyRequiredSentinelMatchesTheCommittedProposal()",
+        "com.seggellion.britannia_mod.farming.FarmingSkillRequirementTest.missingExtraAndProposalMismatchAreRejectedWithoutASecondValueTable()",
+        "com.seggellion.britannia_mod.farming.FlowerAssetContractTest.allNinetyEightInWorldPngsHonorTheAlignedBaseMaskContract()",
+        "com.seggellion.britannia_mod.farming.FlowerAssetContractTest.manifestAndHistoricalHashLedgerRespectIllustratorOwnedRuntimeTextures()",
+        "com.seggellion.britannia_mod.quest.action.QuestActionEventLiveRailsTest.aSubscribedHarvestAdvancesTheQuestAndOnlyForThePlanter()",
+        "com.seggellion.britannia_mod.quest.action.QuestActionEventLiveRailsTest.anEventForAPlayerNobodyKnowsIsAnsweredOnTheV2TierWithoutChangingAnything()",
+        "com.seggellion.britannia_mod.quest.action.QuestActionEventLiveRailsTest.theSameEventUuidTwiceIsAnsweredDuplicate()",
+        "com.seggellion.britannia_mod.quest.delivery.QuestRewardDeliveryLiveRailsTest.anUnknownDeliveryIsRefusedAsDeliveryNotFound()",
+        "com.seggellion.britannia_mod.quest.delivery.QuestRewardDeliveryLiveRailsTest.theAcknowledgementFlowAgreesEndToEnd()",
+        "com.seggellion.britannia_mod.quest.delivery.QuestRewardDeliveryLiveRailsTest.thePendingListingIsServedOnTheV2Tier()"
+      ]
+    },
+    "identicalSkips": false
+  },
+  "clientResourceComparison": {
+    "baselineCount": 846,
+    "hotfixCount": 846,
+    "baselineOnly": [],
+    "hotfixOnly": [],
+    "woodenFenceWarnings": []
+  },
+  "fullGameTests": {
+    "required": 1362,
+    "passed": 1362,
+    "failures": 0,
+    "minutes": 7.032
+  },
+  "focusedLifecycleWrite": {
+    "required": 22,
+    "passed": 22
+  },
+  "focusedLifecycleRead": {
+    "required": 23,
+    "passed": 23
+  },
+  "pending": [
+    "Client packets/displayed state/render/UV/outline/walk+jump/decorator/visual reload (desktop Windows PIN screen)",
+    "Repeated startup variance, isolated model-bake/frame timing"
+  ]
+}

@@ -20,6 +20,11 @@ materializes the old mask **first**, then recomputes contact flags. There are
 16 edge masks (eight nonempty masks are reachable), rather than rebuilding
 it for every connection combination. There are seven authored and seven
 derived reflected models; mutable connections do not select new meshes.
+Actual main-menu measurement shows 2,048 added states but only 28 additional
+SimpleBakedModels and 1,248 additional BakedQuads, stable across three samples.
+Median total Java heap rises 8.32 MiB. This supports retaining the completely
+proven compatibility schema and shared geometry; it does not establish frame
+performance or repeated startup variance. Those limits stay in acceptance.
 
 For parity one, decode Q(G(Q(facing), Q(mask))), Q reflecting local Z about 8.
 Quarter turns permute facing, selector bits and flags. Mirrors also toggle
@@ -56,4 +61,5 @@ and never select a T or cross mesh for a newly placed single.
 
 Deferred: duplicate post polish, true T/cross artwork, waterlogging, mixed
 adapters, diagonal ownership, other fence families. The medallion visual
-release hold remains independent; no deployment or production-world work.
+release hold and Alligator client visual hold remain independent; no
+deployment or production-world work.

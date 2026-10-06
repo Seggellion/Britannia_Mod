@@ -67,7 +67,7 @@ No registered tests are counted from their internal scenario totals.
 ## M5 — lifecycle
 
 Write process saves 64 layouts to actual Anvil chunks. Separate read process
-is running against the same disposable world. Boundary test already passed
+completed against the same disposable world. Boundary test passed
 actual cache eviction followed by first-owner-only load and second-owner
 load at X 121615/121616 and Z 123215/123216, both orders. It proves querying
 the partially loaded owner does not acquire the other full chunk; geometry
@@ -101,3 +101,62 @@ JUnit contract (authored hash protection) and no skips. Baseline client
 was normally built/launched, observed at main menu, and quit through UI.
 Three post-GC heap histograms have identical model/state/cache counts;
 timing and hotfix comparison will be recorded in the cost ledger.
+
+Final clean source commit: 07359f98277417b8ffdafd9d57b55b828804ab5b.
+Normal `build artifactIdentity runGameTestServer` via the isolated runner,
+with the configured default namespaces (mod, edge fence and three Alligator
+namespaces), succeeds in 23m40s on this loaded host. All 1,362 required
+GameTests pass in 7.032min; no test/assertion was removed. Final full JUnit:
+4,121 total / 4,098 passed / 23 skipped / zero failures or errors. All 23
+skips match baseline; its additional packaging test skip becomes a pass
+once a built deployable artifact exists. Earlier runs correctly had 24 skips.
+The JSON suite comparison preserves the exact skipped test names.
+
+`COST_MEASUREMENTS.md` records three actual post-GC client heap histograms per
+revision, fixed counts, absolute byte differences and their variability.
+Both normally launched clients were observed at main menu, using the same
+JDK/options. No wooden-fence missing-model warning was observed. Startup
+has one pair only; no isolated bake/frame profiler or startup variance.
+
+The matching hotfix client was ready at Direct Connection for the isolated
+localhost server. The desktop subsequently presented Windows PIN/lock UI;
+no lock/login interaction was attempted. Client packet/render/UV/outline,
+movement/tool and visual reload acceptance remain externally pending.
+This does not negate automated lifecycle evidence. No production runtime,
+installed mod or production world was accessed.
+
+## M7 — integration and held candidate
+
+Current canonical Patch 18 was rechecked at c8044e45, with its same owner
+untracked files and unrelated worktrees. `git merge --ff-only
+task/patch18-0.1.8d-edge-fence` integrates exactly tested 07359f98. No source
+merge conflict or implementation change; a further application retest is
+therefore unnecessary. Both canonical resource verification commands pass.
+Baseline c804 ancestry (including medallion/Alligator hotfixes) is preserved;
+the diff is confined to wooden fences, their tests/resources/build harness
+and this project's documentation. Main/Patch 19 are untouched.
+
+Normal `git push origin patch-18` backs up 07359f98, verified with live
+`git ls-remote`. Remote advanced from c1f2b5b8 without force. Closeout docs
+will follow as a documentation-only descendant; their final remote identity
+is recorded in the preserved closeout JSON and final handoff.
+
+Clean candidate: britannia_mod-0.1.8d-all.jar, 36,140,545 bytes, SHA-256
+89c3f936d2f942a0967ddc500542a8b0f587f5987a0902b2833596c099b486cb.
+Embedded source 07359f98277417b8ffdafd9d57b55b828804ab5b, dirty=false,
+version 0.1.8d, timestamp 2026-10-06T20:38:59.278362500Z. Built in the clean
+task validation checkout; identical source is now integrated. Jar audit
+confirms GeckoLib 4.6.6 and nanohttpd 2.2.0, no GameTest classes/namespaces or
+disposable probes. Production PresenceProbe is a legitimate existing class,
+not a discovery probe. Candidate provenance is preserved in JSON.
+
+## M8 — handoff and bounded cleanup
+
+Final status is IMPLEMENTATION_COMPLETE_PENDING_ACCEPTANCE; candidate is
+CANDIDATE_PREPARED_RELEASE_HELD. Required manual scene and remaining timing
+measurements are named in ACCEPTANCE.md, not silently counted as passes.
+Candidate, raw logs/histograms, suite comparison and lifecycle evidence are
+preserved under canonical `tmp/edge-fence-0.1.8d/` before disposal of task
+worlds. Only the two task-created worktrees and task branch are eligible
+for cleanup after clean integration and backup. Final actual cleanup and
+backup identities are recorded in that archive's CLOSEOUT.json.

@@ -1,8 +1,33 @@
 # Wooden edge fence recovery handoff
 
 Source baseline: current Patch 18 c8044e4565281514253e290167c555413c7a5293.
-Target version remains **0.1.8d**. Source integration, remote backup and exact
-candidate identity will be appended after the normal final gates.
+Target version remains **0.1.8d**. Implementation status:
+**IMPLEMENTATION_COMPLETE_PENDING_ACCEPTANCE**. Candidate status:
+**CANDIDATE_PREPARED_RELEASE_HELD**.
+
+Tested implementation 07359f98277417b8ffdafd9d57b55b828804ab5b is integrated
+by fast-forward into current `patch-18` and backed up with a normal non-force
+push (live remote verified). Closeout documentation is a descendant with no
+application changes; final branch/remote/cleanup identities are preserved in
+`tmp/edge-fence-0.1.8d/CLOSEOUT.json` in the canonical checkout.
+
+Held candidate: `tmp/edge-fence-0.1.8d/release/britannia_mod-0.1.8d-all.jar`.
+36,140,545 bytes; SHA-256
+`89c3f936d2f942a0967ddc500542a8b0f587f5987a0902b2833596c099b486cb`.
+Embedded source 07359f98277417b8ffdafd9d57b55b828804ab5b, dirty=false;
+build timestamp 2026-10-06T20:38:59.278362500Z. Normal clean packaging,
+dependency/provenance gates and complete JUnit/GameTests pass. Pinned Java21,
+Gradle8.9, MC1.21.1, NeoForge21.1.72, GeckoLib4.6.6 remain unchanged.
+
+Remaining fence acceptance: the desktop locked at the Windows PIN screen
+before the matching local-client world scene. Actual mouse packets,
+displayed state/render agreement, art/UVs, hit outlines, keyboard walk/jump,
+decorator edits and visual reload must be checked after unlocking. Actual
+64-layout save/restart and chunk eviction/load are already automated passes.
+Three measured heap samples show +8.32 MiB median Java heap; repeated startup
+variance, isolated model-bake and frame timings remain unmeasured. See
+ACCEPTANCE.md and COST_MEASUREMENTS.md. Neither source tests nor main-menu
+screenshots are presented as these missing client checks.
 
 Existing wooden panels keep their saved edge and physical layout when
 neighbors are placed, removed or reloaded. New compatible wooden panels join
