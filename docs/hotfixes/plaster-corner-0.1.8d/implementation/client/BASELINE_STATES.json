@@ -1,0 +1,2166 @@
+[
+  {
+    "case": 0,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=south,shape=corner,branch_right=false,mirrored=false,half=lower]",
+    "position": [
+      0,
+      80,
+      0
+    ],
+    "camera": [
+      3.2,
+      80,
+      3.2,
+      135.0,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,-1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "1,1,0": {
+        "Name": "minecraft:air"
+      },
+      "0,0,1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,1": {
+        "Name": "minecraft:air"
+      },
+      "-1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    }
+  },
+  {
+    "case": 1,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=north,shape=corner,branch_right=false,mirrored=false,half=lower]",
+    "position": [
+      12,
+      80,
+      0
+    ],
+    "camera": [
+      9.8,
+      80,
+      -2.2,
+      -44.99999999999999,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,-1": {
+        "Name": "minecraft:air"
+      },
+      "1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,0,1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "-1,1,0": {
+        "Name": "minecraft:air"
+      }
+    }
+  },
+  {
+    "case": 2,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=north,shape=corner,branch_right=false,mirrored=true,half=lower]",
+    "position": [
+      24,
+      80,
+      0
+    ],
+    "camera": [
+      27.2,
+      80,
+      -2.2,
+      44.99999999999999,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,-1": {
+        "Name": "minecraft:air"
+      },
+      "1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,0,1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "-1,1,0": {
+        "Name": "minecraft:air"
+      }
+    }
+  },
+  {
+    "case": 3,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=north,shape=corner,branch_right=true,mirrored=false,half=lower]",
+    "position": [
+      36,
+      80,
+      0
+    ],
+    "camera": [
+      39.2,
+      80,
+      -2.2,
+      45.00000000000003,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,-1": {
+        "Name": "minecraft:air"
+      },
+      "1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "1,1,0": {
+        "Name": "minecraft:air"
+      },
+      "0,0,1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    }
+  },
+  {
+    "case": 4,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=north,shape=corner,branch_right=true,mirrored=true,half=lower]",
+    "position": [
+      0,
+      80,
+      12
+    ],
+    "camera": [
+      -2.2,
+      80,
+      9.8,
+      -45.000000000000014,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,-1": {
+        "Name": "minecraft:air"
+      },
+      "1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "1,1,0": {
+        "Name": "minecraft:air"
+      },
+      "0,0,1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    }
+  },
+  {
+    "case": 5,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=east,shape=corner,branch_right=false,mirrored=false,half=lower]",
+    "position": [
+      12,
+      80,
+      12
+    ],
+    "camera": [
+      15.2,
+      80,
+      9.8,
+      45.0,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,-1": {
+        "Name": "minecraft:air"
+      },
+      "1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "1,1,0": {
+        "Name": "minecraft:air"
+      },
+      "0,0,1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    }
+  },
+  {
+    "case": 6,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=east,shape=corner,branch_right=false,mirrored=true,half=lower]",
+    "position": [
+      24,
+      80,
+      12
+    ],
+    "camera": [
+      27.2,
+      80,
+      15.2,
+      135.0,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,-1": {
+        "Name": "minecraft:air"
+      },
+      "1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "1,1,0": {
+        "Name": "minecraft:air"
+      },
+      "0,0,1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    }
+  },
+  {
+    "case": 7,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=east,shape=corner,branch_right=true,mirrored=false,half=lower]",
+    "position": [
+      36,
+      80,
+      12
+    ],
+    "camera": [
+      39.2,
+      80,
+      15.2,
+      134.99999999999997,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,-1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "1,1,0": {
+        "Name": "minecraft:air"
+      },
+      "0,0,1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,1": {
+        "Name": "minecraft:air"
+      },
+      "-1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    }
+  },
+  {
+    "case": 8,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=east,shape=corner,branch_right=true,mirrored=true,half=lower]",
+    "position": [
+      0,
+      80,
+      24
+    ],
+    "camera": [
+      3.2,
+      80,
+      21.8,
+      45.000000000000014,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,-1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "1,1,0": {
+        "Name": "minecraft:air"
+      },
+      "0,0,1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,1": {
+        "Name": "minecraft:air"
+      },
+      "-1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    }
+  },
+  {
+    "case": 9,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=south,shape=corner,branch_right=false,mirrored=true,half=lower]",
+    "position": [
+      12,
+      80,
+      24
+    ],
+    "camera": [
+      9.8,
+      80,
+      27.2,
+      -135.0,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,-1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "1,1,0": {
+        "Name": "minecraft:air"
+      },
+      "0,0,1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,1": {
+        "Name": "minecraft:air"
+      },
+      "-1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    }
+  },
+  {
+    "case": 10,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=south,shape=corner,branch_right=true,mirrored=false,half=lower]",
+    "position": [
+      24,
+      80,
+      24
+    ],
+    "camera": [
+      21.8,
+      80,
+      27.2,
+      -135.0,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,-1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,0,1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,1": {
+        "Name": "minecraft:air"
+      },
+      "-1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "-1,1,0": {
+        "Name": "minecraft:air"
+      }
+    }
+  },
+  {
+    "case": 11,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=south,shape=corner,branch_right=true,mirrored=true,half=lower]",
+    "position": [
+      36,
+      80,
+      24
+    ],
+    "camera": [
+      39.2,
+      80,
+      27.2,
+      134.99999999999997,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,-1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,0,1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,1": {
+        "Name": "minecraft:air"
+      },
+      "-1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "-1,1,0": {
+        "Name": "minecraft:air"
+      }
+    }
+  },
+  {
+    "case": 12,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=west,shape=corner,branch_right=false,mirrored=false,half=lower]",
+    "position": [
+      0,
+      80,
+      36
+    ],
+    "camera": [
+      -2.2,
+      80,
+      39.2,
+      -135.00000000000003,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,-1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,0,1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,1": {
+        "Name": "minecraft:air"
+      },
+      "-1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "-1,1,0": {
+        "Name": "minecraft:air"
+      }
+    }
+  },
+  {
+    "case": 13,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=west,shape=corner,branch_right=false,mirrored=true,half=lower]",
+    "position": [
+      12,
+      80,
+      36
+    ],
+    "camera": [
+      9.8,
+      80,
+      33.8,
+      -44.999999999999964,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,-1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,0,1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,1": {
+        "Name": "minecraft:air"
+      },
+      "-1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "-1,1,0": {
+        "Name": "minecraft:air"
+      }
+    }
+  },
+  {
+    "case": 14,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=west,shape=corner,branch_right=true,mirrored=false,half=lower]",
+    "position": [
+      24,
+      80,
+      36
+    ],
+    "camera": [
+      21.8,
+      80,
+      33.8,
+      -44.999999999999964,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,-1": {
+        "Name": "minecraft:air"
+      },
+      "1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,0,1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "-1,1,0": {
+        "Name": "minecraft:air"
+      }
+    }
+  },
+  {
+    "case": 15,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=west,shape=corner,branch_right=true,mirrored=true,half=lower]",
+    "position": [
+      36,
+      80,
+      36
+    ],
+    "camera": [
+      33.8,
+      80,
+      39.2,
+      -135.0,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,-1": {
+        "Name": "minecraft:air"
+      },
+      "1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,0,1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "-1,1,0": {
+        "Name": "minecraft:air"
+      }
+    }
+  },
+  {
+    "case": 16,
+    "lower": "britannia_mod:plaster_wall_and_support_blank_half[facing=north,shape=corner,branch_right=false]",
+    "position": [
+      0,
+      80,
+      48
+    ],
+    "camera": [
+      -2.2,
+      80,
+      45.8,
+      -44.99999999999997,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "saved_upper": {
+      "Name": "minecraft:air"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,-1": {
+        "Name": "minecraft:air"
+      },
+      "1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,0,1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "-1,1,0": {
+        "Name": "minecraft:air"
+      }
+    }
+  },
+  {
+    "case": 17,
+    "lower": "britannia_mod:plaster_wall_and_support_blank_half[facing=north,shape=corner,branch_right=true]",
+    "position": [
+      12,
+      80,
+      48
+    ],
+    "camera": [
+      15.2,
+      80,
+      45.8,
+      44.999999999999964,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "saved_upper": {
+      "Name": "minecraft:air"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,-1": {
+        "Name": "minecraft:air"
+      },
+      "1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "1,1,0": {
+        "Name": "minecraft:air"
+      },
+      "0,0,1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    }
+  },
+  {
+    "case": 18,
+    "lower": "britannia_mod:plaster_wall_and_support_blank_half[facing=east,shape=corner,branch_right=false]",
+    "position": [
+      24,
+      80,
+      48
+    ],
+    "camera": [
+      27.2,
+      80,
+      45.8,
+      44.999999999999964,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "saved_upper": {
+      "Name": "minecraft:air"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,-1": {
+        "Name": "minecraft:air"
+      },
+      "1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "1,1,0": {
+        "Name": "minecraft:air"
+      },
+      "0,0,1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    }
+  },
+  {
+    "case": 19,
+    "lower": "britannia_mod:plaster_wall_and_support_blank_half[facing=east,shape=corner,branch_right=true]",
+    "position": [
+      36,
+      80,
+      48
+    ],
+    "camera": [
+      39.2,
+      80,
+      51.2,
+      135.0,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "saved_upper": {
+      "Name": "minecraft:air"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,-1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "1,1,0": {
+        "Name": "minecraft:air"
+      },
+      "0,0,1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,1": {
+        "Name": "minecraft:air"
+      },
+      "-1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    }
+  },
+  {
+    "case": 20,
+    "lower": "britannia_mod:plaster_wall_and_support_blank_half[facing=south,shape=corner,branch_right=false]",
+    "position": [
+      0,
+      80,
+      60
+    ],
+    "camera": [
+      3.2,
+      80,
+      63.2,
+      135.00000000000003,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "saved_upper": {
+      "Name": "minecraft:air"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,-1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "1,1,0": {
+        "Name": "minecraft:air"
+      },
+      "0,0,1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,1": {
+        "Name": "minecraft:air"
+      },
+      "-1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    }
+  },
+  {
+    "case": 21,
+    "lower": "britannia_mod:plaster_wall_and_support_blank_half[facing=south,shape=corner,branch_right=true]",
+    "position": [
+      12,
+      80,
+      60
+    ],
+    "camera": [
+      9.8,
+      80,
+      63.2,
+      -135.00000000000006,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "saved_upper": {
+      "Name": "minecraft:air"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,-1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,0,1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,1": {
+        "Name": "minecraft:air"
+      },
+      "-1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "-1,1,0": {
+        "Name": "minecraft:air"
+      }
+    }
+  },
+  {
+    "case": 22,
+    "lower": "britannia_mod:plaster_wall_and_support_blank_half[facing=west,shape=corner,branch_right=false]",
+    "position": [
+      24,
+      80,
+      60
+    ],
+    "camera": [
+      21.8,
+      80,
+      63.2,
+      -135.00000000000006,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "saved_upper": {
+      "Name": "minecraft:air"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,-1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,0,1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,1": {
+        "Name": "minecraft:air"
+      },
+      "-1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "-1,1,0": {
+        "Name": "minecraft:air"
+      }
+    }
+  },
+  {
+    "case": 23,
+    "lower": "britannia_mod:plaster_wall_and_support_blank_half[facing=west,shape=corner,branch_right=true]",
+    "position": [
+      36,
+      80,
+      60
+    ],
+    "camera": [
+      33.8,
+      80,
+      57.8,
+      -45.0,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "saved_upper": {
+      "Name": "minecraft:air"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,-1": {
+        "Name": "minecraft:air"
+      },
+      "1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "north",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,0,1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "west",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "-1,1,0": {
+        "Name": "minecraft:air"
+      }
+    }
+  },
+  {
+    "case": 24,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=south,shape=straight,branch_right=false,mirrored=false,half=lower]",
+    "position": [
+      0,
+      80,
+      72
+    ],
+    "camera": [
+      3.2,
+      80,
+      75.2,
+      135.00000000000003,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,-1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "1,1,0": {
+        "Name": "minecraft:air"
+      },
+      "0,0,1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,1": {
+        "Name": "minecraft:air"
+      },
+      "-1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    }
+  },
+  {
+    "case": 25,
+    "lower": "britannia_mod:plaster_wall_and_support_blank[facing=south,shape=t_junction,branch_right=false,mirrored=false,half=lower]",
+    "position": [
+      12,
+      80,
+      72
+    ],
+    "camera": [
+      15.2,
+      80,
+      75.2,
+      135.00000000000006,
+      10
+    ],
+    "saved_lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "saved_upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,-1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "1,1,0": {
+        "Name": "minecraft:air"
+      },
+      "0,0,1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,1": {
+        "Name": "minecraft:air"
+      },
+      "-1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    }
+  }
+]

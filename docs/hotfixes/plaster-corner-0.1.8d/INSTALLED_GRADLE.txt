@@ -1,0 +1,15 @@
+
+------------------------------------------------------------
+Gradle 8.9
+------------------------------------------------------------
+
+Build time:    2024-07-11 14:37:41 UTC
+Revision:      d536ef36a19186ccc596d8817123e5445f30fef8
+
+Kotlin:        1.9.23
+Groovy:        3.0.21
+Ant:           Apache Ant(TM) version 1.10.13 compiled on January 4 2023
+Launcher JVM:  21.0.8 (Microsoft 21.0.8+9-LTS)
+Daemon JVM:    Compatible with Java 21 (from gradle/gradle-daemon-jvm.properties)
+OS:            Windows 11 10.0 amd64
+

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.seggellion.britannia_mod.block.WallJunctionAlignmentTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-07T03:26:25" hostname="MSI" time="0.019">
+  <properties/>
+  <testcase name="aStraightRunNeverMovesWhateverIsBuiltAgainstIt()" classname="com.seggellion.britannia_mod.block.WallJunctionAlignmentTest" time="0.014"/>
+  <testcase name="theRuleSettlesAndDoesNotOscillate()" classname="com.seggellion.britannia_mod.block.WallJunctionAlignmentTest" time="0.001"/>
+  <testcase name="neighbouringBlocksHaveArtInContactAcrossTheFaceTheyShare()" classname="com.seggellion.britannia_mod.block.WallJunctionAlignmentTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

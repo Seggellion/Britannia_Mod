@@ -1,0 +1,18 @@
+> Task :cacheVersionManifest1.21.1 UP-TO-DATE
+> Task :cacheVersionExecutableClient1.21.1
+> Task :cacheVersionExecutableServer1.21.1 FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':cacheVersionExecutableServer1.21.1'.
+> Failed to execute stage: Default[output=C:\projects\britannia\mod\Britannia_Mod\.gradle\caches\minecraft\versions\1.21.1\server.jar, createsDirectory=false, execute=net.neoforged.gradle.common.tasks.MinecraftArtifactFileCacheProvider$$Lambda/0x000001a1ccc39c58@6aea65a9]
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 4s
+3 actionable tasks: 2 executed, 1 up-to-date

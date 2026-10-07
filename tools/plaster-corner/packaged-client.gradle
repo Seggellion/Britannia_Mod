@@ -1,0 +1,20 @@
+// Disposable packaged smoke only: use the pinned NeoForge SDK, with no project mod roots.
+// Put the verified -all candidate in the isolated run directory's mods/ first.
+gradle.projectsEvaluated {
+    rootProject.tasks.named('runClient').configure {
+        doFirst {
+            def projectBuild = rootProject.layout.buildDirectory.get().asFile.canonicalPath
+            def excluded = classpath.files.findAll { f ->
+                f.canonicalPath.startsWith(projectBuild + File.separator) ||
+                f.name.startsWith('geckolib-') || f.name.startsWith('nanohttpd-')
+            }
+            setClasspath(classpath.filter { !excluded.contains(it) })
+            environment 'MOD_CLASSES', ''
+            println 'PACKAGED_SMOKE: MOD_CLASSES cleared; compiled project outputs and standalone bundled dependencies excluded.'
+            excluded.each { println "PACKAGED_SMOKE excluded: ${it}" }
+            if (classpath.files.any { it.canonicalPath.startsWith(projectBuild + File.separator) }) {
+                throw new GradleException('Compiled project outputs remain on packaged smoke classpath')
+            }
+        }
+    }
+}

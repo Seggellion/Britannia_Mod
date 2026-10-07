@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.seggellion.britannia_mod.block.PlasterRenderLayerContractTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-10-07T03:26:25" hostname="MSI" time="0.355">
+  <properties/>
+  <testcase name="theOrnatenessSheetIsStillTheTransparentOneAndIsStillClearNotBlack()" classname="com.seggellion.britannia_mod.block.PlasterRenderLayerContractTest" time="0.15"/>
+  <testcase name="everyVillaModelThatSamplesATransparentTextureDeclaresAnAlphaAwareLayer()" classname="com.seggellion.britannia_mod.block.PlasterRenderLayerContractTest" time="0.205"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

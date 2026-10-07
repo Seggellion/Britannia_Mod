@@ -11,6 +11,11 @@ independent servers ("shards") into one persistent world.
 
 Deployment remains on hold pending a separate decision on the medallion's deferred visual checks.
 
+The plaster support corner repair relocates its single timber post to the junction and finishes
+the vacated plaster end, including the existing half corner. Local candidate preparation and
+client acceptance are tracked in [the plaster handoff](docs/hotfixes/plaster-corner-0.1.8d/RELEASE_HANDOFF.md).
+Alligator, fence and medallion acceptance holds remain in force.
+
 ## Features
 
 - **Skills & progression** — UO-style skill gain (Mining, Farming, and more), with access

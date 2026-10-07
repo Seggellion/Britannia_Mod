@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.seggellion.britannia_mod.block.PlasterSupportCornerContractTest" tests="5" skipped="0" failures="3" errors="0" timestamp="2026-10-07T03:36:20" hostname="MSI" time="0.166">
+  <properties/>
+  <testcase name="allSavedMappingsAndSevenPixelShapesRetainTheirContract()" classname="com.seggellion.britannia_mod.block.PlasterSupportCornerContractTest" time="0.061"/>
+  <testcase name="reflectedCornerPreservesFacesAndTextureGrainSemantics()" classname="com.seggellion.britannia_mod.block.PlasterSupportCornerContractTest" time="0.041"/>
+  <testcase name="finishedPlasterCoversTheVacatedPostSegmentAndBranch()" classname="com.seggellion.britannia_mod.block.PlasterSupportCornerContractTest" time="0.025">
+    <failure message="org.opentest4j.AssertionFailedError: finished branch plaster missing at 0.01,0.5,13.5 ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: finished branch plaster missing at 0.01,0.5,13.5 ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at app//com.seggellion.britannia_mod.block.PlasterSupportCornerContractTest.finishedPlasterCoversTheVacatedPostSegmentAndBranch(PlasterSupportCornerContractTest.java:103)
+	at java.base@21.0.8/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.8/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.8/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="halfCornerHasJunctionTimberAndExplicitCutCaps()" classname="com.seggellion.britannia_mod.block.PlasterSupportCornerContractTest" time="0.027">
+    <failure message="org.opentest4j.AssertionFailedError: expected: &lt;Box[x0=-0.8, y0=0.0, z0=-0.1, x1=6.7, y1=16.0, z1=2.9]&gt; but was: &lt;Box[x0=-0.8, y0=0.0, z0=13.1, x1=6.7, y1=16.0, z1=16.1]&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;Box[x0=-0.8, y0=0.0, z0=-0.1, x1=6.7, y1=16.0, z1=2.9]&gt; but was: &lt;Box[x0=-0.8, y0=0.0, z0=13.1, x1=6.7, y1=16.0, z1=16.1]&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+	at app//com.seggellion.britannia_mod.block.PlasterSupportCornerContractTest.halfCornerHasJunctionTimberAndExplicitCutCaps(PlasterSupportCornerContractTest.java:144)
+	at java.base@21.0.8/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.8/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.8/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="singleJunctionPillarAcrossAllAffectedRotationsMirrorsAndVerticalSections()" classname="com.seggellion.britannia_mod.block.PlasterSupportCornerContractTest" time="0.004">
+    <failure message="org.opentest4j.AssertionFailedError: junction timber: mirrored=false, turn=0 ==&gt; expected: &lt;Box[x0=-0.8, y0=0.0, z0=-0.1, x1=6.7, y1=32.0, z1=2.9]&gt; but was: &lt;Box[x0=-0.8, y0=0.0, z0=13.1, x1=6.7, y1=32.0, z1=16.1]&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: junction timber: mirrored=false, turn=0 ==&gt; expected: &lt;Box[x0=-0.8, y0=0.0, z0=-0.1, x1=6.7, y1=32.0, z1=2.9]&gt; but was: &lt;Box[x0=-0.8, y0=0.0, z0=13.1, x1=6.7, y1=32.0, z1=16.1]&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+	at app//com.seggellion.britannia_mod.block.PlasterSupportCornerContractTest.singleJunctionPillarAcrossAllAffectedRotationsMirrorsAndVerticalSections(PlasterSupportCornerContractTest.java:79)
+	at java.base@21.0.8/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.8/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.8/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[WARN StatusConsoleListener Advanced terminal features are not available in this environment
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

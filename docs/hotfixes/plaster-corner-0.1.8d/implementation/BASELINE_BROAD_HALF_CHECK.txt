@@ -1,0 +1,1 @@
+refusing to write: cutting plaster_wall_and_support_blank_straight does not reproduce the hand-made plaster_wall_and_support_blank_half, so this transform does not match the art
