@@ -38,7 +38,7 @@ class WoodenFenceContractTest {
         JsonObject variants = json(ASSETS.resolve("blockstates/wooden_fence.json"))
             .getAsJsonObject("variants");
         assertEquals(192, variants.size(), "64 sentinel mappings + 128 concrete physical layouts");
-        JsonObject legacy = json(PROJECT.resolve("docs/projects/patch18-edge-fence-hotfix/oracle/legacy-blockstate.json"))
+        JsonObject legacy = json(PROJECT.resolve("src/test/resources/release-contracts/wooden-fence/legacy-blockstate.json"))
             .getAsJsonObject("variants");
         for (var old : legacy.entrySet()) {
             String[] facingAndBits = old.getKey().split(",", 2);
@@ -177,7 +177,7 @@ class WoodenFenceContractTest {
 
     @Test
     void authoredMeshesHaveNotBeenRewritten() throws Exception {
-        for(String line:Files.readAllLines(PROJECT.resolve("docs/projects/patch18-edge-fence-hotfix/oracle/AUTHORED_MODEL_SHA256.txt"))) {
+        for(String line:Files.readAllLines(PROJECT.resolve("src/test/resources/release-contracts/wooden-fence/AUTHORED_MODEL_SHA256.txt"))) {
             String[] parts=line.trim().split("\\s+");
             byte[] bytes=Files.readString(ASSETS.resolve("models/block/structure/wooden_fence/"+parts[1])).replace("\r\n","\n").getBytes(java.nio.charset.StandardCharsets.UTF_8);
             assertEquals(parts[0],java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes)),parts[1]);

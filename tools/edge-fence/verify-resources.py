@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[2]
 ASSETS=ROOT/'src/main/resources/assets/britannia_mod'
-ORACLE=ROOT/'docs/projects/patch18-edge-fence-hotfix/oracle'
+ORACLE=ROOT/'src/test/resources/release-contracts/wooden-fence'
 DIRS=('north','east','south','west')
 FACE_VERTICES={
  'down':((0,0,1),(0,0,0),(1,0,0),(1,0,1)),
