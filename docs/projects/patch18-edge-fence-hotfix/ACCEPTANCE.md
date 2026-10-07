@@ -1,3 +1,11 @@
+## Current combined closeout — 2026-10-07
+
+Supersedes the historical desktop-lock and combined medallion hold below. The unchanged fence implementation is in the verified final `986ed746`/`f02d2876…482bd` candidate. Complete 4,129 JUnit / 1,366 required GameTests pass. Matching dedicated actual mouse placements in all four facings plus support and endpoint clicks are recorded with native F2/state assertions; all six saved samples match after the actual server restart. Owner sustained fence barrier movement is approved. The interrupted sequential attempt did not establish a two-panel corner and is not a pass. Remaining required human observations are the fresh corner's placement/decorator behavior, original/reflected rails/UVs/outline and reconnect/resource-reload appearance. Saved-layout/physics tests are independent automated evidence.
+
+Repeated startup/bake/frame timing is a follow-up measurement, not a source-publication hold: no demonstrated regression or established threshold; +8.32 MiB measured median heap cost remains recorded. Medallion UI is owner-approved; alligator playback remains required. Production acceptance is pending, while source publication is independently authorized without main ruleset bypass. See [combined handoff](../../hotfixes/combined-0.1.8d/RELEASE_HANDOFF.md), [gate reassessment](../../hotfixes/combined-0.1.8d/GATE_REASSESSMENT.md) and [five-minute session](../../hotfixes/combined-0.1.8d/MANUAL_SESSION.md).
+
+---
+
 # Wooden fence acceptance
 
 Source implementation and release acceptance are separate. This ledger is

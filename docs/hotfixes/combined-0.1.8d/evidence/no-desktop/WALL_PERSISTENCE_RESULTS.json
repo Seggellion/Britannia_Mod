@@ -1,0 +1,87 @@
+{
+  "source": "986ed746866dc944b7b496ab9428b670f65e15c0",
+  "loaded_identity_match": true,
+  "loaded_pair_assertions": 108,
+  "saved_rows": 54,
+  "before_after_exact_rows_and_neighbors": true,
+  "differences": [],
+  "actual_mouse_edit_sample": {
+    "label": "decorated_pair",
+    "position": [
+      48,
+      80,
+      84
+    ],
+    "lower": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "upper": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "neighbors": {
+      "0,0,-1": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "0,1,-1": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "east",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "1,0,0": {
+        "Name": "minecraft:air"
+      },
+      "1,1,0": {
+        "Name": "minecraft:air"
+      },
+      "0,0,1": {
+        "Name": "minecraft:air"
+      },
+      "0,1,1": {
+        "Name": "minecraft:air"
+      },
+      "-1,0,0": {
+        "Properties": {
+          "half": "lower",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      },
+      "-1,1,0": {
+        "Properties": {
+          "half": "upper",
+          "shape": "straight",
+          "facing": "south",
+          "branch_right": "false"
+        },
+        "Name": "britannia_mod:plaster_wall_blank"
+      }
+    }
+  },
+  "scope": "Real dedicated-server load/save of copied actual edited client save. State persistence evidence, not visual/player interaction."
+}

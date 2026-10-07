@@ -1,3 +1,13 @@
+## Current combined closeout — 2026-10-07
+
+This update supersedes the historical status below. The bounded shared-wall repair is integrated in `5a6734ba`; clean final candidate source is `986ed746`, SHA-256 `f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd`, 36,142,668 bytes. Full 4,129-case JUnit and 1,366-required-GameTest gates pass; candidate and prior evidence are preserved. Actual packaged both-half edits now match, joins/transforms render correctly, engine legacy collision follows the visible lower at both heights, and all 54 copied client fixture rows/neighbors survive a real dedicated load/save with 108 loaded state assertions. This is not a claim of post-load human visual acceptance.
+
+Plaster status: **AUTOMATED_AND_CURRENT_RENDER_ACCEPTANCE_PASS; FINAL_LOADED_APPEARANCE_PENDING**. The prior mirror divergence was pre-existing and player-visible/blocking (0.5625-block upper branch displacement); it was repaired, not waived. Current manual remainder is one upper edit followed by reconnect/resource refresh and appearance/outline comparison. Sustained wall/fence movement is already owner-approved and must not be repeated.
+
+Combined production acceptance remains pending fence corner/decorator/reconnect appearance and alligator playback, plus the short plaster loaded appearance check. Medallion UI is **OWNER_APPROVED_UI_ACCEPTANCE_COMPLETE**. Timing repetitions are follow-up confidence measurements, with measured memory cost retained. Source publication is independently authorized; `main` must follow its ruleset without administrator bypass. See the [current combined handoff](../combined-0.1.8d/RELEASE_HANDOFF.md), [gate reassessment](../combined-0.1.8d/GATE_REASSESSMENT.md) and [single manual session](../combined-0.1.8d/MANUAL_SESSION.md). No live deployment, world edits, launcher update, tag or GitHub Release is authorized/performed.
+
+---
+
 # Packaged wall-pair mismatch diagnosis
 
 Disposition: **PRE_EXISTING_BLOCKING_REQUIRED_CORNER_BEHAVIOR**. This is a player-visible physical defect, not harmless stored-state divergence. The plaster mesh repair passes its bounded render matrix, but plaster acceptance cannot be cleared while decoration can leave the two heights with different collision. Mirrored neighboring joins also fail with matching halves. No shared Java repair or waiver is included in this asset hotfix.

@@ -9,13 +9,15 @@ independent servers ("shards") into one persistent world.
 
 **Patch-18 source version: 0.1.8d — recovery candidate, not yet deployed.**
 
-Deployment remains on hold for plaster's pre-existing paired-wall/mirror behavior defect and
-the outstanding fence, alligator and medallion acceptance checks.
+Production acceptance remains pending the short fence corner/decorator/reload, paired-wall
+loaded appearance/outline and alligator playback checks. The pre-existing shared wall defect
+has been repaired and automated/current render checks pass; medallion UI and owner movement
+are accepted. Source publication is independently authorized and tracked separately.
 
-The plaster support corner repair relocates its single timber post to the junction and finishes
-the vacated plaster end, including the existing half corner. Local candidate preparation and
-client acceptance are tracked in [the plaster handoff](docs/hotfixes/plaster-corner-0.1.8d/RELEASE_HANDOFF.md).
-Alligator, fence and medallion acceptance holds remain in force.
+The plaster repair relocates the single timber post to the junction, finishes its vacated end,
+and retains the half corner. Bounded shared editing/collision/transform corrections preserve
+the existing registry/assets/version. See the [combined handoff](docs/hotfixes/combined-0.1.8d/RELEASE_HANDOFF.md)
+and [single five-minute session](docs/hotfixes/combined-0.1.8d/MANUAL_SESSION.md).
 
 ## Features
 

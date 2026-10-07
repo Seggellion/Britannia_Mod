@@ -1,0 +1,61 @@
+{
+  "public_source": "fd90bff209d47addf6667c4576bd2053890127f2",
+  "clean": true,
+  "tasks": [
+    "clean",
+    "build",
+    "artifactIdentity"
+  ],
+  "exit_code": 0,
+  "junit_suites": 516,
+  "junit": {
+    "tests": 4129,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 31
+  },
+  "jar_size": 36142667,
+  "jar_sha256": "7523d9effef7a02c723cf83f1ecedd67b02ca20bcd935f945cb6136c9e5c8c9f",
+  "embedded": "mod.version=0.1.8d\ngit.head=fd90bff209d47addf6667c4576bd2053890127f2\ngit.branch=HEAD\ngit.dirty=false\nbuild.timestamp=2026-10-07T17:49:54.700579900Z\n",
+  "candidate_zip_entry_parity": true,
+  "different_entries": [
+    "britannia_mod_build.properties"
+  ],
+  "gametest_evidence": "FINAL_GATES.json; identical retained production and GameTest sources and packaged entries",
+  "log": "tmp/combined-0.1.8d/release/PUBLIC_GATES.log",
+  "additional_policy_skips": [
+    {
+      "class": "GeneratedBannerCatalogueTest",
+      "case": "statusReportListsGateBFacts"
+    },
+    {
+      "class": "Milestone14RRemovalAndPreservationTest",
+      "case": "statusHasNoCraftingContract"
+    },
+    {
+      "class": "ParallelLargeGateECloseoutTest",
+      "case": "statusReportHasFinalTotals"
+    },
+    {
+      "class": "NewAssetsCrossSystemAuditTest",
+      "case": "assetManifestRecordsCompletedImportsAndDeferredSilk"
+    },
+    {
+      "class": "DeployableArtifactPackagingTest",
+      "case": "readmeNamesTheVersionThatGradleActuallyBuilds"
+    },
+    {
+      "class": "DeployableArtifactPackagingTest",
+      "case": "readmeNamesTheDeployableArtifactWithItsRealFilename"
+    },
+    {
+      "class": "QuestContractFixturesTest",
+      "case": "theProtocolDocumentDescribesTheVersionTheseFixturesAre"
+    },
+    {
+      "class": "WildResourceDocumentationTest",
+      "case": "handoffDocumentsOperationsBalanceAssetsAndKnownResults"
+    }
+  ],
+  "additional_policy_skips_reason": "Eight existing assumption-guarded internal documentation assertions: documents intentionally excluded from public snapshot. These passed on candidate source; production/contract tests remain intact. 23 inherited skips + 8 policy skips = 31."
+}

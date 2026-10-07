@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-07",
+  "source_publication": "AUTHORIZED_PUSH_PREPARED",
+  "production_acceptance": "PENDING_THREE_SHORT_HUMAN_OBSERVATIONS",
+  "development_remote_before": "7ca44a78d2438ae2204c4f64271ef84bb0672740",
+  "main_remote": "f039c4b259d925872618bfe64ee574b20776856c",
+  "sanitized_snapshot": "fd90bff209d47addf6667c4576bd2053890127f2",
+  "review_branch": "codex/patch18-0.1.8d-source",
+  "main_status": "NOT_UPDATED_RULESET_HOLD",
+  "ruleset_id": 17373102,
+  "main_holds": [
+    "Restricted update rule only permits administrator bypass; owner forbids bypass",
+    "Unsigned snapshot head; required verified signatures and no configured signer established"
+  ],
+  "candidate_unchanged": true,
+  "candidate_source": "986ed746866dc944b7b496ab9428b670f65e15c0",
+  "candidate_sha256": "f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd"
+}

@@ -1,0 +1,14 @@
+{
+  "source": "986ed746866dc944b7b496ab9428b670f65e15c0",
+  "tests": 4129,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 23,
+  "suites": 516,
+  "required_GameTests": 1366,
+  "passed": true,
+  "pre_fixture_candidate_entry_differences": [
+    "britannia_mod_build.properties"
+  ],
+  "test_namespace_leak": []
+}

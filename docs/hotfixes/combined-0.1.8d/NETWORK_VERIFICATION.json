@@ -1,0 +1,69 @@
+{
+  "source": "986ed746866dc944b7b496ab9428b670f65e15c0",
+  "backend_scope": "local unit mocks / disposable GameTest world; no live Rails acceptance claimed",
+  "suites": [
+    {
+      "suite": "com.seggellion.britannia_mod.event.GrapeColourBootstrapSendTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "suite": "com.seggellion.britannia_mod.farming.GrapeGrowthTimingTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "suite": "com.seggellion.britannia_mod.farming.GrapeVisualDiagnosticsTest",
+      "tests": "7",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "suite": "com.seggellion.britannia_mod.network.CityFoodSupplyCacheTest",
+      "tests": "14",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "suite": "com.seggellion.britannia_mod.quest.handin.QuestHandinEvidenceBoundaryTest",
+      "tests": "7",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "suite": "com.seggellion.britannia_mod.quest.handin.QuestItemHandinClientTest",
+      "tests": "7",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "suite": "com.seggellion.britannia_mod.quest.handin.QuestItemHandinProtocolTest",
+      "tests": "19",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "suite": "com.seggellion.britannia_mod.server.http.ServerHttpExecutorThreadNamingTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "suite": "com.seggellion.britannia_mod.winery.GrapeColourSyncTest",
+      "tests": "8",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    }
+  ]
+}

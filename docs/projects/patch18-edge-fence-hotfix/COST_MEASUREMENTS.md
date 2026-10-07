@@ -1,3 +1,9 @@
+## Current combined closeout — 2026-10-07
+
+The measured cost below remains unchanged. Repeated startup variance, isolated model bake and frame profiling are follow-up confidence measurements: no established threshold or demonstrated regression was found. They do not block source publication or current production acceptance. Meaningful client/GPU repetitions would interfere with the desktop and are not run under the owner's current instruction. No new performance pass is claimed. See [reassessment](../../hotfixes/combined-0.1.8d/GATE_REASSESSMENT.md).
+
+---
+
 # Wooden fence client cost
 
 Measured 2026-10-06 using normally compiled development clients at the same

@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-07",
+  "candidate_source": "986ed746866dc944b7b496ab9428b670f65e15c0",
+  "candidate_sha256": "f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd",
+  "status": "OWNER_APPROVED_UI_ACCEPTANCE_COMPLETE",
+  "owner_statement": "I accept the medallion UI based on my testing. Record this as owner-approved UI acceptance and close that gate. Preserve existing functional verification; do not repeat medallion UI testing.",
+  "prior_statement": "Yes I am complete, and all of it looks good. I approve.",
+  "accepted_ui": "Owner-tested walk/run/swim/crawl/cape and existing medallion UI; explicit approval closes the UI gate.",
+  "functional_verification": "Unchanged implementation 4a0feb03; final clean complete JUnit/GameTests passed; preserve existing lifecycle/contract evidence.",
+  "evidence_limit": "Owner-observed approval, not a claim that all six input cases have independently captured frame/position traces. Public-profile cape/front snapshots already exist.",
+  "optional_second_profile_multiplayer": "Optional; not added as a release requirement."
+}

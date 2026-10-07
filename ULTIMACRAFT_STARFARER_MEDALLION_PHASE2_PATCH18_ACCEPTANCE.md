@@ -1,3 +1,9 @@
+## Combined 0.1.8d continuation � 2026-10-07
+
+**UI gate COMPLETE: OWNER_APPROVED_UI_ACCEPTANCE.** The owner explicitly accepted the medallion UI based on their testing and requested no repeated UI testing. Preserve the existing functional/lifecycle verification and fresh clean 0.1.8d complete gates. Candidate source `986ed746`, SHA-256 `f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd`. [Owner approval](docs/hotfixes/combined-0.1.8d/MEDALLION_UI_APPROVAL.json) closes the previous motion/swim/crawl/cape UI hold; optional multiplayer is not promoted to a requirement. Combined release readiness remains separate in the [current handoff](docs/hotfixes/combined-0.1.8d/RELEASE_HANDOFF.md).
+
+The following P2-M6 ledger is preserved historical evidence.
+
 # Starfarer’s Medallion Phase 2 — Patch-18 Acceptance
 
 2026-09-22 · P2-M6 closeout

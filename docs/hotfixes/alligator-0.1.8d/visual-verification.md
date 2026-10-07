@@ -1,3 +1,9 @@
+## Current combined closeout — 2026-10-07
+
+The alligator implementation remains unchanged in the final clean `986ed746`/`f02d2876…482bd` candidate. Existing movement/survival/performance tests and the full 1,366-required-GameTest gate pass. Actual animation remains **PENDING_HUMAN_PLAYBACK**; state/physics tests do not establish visible gait, stopped water/idle bind pose, transition reset or aim. A disposable localhost 1,600-tick (80-second nominal) sequence is prepared; its forced stopped controls are distinguished from actual AI travel. Fixture preparation/preflight is not visual acceptance. See [single manual session](../combined-0.1.8d/MANUAL_SESSION.md) and [current handoff](../combined-0.1.8d/RELEASE_HANDOFF.md). Medallion UI and owner sustained movement are approved and must not be repeated. Source publication is independently authorized; no deployment follows.
+
+---
+
 # Remaining client visual gate
 
 NOT_RUN: this session exposes no native Minecraft UI/playback capture. Asset-key checking and dedicated-server loading pass, but do not certify visible animation. Existing medallion sustained motion/cape/swimming visual acceptance remains a separate release hold.

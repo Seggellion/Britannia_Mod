@@ -1,3 +1,9 @@
+## Current closeout — 2026-10-07
+
+Source publication is independently authorized before remaining manual observations. Snapshot fd90bff209d47addf6667c4576bd2053890127f2 retains exact source object/type/mode parity and passes clean build/full JUnit. Additional closeout changes are excluded documents/evidence. Main restricted updates/signatures remain enforced without administrator exception; a PR is not updated main. Actual outcome is recorded in PUBLICATION_RECEIPT.json and RELEASE_HANDOFF.md.
+
+---
+
 # Public snapshot preparation
 
 The existing 2026-09-14 workflow produced a separate main child of the prior public main and retained exact non-Markdown tree parity with Patch 18. Current owner instructions additionally exclude all internal records, dumps and screenshots. Canonical records remain intact; exclusions are applied only in the detached public-source worktree.

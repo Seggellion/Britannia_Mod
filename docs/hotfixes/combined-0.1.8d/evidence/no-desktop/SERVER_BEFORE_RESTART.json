@@ -1,0 +1,94 @@
+{
+  "48,80,84": {
+    "Properties": {
+      "half": "lower",
+      "shape": "corner",
+      "facing": "south",
+      "branch_right": "false",
+      "mirrored": "false"
+    },
+    "Name": "britannia_mod:plaster_wall_and_support_blank"
+  },
+  "48,81,84": {
+    "Properties": {
+      "half": "upper",
+      "shape": "corner",
+      "facing": "south",
+      "branch_right": "false",
+      "mirrored": "true"
+    },
+    "Name": "britannia_mod:plaster_wall_and_support_blank"
+  },
+  "130,80,20": {
+    "Properties": {
+      "east": "false",
+      "south": "false",
+      "north": "false",
+      "west": "false",
+      "facing": "north",
+      "layout_code": "0"
+    },
+    "Name": "britannia_mod:wooden_fence"
+  },
+  "144,80,20": {
+    "Properties": {
+      "east": "false",
+      "south": "false",
+      "north": "false",
+      "west": "false",
+      "facing": "east",
+      "layout_code": "0"
+    },
+    "Name": "britannia_mod:wooden_fence"
+  },
+  "130,80,31": {
+    "Properties": {
+      "east": "false",
+      "south": "false",
+      "north": "false",
+      "west": "false",
+      "facing": "south",
+      "layout_code": "0"
+    },
+    "Name": "britannia_mod:wooden_fence"
+  },
+  "144,80,31": {
+    "Properties": {
+      "east": "false",
+      "south": "false",
+      "north": "false",
+      "west": "false",
+      "facing": "west",
+      "layout_code": "0"
+    },
+    "Name": "britannia_mod:wooden_fence"
+  },
+  "136,80,27": {
+    "Properties": {
+      "east": "true",
+      "south": "false",
+      "north": "false",
+      "west": "false",
+      "facing": "north",
+      "layout_code": "0"
+    },
+    "Name": "britannia_mod:wooden_fence"
+  },
+  "137,80,27": {
+    "Properties": {
+      "east": "false",
+      "south": "false",
+      "north": "false",
+      "west": "true",
+      "facing": "north",
+      "layout_code": "0"
+    },
+    "Name": "britannia_mod:wooden_fence"
+  },
+  "138,80,26": {
+    "Name": "minecraft:air"
+  },
+  "138,80,27": {
+    "Name": "minecraft:air"
+  }
+}

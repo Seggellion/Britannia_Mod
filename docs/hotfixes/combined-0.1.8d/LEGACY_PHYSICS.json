@@ -1,0 +1,55 @@
+{
+  "source": "986ed746866dc944b7b496ab9428b670f65e15c0",
+  "jar_sha256": "f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd",
+  "runtime": "Matching packaged localhost dedicated candidate; external vanilla ItemEntity NoGravity motion, 20 ticks",
+  "legacy_pair": "south/corner/branch_right=false; LOWER mirrored=false, UPPER mirrored=true",
+  "pair_asserted_before_and_after_queries": true,
+  "storage_mismatch_preserved": true,
+  "results": {
+    "lower_e": [
+      49.125,
+      80.2,
+      84.35
+    ],
+    "control_e": [
+      49.587395432924346,
+      81.2,
+      86.1
+    ],
+    "main_s_upper": [
+      48.5,
+      81.2,
+      85.125
+    ],
+    "control_w": [
+      51.412604567075654,
+      81.2,
+      86.1
+    ],
+    "upper_e": [
+      49.125,
+      81.2,
+      84.35
+    ],
+    "upper_w": [
+      48.4375,
+      81.2,
+      84.35
+    ],
+    "lower_w": [
+      48.4375,
+      80.2,
+      84.35
+    ],
+    "main_s_lower": [
+      48.5,
+      80.2,
+      85.125
+    ]
+  },
+  "height_alignment": "PASS; branch and main colliders agree with visible lower at both heights without rewriting legacy state",
+  "prior_upper_only_mirror_offset_blocks": 0.5625,
+  "corrected_height_offset_blocks": 0,
+  "log_line": "[07Oct2026 11:24:02.408] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Storage plaster_probe:acceptance has the following contents: {lower_e: [49.125d, 80.2d, 84.35d], control_e: [49.587395432924346d, 81.2d, 86.1d], main_s_upper: [48.5d, 81.2d, 85.125d], control_w: [51.412604567075654d, 81.2d, 86.1d], upper_e: [49.125d, 81.2d, 84.35d], upper_w: [48.4375d, 81.2d, 84.35d], lower_w: [48.4375d, 80.2d, 84.35d], main_s_lower: [48.5d, 80.2d, 85.125d]}",
+  "player_walk_jump": "Separate required manual check; entity probe is not a player input pass"
+}
