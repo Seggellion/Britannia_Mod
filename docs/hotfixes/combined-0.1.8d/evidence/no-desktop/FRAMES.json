@@ -53,5 +53,11 @@
     "label": "wall-upper-rotate",
     "file": "wall-upper-rotate-2026-10-07_11.48.25.png",
     "sha256": "399b5ccadb6e7fc3daccb9724caedabd9fe7dfbdf0f084bc2ee5f0ed251f0869"
+  },
+  {
+    "label": "wall-upper-mirror",
+    "file": "wall-upper-mirror-2026-10-07_11.45.12.png",
+    "sha256": "e62bb96567475bea9adb52dd2659b259467c8a70f2131a33e33e605e85023407",
+    "context": "Actual upper mirror 11:45:02; post-click native F2 11:45:13; scheduled exact pair assertions 11:45:25. Earlier JOIN_FRAMES scene label was stale."
   }
 ]

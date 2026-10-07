@@ -4,6 +4,8 @@
 
 Status: **SOURCE_PUBLICATION_AUTHORIZED; PRODUCTION_ACCEPTANCE_PENDING**. This section supersedes the historical checkpoint below. The owner ended desktop automation and authorized source publication independently of remaining human acceptance. No live deployment/world edit, launcher update, release tag or GitHub Release occurred.
 
+GitHub publication result: normal non-force development push verified at **a80af0fdcfc26342aeaec6d52a173c677709d61d**; sanitized review branch verified at **fd90bff209d47addf6667c4576bd2053890127f2**. [PR #501](https://github.com/Seggellion/Britannia_Mod/pull/501) is OPEN and GitHub reports **BLOCKED**. Main remains **f039c4b259d925872618bfe64ee574b20776856c**: **MAIN_NOT_UPDATED_RULESET_HOLD**. Snapshot verification is `verified=false, reason=unsigned`; restricted updates have only the prohibited administrator bypass. No merge/update/bypass was attempted. Remote CI was automatically triggered and was still running when the receipt was captured, not claimed passed. This receipt/evidence follow-up is a documentation-only descendant pushed normally; final advertised development SHA is verified afterward in the task closeout receipt, avoiding a self-referential commit hash.
+
 Candidate unchanged: `C:\projects\britannia\mod\Britannia_Mod\tmp\combined-0.1.8d\release\britannia_mod-0.1.8d-all.jar`; clean embedded source **986ed746866dc944b7b496ab9428b670f65e15c0**, **36,142,668 bytes**, SHA-256 **f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd**. No application change, candidate rebuild or passing-suite rerun during this closeout. Original candidates/evidence and owner work remain preserved.
 
 | Component | Current acceptance |

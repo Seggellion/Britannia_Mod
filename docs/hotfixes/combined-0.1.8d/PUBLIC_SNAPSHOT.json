@@ -521,6 +521,8 @@
     "ultimacraft_stone_slate_roof_kickoff.md": "internal Markdown/public policy excludes Markdown",
     "ultimacraft_stone_slate_roof_project_playbook.md": "internal Markdown/public policy excludes Markdown"
   },
-  "public_publication": "NOT_PUSHED",
-  "public_gate": "PASS clean build, full JUnit and artifact identity"
+  "public_publication": "SANITIZED_REVIEW_BRANCH_PUSHED_MAIN_NOT_UPDATED",
+  "public_gate": "PASS_EXISTING_LOCAL_GATES_REMOTE_CI_IN_PROGRESS",
+  "review_url": "https://github.com/Seggellion/Britannia_Mod/pull/501",
+  "current_integrated_parity_record": "PUBLIC_CURRENT_PARITY.json"
 }
