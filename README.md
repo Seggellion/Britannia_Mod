@@ -9,7 +9,8 @@ independent servers ("shards") into one persistent world.
 
 **Patch-18 source version: 0.1.8d — recovery candidate, not yet deployed.**
 
-Deployment remains on hold pending a separate decision on the medallion's deferred visual checks.
+Deployment remains on hold for plaster's pre-existing paired-wall/mirror behavior defect and
+the outstanding fence, alligator and medallion acceptance checks.
 
 The plaster support corner repair relocates its single timber post to the junction and finishes
 the vacated plaster end, including the existing half corner. Local candidate preparation and

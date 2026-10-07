@@ -1,0 +1,54 @@
+{
+  "method": "vanilla ItemEntity movement, NoGravity, distinct item IDs, 20 ticks; clear external approaches",
+  "initial_y": {
+    "lower": 80.2,
+    "upper": 81.2
+  },
+  "initial_z": 84.35,
+  "initial_x_e": 49.5,
+  "initial_x_w": 47.5,
+  "initial_motion_e": [
+    -0.12,
+    0,
+    0
+  ],
+  "initial_motion_w": [
+    0.12,
+    0,
+    0
+  ],
+  "results": {
+    "lower_e": [
+      48.5625,
+      80.2,
+      84.35
+    ],
+    "control_e": [
+      49.587395432924346,
+      81.2,
+      86.1
+    ],
+    "control_w": [
+      51.412604567075654,
+      81.2,
+      86.1
+    ],
+    "upper_e": [
+      49.125,
+      81.2,
+      84.35
+    ],
+    "upper_w": [
+      48.4375,
+      81.2,
+      84.35
+    ],
+    "lower_w": [
+      47.875,
+      80.2,
+      84.35
+    ]
+  },
+  "log": "[07Oct2026 04:00:50.368] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Storage plaster_probe:acceptance has the following contents: {lower_e: [48.5625d, 80.2d, 84.35d], control_e: [49.587395432924346d, 81.2d, 86.1d], control_w: [51.412604567075654d, 81.2d, 86.1d], upper_e: [49.125d, 81.2d, 84.35d], upper_w: [48.4375d, 81.2d, 84.35d], lower_w: [47.875d, 80.2d, 84.35d]}",
+  "disposition": "pre-existing blocking collision divergence"
+}

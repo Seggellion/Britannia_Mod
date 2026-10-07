@@ -105,6 +105,20 @@
   },
   "preserved_copies": {
     "tmp\\plaster-corner-0.1.8d\\release\\britannia_mod-0.1.8d-all.jar": "de563ecfcb8f9067248ec09ae0578f7776ea5c1beefa4f1c182b9ac255a5df2e",
-    "tmp\\plaster-corner-0.1.8d\\client-packaged\\mods\\britannia_mod-0.1.8d-all.jar": "de563ecfcb8f9067248ec09ae0578f7776ea5c1beefa4f1c182b9ac255a5df2e"
+    "tmp\\plaster-corner-0.1.8d\\client-packaged\\mods\\britannia_mod-0.1.8d-all.jar": "de563ecfcb8f9067248ec09ae0578f7776ea5c1beefa4f1c182b9ac255a5df2e",
+    "tmp\\plaster-corner-0.1.8d\\client-resume\\mods\\britannia_mod-0.1.8d-all.jar": "de563ecfcb8f9067248ec09ae0578f7776ea5c1beefa4f1c182b9ac255a5df2e",
+    "tmp\\plaster-corner-0.1.8d\\server-resume\\mods\\britannia_mod-0.1.8d-all.jar": "de563ecfcb8f9067248ec09ae0578f7776ea5c1beefa4f1c182b9ac255a5df2e"
+  },
+  "acceptance_resume": {
+    "checkpoint": "f29548d77c03163e16321f120e28904685fdbdab",
+    "branch": "patch-18",
+    "artifact_changed": false,
+    "application_changed": false,
+    "plaster_status": "BLOCKED_PRE_EXISTING_WALL_PAIR_AND_MIRROR_TOPOLOGY",
+    "combined_release_status": "HELD",
+    "evidence": "acceptance-resume/ACCEPTANCE_RESULTS.json",
+    "persistence": "acceptance-resume/PERSISTENCE_RESULTS.json",
+    "loaded_identity": "acceptance-resume/SERVER_RESTART.log",
+    "rebuild_required": false
   }
 }

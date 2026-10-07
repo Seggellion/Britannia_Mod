@@ -1,0 +1,709 @@
+[
+  {
+    "label": "owner_cap",
+    "position": [
+      0,
+      80,
+      0
+    ],
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      3.2,
+      82,
+      3.2,
+      135.0,
+      35
+    ]
+  },
+  {
+    "label": "north_half_false",
+    "position": [
+      0,
+      80,
+      48
+    ],
+    "vertex": [
+      0,
+      0
+    ],
+    "camera": [
+      -2.2,
+      82,
+      45.8,
+      -44.99999999999997,
+      35
+    ]
+  },
+  {
+    "label": "north_half_true",
+    "position": [
+      12,
+      80,
+      48
+    ],
+    "vertex": [
+      1,
+      0
+    ],
+    "camera": [
+      15.2,
+      82,
+      45.8,
+      44.999999999999964,
+      35
+    ]
+  },
+  {
+    "label": "neighbor_support",
+    "position": [
+      60,
+      80,
+      12
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank",
+    "peer": "britannia_mod:plaster_wall_and_support_blank",
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      63.2,
+      82,
+      15.2,
+      134.99999999999997,
+      35
+    ]
+  },
+  {
+    "label": "neighbor_door",
+    "position": [
+      72,
+      80,
+      12
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank",
+    "peer": "minecraft:oak_door",
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      75.2,
+      82,
+      15.2,
+      134.99999999999997,
+      35
+    ]
+  },
+  {
+    "label": "neighbor_tagged_gate",
+    "position": [
+      84,
+      80,
+      12
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank",
+    "peer": "britannia_mod:wooden_gate",
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      87.2,
+      82,
+      15.2,
+      134.99999999999997,
+      35
+    ]
+  },
+  {
+    "label": "neighbor_solid",
+    "position": [
+      96,
+      80,
+      12
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank",
+    "peer": "minecraft:stone",
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      99.2,
+      82,
+      15.2,
+      134.99999999999997,
+      35
+    ]
+  },
+  {
+    "label": "neighbor_post",
+    "position": [
+      108,
+      80,
+      12
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank",
+    "peer": "britannia_mod:wooden_post",
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      111.2,
+      82,
+      15.2,
+      134.99999999999997,
+      35
+    ]
+  },
+  {
+    "label": "neighbor_full_with_half",
+    "position": [
+      60,
+      80,
+      28
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank",
+    "peer": "britannia_mod:plaster_wall_and_support_blank_half",
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      63.2,
+      82,
+      31.2,
+      134.99999999999997,
+      35
+    ]
+  },
+  {
+    "label": "neighbor_half_with_full",
+    "position": [
+      72,
+      80,
+      28
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank_half",
+    "peer": "britannia_mod:plaster_wall_blank",
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      75.2,
+      82,
+      31.2,
+      134.99999999999997,
+      35
+    ]
+  },
+  {
+    "label": "neighbor_half_with_half",
+    "position": [
+      84,
+      80,
+      28
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank_half",
+    "peer": "britannia_mod:plaster_wall_and_support_blank_half",
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      87.2,
+      82,
+      31.2,
+      134.99999999999997,
+      35
+    ]
+  },
+  {
+    "label": "neighbor_mutations",
+    "position": [
+      96,
+      80,
+      28
+    ],
+    "center": "britannia_mod:plaster_wall_and_support_blank",
+    "peer": "britannia_mod:plaster_wall_blank",
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      99.2,
+      82,
+      31.2,
+      134.99999999999997,
+      35
+    ]
+  },
+  {
+    "case": 0,
+    "rotation": "none",
+    "mirror": "none",
+    "origin": [
+      0,
+      80,
+      100
+    ],
+    "position": [
+      3,
+      80,
+      103
+    ],
+    "label": "structure_00_none_none",
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      6.2,
+      82,
+      106.2,
+      135.00000000000003,
+      35
+    ]
+  },
+  {
+    "case": 1,
+    "rotation": "clockwise_90",
+    "mirror": "none",
+    "origin": [
+      12,
+      80,
+      100
+    ],
+    "position": [
+      9,
+      80,
+      103
+    ],
+    "label": "structure_01_clockwise_90_none",
+    "vertex": [
+      0,
+      1
+    ],
+    "camera": [
+      6.8,
+      82,
+      106.2,
+      -135.00000000000003,
+      35
+    ]
+  },
+  {
+    "case": 2,
+    "rotation": "180",
+    "mirror": "none",
+    "origin": [
+      24,
+      80,
+      100
+    ],
+    "position": [
+      21,
+      80,
+      97
+    ],
+    "label": "structure_02_180_none",
+    "vertex": [
+      0,
+      0
+    ],
+    "camera": [
+      18.8,
+      82,
+      94.8,
+      -44.999999999999964,
+      35
+    ]
+  },
+  {
+    "case": 3,
+    "rotation": "counterclockwise_90",
+    "mirror": "none",
+    "origin": [
+      36,
+      80,
+      100
+    ],
+    "position": [
+      39,
+      80,
+      97
+    ],
+    "label": "structure_03_counterclockwise_90_none",
+    "vertex": [
+      1,
+      0
+    ],
+    "camera": [
+      42.2,
+      82,
+      94.8,
+      45.0,
+      35
+    ]
+  },
+  {
+    "case": 4,
+    "rotation": "none",
+    "mirror": "left_right",
+    "origin": [
+      0,
+      80,
+      112
+    ],
+    "position": [
+      3,
+      80,
+      109
+    ],
+    "label": "structure_04_none_left_right",
+    "vertex": [
+      1,
+      0
+    ],
+    "camera": [
+      6.2,
+      82,
+      106.8,
+      44.99999999999997,
+      35
+    ]
+  },
+  {
+    "case": 5,
+    "rotation": "clockwise_90",
+    "mirror": "left_right",
+    "origin": [
+      12,
+      80,
+      112
+    ],
+    "position": [
+      15,
+      80,
+      115
+    ],
+    "label": "structure_05_clockwise_90_left_right",
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      18.2,
+      82,
+      118.2,
+      135.00000000000006,
+      35
+    ]
+  },
+  {
+    "case": 6,
+    "rotation": "180",
+    "mirror": "left_right",
+    "origin": [
+      24,
+      80,
+      112
+    ],
+    "position": [
+      21,
+      80,
+      115
+    ],
+    "label": "structure_06_180_left_right",
+    "vertex": [
+      0,
+      1
+    ],
+    "camera": [
+      18.8,
+      82,
+      118.2,
+      -135.00000000000006,
+      35
+    ]
+  },
+  {
+    "case": 7,
+    "rotation": "counterclockwise_90",
+    "mirror": "left_right",
+    "origin": [
+      36,
+      80,
+      112
+    ],
+    "position": [
+      33,
+      80,
+      109
+    ],
+    "label": "structure_07_counterclockwise_90_left_right",
+    "vertex": [
+      0,
+      0
+    ],
+    "camera": [
+      30.8,
+      82,
+      106.8,
+      -44.999999999999964,
+      35
+    ]
+  },
+  {
+    "case": 8,
+    "rotation": "none",
+    "mirror": "front_back",
+    "origin": [
+      0,
+      80,
+      124
+    ],
+    "position": [
+      -3,
+      80,
+      127
+    ],
+    "label": "structure_08_none_front_back",
+    "vertex": [
+      0,
+      1
+    ],
+    "camera": [
+      -5.2,
+      82,
+      130.2,
+      -134.9999999999999,
+      35
+    ]
+  },
+  {
+    "case": 9,
+    "rotation": "clockwise_90",
+    "mirror": "front_back",
+    "origin": [
+      12,
+      80,
+      124
+    ],
+    "position": [
+      9,
+      80,
+      121
+    ],
+    "label": "structure_09_clockwise_90_front_back",
+    "vertex": [
+      0,
+      0
+    ],
+    "camera": [
+      6.8,
+      82,
+      118.8,
+      -44.99999999999997,
+      35
+    ]
+  },
+  {
+    "case": 10,
+    "rotation": "180",
+    "mirror": "front_back",
+    "origin": [
+      24,
+      80,
+      124
+    ],
+    "position": [
+      27,
+      80,
+      121
+    ],
+    "label": "structure_10_180_front_back",
+    "vertex": [
+      1,
+      0
+    ],
+    "camera": [
+      30.2,
+      82,
+      118.8,
+      44.999999999999964,
+      35
+    ]
+  },
+  {
+    "case": 11,
+    "rotation": "counterclockwise_90",
+    "mirror": "front_back",
+    "origin": [
+      36,
+      80,
+      124
+    ],
+    "position": [
+      39,
+      80,
+      127
+    ],
+    "label": "structure_11_counterclockwise_90_front_back",
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      42.2,
+      82,
+      130.2,
+      134.99999999999986,
+      35
+    ]
+  },
+  {
+    "label": "actual_corner_first",
+    "position": [
+      60,
+      80,
+      36
+    ],
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      63.2,
+      82,
+      39.2,
+      135.0,
+      35
+    ]
+  },
+  {
+    "label": "actual_reversed_arms",
+    "position": [
+      72,
+      80,
+      36
+    ],
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      75.2,
+      82,
+      39.2,
+      135.0,
+      35
+    ]
+  },
+  {
+    "label": "decorated_pair_oblique",
+    "position": [
+      48,
+      80,
+      84
+    ],
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      51.2,
+      82,
+      87.2,
+      135.0,
+      35
+    ]
+  },
+  {
+    "label": "control_east_straight_true_mirror_false",
+    "position": [
+      84,
+      80,
+      36
+    ],
+    "requested": "britannia_mod:plaster_wall_and_support_blank[facing=east,shape=straight,branch_right=true,mirrored=false,half=lower]",
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      87.2,
+      82,
+      39.2,
+      135.0,
+      35
+    ]
+  },
+  {
+    "label": "control_east_straight_true_mirror_true",
+    "position": [
+      96,
+      80,
+      36
+    ],
+    "requested": "britannia_mod:plaster_wall_and_support_blank[facing=east,shape=straight,branch_right=true,mirrored=true,half=lower]",
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      99.2,
+      82,
+      39.2,
+      135.0,
+      35
+    ]
+  },
+  {
+    "label": "control_north_t_junction_true_mirror_false",
+    "position": [
+      108,
+      80,
+      36
+    ],
+    "requested": "britannia_mod:plaster_wall_and_support_blank[facing=north,shape=t_junction,branch_right=true,mirrored=false,half=lower]",
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      111.2,
+      82,
+      39.2,
+      135.0,
+      35
+    ]
+  },
+  {
+    "label": "control_north_t_junction_true_mirror_true",
+    "position": [
+      120,
+      80,
+      36
+    ],
+    "requested": "britannia_mod:plaster_wall_and_support_blank[facing=north,shape=t_junction,branch_right=true,mirrored=true,half=lower]",
+    "vertex": [
+      1,
+      1
+    ],
+    "camera": [
+      123.2,
+      82,
+      39.2,
+      135.0,
+      35
+    ]
+  }
+]
