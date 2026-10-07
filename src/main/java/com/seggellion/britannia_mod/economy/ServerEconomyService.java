@@ -1,7 +1,6 @@
 package com.seggellion.britannia_mod.economy;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.seggellion.britannia_mod.city.City;
@@ -577,23 +576,16 @@ public final class ServerEconomyService {
     }
 
     static SaleResult resultFromReceipt(JsonObject response) {
-        if (response.has("success") && !response.get("success").getAsBoolean())
-            return SaleResult.failure(0, "", "Unconfirmed receipt");
-        JsonObject grant = currencyGrantFrom(response);
-        if (grant == null) grant = objectFrom(response, "payout");
-        if (grant == null) grant = objectFrom(response, "currency");
-        if (grant != null) {
-            for (String key : List.of("gold", "silver", "copper")) if (grant.has(key))
-                grant.get(key).getAsBigDecimal().intValueExact();
-        } else {
-            for (String key : List.of("total_gold", "total_copper")) if (response.has(key))
-                response.get(key).getAsBigDecimal().intValueExact();
+        var contract = TraderSaleReceiptContract.parse(response);
+        if (!contract.accepted()) {
+            LOGGER.warn("Trader sale receipt contract rejected reason={}", contract.rejection());
+            return SaleResult.failure(0, "", "Unconfirmed receipt: " + contract.rejection());
         }
-        Payout payout = parsePayout(response);
-        String receipt = response.has("receipt_id") ? response.get("receipt_id").getAsString()
-                : response.has("transaction_id") ? response.get("transaction_id").getAsString() : "";
-        return SaleResult.success(200, response.toString(), response, receipt, booleanFrom(response, "idempotent_replay"),
-                payout.gold(), payout.silver(), payout.copper());
+        var receipt = contract.receipt();
+        LOGGER.info("Rails currency grant accepted receipt={} payout={}g {}s {}c",
+                receipt.transactionId(), receipt.gold(), receipt.silver(), receipt.copper());
+        return SaleResult.success(200, response.toString(), response, receipt.transactionId(),
+                receipt.idempotentReplay(), receipt.gold(), receipt.silver(), receipt.copper());
     }
 
     static void applyRecoveredSale(ServerLevel level, TraderSaleReservationReceipt receipt, JsonObject response) {
@@ -610,76 +602,6 @@ public final class ServerEconomyService {
     private static void attachServerAuth(ServerLevel level, HttpURLConnection conn, byte[] body) {
         if (!RailsRequestAuthenticator.apply(conn, level.getServer(), body)) {
             throw new IllegalStateException("Server authentication unavailable");
-        }
-    }
-
-    private static Payout parsePayout(JsonObject response) {
-        JsonObject currencyGrant = currencyGrantFrom(response);
-        if (currencyGrant != null) {
-            Payout payout = payoutFrom(currencyGrant);
-            LOGGER.info("Rails currency_grant parsed raw={} payout={}g {}s {}c",
-                    currencyGrant, payout.gold(), payout.silver(), payout.copper());
-            return payout;
-        }
-
-        if (response.has("payout") && response.get("payout").isJsonObject()) {
-            JsonObject payout = response.getAsJsonObject("payout");
-            return payoutFrom(payout);
-        }
-        if (response.has("currency") && response.get("currency").isJsonObject()) {
-            JsonObject payout = response.getAsJsonObject("currency");
-            return payoutFrom(payout);
-        }
-        if (response.has("total_gold")) {
-            return new Payout(response.get("total_gold").getAsInt(), 0, 0);
-        }
-        if (response.has("total_copper")) {
-            return new Payout(0, 0, response.get("total_copper").getAsInt());
-        }
-        return new Payout(0, 0, 0);
-    }
-
-    private static JsonObject currencyGrantFrom(JsonObject response) {
-        JsonObject rootGrant = objectFrom(response, "currency_grant");
-        if (rootGrant != null) return rootGrant;
-
-        JsonObject transaction = objectFrom(response, "transaction");
-        return transaction == null ? null : objectFrom(transaction, "currency_grant");
-    }
-
-    private static JsonObject objectFrom(JsonObject object, String key) {
-        return object.has(key) && object.get(key).isJsonObject() ? object.getAsJsonObject(key) : null;
-    }
-
-    private static Payout payoutFrom(JsonObject object) {
-        return new Payout(
-                intFrom(object, "gold"),
-                intFrom(object, "silver"),
-                intFrom(object, "copper")
-        );
-    }
-
-    private static int intFrom(JsonObject object, String key) {
-        if (object == null || !object.has(key) || object.get(key).isJsonNull()) return 0;
-
-        JsonElement value = object.get(key);
-        try {
-            return value.getAsInt();
-        } catch (NumberFormatException | IllegalStateException e) {
-            LOGGER.warn("Invalid currency denomination value key={} value={}", key, value);
-            return 0;
-        }
-    }
-
-    private static boolean booleanFrom(JsonObject object, String key) {
-        if (object == null || !object.has(key) || object.get(key).isJsonNull()) return false;
-
-        JsonElement value = object.get(key);
-        try {
-            return value.getAsBoolean();
-        } catch (ClassCastException | IllegalStateException e) {
-            LOGGER.warn("Invalid boolean response value key={} value={}", key, value);
-            return false;
         }
     }
 
@@ -857,8 +779,6 @@ public final class ServerEconomyService {
             return Integer.toHexString(String.join("|", parts).hashCode());
         }
     }
-
-    private record Payout(int gold, int silver, int copper) {}
 
     static record SaleResult(boolean success, int statusCode, String body, JsonObject responseJson,
                               String receiptId, boolean idempotentReplay, int gold, int silver, int copper,

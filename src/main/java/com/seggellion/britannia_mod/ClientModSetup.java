@@ -38,6 +38,7 @@ import com.seggellion.britannia_mod.client.renderer.ManagedFlowerBlockEntityRend
 import com.seggellion.britannia_mod.client.renderer.WineBottleBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.MoongateBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.shrine.ShrineRenderer;
+import com.seggellion.britannia_mod.client.renderer.StarfarersMedallionLayer;
 import com.seggellion.britannia_mod.client.banner.BannerBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.screen.BritanniaSpawnScreen;
 import com.seggellion.britannia_mod.event.ClientEventHandler;
@@ -69,6 +70,8 @@ import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import com.seggellion.britannia_mod.registry.LargeStructureRegistry;
 import com.seggellion.britannia_mod.registry.BannerBlockRegistry;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
 import com.seggellion.britannia_mod.item.QualityShovelItem;
@@ -108,6 +111,18 @@ import net.neoforged.bus.api.SubscribeEvent;
 public class ClientModSetup {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static boolean clientGameHandlersRegistered = false;
+
+    @SubscribeEvent
+    public static void addPlayerLayers(EntityRenderersEvent.AddLayers event) {
+        for (PlayerSkin.Model skin : new PlayerSkin.Model[] {
+                PlayerSkin.Model.WIDE, PlayerSkin.Model.SLIM }) {
+            PlayerRenderer renderer = event.getSkin(skin);
+            if (renderer != null) {
+                renderer.addLayer(new StarfarersMedallionLayer(
+                        renderer, event.getContext().getItemRenderer()));
+            }
+        }
+    }
 
     @SubscribeEvent
     public static void registerMenuScreens(RegisterMenuScreensEvent event) {

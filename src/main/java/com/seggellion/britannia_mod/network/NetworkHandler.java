@@ -42,6 +42,7 @@ import com.seggellion.britannia_mod.network.payload.ChessBoardScreenS2CPayload;
 import com.seggellion.britannia_mod.network.payload.EscortArrivedS2CPayload;
 import com.seggellion.britannia_mod.network.payload.OpenQuestScreenS2CPayload;
 import com.seggellion.britannia_mod.network.payload.ItemBurnedS2CPayload;
+import com.seggellion.britannia_mod.network.payload.ClientboundSyncGrapeColorsPayload;
 import com.seggellion.britannia_mod.network.payload.ClientboundSyncQuestsPayload;
 import com.seggellion.britannia_mod.network.payload.ServerboundQuitQuestPayload;
 import com.seggellion.britannia_mod.skill.crafting.CraftableDef;
@@ -555,6 +556,15 @@ registrar.playToClient(
         ClientboundSyncQuestsPayload.STREAM_CODEC,
         FMLLoader.getDist().isClient()
             ? (payload, ctx) -> ctx.enqueueWork(() -> ClientboundSyncQuestsPayload.handle(payload))
+            : (p, c) -> {});
+
+    // The shard's grape id-to-colour table. Server-authoritative and clientbound only: the client
+    // already receives the planted variety id, and this is the table it needs to colour it.
+    registrar.playToClient(
+        ClientboundSyncGrapeColorsPayload.TYPE,
+        ClientboundSyncGrapeColorsPayload.STREAM_CODEC,
+        FMLLoader.getDist().isClient()
+            ? (payload, ctx) -> ctx.enqueueWork(() -> ClientboundSyncGrapeColorsPayload.handle(payload))
             : (p, c) -> {});
 
 registrar.playToClient(

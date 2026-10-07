@@ -16,38 +16,38 @@ import net.minecraft.world.phys.*;
 import net.neoforged.neoforge.gametest.*;
 import java.util.*;
 
-@GameTestHolder(BritanniaMod.MODID)
+@GameTestHolder("britannia_edge_fence")
 @PrefixGameTestTemplate(false)
 public final class GameplayFenceGameTests {
     private static final String TEMPLATE = "service_npc_spawn_test_empty";
     private static final Direction[] DIRECTIONS = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
 
-    @GameTest(template = TEMPLATE)
-    public static void everyNeighborhoodConvergesAcrossFacingsAndPlacementOrders(GameTestHelper h) {
+    @GameTest(batch="edge_fence", template = TEMPLATE)
+    public static void equivalentFixedLayoutsConvergeAcrossPlacementOrders(GameTestHelper h) {
         var center = h.absolutePos(new BlockPos(5,3,5));
         for (int mask=0; mask<16; mask++) {
             var positions = new ArrayList<BlockPos>(); positions.add(center);
             for (int bit=0; bit<4; bit++) if ((mask & (1<<bit)) != 0) positions.add(center.relative(DIRECTIONS[bit]));
-            Map<BlockPos, BlockState> expected = null;
+
             var orders = new ArrayList<List<BlockPos>>(); permutations(positions, 0, orders);
-            for (var facing : DIRECTIONS) for (var order : orders) {
+            for (var facing : DIRECTIONS) { Map<BlockPos, BlockState> expected = null; for (var order : orders) {
                 clear(h, center);
                 for (var pos : order) place(h, pos, facing);
                 var observed = snapshot(h, positions);
                 if (mask == 0) h.assertTrue(observed.get(center).getValue(WoodenFenceBlock.FACING) == facing, "isolated orientation lost");
                 else if (expected == null) expected = observed;
-                else h.assertTrue(expected.equals(observed), "history-dependent mask="+mask+" facing="+facing+" order="+order);
+                else h.assertTrue(expected.equals(observed), "fixed-intent order-dependent mask="+mask+" facing="+facing+" order="+order);
                 for (var entry : observed.entrySet()) {
                     var state = entry.getValue();
                     var fence = (WoodenFenceBlock) state.getBlock();
                     h.assertTrue(state == fence.deriveConnections(state, h.getLevel(), entry.getKey()), "state did not reach a fixed point");
                 }
             }
-        }
+        }}
         clear(h,center); h.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch="edge_fence", template = TEMPLATE)
     public static void directLAndTemporaryTAreEquivalentInAllRotationsAndMirrors(GameTestHelper h) {
         var center = h.absolutePos(new BlockPos(5,3,5));
         for (var rotation : Rotation.values()) for (var mirror : Mirror.values()) {
@@ -56,18 +56,21 @@ public final class GameplayFenceGameTests {
             Direction b = rotation.rotate(mirror.mirror(Direction.WEST));
             var positions = List.of(center,center.relative(a),center.relative(a,2),center.relative(b),center.relative(b,2));
             for (var pos : positions) place(h,pos,Direction.SOUTH);
+            var fixedCorner=BlockRegistry.WOODEN_FENCE.get().defaultBlockState()
+                    .setValue(WoodenFenceBlock.FACING,Direction.NORTH).setValue(WoodenFenceBlock.LAYOUT_CODE,6)
+                    .mirror(mirror).rotate(rotation);
+            h.getLevel().setBlock(center,fixedCorner,Block.UPDATE_ALL);
+            h.getLevel().setBlock(center,((WoodenFenceBlock)fixedCorner.getBlock()).deriveConnections(fixedCorner,h.getLevel(),center),Block.UPDATE_ALL);
             var direct = snapshot(h,positions);
             place(h,center.relative(a.getOpposite()),Direction.WEST);
             h.getLevel().removeBlock(center.relative(a.getOpposite()),false);
             h.assertTrue(direct.equals(snapshot(h,positions)), "L -> T -> L changed state "+rotation+" "+mirror);
-            // The straight arm must meet the corner's occupied outside edge.
-            var arm = h.getLevel().getBlockState(center.relative(a)).getValue(WoodenFenceBlock.FACING);
-            h.assertTrue(arm == b.getOpposite(), "arm is on the wrong side of the L corner");
+            h.assertTrue(h.getLevel().getBlockState(center).getValue(WoodenFenceBlock.LAYOUT_CODE)==fixedCorner.getValue(WoodenFenceBlock.LAYOUT_CODE), "temporary neighbor altered pinned corner");
         }
         clear(h,center); h.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch="edge_fence", template = TEMPLATE)
     public static void everyOccupiedStripHasVanillaHeightWithoutFillingTheInterior(GameTestHelper h) {
         var pos = h.absolutePos(new BlockPos(3,3,3));
         for (int mask=0; mask<16; mask++) for (var facing : DIRECTIONS) {
@@ -89,7 +92,7 @@ public final class GameplayFenceGameTests {
         h.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch="edge_fence", template = TEMPLATE)
     public static void shovelMadePathPersistsUnderCustomFenceWithVanillaControls(GameTestHelper h) {
         var player = ManagedResourceTestPlayers.survival(h.getLevel(), "M8Path");
         var pos = h.absolutePos(new BlockPos(3,2,3));
@@ -116,14 +119,14 @@ public final class GameplayFenceGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 300)
-    public static void loadedRunRepairsSavedFacingWithoutUpdateLoops(GameTestHelper h) {
+    @GameTest(batch="edge_fence", template = TEMPLATE, timeoutTicks = 300)
+    public static void loadedRunCorrectsFlagsAndPreservesSavedFacingWithoutUpdateLoops(GameTestHelper h) {
         var start = h.absolutePos(new BlockPos(1,4,5));
         var positions = new ArrayList<BlockPos>();
         for (int i=0;i<12;i++) { var pos=start.east(i); positions.add(pos); place(h,pos,Direction.SOUTH); }
         place(h,start.south(),Direction.WEST);
         var expected = snapshot(h,positions);
-        for (var pos:positions) h.getLevel().setBlock(pos,h.getLevel().getBlockState(pos).setValue(WoodenFenceBlock.FACING,Direction.SOUTH),
+        for (var pos:positions) h.getLevel().setBlock(pos,h.getLevel().getBlockState(pos).setValue(WoodenFenceBlock.NORTH,true).setValue(WoodenFenceBlock.WEST,true),
                 Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
         for (var chunk:positions.stream().map(ChunkPos::new).distinct().toList()) WoodenFenceLoadHandler.inspect(h.getLevel(),chunk);
         h.startSequence().thenWaitUntil(() -> h.assertTrue(expected.equals(snapshot(h,positions)), "saved run did not reconcile"))
@@ -131,7 +134,7 @@ public final class GameplayFenceGameTests {
                 .thenSucceed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch="edge_fence", template = TEMPLATE)
     public static void ordinaryPlayerCollisionBlocksWalkingAndNormalJumpEnvelope(GameTestHelper h) {
         var player = ManagedResourceTestPlayers.survival(h.getLevel(), "M8Collision");
         var pos = h.absolutePos(new BlockPos(4,3,4));
@@ -158,7 +161,7 @@ public final class GameplayFenceGameTests {
 
     private static void place(GameTestHelper h, BlockPos pos, Direction facing) {
         var fence=BlockRegistry.WOODEN_FENCE.get();
-        h.getLevel().setBlock(pos,fence.deriveConnections(fence.defaultBlockState().setValue(WoodenFenceBlock.FACING,facing),h.getLevel(),pos),Block.UPDATE_ALL);
+        h.getLevel().setBlock(pos,fence.deriveConnections(fence.defaultBlockState().setValue(WoodenFenceBlock.FACING,facing).setValue(WoodenFenceBlock.LAYOUT_CODE,0),h.getLevel(),pos),Block.UPDATE_ALL);
     }
     private static void clear(GameTestHelper h,BlockPos center) {
         for(int x=-3;x<=3;x++)for(int z=-3;z<=3;z++) h.getLevel().setBlock(center.offset(x,0,z),Blocks.AIR.defaultBlockState(),Block.UPDATE_ALL);

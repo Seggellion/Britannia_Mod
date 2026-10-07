@@ -248,7 +248,7 @@ def extract(args: argparse.Namespace) -> dict:
         "schema": 1,
         "generated_by": "tools/roof_textures/extract_roof_textures.py",
         "source": {
-            "file": str(source),
+            "file": source.name,
             "sha256": source_hash,
             "pdf_version": reader.pdf_header,
             "page_count": len(reader.pages),

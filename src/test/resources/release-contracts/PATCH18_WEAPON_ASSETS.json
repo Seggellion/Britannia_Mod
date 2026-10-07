@@ -1,0 +1,22 @@
+{
+  "source_root": "weapons",
+  "files": {
+    "dagger/dagger.json": "2bda29fdaa901a4f7bd5f151d6c2fc08a2a7f0e75b9899dfa5f678f37659bf1e",
+    "dagger/dagger.png": "bf881a12b41b6e1384335fe029ff6a849069a89be7ce2308a19218ea3bcc38ef",
+    "decorative_shield - Converted.json": "af7e80ba9b3596cffbe64b6d25116f52fd12e748a3829b26869c09ccbe4940ac",
+    "decorative_shield.bbmodel": "bc466cc7dae6f94d6c0b67a53b2b1a94219bbd26ecbd308c39e6193b5af74903",
+    "decorative_shield.png": "9b31afcd7f86e5295a1c53c1dd785527c92dd17821fb268a33326e50c79837fe",
+    "halberd/halberd.json": "d4ea6d38401a91d2b51abb097a5bf75e3f102019713f87cee7c93ea1da415795",
+    "halberd/halberd.png": "33e3fe90fcb327f1c14bcdfc5cec2ae9b48ef0b2cbd0ab66aeeaa45365bc7806",
+    "halberd.bbmodel": "8a9d1ed9af4a34190310bb6d659c2a10bffb995b536d0d334b8ab01cc75dc344",
+    "katana/katana.json": "4be70c49b5753f088f3c75fc3b1f32aa1d883932351c1035b62aadf75f2af445",
+    "katana/katana.png": "b0da2bf47952c18f2f58323673c54dc2112537278ad1ebe20daa4bd4ff28f8dd",
+    "katana.bbmodel": "db7cd212cd0189ec9bae7a2aa256aefff87ac7d9b849625ef1d612d5e7c8c67b",
+    "rapier/rapier.json": "e990b9032de7795567e06b5f9ac06e06f30048973dea2ce1018f6942bc7f5ecd",
+    "rapier/rapier.png": "64498b8e0c798115fea1d67525ff1696b8a03b3149a17af4a4b82dde42624824",
+    "rapier.bbmodel": "5a4ba18377a50c7d80bb969f2b9477c4826ba67a6e06e2d018f96705f77b1928",
+    "viking_sword/viking_sword.json": "d5eecd79e56f863587d88b4d5603a60bb89c0663aaacd11cbeb36c9eae77fa9c",
+    "viking_sword/viking_sword.png": "bf881a12b41b6e1384335fe029ff6a849069a89be7ce2308a19218ea3bcc38ef",
+    "viking_sword.bbmodel": "33a60210d906215463543c353bbb8604cd56ba3262b15e6e40765afc5f4b611c"
+  }
+}

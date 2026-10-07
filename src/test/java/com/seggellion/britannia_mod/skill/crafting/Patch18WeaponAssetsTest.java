@@ -93,7 +93,7 @@ class Patch18WeaponAssetsTest {
     void theTwoRecordedSourceInventoriesAgreeOnEverySuppliedFile() throws Exception {
         Path project = Path.of(System.getProperty("britannia.projectDir", "."));
         Path regenerated = project.resolve("tools/new-assets/patch18_weapon_assets.json");
-        Path documented = project.resolve("docs/new-assets/PATCH18_WEAPON_ASSETS.json");
+        Path documented = project.resolve("src/test/resources/release-contracts/PATCH18_WEAPON_ASSETS.json");
         assertTrue(Files.isRegularFile(regenerated), regenerated + " is missing");
         assertTrue(Files.isRegularFile(documented), documented + " is missing");
 

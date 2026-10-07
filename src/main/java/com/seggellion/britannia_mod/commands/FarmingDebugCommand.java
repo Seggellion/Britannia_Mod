@@ -183,7 +183,7 @@ public final class FarmingDebugCommand {
                     "region_resolver: " + FarmingClimateResolver.resolveRegionDebugReason(level, pos)
             ), false);
             source.sendSuccess(() -> Component.literal(String.format(
-                    "fits: nutrient=%.3f, hydration=%.3f, climate=%.3f, nutrient_preference=%s, maximum_nutrients_override=%s, requires_lattice=%s, support_requirement=%s, support_satisfied=%s, ideal=%s, growth_multiplier=%.3f, quality_estimate=%d/100",
+                    "fits: nutrient=%.3f, hydration_fit=%.3f, climate=%.3f, nutrient_preference=%s, maximum_nutrients_override=%s, requires_lattice=%s, support_requirement=%s, support_satisfied=%s, ideal=%s, growth_multiplier=%.3f, quality_estimate=%d/100",
                     growthContext.nutrientFit(),
                     growthContext.hydrationFit(),
                     growthContext.climateFit(),
@@ -255,7 +255,10 @@ public final class FarmingDebugCommand {
                 boolean fullStructure = hasCurrentStructure;
                 boolean canGrowCurrent = TallCropSupport.canGrowToStage(level, pos, crop, growthAge);
                 String missingSegment = TallCropSupport.missingSegmentReason(level, pos, crop, growthAge);
-                ResourceLocation baseModel = CropVisualModels.modelLocation(crop, growthAge);
+                // The two-argument overload substitutes the default variety, so this line used to
+                // announce a green model for a dark-purple vine at any fruiting age -- a debug-only
+                // wrong answer that reads exactly like the real colour defect.
+                ResourceLocation baseModel = CropVisualModels.modelLocation(crop, growthAge, farmBe.getStoredSeed());
                 BlockState aboveOneState = level.getBlockState(pos.above());
                 BlockState aboveTwoState = level.getBlockState(pos.above(2));
                 BlockState aboveThreeState = level.getBlockState(pos.above(3));
