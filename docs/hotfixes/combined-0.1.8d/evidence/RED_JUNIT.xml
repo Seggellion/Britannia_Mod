@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.seggellion.britannia_mod.block.WallPairGeometryTest" tests="3" skipped="0" failures="3" errors="0" timestamp="2026-10-07T16:59:25" hostname="MSI" time="0.073">
+  <properties/>
+  <testcase name="legacyUpperCollisionUsesLowerRenderedGeometryWithoutWritingTheSave()" classname="com.seggellion.britannia_mod.block.WallPairGeometryTest" time="0.056">
+    <failure message="org.opentest4j.AssertionFailedError: invisible upper barrier Block{[unregistered]}[branch_right=false,facing=north,half=lower,mirrored=false,shape=corner] ==&gt; expected: &lt;false&gt; but was: &lt;true&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: invisible upper barrier Block{[unregistered]}[branch_right=false,facing=north,half=lower,mirrored=false,shape=corner] ==&gt; expected: &lt;false&gt; but was: &lt;true&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertFalse.failNotFalse(AssertFalse.java:63)
+	at app//org.junit.jupiter.api.AssertFalse.assertFalse(AssertFalse.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertFalse(Assertions.java:239)
+	at app//com.seggellion.britannia_mod.block.WallPairGeometryTest.equal(WallPairGeometryTest.java:37)
+	at app//com.seggellion.britannia_mod.block.WallPairGeometryTest.legacyUpperCollisionUsesLowerRenderedGeometryWithoutWritingTheSave(WallPairGeometryTest.java:45)
+	at java.base@21.0.8/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.8/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.8/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="rotatedAndMirroredOwnerCornersRemainConnectedWithoutChangingPostVariant()" classname="com.seggellion.britannia_mod.block.WallPairGeometryTest" time="0.011">
+    <failure message="org.opentest4j.AssertionFailedError: one-post style changed NONECLOCKWISE_90 ==&gt; expected: &lt;false&gt; but was: &lt;true&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: one-post style changed NONECLOCKWISE_90 ==&gt; expected: &lt;false&gt; but was: &lt;true&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+	at app//com.seggellion.britannia_mod.block.WallPairGeometryTest.rotatedAndMirroredOwnerCornersRemainConnectedWithoutChangingPostVariant(WallPairGeometryTest.java:76)
+	at java.base@21.0.8/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.8/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.8/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="structureMirrorsReflectBothPhysicalEdgesExactlyOnce()" classname="com.seggellion.britannia_mod.block.WallPairGeometryTest" time="0.004">
+    <failure message="org.opentest4j.AssertionFailedError: double reflection Block{[unregistered]}[branch_right=false,facing=north,half=lower,mirrored=false,shape=corner]LEFT_RIGHT ==&gt; expected: &lt;false&gt; but was: &lt;true&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: double reflection Block{[unregistered]}[branch_right=false,facing=north,half=lower,mirrored=false,shape=corner]LEFT_RIGHT ==&gt; expected: &lt;false&gt; but was: &lt;true&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertFalse.failNotFalse(AssertFalse.java:63)
+	at app//org.junit.jupiter.api.AssertFalse.assertFalse(AssertFalse.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertFalse(Assertions.java:239)
+	at app//com.seggellion.britannia_mod.block.WallPairGeometryTest.equal(WallPairGeometryTest.java:37)
+	at app//com.seggellion.britannia_mod.block.WallPairGeometryTest.structureMirrorsReflectBothPhysicalEdgesExactlyOnce(WallPairGeometryTest.java:61)
+	at java.base@21.0.8/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.8/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.8/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[WARN StatusConsoleListener Advanced terminal features are not available in this environment
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

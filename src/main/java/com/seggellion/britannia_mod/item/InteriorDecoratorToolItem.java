@@ -135,17 +135,18 @@ public class InteriorDecoratorToolItem extends Item {
         // and right-clicking still spins the block; putting it in the left hand and clicking flips
         // the feature. This has to sit above the generic facing rotation below, because these
         // blocks all carry HorizontalDirectionalBlock.FACING and would otherwise just spin.
-        if (ctx.getHand() == InteractionHand.OFF_HAND
-            && state.getBlock() instanceof MirrorableWallBlock) {
-
+        if (state.getBlock() instanceof com.seggellion.britannia_mod.block.DoubleWallBlock wall) {
+            if (player.isSpectator()) return InteractionResult.PASS;
+            boolean mirror = ctx.getHand() == InteractionHand.OFF_HAND && wall instanceof MirrorableWallBlock;
+            if (ctx.getHand() == InteractionHand.OFF_HAND && !mirror) return InteractionResult.PASS;
             if (!level.isClientSide()) {
-                level.setBlock(pos,
-                    state.setValue(MirrorableWallBlock.MIRRORED,
-                                   !state.getValue(MirrorableWallBlock.MIRRORED)),
-                    Block.UPDATE_ALL);
+                boolean changed = wall.decoratePair(level, pos, lower -> mirror
+                    ? lower.setValue(MirrorableWallBlock.MIRRORED, !lower.getValue(MirrorableWallBlock.MIRRORED))
+                    : lower.rotate(net.minecraft.world.level.block.Rotation.CLOCKWISE_90));
+                if (!changed) return InteractionResult.FAIL;
                 level.playSound(null, pos, state.getSoundType().getPlaceSound(),
                     SoundSource.BLOCKS, 0.5f, 1.2f);
-                LOGGER.info("🎨 InteriorDecoratorTool mirrored wall feature at {}", pos);
+                LOGGER.info("InteriorDecoratorTool {} wall pair at {}", mirror ? "mirrored" : "rotated", pos);
             }
             return InteractionResult.sidedSuccess(level.isClientSide());
         }

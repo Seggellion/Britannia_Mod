@@ -71,3 +71,5 @@ src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_w
 # Native acceptance evidence preserves exact captured bytes across checkouts.
 docs/hotfixes/plaster-corner-0.1.8d/implementation/acceptance-resume/** -text whitespace=cr-at-eol
 docs/hotfixes/plaster-corner-0.1.8d/implementation/acceptance-resume/*.log -diff
+docs/hotfixes/combined-0.1.8d/evidence/** -text whitespace=cr-at-eol
+docs/hotfixes/combined-0.1.8d/evidence/*.log -diff

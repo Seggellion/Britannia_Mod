@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.seggellion.britannia_mod.block.WindowCollisionContractTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-10-07T17:20:47" hostname="MSI" time="0.4">
+  <properties/>
+  <testcase name="shapesTurnWithTheirFacing()" classname="com.seggellion.britannia_mod.block.WindowCollisionContractTest" time="0.07"/>
+  <testcase name="stoneWallWindowCollisionKeepsTheSolidSlab()" classname="com.seggellion.britannia_mod.block.WindowCollisionContractTest" time="0.006"/>
+  <testcase name="darkStoneWindowCollisionKeepsTheSolidPanel()" classname="com.seggellion.britannia_mod.block.WindowCollisionContractTest" time="0.006"/>
+  <testcase name="stoneWallWindowRaycastsPassOnlyThroughTheLight()" classname="com.seggellion.britannia_mod.block.WindowCollisionContractTest" time="0.005"/>
+  <testcase name="collisionCoversEveryCellTheArtDraws()" classname="com.seggellion.britannia_mod.block.WindowCollisionContractTest" time="0.22"/>
+  <testcase name="everyStateCollidesAndStaysInsideItsOwnBlock()" classname="com.seggellion.britannia_mod.block.WindowCollisionContractTest" time="0.039"/>
+  <testcase name="helperMatchesTheDepthOfTheWindowItBacks()" classname="com.seggellion.britannia_mod.block.WindowCollisionContractTest" time="0.0"/>
+  <testcase name="oversizedWindowsDeclareEveryCellTheirArtCovers()" classname="com.seggellion.britannia_mod.block.WindowCollisionContractTest" time="0.011"/>
+  <testcase name="singleCellWindowsStayPlainThinWalls()" classname="com.seggellion.britannia_mod.block.WindowCollisionContractTest" time="0.011"/>
+  <testcase name="darkStoneWindowRaycastsPassOnlyThroughTheLight()" classname="com.seggellion.britannia_mod.block.WindowCollisionContractTest" time="0.003"/>
+  <testcase name="footprintCellsMapThroughAllFourOrientations()" classname="com.seggellion.britannia_mod.block.WindowCollisionContractTest" time="0.002"/>
+  <testcase name="windowsKeepTheBlockstatePropertiesTheirResourcesNameThem()" classname="com.seggellion.britannia_mod.block.WindowCollisionContractTest" time="0.007"/>
+  <testcase name="everyWindowBlockstateInTheModIsUnderTest()" classname="com.seggellion.britannia_mod.block.WindowCollisionContractTest" time="0.008"/>
+  <testcase name="helperCellsCarryTheSlabTheirSpanCallsFor()" classname="com.seggellion.britannia_mod.block.WindowCollisionContractTest" time="0.0"/>
+  <testcase name="unglazedWindowsSelectExactlyTheirArt()" classname="com.seggellion.britannia_mod.block.WindowCollisionContractTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

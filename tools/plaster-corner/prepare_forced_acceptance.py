@@ -27,9 +27,11 @@ def main():
     ap.add_argument('--world', type=Path, required=True)
     args = ap.parse_args()
     world = args.world.resolve()
-    allowed = (ROOT / 'tmp/plaster-corner-0.1.8d/client-resume/saves').resolve()
-    if not world.is_relative_to(allowed) or not (world / 'level.dat').exists():
-        ap.error('only the explicitly disposable client-resume world copy is writable')
+    allowed = [(ROOT / p).resolve() for p in (
+        'tmp/plaster-corner-0.1.8d/client-resume/saves',
+        'tmp/plaster-corner-0.1.8d/combined-client/saves')]
+    if not any(world.is_relative_to(p) for p in allowed) or not (world / 'level.dat').exists():
+        ap.error('only explicitly disposable resumed/combined acceptance world copies are writable')
     pack = world / 'datapacks/plaster_probe'
     cases = json.loads((pack / 'SCENE_MANIFEST.json').read_text())
     edits = {}
@@ -120,10 +122,10 @@ def main():
     # All decoding/encoding succeeds before any writes; preserve original copy bytes.
     for path, data in regions.items():
         backup = path.with_suffix('.mca.before-forced-acceptance')
-        if backup.exists():
-            backup = path.with_suffix('.mca.before-forced-acceptance-v2')
-        if backup.exists():
-            raise ValueError('refusing to replace a previous fixture backup')
+        version = 2
+        while backup.exists():
+            backup = path.with_suffix(f'.mca.before-forced-acceptance-v{version}')
+            version += 1
         backup.write_bytes(path.read_bytes())
         path.write_bytes(data)
     result = []
