@@ -7,8 +7,10 @@ Contract: relocate the existing single pillar to the architectural edge junction
 - [x] M0 baseline/contract — refreshed source; original exact owner state reproduced in a fresh no-pack client; saved lower, upper and neighbors dumped.
 - [x] M1 bounded derivation — four Python tests pass; scoped freshness/idempotence verified, derivative LF pinned.
 - [x] M2 repair — authored corner/reflection repaired; actual half derivative generated; bounded resource diff reviewed.
-- [ ] M3 validation — 23 targeted JUnit tests pass; original oracle fails three new geometry assertions; resource errors zero, warnings 88 to 73 with no new identities. Client matrix remains open.
-- [ ] M4 clean local candidate — clean source integration/build/GameTests/packaged smoke in progress.
-- [ ] M5 release handoff — prepared draft, final identity/evidence pending.
+- [ ] M3 validation — automated gates pass; original oracle fails three new assertions. Actual packaged owner/mirror/half/placement/persistence checks recorded; full client matrix remains open, with reproduced independent-half decorator risk and E/W normalization.
+- [x] M4 local candidate preparation — integrated source ac6b2e80, clean detached task checkout, normal bundled build/artifactIdentity pass; 4,126 JUnit cases (23 skipped), zero failures/errors; all 1,362 required GameTests pass; actual bundled candidate smoke and saved-world comparison recorded. Release acceptance remains held by M3 and other hotfixes.
+- [x] M5 release handoff — exact hash/identity, executed evidence, explicit remaining matrix, combined holds and rollback recorded. Publication/deployment not performed.
+
+Final status: **IMPLEMENTED_PENDING_CLIENT_VALIDATION**. Candidate: **CANDIDATE_PREPARED_RELEASE_HELD**. These describe local preparation, not completion of every client acceptance gate.
 
 Release holds: existing fence packet/art/interactive visuals, alligator client visuals, medallion motion/cape/swimming visuals remain. Plaster does not clear them. Publication/deployment/launcher/live-world changes are not authorized.

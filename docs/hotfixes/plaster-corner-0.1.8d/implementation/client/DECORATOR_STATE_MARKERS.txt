@@ -1,0 +1,5 @@
+[06Oct2026 20:56:37.803] [Server thread/INFO] [com.seggellion.britannia_mod.item.InteriorDecoratorToolItem/]: 🎨 InteriorDecoratorTool mirrored wall feature at BlockPos{x=48, y=80, z=84}
+[06Oct2026 20:56:51.027] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Dev] PLASTER_DECORATOR_LOWER_MIRRORED_TRUE
+[06Oct2026 20:56:51.028] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Dev] PLASTER_DECORATOR_UPPER_REMAINS_FALSE_PAIR_RISK
+[06Oct2026 20:56:51.028] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] [Dev] PLASTER_DECORATOR_LOWER_MIRRORED_TRUE
+[06Oct2026 20:56:51.028] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] [Dev] PLASTER_DECORATOR_UPPER_REMAINS_FALSE_PAIR_RISK

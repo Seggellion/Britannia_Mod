@@ -1,0 +1,110 @@
+{
+  "artifact": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\plaster-corner-0.1.8d\\candidate-source\\build\\libs\\britannia_mod-0.1.8d-all.jar",
+  "size_bytes": 36140726,
+  "sha256": "de563ecfcb8f9067248ec09ae0578f7776ea5c1beefa4f1c182b9ac255a5df2e",
+  "identity": {
+    "mod.version": "0.1.8d",
+    "git.head": "ac6b2e80e1dac33d48dfd0b48b52543deab5cb2d",
+    "git.branch": "HEAD",
+    "git.dirty": "false",
+    "build.timestamp": "2026-10-07T03:42:22.901928400Z"
+  },
+  "source_checkout": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\plaster-corner-0.1.8d\\candidate-source",
+  "source_sha": "ac6b2e80e1dac33d48dfd0b48b52543deab5cb2d",
+  "source_clean": true,
+  "bundled_dependencies": [
+    "META-INF/jarjar/nanohttpd-2.2.0.jar",
+    "META-INF/jarjar/geckolib-neoforge-1.21.1-4.6.6.jar"
+  ],
+  "support_family_resources": {
+    "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner.json": {
+      "semantic_equal": true,
+      "byte_equal": true,
+      "packaged_sha256": "2faaae508fe9f5acc78190b7e9ae27a4f9e3a05ce75bab2e93ebae5d2a59d098"
+    },
+    "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right.json": {
+      "semantic_equal": true,
+      "byte_equal": true,
+      "packaged_sha256": "23d8540994ecf5267b4ee500ec91b5c13d76996f16d3590d3762757f87660883"
+    },
+    "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored.json": {
+      "semantic_equal": true,
+      "byte_equal": true,
+      "packaged_sha256": "8e8bc135e8c68e8c16dcf3aa8d3fc392192354a77168440a4fc0df55a7435582"
+    },
+    "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored.json": {
+      "semantic_equal": true,
+      "byte_equal": true,
+      "packaged_sha256": "cca4a687ee5fbb1679699d0e7c9b3998fd18d7815c0e9334afb90ecb0b49249b"
+    },
+    "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half.json": {
+      "semantic_equal": true,
+      "byte_equal": true,
+      "packaged_sha256": "714eeb598c9399761ac0d8c7a327a79b14be6069aea35919b0d7934692ecfbeb"
+    },
+    "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_corner.json": {
+      "semantic_equal": true,
+      "byte_equal": true,
+      "packaged_sha256": "e7a4a79bf2be50696fcd7c601fe1e02d55fccedae156e53f00bd218226e4618d"
+    },
+    "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_corner_branch_right.json": {
+      "semantic_equal": true,
+      "byte_equal": true,
+      "packaged_sha256": "8766f47a150617a6d5b4cc1c30737f1a0da1ae22d2c062855f4a36b0eb62f55b"
+    },
+    "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_t_junction.json": {
+      "semantic_equal": true,
+      "byte_equal": true,
+      "packaged_sha256": "5da9726fe7ec446038664685c2ad8325aeeb9e5bffe907c73a4ab4abe061f303"
+    },
+    "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_t_junction_branch_right.json": {
+      "semantic_equal": true,
+      "byte_equal": true,
+      "packaged_sha256": "6c46b635dbdf6f316a49bc4a9445f9bae67305556a570780657d92ea1c46f596"
+    },
+    "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_straight.json": {
+      "semantic_equal": true,
+      "byte_equal": true,
+      "packaged_sha256": "c17edd23b19d136d8abdf070b702e1a1b91772d791bbe50f358c049c6b212d71"
+    },
+    "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_straight_mirrored.json": {
+      "semantic_equal": true,
+      "byte_equal": true,
+      "packaged_sha256": "c9714c6f10eb83a58516ae24b91a19b15c1f4466f85aa0bf4256a1787c19e1af"
+    },
+    "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_t_junction.json": {
+      "semantic_equal": true,
+      "byte_equal": true,
+      "packaged_sha256": "19b6d9b328773d566cf5c33ea5ecc1708f4781c1b09cdabba4f718ce4f8915a3"
+    },
+    "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_t_junction_branch_right.json": {
+      "semantic_equal": true,
+      "byte_equal": true,
+      "packaged_sha256": "1b311f74e5a27814aa3adf952329bd0201e75279a4353712f770e4a43567895d"
+    },
+    "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_t_junction_branch_right_mirrored.json": {
+      "semantic_equal": true,
+      "byte_equal": true,
+      "packaged_sha256": "ad2733b9618831f744da33d8c8b2f34a39f84dd8b65f1cdb690fe8effd291d1e"
+    },
+    "assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_t_junction_mirrored.json": {
+      "semantic_equal": true,
+      "byte_equal": true,
+      "packaged_sha256": "a2abe354fd1085905285bc6b44c8722fdd071bb28ee026bbfa32ff73894ccf6f"
+    },
+    "assets/britannia_mod/blockstates/plaster_wall_and_support_blank.json": {
+      "semantic_equal": true,
+      "byte_equal": true,
+      "packaged_sha256": "ea235908b7a8744d2cc5398d060200775d53d2b8d1cbca53828f57e4258aa061"
+    },
+    "assets/britannia_mod/blockstates/plaster_wall_and_support_blank_half.json": {
+      "semantic_equal": true,
+      "byte_equal": true,
+      "packaged_sha256": "1af6eb34c1bbc1f20d24118109147802089eb0b978aa65c4e0dc5ea5cc0a5cc1"
+    }
+  },
+  "preserved_copies": {
+    "tmp\\plaster-corner-0.1.8d\\release\\britannia_mod-0.1.8d-all.jar": "de563ecfcb8f9067248ec09ae0578f7776ea5c1beefa4f1c182b9ac255a5df2e",
+    "tmp\\plaster-corner-0.1.8d\\client-packaged\\mods\\britannia_mod-0.1.8d-all.jar": "de563ecfcb8f9067248ec09ae0578f7776ea5c1beefa4f1c182b9ac255a5df2e"
+  }
+}

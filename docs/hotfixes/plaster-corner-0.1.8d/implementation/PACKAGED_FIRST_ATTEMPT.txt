@@ -1,0 +1,108 @@
+Starting a Gradle Daemon, 2 busy Daemons could not be reused, use --status for details
+Daemon JVM discovery is an incubating feature.
+> Task :cacheVersionManifest1.21.1 UP-TO-DATE
+> Task :cacheVersionExecutableClient1.21.1 UP-TO-DATE
+> Task :cacheVersionExecutableServer1.21.1 UP-TO-DATE
+> Task :cacheVersionMappingsClient1.21.1 UP-TO-DATE
+> Task :cacheVersionMappingsServer1.21.1 UP-TO-DATE
+> Task :neoFormListLibraries UP-TO-DATE
+> Task :neoFormStripClient UP-TO-DATE
+> Task :neoFormExtractServer UP-TO-DATE
+> Task :neoFormStripServer UP-TO-DATE
+> Task :neoFormMerge UP-TO-DATE
+> Task :neoFormMergeMappings UP-TO-DATE
+> Task :neoFormRename UP-TO-DATE
+> Task :neoFormDecompile UP-TO-DATE
+> Task :create1.21.1ClientExtraJar UP-TO-DATE
+> Task :selectRawArtifactNg_dummy_ng.net.minecraft_client_1.21.1_client-extra UP-TO-DATE
+> Task :neoFormApplyForgesAccessTransformer UP-TO-DATE
+> Task :neoFormInject UP-TO-DATE
+> Task :neoFormPatch UP-TO-DATE
+> Task :neoFormPatchUserDev UP-TO-DATE
+> Task :neoFormApplyOfficialMappings UP-TO-DATE
+> Task :neoFormUnzipSources UP-TO-DATE
+> Task :neoFormRecompile UP-TO-DATE
+> Task :neoFormPackRecomp UP-TO-DATE
+> Task :supplyRawJarForneoFormJoined1.21.1-20240808.144430 UP-TO-DATE
+> Task :selectRawArtifactNg_dummy_ng.net.neoforged_neoforge_21.1.72 UP-TO-DATE
+> Task :compileJava UP-TO-DATE
+> Task :generateAlligatorGameTestStructure UP-TO-DATE
+> Task :generateBuildInfo
+> Task :generateEdgeFenceGameTestStructure UP-TO-DATE
+> Task :generateModMetadata UP-TO-DATE
+> Task :generateServiceNpcSpawnGameTestStructure UP-TO-DATE
+> Task :validateTrainingDummyGeo
+> Task :processResources
+> Task :classes
+> Task :neoFormJoined1.21.1-20240808.144430DownloadAssets UP-TO-DATE
+> Task :neoFormJoined1.21.1-20240808.144430ExtractNatives UP-TO-DATE
+> Task :writeMinecraftClasspathClient UP-TO-DATE
+
+> Task :runClient
+PACKAGED_SMOKE: MOD_CLASSES cleared; compiled project outputs and standalone bundled dependencies excluded.
+PACKAGED_SMOKE excluded: C:\projects\britannia\mod\Britannia_Mod\build\classes\java\main
+PACKAGED_SMOKE excluded: C:\projects\britannia\mod\Britannia_Mod\build\resources\main
+PACKAGED_SMOKE excluded: C:\Users\dusti\.gradle\caches\modules-2\files-2.1\software.bernie.geckolib\geckolib-common-1.21.1\4.6.6\4fca7fc55b7dd8c9a73ffd7c5aed0b7cd5a9ed65\geckolib-common-1.21.1-4.6.6.jar
+PACKAGED_SMOKE excluded: C:\Users\dusti\.gradle\caches\modules-2\files-2.1\software.bernie.geckolib\geckolib-neoforge-1.21.1\4.6.6\c69c30c59db895e9af6a5a458b32c41060eb4b3a\geckolib-neoforge-1.21.1-4.6.6.jar
+PACKAGED_SMOKE excluded: C:\Users\dusti\.gradle\caches\modules-2\files-2.1\org.nanohttpd\nanohttpd\2.2.0\73a02117620b6cc7683a1ed6ae24c2f36e2a715\nanohttpd-2.2.0.jar
+[20:46:53.313] [main/INFO] [Launcher/MODLAUNCHER]: ModLauncher running: args [--username, Dev, --launchTarget, forgeclientuserdev, --version, 21.1.72, --assetIndex, asset-index, --assetsDir, C:\Users\dusti\.gradle\caches\minecraft\assets, --gameDir, ., --fml.neoForgeVersion, 21.1.72, --fml.fmlVersion, 4.0.29, --fml.mcVersion, 1.21.1, --fml.neoFormVersion, 20240808.144430]
+[20:46:53.322] [main/INFO] [Launcher/MODLAUNCHER]: JVM identified as Microsoft OpenJDK 64-Bit Server VM 21.0.8+9-LTS
+[20:46:53.325] [main/INFO] [Launcher/MODLAUNCHER]: ModLauncher 11.0.4+main.d2e20e43 starting: java version 21.0.8 by Microsoft; OS Windows 11 arch amd64 version 10.0
+[20:46:53.574] [main/WARN] [loading.FMLConfig/CORE]: Configuration file C:\projects\britannia\mod\Britannia_Mod\tmp\plaster-corner-0.1.8d\client-packaged\config\fml.toml is not correct. Correcting
+[20:46:53.576] [main/INFO] [loading.FMLConfig/CORE]: Incorrect key [disableConfigWatcher] was corrected from null to false
+[20:46:53.577] [main/INFO] [loading.FMLConfig/CORE]: Incorrect key [earlyWindowSkipGLVersions] was corrected from null to []
+[20:46:53.578] [main/INFO] [loading.FMLConfig/CORE]: Incorrect key [earlyWindowSquir] was corrected from null to false
+[20:46:53.670] [main/INFO] [loading.ImmediateWindowHandler/]: Loading ImmediateWindowProvider fmlearlywindow
+[20:46:53.908] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.6
+[20:46:54.202] [main/INFO] [EARLYDISPLAY/]: Requested GL version 4.6 got version 4.6
+[20:46:54.366] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=union:/C:/Users/dusti/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.2+mixin.0.8.7/2af2f021d8e02a0220dc27a7a72b4666d66d44ca/sponge-mixin-0.15.2+mixin.0.8.7.jar%23136!/ Service=ModLauncher Env=CLIENT
+[20:46:54.654] [pool-2-thread-1/INFO] [EARLYDISPLAY/]: GL info: Intel(R) UHD Graphics GL version 4.6.0 - Build 32.0.101.5972, Intel
+[20:46:54.668] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "neoforge-21.1.72.jar" [locator: neoforge devenv provider ([C:\projects\britannia\mod\Britannia_Mod\.gradle\repositories\ng_dummy_ng\net\neoforged\neoforge\21.1.72\neoforge-21.1.72.jar])]
+[20:46:54.694] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "neoforge-21.1.72.jar" [locator: neoforge devenv provider ([C:\projects\britannia\mod\Britannia_Mod\.gradle\repositories\ng_dummy_ng\net\neoforged\neoforge\21.1.72\neoforge-21.1.72.jar])]
+[20:46:54.723] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "britannia_mod-0.1.8d-all.jar" [locator: {mods folder locator at C:\projects\britannia\mod\Britannia_Mod\tmp\plaster-corner-0.1.8d\client-packaged\mods}, reader: mod manifest]
+[20:46:54.744] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "neoforge-21.1.72.jar" [locator: userdev mods and services, reader: mod manifest]
+[20:46:54.799] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found gamelibrary file "mixinextras-neoforge-0.4.1.jar" [locator: userdev mods and services, reader: mod manifest]
+[20:46:55.225] [main/WARN] [selection.JarSelector/]: Attempted to select a dependency jar for JarJar which was passed in as source: mixinextras-neoforge-0.4.1.jar. Using Mod File: C:\Users\dusti\.gradle\caches\modules-2\files-2.1\io.github.llamalad7\mixinextras-neoforge\0.4.1\eff97772ecd0dcf8e52cdbafd3b3ccec425f8314\mixinextras-neoforge-0.4.1.jar
+[20:46:55.226] [main/INFO] [loading.moddiscovery.locators.JarInJarDependencyLocator/]: Found 3 dependencies adding them to mods collection
+[20:46:55.226] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found library file "nanohttpd-2.2.0.jar" [parent: britannia_mod-0.1.8d-all.jar, locator: jarinjar]
+[20:46:55.227] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "geckolib-neoforge-1.21.1-4.6.6.jar" [parent: britannia_mod-0.1.8d-all.jar, locator: jarinjar, reader: mod manifest]
+[20:46:55.227] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found library file "neoforge-coremods-21.1.72.jar" [parent: neoforge-21.1.72.jar, locator: jarinjar, reader: mod manifest]
+[20:46:55.231] [main/INFO] [loading.moddiscovery.ModDiscoverer/]:
+     Mod List:
+		Name Version (Mod Id)
+
+		Britannia 0.1.8d (britannia_mod)
+		GeckoLib 4 4.6.6 (geckolib)
+		Minecraft 1.21.1 (minecraft)
+		NeoForge 21.1.72 (neoforge)
+Exception in thread "main" java.lang.module.ResolutionException: Module neoforge.coremods reads more than one module named nanohttpd
+	at java.base/java.lang.module.Resolver.resolveFail(Resolver.java:900)
+	at java.base/java.lang.module.Resolver.checkExportSuppliers(Resolver.java:721)
+	at java.base/java.lang.module.Resolver.finish(Resolver.java:380)
+	at java.base/java.lang.module.Configuration.<init>(Configuration.java:139)
+	at java.base/java.lang.module.Configuration.resolveAndBind(Configuration.java:493)
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.4/cpw.mods.modlauncher.ModuleLayerHandler.buildLayer(ModuleLayerHandler.java:75)
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.4/cpw.mods.modlauncher.ModuleLayerHandler.buildLayer(ModuleLayerHandler.java:87)
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.4/cpw.mods.modlauncher.Launcher.run(Launcher.java:90)
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.4/cpw.mods.modlauncher.Launcher.main(Launcher.java:74)
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.4/cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26)
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.4/cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23)
+	at cpw.mods.bootstraplauncher@2.0.2/cpw.mods.bootstraplauncher.BootstrapLauncher.run(BootstrapLauncher.java:210)
+	at cpw.mods.bootstraplauncher@2.0.2/cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:69)
+
+> Task :runClient FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':runClient'.
+> Process 'command 'C:\Program Files\Microsoft\jdk-21.0.8.9-hotspot\bin\java.exe'' finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 1m 49s
+37 actionable tasks: 4 executed, 33 up-to-date
