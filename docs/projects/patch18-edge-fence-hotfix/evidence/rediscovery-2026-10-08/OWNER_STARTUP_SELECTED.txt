@@ -1,0 +1,2 @@
+[14:30:01] [main/INFO]: Found mod file "britannia_mod-0.1.8d.jar" [locator: {mods folder locator at C:\Users\dusti\curseforge\minecraft\Instances\UltimaCraft - Britannia\mods}, reader: mod manifest]
+[08Oct2026 14:30:43.624] [Render thread/INFO] [net.minecraft.client.gui.screens.ConnectScreen/]: Connecting to sosaria.apexmc.co, 25565

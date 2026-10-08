@@ -1,9 +1,9 @@
-# Fence runtime re-discovery — 2026-10-08
+# Fence runtime re-discovery â€” 2026-10-08
 
 Result: **RUNTIME_ARTIFACT_MISMATCH_CONFIRMED (active client)**.
 The authoritative remote server identity and new real-click/render acceptance
 remain unverified. No application-behavior correction is justified by the
-current evidence. The running client still contains the original normalization
+current evidence. The client observed during Stage A loaded the original normalization
 code, despite sharing version 0.1.8d with the corrected candidates.
 
 ## Owner observations and limits
@@ -23,7 +23,7 @@ Neither details crop shows layout_code. The samples have different owners;
 they are not independently a before/after trace of one block. Those production
 coordinates were not edited or used as disposable fixtures.
 
-## Stage A — startup-identified artifacts
+## Stage A â€” startup-identified artifacts
 
 Canonical Patch 18 and live remote initially agreed at
 71de2312a552ebf4dad3ecf147efd1de4bd815db. Tracked root was clean; owner's seven
@@ -40,7 +40,7 @@ from that instance's mods directory. Its 14:30:43 connection record names
 sosaria.apexmc.co:25565; this is a remote world, not an integrated server.
 The jar predates this process. Selected startup lines and exact binary evidence
 are preserved in evidence/rediscovery-2026-10-08/ARTIFACT_COMPARISON.json and
-OWNER_STARTUP_SELECTED.log. Authentication launch arguments are not retained
+OWNER_STARTUP_SELECTED.txt. Authentication launch arguments are not retained
 in those diagnostic files; all subsequent inventory extracts specific fields.
 
 | Artifact | Embedded source | Bytes | Full SHA-256 |
@@ -97,8 +97,8 @@ placement/update paths. No current source defect has yet been demonstrated.
 
 ## Same-coordinate reproduction and acceptance boundary
 
-Fresh results will be appended after the normally compiled packaged-artifact
-comparison. The excluded helper uses actual BlockItem.place with resolved
+The packaged-artifact comparison below uses a normally compiled, excluded
+helper and actual BlockItem.place with resolved
 contexts. Each case retains one owner A throughout isolated placement, neighbor
 B immediately, scheduled tick, settling, B removal and settling. Four facings,
 three click surfaces, both tangent extension directions and cardinal/20-degree
@@ -116,7 +116,7 @@ mouse packets, actual rails/UVs/target outline and reconnect/F3+T visuals cannot
 be claimed from these constructed server contexts. Existing 2026-10-07 matching
 mouse/F2 records remain historical independent evidence, not this new run.
 
-## Operator delivery steps — no deployment performed
+## Operator delivery steps â€” no deployment performed
 
 First obtain /grabby env on the affected server to identify its loaded artifact.
 For an eventual separately authorized deployment, retain a pre-upgrade world,
@@ -141,7 +141,7 @@ identity and the reported interaction on matched builds are confirmed. No live
 server/client installation, production world, main branch/ruleset, release tag
 or download publication was changed.
 
-## Executed artifact comparison — new 2026-10-08 evidence
+## Executed artifact comparison â€” new 2026-10-08 evidence
 
 Normal Java 21 / Gradle 8.9 compilation produced the runtime helper; no manual
 javac or compile exclusion was used. The test-only lowcode mod contains only
@@ -206,5 +206,85 @@ Setup limits: the first launch had an installed-Gradle path typo, corrected
 before compilation. Synthetic-player missing-config/backend warnings are not
 backend parity. The intentional old-jar red result is not a current-source
 failure. Current application/resources/dependencies/version remain unchanged;
-only the excluded regression and dated evidence are added. New clean packaging
-and relevant source checks are recorded separately below when completed.
+only the excluded regression and dated evidence are added. Final clean packaging
+and relevant source checks are recorded below.
+
+
+## Final clean candidate and new source gates
+
+The source/evidence commit cf49b1700d1a8992f39396f2ae531f0cb26502d7 was
+fast-forwarded from the unchanged canonical/remote 71de2312 baseline into
+patch-18 and backed up by a normal non-force push. A fresh live remote query
+confirmed cf49b1700d1a8992f39396f2ae531f0cb26502d7. The final documentation
+closeout is a descendant; its verified final local/remote identities are saved
+in canonical tmp/fence-runtime-rediscovery-2026-10-08/CLOSEOUT.json. No main,
+ruleset/history, release/download publication or production installation changed.
+
+Final deployable-format candidate, held for matched runtime/human acceptance:
+`tmp/fence-runtime-rediscovery-2026-10-08/release/britannia_mod-0.1.8d-all.jar`.
+The thin jar is not deployable.
+
+- Bytes: **36,142,686**.
+- SHA-256: **e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70**.
+- Version: **0.1.8d**; embedded source
+  **cf49b1700d1a8992f39396f2ae531f0cb26502d7**;
+  branch **codex/fence-runtime-rediscovery-2026-10-08**; **git.dirty=false**.
+- Build timestamp: **2026-10-08T22:31:37.806305200Z**.
+- All **10,698 ZIP entries** have the same names and bytes as the preserved
+  October 7 combined candidate, except britannia_mod_build.properties.
+  Alligator, medallion, plaster/wall, fence resources and bundled dependencies
+  are preserved byte-for-byte. No GameTest class/helper/template is packaged.
+- Initial ordinary compileJava executed in the clean task checkout, including
+  this regression. `build artifactIdentity runGameTestServer` then executed
+  the full JUnit suite: **4,129 total, 4,106 passed, 23 existing skips, zero
+  failures/errors**, and **24 required focused fence/lifecycle GameTests passed**.
+  Existing placement/support/corner/decorator/structure/transform and chunk
+  boundary/load-order checks are included; this is not a fresh 1,366-test run.
+- An additional explicit `clean build artifactIdentity` passed normal bundled
+  jar/dependency/provenance gates. Gradle restored its normally generated
+  compilation/test outputs FROM-CACHE in that clean build. No manual javac,
+  manual application packaging or `-x compileJava` was used. The earlier actual
+  compilation/test execution and exact entry comparison are retained separately.
+- A separate JVM loads the exact final e64fe63c candidate, not project build
+  classes: actual origin/hash/source/default/schema are captured again.
+  **One required packaged restart GameTest passes all 112 saved fixtures**;
+  independent trace comparison also matches all 112 full states, outlines and
+  collision shapes against the earlier exact combined restart. The combined
+  48 placement/64 decoded-legacy results apply to byte-identical application
+  and resource entries; they are paired evidence, not a claim that this final
+  hash separately reran the 48 placement sequences.
+
+Full machine-readable candidate/gate/final runtime records are in
+`evidence/rediscovery-2026-10-08/FRESH_CANDIDATE_IDENTITY.json`,
+`SOURCE_GATES_RESULTS.json`, `FRESH_CANDIDATE_READ_TRACE.jsonl` and
+`FRESH_CANDIDATE_READ_RESULTS.json`. The earlier regular-build intermediate
+039726d12cffe791f7d41b1b95e3ec703f2ce0dfb7b7844b7c95231b37ce4968 is retained
+under the task release/preclean-intermediate directory with its own identity
+and matching 112-fixture trace. It does not overwrite the historical comparison.
+
+## Retention and remaining action
+
+At the 15:33 PDT recheck, the previously observed client PID 19556 was absent
+and no javaw client was listed. Its CurseForge installed jar still hashed to
+c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6. The task did
+not stop/change that process or replace the jar. This result identifies the
+observed startup/session, not a promise about any later independently launched
+session or the inaccessible remote server.
+
+The task branch and checkout at
+`tmp/fence-runtime-rediscovery-2026-10-08/source` remain available, with the
+old/combined/final disposable worlds, fixed-coordinate fixture manifest and
+packaged helper recipe. They are needed for the remaining reported-interaction
+acceptance and are deliberately retained. Candidate/identity, compressed raw
+build/runtime logs, disassembly and helper recipe are also preserved outside
+that checkout under the task release/evidence directories. Test servers exited
+normally; unrelated worktrees and owner untracked files were not cleaned.
+
+The next missing input is only the affected server's existing read-only
+`/grabby env` artifact/build/server lines. Then use the final clean candidate
+above (or the preserved byte-identical combined application), deliberately
+match both sides by full hash and startup origin, and record fresh same-owner
+client/server placement/removal/reconnect observations. The operator steps
+above are preparation; deployment/restart still requires separate authorization.
+Already displaced legacy blocks cannot be guessed backward. Remaining combined
+human gates and this owner-facing fence complaint stay open.

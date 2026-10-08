@@ -1,0 +1,12 @@
+{
+  "registeredRequiredTests": 1,
+  "passed": 1,
+  "artifact": "e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70",
+  "summary": {
+    "fixtures": 112,
+    "exactSavedStatesMatch": true,
+    "phase": "summary-read"
+  },
+  "same_saved_states_outlines_collisions_as_combined": 112,
+  "client_mouse_render_acceptance": "unobserved"
+}

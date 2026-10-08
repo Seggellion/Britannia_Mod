@@ -32,6 +32,16 @@
       "has_resolvedRunEdge": false,
       "blockClassSha256": "5ac7749603856252ba8ea6af2bbbbb98a1fe1933e6e80f0d21e557e7257c9c45",
       "stateMappingSha256": "bc90ea245b16432510d3c096d8e8dced195b4f723e9de224c2b2415a82fbc17d"
+    },
+    {
+      "label": "final_clean_rediscovery_candidate",
+      "path": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\fence-runtime-rediscovery-2026-10-08\\release\\britannia_mod-0.1.8d-all.jar",
+      "bytes": 36142686,
+      "sha256": "e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70",
+      "build": "mod.version=0.1.8d\ngit.head=cf49b1700d1a8992f39396f2ae531f0cb26502d7\ngit.branch=codex/fence-runtime-rediscovery-2026-10-08\ngit.dirty=false\nbuild.timestamp=2026-10-08T22:31:37.806305200Z\n",
+      "has_layout_code": true,
+      "has_resolvedRunEdge": false,
+      "application_entries_match_combined": true
     }
   ],
   "startupOriginEvidence": [
@@ -59,5 +69,6 @@
   "remoteServer": "sosaria.apexmc.co:25565",
   "authoritativeServerArtifact": "unverified; /grabby env output requested",
   "ownerScreenshotsAvailableHere": false,
-  "computerUse": "node_repl failed after reset: windows sandbox failed: helper_unknown_error: setup refresh had errors"
+  "computerUse": "node_repl failed after reset: windows sandbox failed: helper_unknown_error: setup refresh had errors",
+  "closeout_client_observation": "At 15:33 PDT, PID 19556 was absent and no javaw client was listed. Instance jar hash remained c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6. No task action stopped or changed the client."
 }

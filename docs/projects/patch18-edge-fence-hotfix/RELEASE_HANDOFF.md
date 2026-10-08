@@ -1,4 +1,4 @@
-## Runtime re-discovery — 2026-10-08
+## Runtime re-discovery â€” 2026-10-08
 
 **RUNTIME_ARTIFACT_MISMATCH_CONFIRMED for the active client.** Startup identifies
 44359121 / c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6,
@@ -16,10 +16,24 @@ timing remains follow-up, and the combined corner/decorator/art/reload, wall
 loaded appearance/outline and Alligator playback observations remain.
 See [dated artifact comparison and reproduction](FENCE_REDISCOVERY_2026-10-08.md).
 
----
-## Current combined closeout — 2026-10-07
+Final clean candidate (source cf49b1700d1a8992f39396f2ae531f0cb26502d7,
+dirty=false, 36,142,686 bytes) is retained under canonical
+`tmp/fence-runtime-rediscovery-2026-10-08/release/britannia_mod-0.1.8d-all.jar`:
+SHA-256 **e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70**.
+It differs from the October 7 combined jar only in embedded provenance.
+New full JUnit execution: 4,129 total / 23 existing skips / zero failures/errors;
+24 required focused fence/lifecycle tests passed. Explicit clean build gates
+passed; exact final packaged runtime passes 112 saved states/outlines/collisions.
+The test-only source/evidence commit is integrated and normally backed up on
+patch-18. Task checkout/worlds are retained for pending server/UI acceptance;
+no installation or production restart was performed. At 15:33 PDT the initial
+client process had exited independently; the installed old jar hash was unchanged.
 
-Supersedes the historical desktop-lock and combined medallion hold below. The unchanged fence implementation is in the verified final `986ed746`/`f02d2876…482bd` candidate. Complete 4,129 JUnit / 1,366 required GameTests pass. Matching dedicated actual mouse placements in all four facings plus support and endpoint clicks are recorded with native F2/state assertions; all six saved samples match after the actual server restart. Owner sustained fence barrier movement is approved. The interrupted sequential attempt did not establish a two-panel corner and is not a pass. Remaining required human observations are the fresh corner's placement/decorator behavior, original/reflected rails/UVs/outline and reconnect/resource-reload appearance. Saved-layout/physics tests are independent automated evidence.
+
+---
+## Current combined closeout â€” 2026-10-07
+
+Supersedes the historical desktop-lock and combined medallion hold below. The unchanged fence implementation is in the verified final `986ed746`/`f02d2876â€¦482bd` candidate. Complete 4,129 JUnit / 1,366 required GameTests pass. Matching dedicated actual mouse placements in all four facings plus support and endpoint clicks are recorded with native F2/state assertions; all six saved samples match after the actual server restart. Owner sustained fence barrier movement is approved. The interrupted sequential attempt did not establish a two-panel corner and is not a pass. Remaining required human observations are the fresh corner's placement/decorator behavior, original/reflected rails/UVs/outline and reconnect/resource-reload appearance. Saved-layout/physics tests are independent automated evidence.
 
 Repeated startup/bake/frame timing is a follow-up measurement, not a source-publication hold: no demonstrated regression or established threshold; +8.32 MiB measured median heap cost remains recorded. Medallion UI is owner-approved; alligator playback remains required. Production acceptance is pending, while source publication is independently authorized without main ruleset bypass. See [combined handoff](../../hotfixes/combined-0.1.8d/RELEASE_HANDOFF.md), [gate reassessment](../../hotfixes/combined-0.1.8d/GATE_REASSESSMENT.md) and [five-minute session](../../hotfixes/combined-0.1.8d/MANUAL_SESSION.md).
 
@@ -91,4 +105,3 @@ owner's explicit authorization of normal non-force remote backup.
 Task-created worktrees, branches and disposable worlds will be removed only
 after source/evidence are clean, integrated and safely preserved. Owner
 kickoffs/discovery files and unrelated worktrees/branches remain untouched.
-
