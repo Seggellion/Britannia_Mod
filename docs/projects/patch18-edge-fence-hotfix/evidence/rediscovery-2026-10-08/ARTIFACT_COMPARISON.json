@@ -1,0 +1,63 @@
+{
+  "artifacts": [
+    {
+      "label": "active_client",
+      "path": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia\\mods\\britannia_mod-0.1.8d.jar",
+      "bytes": 36107339,
+      "sha256": "c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6",
+      "build": "mod.version=0.1.8d\ngit.head=4435912197fba84630d6e5a0544f29fc3a736450\ngit.branch=patch-18\ngit.dirty=false\nbuild.timestamp=2026-10-06T00:15:17.175199Z\n",
+      "has_layout_code": false,
+      "has_resolvedRunEdge": true,
+      "blockClassSha256": "ec1be5f51e0a4080f14a3710d6a63a30378ca4179574019f8fe147aeb795fe82",
+      "stateMappingSha256": "6ccfa55e7a5aa8a16c299ad4109fa645afc652fab5b651eed152bc9bf34ac3bc"
+    },
+    {
+      "label": "combined_candidate",
+      "path": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\combined-0.1.8d\\release\\britannia_mod-0.1.8d-all.jar",
+      "bytes": 36142668,
+      "sha256": "f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd",
+      "build": "mod.version=0.1.8d\ngit.head=986ed746866dc944b7b496ab9428b670f65e15c0\ngit.branch=HEAD\ngit.dirty=false\nbuild.timestamp=2026-10-07T17:43:56.051245600Z\n",
+      "has_layout_code": true,
+      "has_resolvedRunEdge": false,
+      "blockClassSha256": "5ac7749603856252ba8ea6af2bbbbb98a1fe1933e6e80f0d21e557e7257c9c45",
+      "stateMappingSha256": "bc90ea245b16432510d3c096d8e8dced195b4f723e9de224c2b2415a82fbc17d"
+    },
+    {
+      "label": "historical_fence_candidate",
+      "path": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\edge-fence-0.1.8d\\release\\britannia_mod-0.1.8d-all.jar",
+      "bytes": 36140545,
+      "sha256": "89c3f936d2f942a0967ddc500542a8b0f587f5987a0902b2833596c099b486cb",
+      "build": "mod.version=0.1.8d\ngit.head=07359f98277417b8ffdafd9d57b55b828804ab5b\ngit.branch=task/patch18-0.1.8d-edge-fence\ngit.dirty=false\nbuild.timestamp=2026-10-06T20:38:59.278362500Z\n",
+      "has_layout_code": true,
+      "has_resolvedRunEdge": false,
+      "blockClassSha256": "5ac7749603856252ba8ea6af2bbbbb98a1fe1933e6e80f0d21e557e7257c9c45",
+      "stateMappingSha256": "bc90ea245b16432510d3c096d8e8dced195b4f723e9de224c2b2415a82fbc17d"
+    }
+  ],
+  "startupOriginEvidence": [
+    "[14:30:01] [main/INFO]: Found mod file \"britannia_mod-0.1.8d.jar\" [locator: {mods folder locator at C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia\\mods}, reader: mod manifest]",
+    "[08Oct2026 14:30:43.624] [Render thread/INFO] [net.minecraft.client.gui.screens.ConnectScreen/]: Connecting to sosaria.apexmc.co, 25565"
+  ],
+  "activeInstanceBritanniaJars": [
+    {
+      "file": "britannia_mod-0.1.8d.jar",
+      "bytes": 36107339
+    }
+  ],
+  "disabledOlderFiles": [
+    "Britannia_Mod-0.1.7k.old",
+    "britannia_mod-0.1.8a.old",
+    "britannia_mod-0.1.8b.old",
+    "britannia_mod-0.1.8c.old"
+  ],
+  "resourcePackOptions": [
+    "resourcePacks:[]",
+    "incompatibleResourcePacks:[]"
+  ],
+  "clientPID": 19556,
+  "clientStartLocal": "2026-10-08T14:29:54.879863-07:00",
+  "remoteServer": "sosaria.apexmc.co:25565",
+  "authoritativeServerArtifact": "unverified; /grabby env output requested",
+  "ownerScreenshotsAvailableHere": false,
+  "computerUse": "node_repl failed after reset: windows sandbox failed: helper_unknown_error: setup refresh had errors"
+}

@@ -1,3 +1,22 @@
+## Runtime re-discovery — 2026-10-08
+
+**RUNTIME_ARTIFACT_MISMATCH_CONFIRMED for the active client.** Startup identifies
+44359121 / c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6,
+which has the old normalizer and no layout_code. The exact combined f02d2876
+candidate has the corrected 2,112-state schema. A copied old jar reverses the
+same A in 24/48 constructed scenarios; the combined jar passes all 48, 64
+legacy materializations and a separate 112-fixture saved-world restart.
+No current application correction is justified. These new engine/resource
+traces are distinct from actual mouse/render acceptance. Remote authoritative
+identity remains unverified (/grabby env artifact/build/server requested);
+current computer-use helper initialization failed before any window input.
+The owner-facing issue stays open until matched deployment/interaction is
+confirmed. No live jar/world/server was changed. Medallion UI remains accepted,
+timing remains follow-up, and the combined corner/decorator/art/reload, wall
+loaded appearance/outline and Alligator playback observations remain.
+See [dated artifact comparison and reproduction](FENCE_REDISCOVERY_2026-10-08.md).
+
+---
 ## Current combined closeout — 2026-10-07
 
 Supersedes the historical desktop-lock and combined medallion hold below. The unchanged fence implementation is in the verified final `986ed746`/`f02d2876…482bd` candidate. Complete 4,129 JUnit / 1,366 required GameTests pass. Matching dedicated actual mouse placements in all four facings plus support and endpoint clicks are recorded with native F2/state assertions; all six saved samples match after the actual server restart. Owner sustained fence barrier movement is approved. The interrupted sequential attempt did not establish a two-panel corner and is not a pass. Remaining required human observations are the fresh corner's placement/decorator behavior, original/reflected rails/UVs/outline and reconnect/resource-reload appearance. Saved-layout/physics tests are independent automated evidence.
@@ -168,3 +187,4 @@ preserved under canonical `tmp/edge-fence-0.1.8d/` before disposal of task
 worlds. Only the two task-created worktrees and task branch are eligible
 for cleanup after clean integration and backup. Final actual cleanup and
 backup identities are recorded in that archive's CLOSEOUT.json.
+
