@@ -1,4 +1,4 @@
-# Fence runtime re-discovery â€” 2026-10-08
+# Fence runtime re-discovery — 2026-10-08
 
 Result: **RUNTIME_ARTIFACT_MISMATCH_CONFIRMED (active client)**.
 The authoritative remote server identity and new real-click/render acceptance
@@ -23,7 +23,7 @@ Neither details crop shows layout_code. The samples have different owners;
 they are not independently a before/after trace of one block. Those production
 coordinates were not edited or used as disposable fixtures.
 
-## Stage A â€” startup-identified artifacts
+## Stage A — startup-identified artifacts
 
 Canonical Patch 18 and live remote initially agreed at
 71de2312a552ebf4dad3ecf147efd1de4bd815db. Tracked root was clean; owner's seven
@@ -116,7 +116,7 @@ mouse packets, actual rails/UVs/target outline and reconnect/F3+T visuals cannot
 be claimed from these constructed server contexts. Existing 2026-10-07 matching
 mouse/F2 records remain historical independent evidence, not this new run.
 
-## Operator delivery steps â€” no deployment performed
+## Operator delivery steps — no deployment performed
 
 First obtain /grabby env on the affected server to identify its loaded artifact.
 For an eventual separately authorized deployment, retain a pre-upgrade world,
@@ -141,7 +141,7 @@ identity and the reported interaction on matched builds are confirmed. No live
 server/client installation, production world, main branch/ruleset, release tag
 or download publication was changed.
 
-## Executed artifact comparison â€” new 2026-10-08 evidence
+## Executed artifact comparison — new 2026-10-08 evidence
 
 Normal Java 21 / Gradle 8.9 compilation produced the runtime helper; no manual
 javac or compile exclusion was used. The test-only lowcode mod contains only

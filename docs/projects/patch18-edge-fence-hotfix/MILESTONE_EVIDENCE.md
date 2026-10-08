@@ -1,4 +1,4 @@
-## Runtime re-discovery â€” 2026-10-08
+## Runtime re-discovery — 2026-10-08
 
 **RUNTIME_ARTIFACT_MISMATCH_CONFIRMED for the active client.** Startup identifies
 44359121 / c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6,
@@ -31,9 +31,9 @@ client process had exited independently; the installed old jar hash was unchange
 
 
 ---
-## Current combined closeout â€” 2026-10-07
+## Current combined closeout — 2026-10-07
 
-Supersedes the historical desktop-lock and combined medallion hold below. The unchanged fence implementation is in the verified final `986ed746`/`f02d2876â€¦482bd` candidate. Complete 4,129 JUnit / 1,366 required GameTests pass. Matching dedicated actual mouse placements in all four facings plus support and endpoint clicks are recorded with native F2/state assertions; all six saved samples match after the actual server restart. Owner sustained fence barrier movement is approved. The interrupted sequential attempt did not establish a two-panel corner and is not a pass. Remaining required human observations are the fresh corner's placement/decorator behavior, original/reflected rails/UVs/outline and reconnect/resource-reload appearance. Saved-layout/physics tests are independent automated evidence.
+Supersedes the historical desktop-lock and combined medallion hold below. The unchanged fence implementation is in the verified final `986ed746`/`f02d2876…482bd` candidate. Complete 4,129 JUnit / 1,366 required GameTests pass. Matching dedicated actual mouse placements in all four facings plus support and endpoint clicks are recorded with native F2/state assertions; all six saved samples match after the actual server restart. Owner sustained fence barrier movement is approved. The interrupted sequential attempt did not establish a two-panel corner and is not a pass. Remaining required human observations are the fresh corner's placement/decorator behavior, original/reflected rails/UVs/outline and reconnect/resource-reload appearance. Saved-layout/physics tests are independent automated evidence.
 
 Repeated startup/bake/frame timing is a follow-up measurement, not a source-publication hold: no demonstrated regression or established threshold; +8.32 MiB measured median heap cost remains recorded. Medallion UI is owner-approved; alligator playback remains required. Production acceptance is pending, while source publication is independently authorized without main ruleset bypass. See [combined handoff](../../hotfixes/combined-0.1.8d/RELEASE_HANDOFF.md), [gate reassessment](../../hotfixes/combined-0.1.8d/GATE_REASSESSMENT.md) and [five-minute session](../../hotfixes/combined-0.1.8d/MANUAL_SESSION.md).
 
@@ -41,7 +41,7 @@ Repeated startup/bake/frame timing is a follow-up measurement, not a source-publ
 
 # Fence hotfix milestone evidence
 
-## M0 â€” baseline and isolation
+## M0 — baseline and isolation
 
 2026-10-06: current `patch-18` c8044e4565281514253e290167c555413c7a5293,
 unchanged from discovery. Tracked root clean. Owner's five kickoff/playbook
@@ -64,10 +64,10 @@ Legacy resource mappings and seven authored mesh hashes captured before
 edits. Discovery trace copied unchanged; SHA-256
 fb97fb4fb4b5f8c102fe755196267f5f4adea8199974cf184692706326d4cd31.
 
-## M1 â€” regressions
+## M1 — regressions
 
 Five registered GameTests added: four facing tests, each exercising six
-constructed BlockItem scenarios (three surfaces Ã— two orders), and one
+constructed BlockItem scenarios (three surfaces × two orders), and one
 saved-corner first-update regression. They use ordinary `BlockItem.place`
 and scheduled ticks; they do not claim client raycast/packet evidence.
 Normal red run log: `tmp/edge-fence/red.log`.
@@ -86,7 +86,7 @@ allow a real perpendicular terminal contact without creating another panel.
 incorrectly assumed gzip; both existing fixtures are uncompressed NBT.
 The reader now recognizes either format; the resources were not rewritten.
 
-## M2â€“M4 â€” fixed layout, connections, placement
+## M2–M4 — fixed layout, connections, placement
 
 Reference schema implemented. Normal client/server dependencies unchanged.
 `python tools/scaffolding/gen_wooden_fence.py --reflections --check` verifies
@@ -98,14 +98,14 @@ seven authored hashes (LF normalized for Git checkout endings).
 `focused-lifecycle-write.log`: normal compile/run succeeds in 3m17s; all
 22 registered required tests pass (20 fence + two lifecycle), in 7.831s of
 GameTest execution. Includes 24 constructed BlockItem straight scenarios,
-four rotated sequential 4Ã—4 enclosures and corner replacement/removal,
+four rotated sequential 4×4 enclosures and corner replacement/removal,
 support-intent conflicts/replaceable targets, independent old shape oracle,
 actual missing-property BlockState codec, serialization, 20 fixed-point
 rounds, 128-layout transforms/contact symmetry, dirt path/vanilla controls,
 Survival/Adventure collision, both real patio resources and decorator use.
 No registered tests are counted from their internal scenario totals.
 
-## M5 â€” lifecycle
+## M5 — lifecycle
 
 Write process saves 64 layouts to actual Anvil chunks. Separate read process
 completed against the same disposable world. Boundary test passed
@@ -124,7 +124,7 @@ availability checks, zero reads with unavailable chunks, four loaded reads,
 no world writes or neighbor materialization. Explicit selector and mutable-
 flag independence assertions were subsequently strengthened for final gates.
 
-## M6 â€” complete gates and cost/client evidence
+## M6 — complete gates and cost/client evidence
 
 Implementation commit: 0fe906d7699a5e227467faa343d5438948969baa.
 `full-gametest.log` normally compiled the application, completed all 1,362
@@ -166,7 +166,7 @@ movement/tool and visual reload acceptance remain externally pending.
 This does not negate automated lifecycle evidence. No production runtime,
 installed mod or production world was accessed.
 
-## M7 â€” integration and held candidate
+## M7 — integration and held candidate
 
 Current canonical Patch 18 was rechecked at c8044e45, with its same owner
 untracked files and unrelated worktrees. `git merge --ff-only
@@ -191,7 +191,7 @@ confirms GeckoLib 4.6.6 and nanohttpd 2.2.0, no GameTest classes/namespaces or
 disposable probes. Production PresenceProbe is a legitimate existing class,
 not a discovery probe. Candidate provenance is preserved in JSON.
 
-## M8 â€” handoff and bounded cleanup
+## M8 — handoff and bounded cleanup
 
 Final status is IMPLEMENTATION_COMPLETE_PENDING_ACCEPTANCE; candidate is
 CANDIDATE_PREPARED_RELEASE_HELD. Required manual scene and remaining timing
