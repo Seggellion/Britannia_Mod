@@ -1,5 +1,13 @@
 # Combined Patch 18 0.1.8d release handoff
 
+## One fence/plaster recovery coordinated — 2026-10-09
+
+**COMBINED_CANDIDATE_VERIFIED; INSTALLED_FILE_MATCH; PRODUCTION_ACCEPTANCE_PENDING.** The fence task's completed report and final handoff were received; its prior separately authorized replacement had already finished after Minecraft closed. Fresh read-only coordination verifies the active one-JAR installation, preserved old backup, existing matching localhost server and both fixes in clean `cf49b170` / full SHA `e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70`, 36,142,686 bytes. No duplicate installation or server/client launch, new repair, rebuild, repeated passing suite or desktop control occurs.
+
+Current effective production source matches selected source. All 10,698 archive names match historical f02, and 10,697 entries (including all classes/assets/dependencies/other hotfix payload) are byte-identical; only embedded provenance differs. The final chosen identity supersedes the earlier plaster f02 installation default. Actual client loaded identity, fence mouse/corner/decorator/reload and plaster both-branch exterior/paired-wall appearance remain pending; medallion/movement approvals are reused. Alligator playback remains its independent release hold. Main/PR #501 public CI/signing restrictions are separate and unchanged.
+
+The [combined installation handoff](../combined-installation-0.1.8d-2026-10-09/INSTALLATION_HANDOFF.md) and [one approximately five-minute owner session](../combined-installation-0.1.8d-2026-10-09/MANUAL_SESSION.md) replace earlier separate fence/plaster launch or install checklists. Server **127.0.0.1:25583** is already ready for Seggellion. Production, live worlds, profile settings and unrelated mods are unchanged by this coordination; no production deployment, tag or release is performed.
+
 ## Local client replacement completed — 2026-10-09
 
 **INSTALLED_FILE_MATCH; LOCAL_RUNTIME_PENDING_ACCEPTANCE; production unchanged.**

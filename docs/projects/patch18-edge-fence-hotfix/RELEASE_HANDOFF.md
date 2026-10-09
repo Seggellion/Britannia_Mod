@@ -1,4 +1,8 @@
 
+## Combined fence/plaster coordination — 2026-10-09
+
+The completed fence report and existing replacement are independently verified by the [one combined installation handoff](../../hotfixes/combined-installation-0.1.8d-2026-10-09/INSTALLATION_HANDOFF.md). Selected `cf49b170` / `e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70` contains both effective repairs and unchanged cumulative hotfix payload. Exactly one active Britannia JAR/old outside-mods backup and existing localhost server are verified. No second installation/build/server/client launch or desktop automation occurs. Use the [single consolidated owner session](../../hotfixes/combined-installation-0.1.8d-2026-10-09/MANUAL_SESSION.md) on **127.0.0.1:25583** rather than multiple recovery sessions. Fence and plaster visuals/new client loaded identity remain pending; existing medallion/movement approvals and other release holds are retained. Production remains unchanged.
+
 ## Local client replacement completed — 2026-10-09
 
 **INSTALLED_FILE_MATCH; LOCAL_RUNTIME_PENDING_ACCEPTANCE; production unchanged.**
