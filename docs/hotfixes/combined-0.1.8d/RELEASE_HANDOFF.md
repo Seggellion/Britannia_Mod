@@ -1,5 +1,26 @@
 # Combined Patch 18 0.1.8d release handoff
 
+## Local client replacement completed — 2026-10-09
+
+**INSTALLED_FILE_MATCH; LOCAL_RUNTIME_PENDING_ACCEPTANCE; production unchanged.**
+The old Minecraft client exited before the guarded replacement. The actual
+CurseForge instance now contains exactly one active `britannia_mod-0.1.8d-all.jar`,
+36,142,686 bytes, SHA **e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70**,
+clean source cf49b1700d1a8992f39396f2ae531f0cb26502d7. The original backup and
+retired old active jar are preserved outside mods; all 10 other mod files hash
+unchanged. Version remains 0.1.8d and no candidate rebuild was needed.
+
+Windows interaction initialization and one retry failed before input; no new
+client launch/load, actual mouse placement or visual pass is claimed. Matching
+disposable server **127.0.0.1:25583** still loads the selected identity; Seggellion
+operator access was explicitly approved and granted only there. Fence/wall,
+both-branch plaster exterior and alligator scenes are prepared. Prior automated
+checks remain separately recorded; medallion/movement approvals and all pending
+visual observations stay accurate. Timing stays follow-up.
+
+See [manual continuation](../../projects/patch18-edge-fence-hotfix/MANUAL_RECOVERY_CHECKLIST.md), [matrix](../../projects/patch18-edge-fence-hotfix/RUNTIME_IDENTITY_MATRIX.json) and [exact deployment packet](../../projects/patch18-edge-fence-hotfix/PRODUCTION_RECOVERY_PACKET.md). Production deployment remains explicitly prohibited. The older running-client guard status below is historical.
+
+
 ## Fence runtime recovery and selected upload identity — 2026-10-09
 
 **LOCAL_RUNTIME_PENDING_ACCEPTANCE; production unchanged.** The owner's remote `/grabby env` confirms old source **4435912197fba84630d6e5a0544f29fc3a736450**, full SHA **c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6**, matching the observed active client. Remote identity is known; no production replacement/restart is authorized or performed.

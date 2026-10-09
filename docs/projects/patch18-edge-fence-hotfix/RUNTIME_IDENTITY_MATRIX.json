@@ -14,24 +14,13 @@
   "client": {
     "instance": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia",
     "installed": {
-      "filename": "britannia_mod-0.1.8d.jar",
-      "bytes": 36107339,
-      "sha256": "c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6",
-      "provenance": {
-        "mod.version": "0.1.8d",
-        "git.head": "4435912197fba84630d6e5a0544f29fc3a736450",
-        "git.branch": "patch-18",
-        "git.dirty": "false",
-        "build.timestamp": "2026-10-06T00:15:17.175199Z"
-      }
-    },
-    "loaded_session": {
-      "pid": 47684,
-      "started": "2026-10-09T02:06:11.334937-07:00",
-      "sha256": "c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6",
-      "source": "4435912197fba84630d6e5a0544f29fc3a736450",
-      "evidence": "current process gameDir + current startup origin + unchanged installed old file",
-      "status": "OLD_RUNTIME_OBSERVED"
+      "filename": "britannia_mod-0.1.8d-all.jar",
+      "bytes": 36142686,
+      "sha256": "e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70",
+      "mod_version": "0.1.8d",
+      "source_commit": "cf49b1700d1a8992f39396f2ae531f0cb26502d7",
+      "dirty": "false",
+      "build_timestamp": "2026-10-08T22:31:37.806305200Z"
     },
     "backup": {
       "backup_jar": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia\\.britannia-recovery-backups\\2026-10-09-e64fe63c\\britannia_mod-0.1.8d.jar",
@@ -43,8 +32,21 @@
       "remote_server_changed": false,
       "recorded_for_date": "2026-10-09"
     },
-    "replacement_status": "PENDING_RUNNING_CLIENT",
-    "new_loaded_runtime": "LOADED_RUNTIME_UNVERIFIED"
+    "replacement_status": "INSTALLED_FILE_MATCH",
+    "new_loaded_runtime": "LOADED_RUNTIME_UNVERIFIED",
+    "historical_old_session": {
+      "pid": 47684,
+      "started": "2026-10-09T02:06:11.334937-07:00",
+      "sha256": "c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6",
+      "source": "4435912197fba84630d6e5a0544f29fc3a736450",
+      "evidence": "current process gameDir + current startup origin + unchanged installed old file",
+      "status": "CLOSED_BEFORE_VERIFIED_REPLACEMENT"
+    },
+    "recovery_evidence": "evidence/runtime-recovery-2026-10-09/LOCAL_RECOVERY_RECEIPT.json",
+    "preflight_evidence": "evidence/runtime-recovery-2026-10-09/PREFLIGHT_AFTER.json",
+    "other_mod_files_hash_unchanged": 10,
+    "client_launch_performed": false,
+    "installed_files_changed": true
   },
   "remote": {
     "source": "4435912197fba84630d6e5a0544f29fc3a736450",
@@ -69,9 +71,14 @@
     "world_save_checks": 4,
     "new_mouse_client_render_acceptance": false,
     "restart_saved_owner_assertions": 4,
-    "restart_evidence": "evidence/runtime-recovery-2026-10-09/DEDICATED_RESTART_TRACE.txt"
+    "restart_evidence": "evidence/runtime-recovery-2026-10-09/DEDICATED_RESTART_TRACE.txt",
+    "operator_profile": "Seggellion",
+    "test_operator_explicitly_approved": true,
+    "prepared_plaster_exterior_branches": "A and B, lower/upper viewpoints; no visual pass"
   },
   "production_rollout": "NOT_AUTHORIZED_DO_NOT_DEPLOY",
   "owner_fence_runtime_accepted": false,
-  "entry_source_baseline": "5a8cab9a38fac52253dea20431dea60cd15812c0"
+  "entry_source_baseline": "5a8cab9a38fac52253dea20431dea60cd15812c0",
+  "last_updated": "2026-10-09 local recovery continuation",
+  "continuation_source_baseline": "d808d3cba7454366fd1052ce8ebf8293381e98f1"
 }

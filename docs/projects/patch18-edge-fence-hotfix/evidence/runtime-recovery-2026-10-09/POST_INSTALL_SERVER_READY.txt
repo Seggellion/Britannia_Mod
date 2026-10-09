@@ -1,0 +1,7 @@
+Explicit owner approval for Seggellion operator access applies only to this copied localhost server. Reload/identity is preparation, not client acceptance.
+[09Oct2026 04:38:06.633] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Made Seggellion a server operator
+[09Oct2026 04:39:54.020] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: There are 7 data pack(s) enabled: [vanilla (built-in)], [mod_data], [file/plaster_probe (world)], [file/combined_probe (world)], [file/closeout_probe (world)], [file/fence_recovery (world)], [file/reopened_plaster (world)]
+[09Oct2026 04:39:54.023] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]:   artifact: britannia_mod 0.1.8d britannia_mod-0.1.8d-all.jar 36142686B modified=2026-10-08T22:33:24.654Z sha256=e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70
+[09Oct2026 04:39:54.024] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]:   build: version=0.1.8d commit=cf49b1700d1a8992f39396f2ae531f0cb26502d7 branch=codex/fence-runtime-rediscovery-2026-10-08 dirtyWorkingTree=false built=2026-10-08T22:31:37.806305200Z
+[09Oct2026 04:39:54.024] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]:   neoforge: 21.1.72  minecraft: 1.21.1
+[09Oct2026 04:39:54.024] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]:   server: dedicated (DedicatedServer)

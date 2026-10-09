@@ -1,3 +1,24 @@
+
+## Local client replacement completed — 2026-10-09
+
+**INSTALLED_FILE_MATCH; LOCAL_RUNTIME_PENDING_ACCEPTANCE; production unchanged.**
+The old Minecraft client exited before the guarded replacement. The actual
+CurseForge instance now contains exactly one active `britannia_mod-0.1.8d-all.jar`,
+36,142,686 bytes, SHA **e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70**,
+clean source cf49b1700d1a8992f39396f2ae531f0cb26502d7. The original backup and
+retired old active jar are preserved outside mods; all 10 other mod files hash
+unchanged. Version remains 0.1.8d and no candidate rebuild was needed.
+
+Windows interaction initialization and one retry failed before input; no new
+client launch/load, actual mouse placement or visual pass is claimed. Matching
+disposable server **127.0.0.1:25583** still loads the selected identity; Seggellion
+operator access was explicitly approved and granted only there. Fence/wall,
+both-branch plaster exterior and alligator scenes are prepared. Prior automated
+checks remain separately recorded; medallion/movement approvals and all pending
+visual observations stay accurate. Timing stays follow-up.
+
+See [manual continuation](MANUAL_RECOVERY_CHECKLIST.md), [installation/load matrix](RUNTIME_IDENTITY_MATRIX.json), and [evidence](RUNTIME_ACCEPTANCE.md).
+
 ## Runtime recovery - 2026-10-09
 
 The owner-provided remote `/grabby env` confirms the same old loaded

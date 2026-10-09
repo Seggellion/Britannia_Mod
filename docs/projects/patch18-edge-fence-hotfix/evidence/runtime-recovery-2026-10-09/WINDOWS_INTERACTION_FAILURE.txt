@@ -1,0 +1,4 @@
+2026-10-09 continuation: initialize @oai/sky after normal client quit.
+Initial call: trusted Node process exited unexpectedly; kernel reset.
+One retry: node_repl kernel exited unexpectedly; windows sandbox failed: helper_unknown_error: setup refresh had errors.
+No app selection, client launch, focus, mouse/key input or screenshot occurred.

@@ -10,7 +10,7 @@ Source/integration and runtime installation are distinct.
 | Runtime/file | Identity and result |
 | --- | --- |
 | Selected current combined jar | cf49b1700d1a8992f39396f2ae531f0cb26502d7; e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70; 36,142,686 bytes; clean 0.1.8d |
-| Observed actual CurseForge client | PID 47684, started Oct 9 02:06:11 PDT; actual gameDir UltimaCraft - Britannia; installed/startup old c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6 / 4435912197fba84630d6e5a0544f29fc3a736450 |
+| Recovered actual CurseForge files | Old PID47684 exited before replacement; exactly one active -all jar, e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70 / cf49b1700d1a8992f39396f2ae531f0cb26502d7; FILE_MATCH. New client session/load unverified. |
 | Affected remote DedicatedServer | Owner's actual /grabby env confirms exactly the same old full hash/source/36,107,339 bytes, not an inference from the client |
 | Disposable DedicatedServer | 127.0.0.1:25583, copied acceptance world; actual loaded e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70 / cf49b1700d1a8992f39396f2ae531f0cb26502d7 / dirty=false |
 
@@ -25,14 +25,17 @@ both sides were old; it does not prove a later installed/restarted session.
 - Read-only preflight: 12 meaningful tests passed, including same-version wrong
   bytes/source/hash, renamed duplicate active jars, disabled .old, thin/dirty jar,
   wrong instance, absent jar, abbreviated hash and file-versus-loaded distinction.
-  Real initial profile emits FILE_MISMATCH and LOADED_RUNTIME_UNVERIFIED.
+  Real initial profile emitted FILE_MISMATCH; recovered profile now emits FILE_MATCH.
+  Both filesystem checks correctly emit LOADED_RUNTIME_UNVERIFIED.
 - Original old client jar is copied and full-hash verified outside active mods at
   `.britannia-recovery-backups/2026-10-09-e64fe63c/britannia_mod-0.1.8d.jar`.
   This backup can be made without modifying the running installation.
 - Replacement was guarded and stopped before modifying installed files because
-  the actual client remained running. A normal quit was requested. No token or
-  full launch argument was printed. Other mods, .old files, settings/worlds and
-  the remote installation are unchanged.
+  the actual client remained running. On the owner's subsequent normal quit,
+  sanitized process inventory and the installer's repeated guard verified exit.
+  Only Britannia was replaced with the selected jar; all **10 other mod files**
+  hash unchanged. Original backup and retired active old jar remain outside mods.
+  No token/full launch argument was printed. Settings/worlds and production are unchanged.
 - Exact selected jar launched through the existing packaged-server SDK recipe:
   project build roots and separate bundled dependencies excluded, MOD_CLASSES
   cleared, actual loaded origin/environment verified. Only a copied disposable
@@ -61,8 +64,10 @@ and one retry failed with `windows sandbox failed: helper_unknown_error: setup
 refresh had errors` before any window/input operation. A scripted state probe
 or prepared camera is not a screenshot, raycast or actual-click pass.
 
-After the actual client quits, complete its guarded replacement and FILE_MATCH;
-launch the intended profile and retain new startup origin/session/full hash.
+The actual client is now closed/recovered and FILE_MATCH is recorded. A fresh
+Windows helper initialization and one retry again failed before any app/window
+selection or input. No client launch was performed. Launch the intended profile
+and retain new startup origin/session/full hash.
 Connect to **127.0.0.1:25583**, not the old remote server. Confirm both newly loaded
 hashes/source and a fresh panel's layout_code. Do not certify a live production
 connection merely because files now match.
@@ -101,3 +106,15 @@ endpoint/ground clicks, corner/decorator, rails/UVs/outline and client reconnect
 resource reload are pending. Medallion UI/sustained movement remain approved.
 Reopened plaster visual/paired-wall appearance and alligator playback remain;
 timing repetitions stay follow-up. See PRODUCTION_RECOVERY_PACKET.md.
+
+## Manual continuation prepared after installation
+
+[Manual checklist](MANUAL_RECOVERY_CHECKLIST.md) uses the recovered real profile
+and matching localhost server, rather than the historical comparison profile
+or port25569. Seggellion test-server operator access was explicitly approved
+after an automatic-review rejection and then granted; production permissions
+are unchanged. Existing reopened_plaster setup and four exterior viewpoints
+are enabled on the copied server world after successful reload. Fixture reload
+is preparation only; no new mouse/render/plaster/alligator pass is claimed.
+The prior 12 tool tests, 20 command phases and four restart assertions were not
+rerun or counted as new checks during this installation continuation.

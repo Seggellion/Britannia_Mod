@@ -27,9 +27,11 @@ release conditions remain pending. PATCH18_INTEGRATED is a source status.
 
 The owner's remote `/grabby env` reports c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6,
 source 4435912197fba84630d6e5a0544f29fc3a736450, filename britannia_mod-0.1.8d.jar,
-36,107,339 bytes, DedicatedServer. The actual client startup/profile also has
-that old jar; its replacement awaits a normal client exit. Its original backup
-is already verified outside active mods. The disposable DedicatedServer on
+36,107,339 bytes, DedicatedServer. The historical client session also loaded
+that old jar. The relevant JVM has now exited and only the active Britannia jar
+has been replaced: exactly one selected -all jar passes FILE_MATCH. Ten other
+mod files remain byte-identical; the original backup and retired old active jar
+are preserved outside mods. A new client session has not been launched or verified. The disposable DedicatedServer on
 127.0.0.1:25583 actually loaded the selected new hash/source. A restarted client
 matching it and actual mouse/render/reconnect acceptance remain unverified.
 See the dated matrix/acceptance; do not confuse FILE_MATCH with JVM load proof.
