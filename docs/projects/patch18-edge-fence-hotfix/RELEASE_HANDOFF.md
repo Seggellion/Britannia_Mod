@@ -1,3 +1,35 @@
+## Runtime recovery - 2026-10-09
+
+The owner-provided remote `/grabby env` confirms the same old loaded
+c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6 /
+4435912197fba84630d6e5a0544f29fc3a736450 as the observed client. Remote identity
+is now known; no production replacement/restart is authorized or performed.
+Select the retained combined candidate, 36,142,686 bytes, full SHA-256
+**e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70**,
+clean source cf49b1700d1a8992f39396f2ae531f0cb26502d7. No application change,
+version bump or documentation-only candidate rebuild is justified.
+
+New read-only file preflight passes 12 tests. The original client jar is backed
+up outside mods and full-hash verified. Its guarded replacement remains pending
+the actual running client's normal exit (PID47684); the Windows helper failed
+before input and a quit was requested. No jar was replaced while that JVM ran.
+A matching disposable DedicatedServer actually loaded the selected hash/source;
+four fixed owners pass 20 complete state phase checks through neighbor addition/
+settling/removal and normal save; four saved owners match in a restarted JVM. These command-created checks are neither
+BlockItem/mouse/render acceptance nor a fresh complete GameTest suite.
+
+Status: **LOCAL_RUNTIME_PENDING_ACCEPTANCE; production unchanged**. Preserve
+remaining actual client restart/hash/schema, reported mouse interaction,
+corner/decorator/art/outline/reconnect/F3+T, reopened plaster/paired-wall visual
+and alligator playback observations. Medallion UI/movement stay approved;
+timing stays follow-up. Task checkout/worlds are retained. Project source backup
+identity is separate and belongs in the dated CLOSEOUT receipt.
+
+See [plan](RUNTIME_RECOVERY_PLAN.md), [identity matrix](RUNTIME_IDENTITY_MATRIX.json),
+[acceptance](RUNTIME_ACCEPTANCE.md) and [exact upload/operator packet](PRODUCTION_RECOVERY_PACKET.md).
+
+---
+
 ## Runtime re-discovery — 2026-10-08
 
 **RUNTIME_ARTIFACT_MISMATCH_CONFIRMED for the active client.** Startup identifies

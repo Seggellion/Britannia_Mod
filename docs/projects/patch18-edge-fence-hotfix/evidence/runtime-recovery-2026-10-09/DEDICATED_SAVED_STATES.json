@@ -1,0 +1,74 @@
+[
+  {
+    "owner_A": [
+      320,
+      80,
+      204
+    ],
+    "saved_state": {
+      "Properties": {
+        "east": "false",
+        "south": "false",
+        "north": "false",
+        "west": "false",
+        "facing": "north",
+        "layout_code": "0"
+      },
+      "Name": "britannia_mod:wooden_fence"
+    }
+  },
+  {
+    "owner_A": [
+      324,
+      80,
+      204
+    ],
+    "saved_state": {
+      "Properties": {
+        "east": "false",
+        "south": "false",
+        "north": "false",
+        "west": "false",
+        "facing": "east",
+        "layout_code": "0"
+      },
+      "Name": "britannia_mod:wooden_fence"
+    }
+  },
+  {
+    "owner_A": [
+      328,
+      80,
+      204
+    ],
+    "saved_state": {
+      "Properties": {
+        "east": "false",
+        "south": "false",
+        "north": "false",
+        "west": "false",
+        "facing": "south",
+        "layout_code": "0"
+      },
+      "Name": "britannia_mod:wooden_fence"
+    }
+  },
+  {
+    "owner_A": [
+      332,
+      80,
+      204
+    ],
+    "saved_state": {
+      "Properties": {
+        "east": "false",
+        "south": "false",
+        "north": "false",
+        "west": "false",
+        "facing": "west",
+        "layout_code": "0"
+      },
+      "Name": "britannia_mod:wooden_fence"
+    }
+  }
+]

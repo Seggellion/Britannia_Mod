@@ -1,0 +1,77 @@
+{
+  "record_date": "2026-10-09",
+  "selected_target": {
+    "filename": "britannia_mod-0.1.8d-all.jar",
+    "bytes": 36142686,
+    "sha256": "e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70",
+    "mod_version": "0.1.8d",
+    "source_commit": "cf49b1700d1a8992f39396f2ae531f0cb26502d7",
+    "dirty": "false",
+    "build_timestamp": "2026-10-08T22:31:37.806305200Z"
+  },
+  "selected_path": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\fence-runtime-recovery-2026-10-09\\release\\britannia_mod-0.1.8d-all.jar",
+  "source_baseline": "c88e0539412fbecef1a494e120388b17a84da1a7",
+  "client": {
+    "instance": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia",
+    "installed": {
+      "filename": "britannia_mod-0.1.8d.jar",
+      "bytes": 36107339,
+      "sha256": "c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6",
+      "provenance": {
+        "mod.version": "0.1.8d",
+        "git.head": "4435912197fba84630d6e5a0544f29fc3a736450",
+        "git.branch": "patch-18",
+        "git.dirty": "false",
+        "build.timestamp": "2026-10-06T00:15:17.175199Z"
+      }
+    },
+    "loaded_session": {
+      "pid": 47684,
+      "started": "2026-10-09T02:06:11.334937-07:00",
+      "sha256": "c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6",
+      "source": "4435912197fba84630d6e5a0544f29fc3a736450",
+      "evidence": "current process gameDir + current startup origin + unchanged installed old file",
+      "status": "OLD_RUNTIME_OBSERVED"
+    },
+    "backup": {
+      "backup_jar": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia\\.britannia-recovery-backups\\2026-10-09-e64fe63c\\britannia_mod-0.1.8d.jar",
+      "backup_bytes": 36107339,
+      "backup_sha256": "c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6",
+      "backup_source": "4435912197fba84630d6e5a0544f29fc3a736450",
+      "backup_outside_active_mods": true,
+      "installed_files_changed": false,
+      "remote_server_changed": false,
+      "recorded_for_date": "2026-10-09"
+    },
+    "replacement_status": "PENDING_RUNNING_CLIENT",
+    "new_loaded_runtime": "LOADED_RUNTIME_UNVERIFIED"
+  },
+  "remote": {
+    "source": "4435912197fba84630d6e5a0544f29fc3a736450",
+    "sha256": "c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6",
+    "bytes": 36107339,
+    "filename": "britannia_mod-0.1.8d.jar",
+    "server_kind": "DedicatedServer",
+    "status": "OLD_LOADED_RUNTIME_VERIFIED_OWNER_PROVIDED",
+    "origin_directory": "unknown; not supplied",
+    "inventory": "not directly accessible",
+    "fresh_live_fence_states": "not queried",
+    "changed_by_this_task": false,
+    "evidence": "evidence/runtime-recovery-2026-10-09/REMOTE_ENV_OWNER_SUPPLIED.txt"
+  },
+  "local_disposable_server": {
+    "address": "127.0.0.1:25583",
+    "sha256": "e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70",
+    "source": "cf49b1700d1a8992f39396f2ae531f0cb26502d7",
+    "status": "LOADED_RUNTIME_VERIFIED",
+    "evidence": "evidence/runtime-recovery-2026-10-09/DEDICATED_ENGINE_TRACE.txt",
+    "four_owners_full_state_phases": 20,
+    "world_save_checks": 4,
+    "new_mouse_client_render_acceptance": false,
+    "restart_saved_owner_assertions": 4,
+    "restart_evidence": "evidence/runtime-recovery-2026-10-09/DEDICATED_RESTART_TRACE.txt"
+  },
+  "production_rollout": "NOT_AUTHORIZED_DO_NOT_DEPLOY",
+  "owner_fence_runtime_accepted": false,
+  "entry_source_baseline": "5a8cab9a38fac52253dea20431dea60cd15812c0"
+}
