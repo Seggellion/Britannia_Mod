@@ -14,4 +14,8 @@ The older public snapshot matches the candidate's production implementation, but
 
 ## Development publication
 
-Pending execution at initial record creation. A subsequent receipt will identify the verified task integration commit and remote result; final advertised refs are also captured outside the tracked receipt to avoid self-referential hashes. Pending manual observations and main holds do not imply production acceptance.
+**PUBLISHED_AND_VERIFIED** by normal non-force push: remote `patch-18` advanced from `5a8cab9a38fac52253dea20431dea60cd15812c0` to task integration **b440196d2c62f646dc247b116a00927a0acab2c6**. The integration contains the dated discovery/follow-up folders and additive plaster/combined handoffs only. Source/implementation and owner untracked files remain unchanged. Current API/ref evidence was recaptured after the push.
+
+This receipt/evidence update is a documentation-only descendant published normally. Final advertised refs are captured at `C:\projects\britannia\mod\Britannia_Mod\tmp\plaster-corner-0.1.8d\followup-20261009\FINAL_REMOTE_RECEIPT.json` after that push, avoiding a self-referential commit hash. [Tracked receipt](evidence/PUBLICATION_RECEIPT.json) records the verified integration SHA and unchanged main/review branch.
+
+**MAIN_NOT_UPDATED_RULESET_AND_PUBLIC_CI_HOLD.** No merge, bypass, signature/protection change, new public snapshot, release or deployment is claimed. **PRODUCTION_ACCEPTANCE_PENDING; EXTERIOR_A_B_PENDING; ACTIVE_INSTALLATION_NOT_PERFORMED.** Source publication does not clear those observations.

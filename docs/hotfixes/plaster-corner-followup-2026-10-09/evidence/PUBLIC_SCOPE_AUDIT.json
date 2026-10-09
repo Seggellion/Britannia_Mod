@@ -1,7 +1,7 @@
 {
   "snapshot": "fd90bff209d47addf6667c4576bd2053890127f2",
   "snapshot_candidate_source": "986ed746866dc944b7b496ab9428b670f65e15c0",
-  "current_source": "5a8cab9a38fac52253dea20431dea60cd15812c0",
+  "current_source": "b440196d2c62f646dc247b116a00927a0acab2c6",
   "production_delta_since_candidate": "",
   "retained_test_source_delta_since_candidate": "src/main/java/com/seggellion/britannia_mod/gametest/FenceRuntimeIdentityGameTests.java",
   "whole_current_source_snapshot_parity": false,

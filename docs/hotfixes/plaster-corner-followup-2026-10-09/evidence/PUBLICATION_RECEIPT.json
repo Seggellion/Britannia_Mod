@@ -1,0 +1,37 @@
+{
+  "captured_utc": "2026-10-09T09:22:14.416827+00:00",
+  "branch": "patch-18",
+  "status": "PUBLISHED_AND_VERIFIED",
+  "published_integration": "b440196d2c62f646dc247b116a00927a0acab2c6",
+  "normal_non_force": true,
+  "main": "f039c4b259d925872618bfe64ee574b20776856c",
+  "main_status": "MAIN_NOT_UPDATED_RULESET_AND_PUBLIC_CI_HOLD",
+  "review_branch": "fd90bff209d47addf6667c4576bd2053890127f2",
+  "review_url": "https://github.com/Seggellion/Britannia_Mod/pull/501",
+  "review_state": "OPEN",
+  "merge_state": "BLOCKED",
+  "new_public_snapshot_for_internal_only_task": false,
+  "public_whole_tree_parity": false,
+  "public_ci_failures": [
+    "RunuoAccountingDriftTest initialization",
+    "RunuoBuybackCoverageTest initialization",
+    "RunuoRetailRolloutCoverageTest initialization"
+  ],
+  "candidate": {
+    "original": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\combined-0.1.8d\\release\\britannia_mod-0.1.8d-all.jar",
+    "staged": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\plaster-corner-0.1.8d\\followup-20261009\\artifacts\\986ed746866dc944b7b496ab9428b670f65e15c0\\britannia_mod-0.1.8d-all.jar",
+    "profile_mod": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\plaster-corner-0.1.8d\\followup-20261009\\client\\mods\\britannia_mod-0.1.8d-all.jar",
+    "source": "986ed746866dc944b7b496ab9428b670f65e15c0",
+    "dirty": false,
+    "size_bytes": 36142668,
+    "sha256": "f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd",
+    "filename_preserved": true
+  },
+  "visual_acceptance": "EXTERIOR_A_B_PENDING",
+  "active_installation": "NOT_PERFORMED",
+  "production_acceptance": "PENDING_PLASTER_FENCE_ALLIGATOR",
+  "desktop_control": false,
+  "candidate_rebuilt": false,
+  "final_receipt": "C:/projects/britannia/mod/Britannia_Mod/tmp/plaster-corner-0.1.8d/followup-20261009/FINAL_REMOTE_RECEIPT.json",
+  "note": "Receipt documentation descendant is published normally; final advertised SHA recorded outside tracked tree to avoid self-reference."
+}
