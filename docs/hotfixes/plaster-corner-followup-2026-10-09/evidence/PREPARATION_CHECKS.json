@@ -1,0 +1,14 @@
+{
+  "candidate_original_staged_profile_equal": true,
+  "owner_active_and_rollback_equal": true,
+  "copied_saved_state_neighbor_assertions": 240,
+  "copied_task_world_only": true,
+  "new_metadata_roundtrip": true,
+  "new_world_creative_cheats_enabled": true,
+  "profile_launcher_accounts_absent": true,
+  "playerdata_and_serverconfig_excluded": true,
+  "profile_mod_jar_count": 1,
+  "profile_launched": false,
+  "actual_loaded_identity": "PENDING_OWNER_LAUNCH",
+  "visual_accepted": false
+}

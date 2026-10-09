@@ -1,0 +1,1955 @@
+{
+  "contract": "Both A/B have continuous exterior timber at the intersection of physical edge runs; preserve interior and current free-end style.",
+  "method": "Ray from exterior diagonal to edge intersection at Y8/Y24 (half Y8), using actual outward-facing authored quads after selector rotation. Low trim is below these heights. No post bounds/count used as expected output.",
+  "scope_limit": "Static sample/face evidence; no GPU, neighbors, installed loaded-memory or actual owner visual proof. Two heights do not replace complete continuity observation.",
+  "probes": [
+    {
+      "kind": "full",
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
+      "angle": 0,
+      "height": 8,
+      "camera": [
+        -32,
+        8,
+        -32
+      ],
+      "architectural_joint": [
+        0,
+        8,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "north",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "west",
+          "texture": "#1",
+          "point": [
+            0.0,
+            8.0,
+            0.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
+      "angle": 0,
+      "height": 24,
+      "camera": [
+        -32,
+        24,
+        -32
+      ],
+      "architectural_joint": [
+        0,
+        24,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "north",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            24.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "west",
+          "texture": "#1",
+          "point": [
+            0.0,
+            24.0,
+            0.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "angle": 0,
+      "height": 8,
+      "camera": [
+        48,
+        8,
+        -32
+      ],
+      "architectural_joint": [
+        16,
+        8,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "north",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "east",
+          "texture": "#1",
+          "point": [
+            16.0,
+            8.0,
+            0.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "angle": 0,
+      "height": 24,
+      "camera": [
+        48,
+        24,
+        -32
+      ],
+      "architectural_joint": [
+        16,
+        24,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "north",
+          "texture": "#2",
+          "point": [
+            16.1,
+            24.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "east",
+          "texture": "#1",
+          "point": [
+            16.0,
+            24.0,
+            0.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
+      "angle": 0,
+      "height": 8,
+      "camera": [
+        48,
+        8,
+        -32
+      ],
+      "architectural_joint": [
+        16,
+        8,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "north",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "north",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
+      "angle": 0,
+      "height": 24,
+      "camera": [
+        48,
+        24,
+        -32
+      ],
+      "architectural_joint": [
+        16,
+        24,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "north",
+          "texture": "#2",
+          "point": [
+            16.1,
+            24.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "north",
+          "texture": "#2",
+          "point": [
+            16.1,
+            24.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "angle": 0,
+      "height": 8,
+      "camera": [
+        -32,
+        8,
+        -32
+      ],
+      "architectural_joint": [
+        0,
+        8,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "north",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "north",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "angle": 0,
+      "height": 24,
+      "camera": [
+        -32,
+        24,
+        -32
+      ],
+      "architectural_joint": [
+        0,
+        24,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "north",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            24.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "north",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            24.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
+      "angle": 90,
+      "height": 8,
+      "camera": [
+        48,
+        8,
+        -32
+      ],
+      "architectural_joint": [
+        16,
+        8,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "east",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "north",
+          "texture": "#1",
+          "point": [
+            16.0,
+            8.0,
+            0.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
+      "angle": 90,
+      "height": 24,
+      "camera": [
+        48,
+        24,
+        -32
+      ],
+      "architectural_joint": [
+        16,
+        24,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "east",
+          "texture": "#2",
+          "point": [
+            16.1,
+            24.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "north",
+          "texture": "#1",
+          "point": [
+            16.0,
+            24.0,
+            0.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "angle": 90,
+      "height": 8,
+      "camera": [
+        48,
+        8,
+        48
+      ],
+      "architectural_joint": [
+        16,
+        8,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "east",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "south",
+          "texture": "#1",
+          "point": [
+            16.0,
+            8.0,
+            16.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "angle": 90,
+      "height": 24,
+      "camera": [
+        48,
+        24,
+        48
+      ],
+      "architectural_joint": [
+        16,
+        24,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "east",
+          "texture": "#2",
+          "point": [
+            16.1,
+            24.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "south",
+          "texture": "#1",
+          "point": [
+            16.0,
+            24.0,
+            16.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
+      "angle": 90,
+      "height": 8,
+      "camera": [
+        48,
+        8,
+        48
+      ],
+      "architectural_joint": [
+        16,
+        8,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "east",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "east",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
+      "angle": 90,
+      "height": 24,
+      "camera": [
+        48,
+        24,
+        48
+      ],
+      "architectural_joint": [
+        16,
+        24,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "east",
+          "texture": "#2",
+          "point": [
+            16.1,
+            24.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "east",
+          "texture": "#2",
+          "point": [
+            16.1,
+            24.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "angle": 90,
+      "height": 8,
+      "camera": [
+        48,
+        8,
+        -32
+      ],
+      "architectural_joint": [
+        16,
+        8,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "east",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "east",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "angle": 90,
+      "height": 24,
+      "camera": [
+        48,
+        24,
+        -32
+      ],
+      "architectural_joint": [
+        16,
+        24,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "east",
+          "texture": "#2",
+          "point": [
+            16.1,
+            24.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "east",
+          "texture": "#2",
+          "point": [
+            16.1,
+            24.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
+      "angle": 180,
+      "height": 8,
+      "camera": [
+        48,
+        8,
+        48
+      ],
+      "architectural_joint": [
+        16,
+        8,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "south",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "east",
+          "texture": "#1",
+          "point": [
+            16.0,
+            8.0,
+            16.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
+      "angle": 180,
+      "height": 24,
+      "camera": [
+        48,
+        24,
+        48
+      ],
+      "architectural_joint": [
+        16,
+        24,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "south",
+          "texture": "#2",
+          "point": [
+            16.1,
+            24.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "east",
+          "texture": "#1",
+          "point": [
+            16.0,
+            24.0,
+            16.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "angle": 180,
+      "height": 8,
+      "camera": [
+        -32,
+        8,
+        48
+      ],
+      "architectural_joint": [
+        0,
+        8,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "south",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "west",
+          "texture": "#1",
+          "point": [
+            0.0,
+            8.0,
+            16.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "angle": 180,
+      "height": 24,
+      "camera": [
+        -32,
+        24,
+        48
+      ],
+      "architectural_joint": [
+        0,
+        24,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "south",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            24.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "west",
+          "texture": "#1",
+          "point": [
+            0.0,
+            24.0,
+            16.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
+      "angle": 180,
+      "height": 8,
+      "camera": [
+        -32,
+        8,
+        48
+      ],
+      "architectural_joint": [
+        0,
+        8,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "south",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "south",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
+      "angle": 180,
+      "height": 24,
+      "camera": [
+        -32,
+        24,
+        48
+      ],
+      "architectural_joint": [
+        0,
+        24,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "south",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            24.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "south",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            24.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "angle": 180,
+      "height": 8,
+      "camera": [
+        48,
+        8,
+        48
+      ],
+      "architectural_joint": [
+        16,
+        8,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "south",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "south",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "angle": 180,
+      "height": 24,
+      "camera": [
+        48,
+        24,
+        48
+      ],
+      "architectural_joint": [
+        16,
+        24,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "south",
+          "texture": "#2",
+          "point": [
+            16.1,
+            24.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "south",
+          "texture": "#2",
+          "point": [
+            16.1,
+            24.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
+      "angle": 270,
+      "height": 8,
+      "camera": [
+        -32,
+        8,
+        48
+      ],
+      "architectural_joint": [
+        0,
+        8,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "west",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "south",
+          "texture": "#1",
+          "point": [
+            0.0,
+            8.0,
+            16.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
+      "angle": 270,
+      "height": 24,
+      "camera": [
+        -32,
+        24,
+        48
+      ],
+      "architectural_joint": [
+        0,
+        24,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "west",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            24.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "south",
+          "texture": "#1",
+          "point": [
+            0.0,
+            24.0,
+            16.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "angle": 270,
+      "height": 8,
+      "camera": [
+        -32,
+        8,
+        -32
+      ],
+      "architectural_joint": [
+        0,
+        8,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "west",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "north",
+          "texture": "#1",
+          "point": [
+            0.0,
+            8.0,
+            0.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "false",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "angle": 270,
+      "height": 24,
+      "camera": [
+        -32,
+        24,
+        -32
+      ],
+      "architectural_joint": [
+        0,
+        24,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "west",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            24.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "north",
+          "texture": "#1",
+          "point": [
+            0.0,
+            24.0,
+            0.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
+      "angle": 270,
+      "height": 8,
+      "camera": [
+        -32,
+        8,
+        -32
+      ],
+      "architectural_joint": [
+        0,
+        8,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "west",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "west",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "false",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
+      "angle": 270,
+      "height": 24,
+      "camera": [
+        -32,
+        24,
+        -32
+      ],
+      "architectural_joint": [
+        0,
+        24,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "west",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            24.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "west",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            24.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "angle": 270,
+      "height": 8,
+      "camera": [
+        -32,
+        8,
+        48
+      ],
+      "architectural_joint": [
+        0,
+        8,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "west",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "west",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "full",
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "true",
+        "mirrored": "true",
+        "half": "lower"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "angle": 270,
+      "height": 24,
+      "camera": [
+        -32,
+        24,
+        48
+      ],
+      "architectural_joint": [
+        0,
+        24,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "west",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            24.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "west",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            24.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "half_wall",
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "false"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner",
+      "angle": 0,
+      "height": 8,
+      "camera": [
+        -32,
+        8,
+        -32
+      ],
+      "architectural_joint": [
+        0,
+        8,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "north",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "west",
+          "texture": "#1",
+          "point": [
+            0.0,
+            8.0,
+            0.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "half_wall",
+      "state": {
+        "facing": "north",
+        "shape": "corner",
+        "branch_right": "true"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner_branch_right",
+      "angle": 0,
+      "height": 8,
+      "camera": [
+        48,
+        8,
+        -32
+      ],
+      "architectural_joint": [
+        16,
+        8,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "north",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "north",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "half_wall",
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "false"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner",
+      "angle": 90,
+      "height": 8,
+      "camera": [
+        48,
+        8,
+        -32
+      ],
+      "architectural_joint": [
+        16,
+        8,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "east",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "north",
+          "texture": "#1",
+          "point": [
+            16.0,
+            8.0,
+            0.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "half_wall",
+      "state": {
+        "facing": "east",
+        "shape": "corner",
+        "branch_right": "true"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner_branch_right",
+      "angle": 90,
+      "height": 8,
+      "camera": [
+        48,
+        8,
+        48
+      ],
+      "architectural_joint": [
+        16,
+        8,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "east",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "east",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "half_wall",
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "false"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner",
+      "angle": 180,
+      "height": 8,
+      "camera": [
+        48,
+        8,
+        48
+      ],
+      "architectural_joint": [
+        16,
+        8,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "south",
+          "texture": "#2",
+          "point": [
+            16.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "east",
+          "texture": "#1",
+          "point": [
+            16.0,
+            8.0,
+            16.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "half_wall",
+      "state": {
+        "facing": "south",
+        "shape": "corner",
+        "branch_right": "true"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner_branch_right",
+      "angle": 180,
+      "height": 8,
+      "camera": [
+        -32,
+        8,
+        48
+      ],
+      "architectural_joint": [
+        0,
+        8,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "south",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "south",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    },
+    {
+      "kind": "half_wall",
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "false"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner",
+      "angle": 270,
+      "height": 8,
+      "camera": [
+        -32,
+        8,
+        48
+      ],
+      "architectural_joint": [
+        0,
+        8,
+        16
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 8,
+          "face": "west",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            16.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 3,
+          "face": "south",
+          "texture": "#1",
+          "point": [
+            0.0,
+            8.0,
+            16.0
+          ]
+        },
+        "hits_vertical_timber": false
+      }
+    },
+    {
+      "kind": "half_wall",
+      "state": {
+        "facing": "west",
+        "shape": "corner",
+        "branch_right": "true"
+      },
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner_branch_right",
+      "angle": 270,
+      "height": 8,
+      "camera": [
+        -32,
+        8,
+        -32
+      ],
+      "architectural_joint": [
+        0,
+        8,
+        0
+      ],
+      "candidate": {
+        "first_quad": {
+          "element": 7,
+          "face": "west",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      },
+      "installed_old": {
+        "first_quad": {
+          "element": 7,
+          "face": "west",
+          "texture": "#2",
+          "point": [
+            -0.1,
+            8.0,
+            -0.1
+          ]
+        },
+        "hits_vertical_timber": true
+      }
+    }
+  ],
+  "candidate_exterior_hits": 40,
+  "candidate_probe_count": 40,
+  "installed_old_missing_junction_probes": 20,
+  "plaster_accepted": false
+}

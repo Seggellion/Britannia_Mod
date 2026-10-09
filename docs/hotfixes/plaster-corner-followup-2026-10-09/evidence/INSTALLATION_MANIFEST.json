@@ -1,0 +1,57 @@
+{
+  "prepared_utc": "2026-10-09T09:06:20.539365+00:00",
+  "release": "0.1.8d",
+  "candidate": {
+    "original": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\combined-0.1.8d\\release\\britannia_mod-0.1.8d-all.jar",
+    "staged": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\plaster-corner-0.1.8d\\followup-20261009\\artifacts\\986ed746866dc944b7b496ab9428b670f65e15c0\\britannia_mod-0.1.8d-all.jar",
+    "profile_mod": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\plaster-corner-0.1.8d\\followup-20261009\\client\\mods\\britannia_mod-0.1.8d-all.jar",
+    "source": "986ed746866dc944b7b496ab9428b670f65e15c0",
+    "dirty": false,
+    "size_bytes": 36142668,
+    "sha256": "f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd",
+    "filename_preserved": true
+  },
+  "selected_owner_profile": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia",
+  "selected_installed": {
+    "path": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia\\mods\\britannia_mod-0.1.8d.jar",
+    "sha256_before": "c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6",
+    "sha256_after": "c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6",
+    "backup": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\plaster-corner-0.1.8d\\followup-20261009\\rollback\\c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6\\britannia_mod-0.1.8d.jar",
+    "backup_sha256": "c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6",
+    "active_profile_modified": false
+  },
+  "isolated_profile": {
+    "path": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\plaster-corner-0.1.8d\\followup-20261009\\client",
+    "world": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\plaster-corner-0.1.8d\\followup-20261009\\client\\saves\\Plaster exterior candidate 986ed746",
+    "source_world": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\plaster-corner-0.1.8d\\reopened-discovery-20261008\\world",
+    "copied_world_components": [
+      "region",
+      "entities",
+      "poi",
+      "data",
+      "datapacks"
+    ],
+    "excluded_components": [
+      "playerdata",
+      "stats",
+      "advancements",
+      "session.lock",
+      "serverconfig",
+      "account/launcher files",
+      "owner options/shaders/packs",
+      "production worlds/configuration"
+    ],
+    "mods": [
+      "britannia_mod-0.1.8d-all.jar"
+    ],
+    "launch_helper": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\plaster-corner-0.1.8d\\followup-20261009\\START_ISOLATED_CLIENT.ps1",
+    "launched": false,
+    "loaded_runtime_identity": "PENDING_OWNER_LAUNCH"
+  },
+  "route": "ROUTE_A_PREPARATION_PENDING_EXTERIOR_COMPARISON",
+  "plaster_status": "INSTALLATION_DISCREPANCY_CONFIRMED",
+  "visual_status": "EXTERIOR_A_B_PENDING",
+  "active_installation": "NOT_PERFORMED",
+  "no_candidate_rebuild": true,
+  "owner_contract": "Both A/B continuous exterior junction timber; preserve interior design and existing one-post A/two-post B style."
+}

@@ -1,0 +1,4660 @@
+[
+  {
+    "kind": "full",
+    "state": {
+      "facing": "north",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "false",
+      "half": "lower"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner"
+    },
+    "joint_xz": [
+      0,
+      0
+    ],
+    "posts": [
+      {
+        "element": 8,
+        "bounds": [
+          [
+            -0.8,
+            0,
+            -0.1
+          ],
+          [
+            6.7,
+            32,
+            2.9
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": true,
+    "status": "junction_post_present",
+    "fixture_case": 2,
+    "blank_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "north",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "false",
+      "half": "upper"
+    },
+    "selector": {
+      "model": "minecraft:block/air"
+    },
+    "joint_xz": [
+      0,
+      0
+    ],
+    "posts": [],
+    "lower_owned_render": true,
+    "status": "upper_air_lower_owns_both_sections",
+    "fixture_case": 2,
+    "blank_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "north",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "true",
+      "half": "lower"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored"
+    },
+    "joint_xz": [
+      16,
+      0
+    ],
+    "posts": [
+      {
+        "element": 8,
+        "bounds": [
+          [
+            9.3,
+            0,
+            -0.1
+          ],
+          [
+            16.8,
+            32,
+            2.9
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "east": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": true,
+    "status": "junction_post_present",
+    "fixture_case": 3,
+    "blank_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "north",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "true",
+      "half": "upper"
+    },
+    "selector": {
+      "model": "minecraft:block/air"
+    },
+    "joint_xz": [
+      16,
+      0
+    ],
+    "posts": [],
+    "lower_owned_render": true,
+    "status": "upper_air_lower_owns_both_sections",
+    "fixture_case": 3,
+    "blank_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "north",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "false",
+      "half": "lower"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right"
+    },
+    "joint_xz": [
+      16,
+      0
+    ],
+    "posts": [
+      {
+        "element": 3,
+        "bounds": [
+          [
+            -0.1,
+            0,
+            -0.8
+          ],
+          [
+            2.9,
+            32,
+            6.7
+          ]
+        ],
+        "covers_junction_xz": false,
+        "faces": {
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          }
+        }
+      },
+      {
+        "element": 7,
+        "bounds": [
+          [
+            9.3,
+            0,
+            -0.1
+          ],
+          [
+            16.8,
+            32,
+            2.9
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": true,
+    "status": "junction_post_present",
+    "fixture_case": 4,
+    "blank_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "north",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "false",
+      "half": "upper"
+    },
+    "selector": {
+      "model": "minecraft:block/air"
+    },
+    "joint_xz": [
+      16,
+      0
+    ],
+    "posts": [],
+    "lower_owned_render": true,
+    "status": "upper_air_lower_owns_both_sections",
+    "fixture_case": 4,
+    "blank_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "north",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "true",
+      "half": "lower"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored"
+    },
+    "joint_xz": [
+      0,
+      0
+    ],
+    "posts": [
+      {
+        "element": 3,
+        "bounds": [
+          [
+            13.1,
+            0,
+            -0.8
+          ],
+          [
+            16.1,
+            32,
+            6.7
+          ]
+        ],
+        "covers_junction_xz": false,
+        "faces": {
+          "north": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          }
+        }
+      },
+      {
+        "element": 7,
+        "bounds": [
+          [
+            -0.8,
+            0,
+            -0.1
+          ],
+          [
+            6.7,
+            32,
+            2.9
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "west": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": true,
+    "status": "junction_post_present",
+    "fixture_case": 5,
+    "blank_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "north",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "true",
+      "half": "upper"
+    },
+    "selector": {
+      "model": "minecraft:block/air"
+    },
+    "joint_xz": [
+      0,
+      0
+    ],
+    "posts": [],
+    "lower_owned_render": true,
+    "status": "upper_air_lower_owns_both_sections",
+    "fixture_case": 5,
+    "blank_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "east",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "false",
+      "half": "lower"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
+      "y": 90
+    },
+    "joint_xz": [
+      16,
+      0
+    ],
+    "posts": [
+      {
+        "element": 8,
+        "bounds": [
+          [
+            13.1,
+            0,
+            -0.8
+          ],
+          [
+            16.1,
+            32,
+            6.7
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": true,
+    "status": "junction_post_present",
+    "fixture_case": 6,
+    "blank_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "east",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": false,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "east",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "false",
+      "half": "upper"
+    },
+    "selector": {
+      "model": "minecraft:block/air"
+    },
+    "joint_xz": [
+      0,
+      0
+    ],
+    "posts": [],
+    "lower_owned_render": true,
+    "status": "upper_air_lower_owns_both_sections",
+    "fixture_case": 6,
+    "blank_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "east",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": false,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "east",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "true",
+      "half": "lower"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "y": 90
+    },
+    "joint_xz": [
+      16,
+      16
+    ],
+    "posts": [
+      {
+        "element": 8,
+        "bounds": [
+          [
+            13.1,
+            0,
+            9.3
+          ],
+          [
+            16.1,
+            32,
+            16.8
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "east": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": true,
+    "status": "junction_post_present",
+    "fixture_case": 7,
+    "blank_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "east",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": false,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "east",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "true",
+      "half": "upper"
+    },
+    "selector": {
+      "model": "minecraft:block/air"
+    },
+    "joint_xz": [
+      16,
+      0
+    ],
+    "posts": [],
+    "lower_owned_render": true,
+    "status": "upper_air_lower_owns_both_sections",
+    "fixture_case": 7,
+    "blank_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "east",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": false,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "east",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "false",
+      "half": "lower"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
+      "y": 90
+    },
+    "joint_xz": [
+      16,
+      16
+    ],
+    "posts": [
+      {
+        "element": 3,
+        "bounds": [
+          [
+            9.3,
+            0,
+            -0.1
+          ],
+          [
+            16.8,
+            32,
+            2.9
+          ]
+        ],
+        "covers_junction_xz": false,
+        "faces": {
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          }
+        }
+      },
+      {
+        "element": 7,
+        "bounds": [
+          [
+            13.1,
+            0,
+            9.3
+          ],
+          [
+            16.1,
+            32,
+            16.8
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": true,
+    "status": "junction_post_present",
+    "fixture_case": 8,
+    "blank_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "east",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": false,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "east",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "false",
+      "half": "upper"
+    },
+    "selector": {
+      "model": "minecraft:block/air"
+    },
+    "joint_xz": [
+      16,
+      0
+    ],
+    "posts": [],
+    "lower_owned_render": true,
+    "status": "upper_air_lower_owns_both_sections",
+    "fixture_case": 8,
+    "blank_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "east",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": false,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "east",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "true",
+      "half": "lower"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "y": 90
+    },
+    "joint_xz": [
+      16,
+      0
+    ],
+    "posts": [
+      {
+        "element": 3,
+        "bounds": [
+          [
+            9.3,
+            0,
+            13.1
+          ],
+          [
+            16.8,
+            32,
+            16.1
+          ]
+        ],
+        "covers_junction_xz": false,
+        "faces": {
+          "north": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          }
+        }
+      },
+      {
+        "element": 7,
+        "bounds": [
+          [
+            13.1,
+            0,
+            -0.8
+          ],
+          [
+            16.1,
+            32,
+            6.7
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "west": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": true,
+    "status": "junction_post_present",
+    "fixture_case": 9,
+    "blank_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "east",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": false,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "east",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "true",
+      "half": "upper"
+    },
+    "selector": {
+      "model": "minecraft:block/air"
+    },
+    "joint_xz": [
+      0,
+      0
+    ],
+    "posts": [],
+    "lower_owned_render": true,
+    "status": "upper_air_lower_owns_both_sections",
+    "fixture_case": 9,
+    "blank_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "east",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": false,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "south",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "false",
+      "half": "lower"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
+      "y": 180
+    },
+    "joint_xz": [
+      16,
+      16
+    ],
+    "posts": [
+      {
+        "element": 8,
+        "bounds": [
+          [
+            9.3,
+            0,
+            13.1
+          ],
+          [
+            16.8,
+            32,
+            16.1
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": true,
+    "status": "junction_post_present",
+    "fixture_case": 0,
+    "blank_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "south",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "false",
+      "half": "upper"
+    },
+    "selector": {
+      "model": "minecraft:block/air"
+    },
+    "joint_xz": [
+      0,
+      0
+    ],
+    "posts": [],
+    "lower_owned_render": true,
+    "status": "upper_air_lower_owns_both_sections",
+    "fixture_case": 0,
+    "blank_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "south",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "true",
+      "half": "lower"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "y": 180
+    },
+    "joint_xz": [
+      0,
+      16
+    ],
+    "posts": [
+      {
+        "element": 8,
+        "bounds": [
+          [
+            -0.8,
+            0,
+            13.1
+          ],
+          [
+            6.7,
+            32,
+            16.1
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "east": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": true,
+    "status": "junction_post_present",
+    "fixture_case": 10,
+    "blank_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "south",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "true",
+      "half": "upper"
+    },
+    "selector": {
+      "model": "minecraft:block/air"
+    },
+    "joint_xz": [
+      16,
+      0
+    ],
+    "posts": [],
+    "lower_owned_render": true,
+    "status": "upper_air_lower_owns_both_sections",
+    "fixture_case": 10,
+    "blank_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "south",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "false",
+      "half": "lower"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
+      "y": 180
+    },
+    "joint_xz": [
+      0,
+      16
+    ],
+    "posts": [
+      {
+        "element": 3,
+        "bounds": [
+          [
+            13.1,
+            0,
+            9.3
+          ],
+          [
+            16.1,
+            32,
+            16.8
+          ]
+        ],
+        "covers_junction_xz": false,
+        "faces": {
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          }
+        }
+      },
+      {
+        "element": 7,
+        "bounds": [
+          [
+            -0.8,
+            0,
+            13.1
+          ],
+          [
+            6.7,
+            32,
+            16.1
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": true,
+    "status": "junction_post_present",
+    "fixture_case": 1,
+    "blank_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "south",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "false",
+      "half": "upper"
+    },
+    "selector": {
+      "model": "minecraft:block/air"
+    },
+    "joint_xz": [
+      16,
+      0
+    ],
+    "posts": [],
+    "lower_owned_render": true,
+    "status": "upper_air_lower_owns_both_sections",
+    "fixture_case": 1,
+    "blank_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "south",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "true",
+      "half": "lower"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "y": 180
+    },
+    "joint_xz": [
+      16,
+      16
+    ],
+    "posts": [
+      {
+        "element": 3,
+        "bounds": [
+          [
+            -0.1,
+            0,
+            9.3
+          ],
+          [
+            2.9,
+            32,
+            16.8
+          ]
+        ],
+        "covers_junction_xz": false,
+        "faces": {
+          "north": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          }
+        }
+      },
+      {
+        "element": 7,
+        "bounds": [
+          [
+            9.3,
+            0,
+            13.1
+          ],
+          [
+            16.8,
+            32,
+            16.1
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "west": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": true,
+    "status": "junction_post_present",
+    "fixture_case": 11,
+    "blank_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "south",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "true",
+      "half": "upper"
+    },
+    "selector": {
+      "model": "minecraft:block/air"
+    },
+    "joint_xz": [
+      0,
+      0
+    ],
+    "posts": [],
+    "lower_owned_render": true,
+    "status": "upper_air_lower_owns_both_sections",
+    "fixture_case": 11,
+    "blank_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "west",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "false",
+      "half": "lower"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
+      "y": 270
+    },
+    "joint_xz": [
+      0,
+      16
+    ],
+    "posts": [
+      {
+        "element": 8,
+        "bounds": [
+          [
+            -0.1,
+            0,
+            9.3
+          ],
+          [
+            2.9,
+            32,
+            16.8
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": true,
+    "status": "junction_post_present",
+    "fixture_case": 12,
+    "blank_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "west",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": false,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "west",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "false",
+      "half": "upper"
+    },
+    "selector": {
+      "model": "minecraft:block/air"
+    },
+    "joint_xz": [
+      0,
+      0
+    ],
+    "posts": [],
+    "lower_owned_render": true,
+    "status": "upper_air_lower_owns_both_sections",
+    "fixture_case": 12,
+    "blank_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "west",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": false,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "west",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "true",
+      "half": "lower"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "y": 270
+    },
+    "joint_xz": [
+      0,
+      0
+    ],
+    "posts": [
+      {
+        "element": 8,
+        "bounds": [
+          [
+            -0.1,
+            0,
+            -0.8
+          ],
+          [
+            2.9,
+            32,
+            6.7
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "east": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": true,
+    "status": "junction_post_present",
+    "fixture_case": 13,
+    "blank_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "west",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": false,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "west",
+      "shape": "corner",
+      "branch_right": "false",
+      "mirrored": "true",
+      "half": "upper"
+    },
+    "selector": {
+      "model": "minecraft:block/air"
+    },
+    "joint_xz": [
+      16,
+      0
+    ],
+    "posts": [],
+    "lower_owned_render": true,
+    "status": "upper_air_lower_owns_both_sections",
+    "fixture_case": 13,
+    "blank_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "west",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": false,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "west",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "false",
+      "half": "lower"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
+      "y": 270
+    },
+    "joint_xz": [
+      0,
+      0
+    ],
+    "posts": [
+      {
+        "element": 3,
+        "bounds": [
+          [
+            -0.8,
+            0,
+            13.1
+          ],
+          [
+            6.7,
+            32,
+            16.1
+          ]
+        ],
+        "covers_junction_xz": false,
+        "faces": {
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          }
+        }
+      },
+      {
+        "element": 7,
+        "bounds": [
+          [
+            -0.1,
+            0,
+            -0.8
+          ],
+          [
+            2.9,
+            32,
+            6.7
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": true,
+    "status": "junction_post_present",
+    "fixture_case": 14,
+    "blank_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "west",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": false,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "west",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "false",
+      "half": "upper"
+    },
+    "selector": {
+      "model": "minecraft:block/air"
+    },
+    "joint_xz": [
+      16,
+      0
+    ],
+    "posts": [],
+    "lower_owned_render": true,
+    "status": "upper_air_lower_owns_both_sections",
+    "fixture_case": 14,
+    "blank_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "west",
+        "branch_right": "true",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false",
+        "mirrored": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": false,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "west",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "true",
+      "half": "lower"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "y": 270
+    },
+    "joint_xz": [
+      0,
+      16
+    ],
+    "posts": [
+      {
+        "element": 3,
+        "bounds": [
+          [
+            -0.8,
+            0,
+            -0.1
+          ],
+          [
+            6.7,
+            32,
+            2.9
+          ]
+        ],
+        "covers_junction_xz": false,
+        "faces": {
+          "north": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          }
+        }
+      },
+      {
+        "element": 7,
+        "bounds": [
+          [
+            -0.1,
+            0,
+            9.3
+          ],
+          [
+            2.9,
+            32,
+            16.8
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "west": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 270,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              16,
+              6.09375,
+              0,
+              7.84375
+            ],
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": true,
+    "status": "junction_post_present",
+    "fixture_case": 15,
+    "blank_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "west",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "lower",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": false,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "full",
+    "state": {
+      "facing": "west",
+      "shape": "corner",
+      "branch_right": "true",
+      "mirrored": "true",
+      "half": "upper"
+    },
+    "selector": {
+      "model": "minecraft:block/air"
+    },
+    "joint_xz": [
+      0,
+      0
+    ],
+    "posts": [],
+    "lower_owned_render": true,
+    "status": "upper_air_lower_owns_both_sections",
+    "fixture_case": 15,
+    "blank_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "west",
+        "branch_right": "true",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "support_actual": {
+      "Properties": {
+        "half": "upper",
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false",
+        "mirrored": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank"
+    },
+    "blank_exact": true,
+    "support_exact": false,
+    "lone_half_exact": null,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "half_wall",
+    "state": {
+      "facing": "north",
+      "shape": "corner",
+      "branch_right": "false"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner"
+    },
+    "joint_xz": [
+      0,
+      0
+    ],
+    "posts": [
+      {
+        "element": 8,
+        "bounds": [
+          [
+            -0.8,
+            0.0,
+            -0.1
+          ],
+          [
+            6.7,
+            16.0,
+            2.9
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": false,
+    "status": "junction_post_present",
+    "fixture_case": 16,
+    "blank_actual": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "support_actual": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": true,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "half_wall",
+    "state": {
+      "facing": "north",
+      "shape": "corner",
+      "branch_right": "true"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner_branch_right"
+    },
+    "joint_xz": [
+      16,
+      0
+    ],
+    "posts": [
+      {
+        "element": 3,
+        "bounds": [
+          [
+            -0.1,
+            0.0,
+            -0.8
+          ],
+          [
+            2.9,
+            16.0,
+            6.7
+          ]
+        ],
+        "covers_junction_xz": false,
+        "faces": {
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          }
+        }
+      },
+      {
+        "element": 7,
+        "bounds": [
+          [
+            9.3,
+            0.0,
+            -0.1
+          ],
+          [
+            16.8,
+            16.0,
+            2.9
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": false,
+    "status": "junction_post_present",
+    "fixture_case": 17,
+    "blank_actual": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "support_actual": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": true,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "half_wall",
+    "state": {
+      "facing": "east",
+      "shape": "corner",
+      "branch_right": "false"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner",
+      "y": 90
+    },
+    "joint_xz": [
+      16,
+      0
+    ],
+    "posts": [
+      {
+        "element": 8,
+        "bounds": [
+          [
+            13.1,
+            0.0,
+            -0.8
+          ],
+          [
+            16.1,
+            16.0,
+            6.7
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": false,
+    "status": "junction_post_present",
+    "fixture_case": 18,
+    "blank_actual": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "support_actual": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "blank_exact": false,
+    "support_exact": false,
+    "lone_half_exact": true,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "half_wall",
+    "state": {
+      "facing": "east",
+      "shape": "corner",
+      "branch_right": "true"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner_branch_right",
+      "y": 90
+    },
+    "joint_xz": [
+      16,
+      16
+    ],
+    "posts": [
+      {
+        "element": 3,
+        "bounds": [
+          [
+            9.3,
+            0.0,
+            -0.1
+          ],
+          [
+            16.8,
+            16.0,
+            2.9
+          ]
+        ],
+        "covers_junction_xz": false,
+        "faces": {
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          }
+        }
+      },
+      {
+        "element": 7,
+        "bounds": [
+          [
+            13.1,
+            0.0,
+            9.3
+          ],
+          [
+            16.1,
+            16.0,
+            16.8
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": false,
+    "status": "junction_post_present",
+    "fixture_case": 19,
+    "blank_actual": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "support_actual": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "blank_exact": false,
+    "support_exact": false,
+    "lone_half_exact": true,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "half_wall",
+    "state": {
+      "facing": "south",
+      "shape": "corner",
+      "branch_right": "false"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner",
+      "y": 180
+    },
+    "joint_xz": [
+      16,
+      16
+    ],
+    "posts": [
+      {
+        "element": 8,
+        "bounds": [
+          [
+            9.3,
+            0.0,
+            13.1
+          ],
+          [
+            16.8,
+            16.0,
+            16.1
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": false,
+    "status": "junction_post_present",
+    "fixture_case": 20,
+    "blank_actual": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "support_actual": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": true,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "half_wall",
+    "state": {
+      "facing": "south",
+      "shape": "corner",
+      "branch_right": "true"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner_branch_right",
+      "y": 180
+    },
+    "joint_xz": [
+      0,
+      16
+    ],
+    "posts": [
+      {
+        "element": 3,
+        "bounds": [
+          [
+            13.1,
+            0.0,
+            9.3
+          ],
+          [
+            16.1,
+            16.0,
+            16.8
+          ]
+        ],
+        "covers_junction_xz": false,
+        "faces": {
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          }
+        }
+      },
+      {
+        "element": 7,
+        "bounds": [
+          [
+            -0.8,
+            0.0,
+            13.1
+          ],
+          [
+            6.7,
+            16.0,
+            16.1
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": false,
+    "status": "junction_post_present",
+    "fixture_case": 21,
+    "blank_actual": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "support_actual": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "blank_exact": true,
+    "support_exact": true,
+    "lone_half_exact": true,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "half_wall",
+    "state": {
+      "facing": "west",
+      "shape": "corner",
+      "branch_right": "false"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner",
+      "y": 270
+    },
+    "joint_xz": [
+      0,
+      16
+    ],
+    "posts": [
+      {
+        "element": 8,
+        "bounds": [
+          [
+            -0.1,
+            0.0,
+            9.3
+          ],
+          [
+            2.9,
+            16.0,
+            16.8
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": false,
+    "status": "junction_post_present",
+    "fixture_case": 22,
+    "blank_actual": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "support_actual": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "south",
+        "branch_right": "true"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "blank_exact": false,
+    "support_exact": false,
+    "lone_half_exact": true,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  },
+  {
+    "kind": "half_wall",
+    "state": {
+      "facing": "west",
+      "shape": "corner",
+      "branch_right": "true"
+    },
+    "selector": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner_branch_right",
+      "y": 270
+    },
+    "joint_xz": [
+      0,
+      0
+    ],
+    "posts": [
+      {
+        "element": 3,
+        "bounds": [
+          [
+            -0.8,
+            0.0,
+            13.1
+          ],
+          [
+            6.7,
+            16.0,
+            16.1
+          ]
+        ],
+        "covers_junction_xz": false,
+        "faces": {
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          }
+        }
+      },
+      {
+        "element": 7,
+        "bounds": [
+          [
+            -0.1,
+            0.0,
+            -0.8
+          ],
+          [
+            2.9,
+            16.0,
+            6.7
+          ]
+        ],
+        "covers_junction_xz": true,
+        "faces": {
+          "east": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "south": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "west": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "north": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 90,
+            "texture": "#2"
+          },
+          "up": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "rotation": 180,
+            "texture": "#2"
+          },
+          "down": {
+            "uv": [
+              0,
+              6.09375,
+              16,
+              7.84375
+            ],
+            "texture": "#2"
+          }
+        }
+      }
+    ],
+    "lower_owned_render": false,
+    "status": "junction_post_present",
+    "fixture_case": 23,
+    "blank_actual": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "support_actual": {
+      "Properties": {
+        "shape": "corner",
+        "facing": "north",
+        "branch_right": "false"
+      },
+      "Name": "britannia_mod:plaster_wall_and_support_blank_half"
+    },
+    "blank_exact": false,
+    "support_exact": false,
+    "lone_half_exact": true,
+    "new_visual_status": "PENDING_OWNER_COMPARISON",
+    "ordinary_BlockItem_status": "NOT_EXECUTED_IN_DISCOVERY",
+    "restart_stored_state_check": "PASS_40_ASSERTIONS"
+  }
+]

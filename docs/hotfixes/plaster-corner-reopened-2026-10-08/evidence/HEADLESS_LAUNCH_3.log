@@ -1,0 +1,20 @@
+> Task :classes
+> Task :neoFormJoined1.21.1-20240808.144430ExtractNatives UP-TO-DATE
+> Task :cacheVersionManifest1.21.1 FROM-CACHE
+> Task :cacheVersionExecutableClient1.21.1 FROM-CACHE
+> Task :cacheVersionExecutableServer1.21.1 FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':cacheVersionExecutableServer1.21.1'.
+> Failed to execute stage: Default[output=C:\projects\britannia\mod\Britannia_Mod\tmp\combined-0.1.8d\candidate-source\.gradle\caches\minecraft\versions\1.21.1\server.jar, createsDirectory=false, execute=net.neoforged.gradle.common.tasks.MinecraftArtifactFileCacheProvider$$Lambda/0x000001af19f68220@2d6fab5c]
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 2s
+4 actionable tasks: 1 executed, 2 from cache, 1 up-to-date

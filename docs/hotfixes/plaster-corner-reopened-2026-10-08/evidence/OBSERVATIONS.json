@@ -1,0 +1,258 @@
+[
+  {
+    "observation": "A",
+    "position": [
+      5266,
+      72,
+      4166
+    ],
+    "state": {
+      "facing": "south",
+      "shape": "corner",
+      "half": "lower",
+      "branch_right": "false",
+      "mirrored": "false"
+    },
+    "acceptable_label": "unresolved_owner_did_not_label",
+    "resource_geometry": {
+      "current_candidate": {
+        "model": "plaster_wall_and_support_blank_corner",
+        "junction_south_model_xz": [
+          16,
+          16
+        ],
+        "world_junction_xz": [
+          5267.0,
+          4167.0
+        ],
+        "posts": [
+          {
+            "element": 8,
+            "south_model_bounds": [
+              [
+                9.3,
+                0,
+                13.1
+              ],
+              [
+                16.8,
+                32,
+                16.1
+              ]
+            ],
+            "world_bounds": [
+              [
+                5266.58125,
+                72.0,
+                4166.81875
+              ],
+              [
+                5267.05,
+                74.0,
+                4167.00625
+              ]
+            ],
+            "covers_junction": true
+          }
+        ]
+      },
+      "installed_profile": {
+        "model": "plaster_wall_and_support_blank_corner",
+        "junction_south_model_xz": [
+          16,
+          16
+        ],
+        "world_junction_xz": [
+          5267.0,
+          4167.0
+        ],
+        "posts": [
+          {
+            "element": 6,
+            "south_model_bounds": [
+              [
+                9.3,
+                0,
+                -0.1
+              ],
+              [
+                16.8,
+                32,
+                2.9
+              ]
+            ],
+            "world_bounds": [
+              [
+                5266.58125,
+                72.0,
+                4165.99375
+              ],
+              [
+                5267.05,
+                74.0,
+                4166.18125
+              ]
+            ],
+            "covers_junction": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "observation": "B",
+    "position": [
+      5269,
+      72,
+      4166
+    ],
+    "state": {
+      "facing": "south",
+      "shape": "corner",
+      "half": "lower",
+      "branch_right": "true",
+      "mirrored": "false"
+    },
+    "acceptable_label": "unresolved_owner_did_not_label",
+    "resource_geometry": {
+      "current_candidate": {
+        "model": "plaster_wall_and_support_blank_corner_branch_right",
+        "junction_south_model_xz": [
+          0,
+          16
+        ],
+        "world_junction_xz": [
+          5269.0,
+          4167.0
+        ],
+        "posts": [
+          {
+            "element": 3,
+            "south_model_bounds": [
+              [
+                13.1,
+                0,
+                9.3
+              ],
+              [
+                16.1,
+                32,
+                16.8
+              ]
+            ],
+            "world_bounds": [
+              [
+                5269.81875,
+                72.0,
+                4166.58125
+              ],
+              [
+                5270.00625,
+                74.0,
+                4167.05
+              ]
+            ],
+            "covers_junction": false
+          },
+          {
+            "element": 7,
+            "south_model_bounds": [
+              [
+                -0.8,
+                0,
+                13.1
+              ],
+              [
+                6.7,
+                32,
+                16.1
+              ]
+            ],
+            "world_bounds": [
+              [
+                5268.95,
+                72.0,
+                4166.81875
+              ],
+              [
+                5269.41875,
+                74.0,
+                4167.00625
+              ]
+            ],
+            "covers_junction": true
+          }
+        ]
+      },
+      "installed_profile": {
+        "model": "plaster_wall_and_support_blank_corner_branch_right",
+        "junction_south_model_xz": [
+          0,
+          16
+        ],
+        "world_junction_xz": [
+          5269.0,
+          4167.0
+        ],
+        "posts": [
+          {
+            "element": 3,
+            "south_model_bounds": [
+              [
+                13.1,
+                0,
+                9.3
+              ],
+              [
+                16.1,
+                32,
+                16.8
+              ]
+            ],
+            "world_bounds": [
+              [
+                5269.81875,
+                72.0,
+                4166.58125
+              ],
+              [
+                5270.00625,
+                74.0,
+                4167.05
+              ]
+            ],
+            "covers_junction": false
+          },
+          {
+            "element": 7,
+            "south_model_bounds": [
+              [
+                -0.8,
+                0,
+                13.1
+              ],
+              [
+                6.7,
+                32,
+                16.1
+              ]
+            ],
+            "world_bounds": [
+              [
+                5268.95,
+                72.0,
+                4166.81875
+              ],
+              [
+                5269.41875,
+                74.0,
+                4167.00625
+              ]
+            ],
+            "covers_junction": true
+          }
+        ]
+      }
+    }
+  }
+]

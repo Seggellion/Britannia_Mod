@@ -1,0 +1,60 @@
+{
+  "artifact_identities": {
+    "candidate": {
+      "path": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\combined-0.1.8d\\release\\britannia_mod-0.1.8d-all.jar",
+      "size_bytes": 36142668,
+      "sha256": "f02d2876d60e10a539829950b173b61055a72e6e42dd36643bec97ab62f482bd",
+      "embedded_identity": {
+        "britannia_mod_build.properties": "mod.version=0.1.8d\ngit.head=986ed746866dc944b7b496ab9428b670f65e15c0\ngit.branch=HEAD\ngit.dirty=false\nbuild.timestamp=2026-10-07T17:43:56.051245600Z\n"
+      }
+    },
+    "prior_plaster": {
+      "path": "C:\\projects\\britannia\\mod\\Britannia_Mod\\tmp\\plaster-corner-0.1.8d\\release\\britannia_mod-0.1.8d-all.jar",
+      "size_bytes": 36140726,
+      "sha256": "de563ecfcb8f9067248ec09ae0578f7776ea5c1beefa4f1c182b9ac255a5df2e",
+      "embedded_identity": {
+        "britannia_mod_build.properties": "mod.version=0.1.8d\ngit.head=ac6b2e80e1dac33d48dfd0b48b52543deab5cb2d\ngit.branch=HEAD\ngit.dirty=false\nbuild.timestamp=2026-10-07T03:42:22.901928400Z\n"
+      }
+    },
+    "active_profile": {
+      "path": "C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia\\mods\\britannia_mod-0.1.8d.jar",
+      "size_bytes": 36107339,
+      "sha256": "c04f3092fa577e4c98c4c4ee16febd5008403ccc98a0ebc064d860e3ac8981c6",
+      "embedded_identity": {
+        "britannia_mod_build.properties": "mod.version=0.1.8d\ngit.head=4435912197fba84630d6e5a0544f29fc3a736450\ngit.branch=patch-18\ngit.dirty=false\nbuild.timestamp=2026-10-06T00:15:17.175199Z\n"
+      }
+    }
+  },
+  "corner_rows": 40,
+  "statuses": {
+    "junction_post_present": 24,
+    "upper_air_lower_owns_both_sections": 16
+  },
+  "selected_options": [
+    "resourcePacks:[]",
+    "incompatibleResourcePacks:[]"
+  ],
+  "shader_options": [
+    "enableShaders=true",
+    "shaderPack=photon_v1.1.zip"
+  ],
+  "resource_contenders": 4,
+  "log_lines": [
+    {
+      "line": 11,
+      "text": "[15:02:46] [main/INFO]: Found mod file \"britannia_mod-0.1.8d.jar\" [locator: {mods folder locator at C:\\Users\\dusti\\curseforge\\minecraft\\Instances\\UltimaCraft - Britannia\\mods}, reader: mod manifest]"
+    },
+    {
+      "line": 131,
+      "text": "[08Oct2026 15:03:11.735] [Render thread/INFO] [net.minecraft.server.packs.resources.ReloadableResourceManager/]: Reloading ResourceManager: vanilla, mod_resources, mod/sodium, mod/freecam, mod/iris, mod/fabric_renderer_api_v1, mod/fabric_api_base, mod/britannia_mod, mod/worldedit, mod/geckolib, mod/distanthorizons, mod/fabric_rendering_data_attachment_v1, mod/cloth_config, mod/neoforge, mod/fabric_block_view_api_v2"
+    },
+    {
+      "line": 2866,
+      "text": "[08Oct2026 15:03:35.765] [Render thread/INFO] [Iris/]: Using shaderpack: photon_v1.1.zip"
+    },
+    {
+      "line": 2899,
+      "text": "[08Oct2026 15:04:06.139] [Render thread/INFO] [net.minecraft.client.gui.screens.ConnectScreen/]: Connecting to sosaria.apexmc.co, 25565"
+    }
+  ]
+}

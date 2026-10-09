@@ -1,0 +1,122 @@
+{
+  "captured_utc": "2026-10-09T09:13:15.727657+00:00",
+  "client_date": "2026-10-09",
+  "local_branch": "patch-18",
+  "local_head": "5a8cab9a38fac52253dea20431dea60cd15812c0",
+  "remote_refs": {
+    "refs/heads/codex/patch18-0.1.8d-source": "fd90bff209d47addf6667c4576bd2053890127f2",
+    "refs/heads/main": "f039c4b259d925872618bfe64ee574b20776856c",
+    "refs/heads/patch-18": "5a8cab9a38fac52253dea20431dea60cd15812c0"
+  },
+  "pr": {
+    "baseRefOid": "f039c4b259d925872618bfe64ee574b20776856c",
+    "headRefName": "codex/patch18-0.1.8d-source",
+    "headRefOid": "fd90bff209d47addf6667c4576bd2053890127f2",
+    "mergeStateStatus": "BLOCKED",
+    "number": 501,
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-07T21:17:24Z",
+        "conclusion": "FAILURE",
+        "detailsUrl": "https://github.com/Seggellion/Britannia_Mod/actions/runs/37687457615/job/113018839716",
+        "name": "build",
+        "startedAt": "2026-10-07T21:10:12Z",
+        "status": "COMPLETED",
+        "workflowName": "Build"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-07T21:16:07Z",
+        "conclusion": "FAILURE",
+        "detailsUrl": "https://github.com/Seggellion/Britannia_Mod/actions/runs/37687364268/job/113018521148",
+        "name": "build",
+        "startedAt": "2026-10-07T21:09:25Z",
+        "status": "COMPLETED",
+        "workflowName": "Build"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-07T21:17:22Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/Seggellion/Britannia_Mod/actions/runs/37687457615/job/113018840138",
+        "name": "gametest",
+        "startedAt": "2026-10-07T21:10:12Z",
+        "status": "COMPLETED",
+        "workflowName": "Build"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-07T21:16:27Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/Seggellion/Britannia_Mod/actions/runs/37687364268/job/113018521699",
+        "name": "gametest",
+        "startedAt": "2026-10-07T21:09:25Z",
+        "status": "COMPLETED",
+        "workflowName": "Build"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-07T21:10:12Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://dashboard.gitguardian.com",
+        "name": "GitGuardian Security Checks",
+        "startedAt": "2026-10-07T21:10:10Z",
+        "status": "COMPLETED",
+        "workflowName": ""
+      }
+    ],
+    "url": "https://github.com/Seggellion/Britannia_Mod/pull/501"
+  },
+  "signature": {
+    "verified": false,
+    "reason": "unsigned",
+    "signature": null,
+    "payload": null,
+    "verified_at": null
+  },
+  "main_ruleset": {
+    "id": 17373102,
+    "name": "Main",
+    "enforcement": "active",
+    "conditions": {
+      "ref_name": {
+        "exclude": [],
+        "include": [
+          "~DEFAULT_BRANCH"
+        ]
+      }
+    },
+    "bypass_actors": [
+      {
+        "actor_id": 5,
+        "actor_type": "RepositoryRole",
+        "bypass_mode": "always"
+      }
+    ],
+    "rules": [
+      {
+        "type": "deletion"
+      },
+      {
+        "type": "non_fast_forward"
+      },
+      {
+        "type": "creation"
+      },
+      {
+        "type": "update"
+      },
+      {
+        "type": "required_linear_history"
+      },
+      {
+        "type": "required_signatures"
+      }
+    ]
+  },
+  "development_branch_protected": false,
+  "main_changed_by_this_task": false,
+  "protection_or_bypass_changed": false
+}

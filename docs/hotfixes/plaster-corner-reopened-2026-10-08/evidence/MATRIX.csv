@@ -1,0 +1,41 @@
+kind,facing,branch_right,mirrored,half,model,y_rotation,joint_xz,post_elements,junction_post,status
+full,north,false,false,lower,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner,0,"[0, 0]",[8],[8],junction_post_present
+full,north,false,false,upper,minecraft:block/air,0,"[0, 0]",[],[],upper_air_lower_owns_both_sections
+full,north,false,true,lower,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored,0,"[16, 0]",[8],[8],junction_post_present
+full,north,false,true,upper,minecraft:block/air,0,"[16, 0]",[],[],upper_air_lower_owns_both_sections
+full,north,true,false,lower,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right,0,"[16, 0]","[3, 7]",[7],junction_post_present
+full,north,true,false,upper,minecraft:block/air,0,"[16, 0]",[],[],upper_air_lower_owns_both_sections
+full,north,true,true,lower,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored,0,"[0, 0]","[3, 7]",[7],junction_post_present
+full,north,true,true,upper,minecraft:block/air,0,"[0, 0]",[],[],upper_air_lower_owns_both_sections
+full,east,false,false,lower,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner,90,"[16, 0]",[8],[8],junction_post_present
+full,east,false,false,upper,minecraft:block/air,0,"[0, 0]",[],[],upper_air_lower_owns_both_sections
+full,east,false,true,lower,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored,90,"[16, 16]",[8],[8],junction_post_present
+full,east,false,true,upper,minecraft:block/air,0,"[16, 0]",[],[],upper_air_lower_owns_both_sections
+full,east,true,false,lower,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right,90,"[16, 16]","[3, 7]",[7],junction_post_present
+full,east,true,false,upper,minecraft:block/air,0,"[16, 0]",[],[],upper_air_lower_owns_both_sections
+full,east,true,true,lower,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored,90,"[16, 0]","[3, 7]",[7],junction_post_present
+full,east,true,true,upper,minecraft:block/air,0,"[0, 0]",[],[],upper_air_lower_owns_both_sections
+full,south,false,false,lower,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner,180,"[16, 16]",[8],[8],junction_post_present
+full,south,false,false,upper,minecraft:block/air,0,"[0, 0]",[],[],upper_air_lower_owns_both_sections
+full,south,false,true,lower,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored,180,"[0, 16]",[8],[8],junction_post_present
+full,south,false,true,upper,minecraft:block/air,0,"[16, 0]",[],[],upper_air_lower_owns_both_sections
+full,south,true,false,lower,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right,180,"[0, 16]","[3, 7]",[7],junction_post_present
+full,south,true,false,upper,minecraft:block/air,0,"[16, 0]",[],[],upper_air_lower_owns_both_sections
+full,south,true,true,lower,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored,180,"[16, 16]","[3, 7]",[7],junction_post_present
+full,south,true,true,upper,minecraft:block/air,0,"[0, 0]",[],[],upper_air_lower_owns_both_sections
+full,west,false,false,lower,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner,270,"[0, 16]",[8],[8],junction_post_present
+full,west,false,false,upper,minecraft:block/air,0,"[0, 0]",[],[],upper_air_lower_owns_both_sections
+full,west,false,true,lower,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored,270,"[0, 0]",[8],[8],junction_post_present
+full,west,false,true,upper,minecraft:block/air,0,"[16, 0]",[],[],upper_air_lower_owns_both_sections
+full,west,true,false,lower,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right,270,"[0, 0]","[3, 7]",[7],junction_post_present
+full,west,true,false,upper,minecraft:block/air,0,"[16, 0]",[],[],upper_air_lower_owns_both_sections
+full,west,true,true,lower,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored,270,"[0, 16]","[3, 7]",[7],junction_post_present
+full,west,true,true,upper,minecraft:block/air,0,"[0, 0]",[],[],upper_air_lower_owns_both_sections
+half_wall,north,false,N/A,N/A,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner,0,"[0, 0]",[8],[8],junction_post_present
+half_wall,north,true,N/A,N/A,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner_branch_right,0,"[16, 0]","[3, 7]",[7],junction_post_present
+half_wall,east,false,N/A,N/A,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner,90,"[16, 0]",[8],[8],junction_post_present
+half_wall,east,true,N/A,N/A,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner_branch_right,90,"[16, 16]","[3, 7]",[7],junction_post_present
+half_wall,south,false,N/A,N/A,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner,180,"[16, 16]",[8],[8],junction_post_present
+half_wall,south,true,N/A,N/A,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner_branch_right,180,"[0, 16]","[3, 7]",[7],junction_post_present
+half_wall,west,false,N/A,N/A,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner,270,"[0, 16]",[8],[8],junction_post_present
+half_wall,west,true,N/A,N/A,britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_half_corner_branch_right,270,"[0, 0]","[3, 7]",[7],junction_post_present

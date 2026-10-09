@@ -1,0 +1,10 @@
+{
+  "snapshot": "fd90bff209d47addf6667c4576bd2053890127f2",
+  "snapshot_candidate_source": "986ed746866dc944b7b496ab9428b670f65e15c0",
+  "current_source": "5a8cab9a38fac52253dea20431dea60cd15812c0",
+  "production_delta_since_candidate": "",
+  "retained_test_source_delta_since_candidate": "src/main/java/com/seggellion/britannia_mod/gametest/FenceRuntimeIdentityGameTests.java",
+  "whole_current_source_snapshot_parity": false,
+  "new_public_snapshot_for_plaster_required": false,
+  "reason": "This task changes excluded internal follow-up records/analysis/fixtures only. Production implementation/resources remain equal. Concurrent fence test harness is recorded separately, not hidden or relabeled excluded from public source."
+}

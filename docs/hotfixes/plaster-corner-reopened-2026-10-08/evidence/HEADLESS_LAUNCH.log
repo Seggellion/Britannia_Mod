@@ -1,0 +1,21 @@
+Starting a Gradle Daemon, 3 busy Daemons could not be reused, use --status for details
+Daemon JVM discovery is an incubating feature.
+> Task :classes
+> Task :neoFormJoined1.21.1-20240808.144430DownloadAssets FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':neoFormJoined1.21.1-20240808.144430DownloadAssets'.
+> There was a failure while executing work items
+   > A failure occurred while executing net.neoforged.gradle.common.runtime.tasks.action.DownloadFileAction
+      > java.lang.IllegalStateException: Cannot download asset https://piston-meta.mojang.com/v1/packages/00551f206ccb65cb965fd0aebc14d22cda282db7/17.json as Gradle is running in offline mode and the file does not exist
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 10s
+1 actionable task: 1 executed

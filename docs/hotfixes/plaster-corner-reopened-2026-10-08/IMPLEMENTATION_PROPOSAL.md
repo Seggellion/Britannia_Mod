@@ -1,0 +1,34 @@
+# Bounded implementation project proposal — not executed
+
+This is a discovery deliverable for later authorization on current exact`patch-18`,0.1.8d / Minecraft 1.21.1/NeoForge 21.1.72/Java 21. It is not an authorization to implement, rebuild, publish or deploy now. Preserve the f02 candidate, installed-c04 evidence, all prior sources/worlds/tests and other D-patch components. [Discovery findings](DISCOVERY_REPORT.md) establish a real selected-installation discrepancy and bounded visual/state questions; no new source geometry repair is yet proven necessary.
+
+| Milestone | Concrete deliverable | Acceptance / stop boundary |
+| --- | --- | --- |
+| **M0: identity, reproduction and design** | Independently verify candidate client and server; label owner A/B; compare exact south states with equivalent blank Ls then support Ls, exterior/interior and both heights. Capture actual state/neighbor sequence where relevant. | Explain the reported missing timber. Owner approves where visible junction timber must appear and permitted free-end ownership/count. If c04 → f02 resolves the requested view, choose installation/acceptance closeout and avoid inventing another source patch. Unavailable server/visual evidence is explicit. |
+| **M1: independent failing contract** | If a source defect remains, add the smallest geometry/face/state regression that reproduces it using junctions derived from physical run/neighbor endpoints, not proposed pillar bounds. | Exercise both branch values×both mirrors×four facings, lower-owned two heights and actual eight half selectors. Distinguish target timber from trim/neighbor posts. Use an expected visibility/adjacency contract and retain a packaged visual gate. Demonstrate red on the relevant defective source/resource stack. If installation-only, no speculative red test/fix is required. |
+| **M2: bounded repair** | Correct only proved authoritative mesh/face source, scoped derivative, selector or state locus. Keep unrelated source/resources. | Preserve IDs/domain/textures/version and accepted collision. For false half use existing scoped generator/check; for a demonstrated true-half dependency approve a narrow true derivation workflow before extending it. Do not substitute B’s two-post layout, move complete strips, add duplicates, change upper air, migrate saves or rewrite shared consumers without reproduced necessity. |
+| **M3: affected acceptance** | Recheck effective selectors, faces/UV/caps/join ownership, all applicable branch/mirror/facing/half cases, normal placement/arm-order where implicated, either-half decorator, structure transforms, notification normalization and save/reload. | Actual state and physical evidence are separate from player/visual proof. Record when a representation changes with unchanged edges and whether post style changes. Candidate exterior/interior requested appearance must pass; use the short owner comparison. Add targeted new player physics only if collision changed or a concrete new defect demands it; reuse accepted sustained movement and medallion approval. |
+| **M4: integrate/package only if implementation changed** | Integrate into clean current Patch18, preserving owner work and integrated network/fence/alligator/medallion fixes; build clean corrected0.1.8d, record new source/size/hash and retain f02previous candidate. | Run required normal build/artifact gates, relevant focused checks and complete required suites as policy/actual changes demand; no test roots leak. Repeat affected packaged checks on the new artifact. Documentation/installation-only resolution reuses verified f02 without rebuild or whole-suite repetition. |
+| **M5: handoff/publication under later authorization** | Append outcome/evidence to reopened discovery and release handoffs, separating plaster from combined release and source publication from production acceptance. | Mark plaster complete only after its requested visible contract passes; retain unrelated fence/alligator holds unless their own evidence clears them. Record actual source publication result only if authorized in the later implementation prompt, honoring signing/review policy. An open/unmerged PR does not update main. No production deployment/tag/GitHub Release implied. |
+
+## Exact candidate asset/consumer boundaries
+
+Possible authoritative full models, choose only proven affected entries:
+
+```text
+src/main/resources/assets/britannia_mod/models/block/structure/plaster/
+  plaster_wall_and_support_blank_corner.json
+  plaster_wall_and_support_blank_corner_mirrored.json
+  plaster_wall_and_support_blank_corner_branch_right.json
+  plaster_wall_and_support_blank_corner_branch_right_mirrored.json
+```
+
+Actual half consumers: `plaster_wall_and_support_blank_half_corner.json` and `_half_corner_branch_right.json` in the same directory. Referenced by full/half family blockstates; retain mappings when art/face repair suffices. The existing `tools/generate_half_walls.py --support-corner-only` owns the false half derivative only; broaden it solely for a demonstrated true-half repair, with output whitelist/non-target freshness/hash safeguards. Existing generation tests belong to `tools/plaster-corner/test_generation.py`. Old contract remains retained; extend actual failing contract rather than replacing its assertions with the implementation’s own bounds.
+
+State changes, if demonstrated necessary, affect `MirrorableWallBlock`, `DoubleWallBlock`, `PlasterWallHalfBlock` and `InteriorDecoratorToolItem`. Shared shape/canonical queries include sandstone window subclasses and battlement. Shared derivation `WallConnection` is also consumed by wood-support floors/bannisters, so a modification there needs explicitly scoped registered consumer tests. Windows/ornate windows, plain/support plaster variants, sandstone windows/battlement, half/full boundaries, doors/gates/tagged joins and transform/legacy saved-pair consumers are a concrete impact audit; they are not a license to rewrite their assets.
+
+## Why this scope is reviewable
+
+The selected client demonstrably has old false geometry while its true mesh already has junction timber. Current f02mathematical art coverage is fresh. Source ray samples show a remaining interior-view design question, and sequential arm replacement exposes branch-style normalization without changed edges. M0 distinguishes these causes before coding. M1’s oracle specifies the requested visible surface and ownership independently; it cannot close the reported failure merely by finding a brown box somewhere or comparing a post against the coordinates used to create it.
+
+A later prompt can be written now with **M0 as the decisive gate and M1–M5 conditional on its result**. Do not claim an unconditional additional mesh/state rewrite is ready. This discovery executes none of the implementation milestones.

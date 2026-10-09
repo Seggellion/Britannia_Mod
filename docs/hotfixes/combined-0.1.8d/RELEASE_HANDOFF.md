@@ -1,5 +1,21 @@
 # Combined Patch 18 0.1.8d release handoff
 
+## Plaster exterior follow-up and current publication — 2026-10-09
+
+**SOURCE_PUBLICATION_AUTHORIZED; PRODUCTION_ACCEPTANCE_PENDING.** Plaster is `INSTALLATION_DISCREPANCY_CONFIRMED; EXTERIOR_A_B_PENDING`. The owner requires continuous exterior junction timber in both branches; the interior is preserved. The active selected client remains older `44359121` / `c04f3092...8981c6`; unchanged clean candidate `986ed746` / `f02d2876...482bd` is staged in an isolated unlaunched profile with a verified rollback copy. Fresh exterior-face/static/package/preparation checks pass, but do not establish actual candidate appearance. No application change, rebuild or repeated passing suite occurred. [Follow-up handoff](../plaster-corner-followup-2026-10-09/FOLLOWUP_HANDOFF.md), [short owner comparison](../plaster-corner-followup-2026-10-09/OWNER_COMPARISON.md).
+
+Medallion UI and sustained movement owner acceptance remain complete. Fence corner/decorator/reconnect appearance and deployment identity remain independent holds; alligator playback remains pending. No unrelated hold is cleared by plaster analysis. Timing repetitions remain follow-up confidence measurements, not a newly imposed requirement.
+
+Fresh GitHub inspection supersedes the historical CI-in-progress receipt: existing [PR #501](https://github.com/Seggellion/Britannia_Mod/pull/501) is OPEN/BLOCKED and unsigned; main remains `f039c4b259d925872618bfe64ee574b20776856c`. Remote GameTests passed, but build CI failed three RunUO initialization tests whose fixtures are excluded internal documents; local ancestor lookup concealed that standalone public checkout gap. Current whole-tree public snapshot parity is also not claimed because the concurrent fence GameTest harness is retained by export policy. This task changes internal documentation/analysis/preparation only, so no artificial sanitized snapshot/build is produced. Normal development publication proceeds independently; main signing/restricted-update rules are preserved without bypass. [Current evidence and publication receipt](../plaster-corner-followup-2026-10-09/PUBLICATION.md).
+
+No desktop input/focus/client launch, active profile replacement, server restart, live-world change, production deployment, tag or GitHub Release occurred. The candidate's absolute source-specific path/hash and installation instructions are in the [installation manifest](../plaster-corner-followup-2026-10-09/evidence/INSTALLATION_MANIFEST.json).
+
+## Reopened plaster discovery — 2026-10-08
+
+**PRODUCTION_ACCEPTANCE_PENDING; PLASTER_VISUAL_DEFECT_REOPENED.** A new owner branch-pair observation is under [dated discovery](../plaster-corner-reopened-2026-10-08/DISCOVERY_REPORT.md). The selected accessible client installation has the earlier `44359121` / `c04f3092...8981c6` artifact and old false-branch corner mesh. The verified `986ed746` / `f02d2876...482bd` candidate is unchanged; current art contains junction timber for both branches, but the owner-view/neighbor/server identity and interior/exterior visible contract remain unverified. New disposable packaged state/restart evidence is not a visual acceptance pass. No further application repair or publication occurred during discovery.
+
+The existing fence corner/decorator/reload and alligator playback holds remain independent. Medallion owner UI acceptance and accepted sustained movement remain preserved. Historical source-publication/main-review status below is not changed by this discovery. See [reopened status](../plaster-corner-reopened-2026-10-08/STATUS.md) and [conditional implementation proposal](../plaster-corner-reopened-2026-10-08/IMPLEMENTATION_PROPOSAL.md).
+
 ## Current closeout — 2026-10-07
 
 Status: **SOURCE_PUBLICATION_AUTHORIZED; PRODUCTION_ACCEPTANCE_PENDING**. This section supersedes the historical checkpoint below. The owner ended desktop automation and authorized source publication independently of remaining human acceptance. No live deployment/world edit, launcher update, release tag or GitHub Release occurred.
