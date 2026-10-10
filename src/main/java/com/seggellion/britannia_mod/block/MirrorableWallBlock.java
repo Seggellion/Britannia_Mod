@@ -10,8 +10,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * A {@link DoubleWallBlock} with an asymmetric feature that can sit on either side of the wall -
@@ -21,8 +19,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * {@code InteriorDecoratorToolItem}). The main hand keeps rotating the block, so one tool does both
  * jobs without the two getting in each other's way.
  *
- * <p>Only {@link #MIRRORED} is added on top of the wall state, so facing, shape, branch side and
- * the plaster style all survive a flip untouched. {@code mirrored=false} is the default, which is
+ * <p>Only {@link #MIRRORED} is added on top of the wall state. Neighbor derivation may choose the
+ * equivalent perpendicular main edge after a flip to keep a corner joined while preserving its
+ * authored branch variant. {@code mirrored=false} is the default, which is
  * what every block placed before this property existed resolves to.
  */
 public class MirrorableWallBlock extends DoubleWallBlock {
@@ -59,21 +58,34 @@ public class MirrorableWallBlock extends DoubleWallBlock {
      * which sits inside the run's own slab either way.
      */
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        if (!state.getValue(MIRRORED) || state.getValue(SHAPE) == WallShape.STRAIGHT) {
-            return super.getShape(state, level, pos, context);
+    protected boolean physicalBranchRight(BlockState state) {
+        return state.getValue(BRANCH_RIGHT)
+            ^ (state.getValue(MIRRORED) && state.getValue(SHAPE) != WallShape.STRAIGHT);
+    }
+
+    @Override
+    BlockState deriveConnections(BlockState state, BlockGetter level, BlockPos pos) {
+        BlockPos base = state.getValue(HALF) == DoubleBlockHalf.UPPER ? pos.below() : pos;
+        WallConnection connection = WallConnection.derive(level, base, state.getValue(FACING),
+            physicalBranchRight(state), DoubleWallBlock::runOf);
+        boolean branch = connection.branchRight() ^ (state.getValue(MIRRORED) && connection.shape() != WallShape.STRAIGHT);
+        Direction facing = connection.facing();
+        if (state.getValue(SHAPE) != WallShape.STRAIGHT && connection.shape() != WallShape.STRAIGHT) {
+            // Either arm may be primary. Swapping them describes identical physical edges with
+            // the opposite handedness, avoiding a one-post/two-post asset change after transforms.
+            if (branch != state.getValue(BRANCH_RIGHT)) facing = connection.secondary();
+            branch = state.getValue(BRANCH_RIGHT);
         }
-        return super.getShape(state.setValue(BRANCH_RIGHT, !state.getValue(BRANCH_RIGHT)),
-                              level, pos, context);
+        return state.setValue(SHAPE, connection.shape()).setValue(FACING, facing).setValue(BRANCH_RIGHT, branch);
     }
 
     @Override
     protected BlockState mirror(BlockState state, Mirror mirror) {
-        BlockState mirrored = super.mirror(state, mirror);
+        BlockState mirrored = state.setValue(FACING, mirror.mirror(state.getValue(FACING)));
         if (mirror == Mirror.NONE) {
             return mirrored;
         }
-        // Reflecting the world reflects the feature with it.
+        // MIRRORED already reverses the physical branch. Flipping BRANCH_RIGHT too would undo it.
         return mirrored.setValue(MIRRORED, !state.getValue(MIRRORED));
     }
 }

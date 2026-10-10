@@ -1,244 +1,724 @@
 {
   "variants": {
-    "facing=north,north=false,east=false,south=false,west=false": {
+    "facing=north,layout_code=32,north=false,east=false,south=false,west=false": {
       "model": "britannia_mod:block/structure/wooden_fence/isolated"
     },
-    "facing=north,north=false,east=false,south=false,west=true": {
+    "facing=north,layout_code=32,north=true,east=false,south=false,west=false": {
       "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
-      "y": 180
+      "y": 270
     },
-    "facing=north,north=false,east=false,south=true,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
-      "y": 90
-    },
-    "facing=north,north=false,east=false,south=true,west=true": {
-      "model": "britannia_mod:block/structure/wooden_fence/corner",
-      "y": 90
-    },
-    "facing=north,north=false,east=true,south=false,west=false": {
+    "facing=north,layout_code=32,north=false,east=true,south=false,west=false": {
       "model": "britannia_mod:block/structure/wooden_fence/end"
     },
-    "facing=north,north=false,east=true,south=false,west=true": {
-      "model": "britannia_mod:block/structure/wooden_fence/straight"
-    },
-    "facing=north,north=false,east=true,south=true,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/corner"
-    },
-    "facing=north,north=false,east=true,south=true,west=true": {
-      "model": "britannia_mod:block/structure/wooden_fence/t_junction"
-    },
-    "facing=north,north=true,east=false,south=false,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+    "facing=north,layout_code=32,north=true,east=true,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
       "y": 270
     },
-    "facing=north,north=true,east=false,south=false,west=true": {
+    "facing=north,layout_code=32,north=false,east=false,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 90
+    },
+    "facing=north,layout_code=32,north=true,east=false,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight"
+    },
+    "facing=north,layout_code=32,north=false,east=true,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner"
+    },
+    "facing=north,layout_code=32,north=true,east=true,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 270
+    },
+    "facing=north,layout_code=32,north=false,east=false,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 180
+    },
+    "facing=north,layout_code=32,north=true,east=false,south=false,west=true": {
       "model": "britannia_mod:block/structure/wooden_fence/corner",
       "y": 180
     },
-    "facing=north,north=true,east=false,south=true,west=false": {
+    "facing=north,layout_code=32,north=false,east=true,south=false,west=true": {
       "model": "britannia_mod:block/structure/wooden_fence/straight"
     },
-    "facing=north,north=true,east=false,south=true,west=true": {
+    "facing=north,layout_code=32,north=true,east=true,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 180
+    },
+    "facing=north,layout_code=32,north=false,east=false,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 90
+    },
+    "facing=north,layout_code=32,north=true,east=false,south=true,west=true": {
       "model": "britannia_mod:block/structure/wooden_fence/t_junction",
       "y": 90
     },
-    "facing=north,north=true,east=true,south=false,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/corner",
-      "y": 270
+    "facing=north,layout_code=32,north=false,east=true,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction"
     },
-    "facing=north,north=true,east=true,south=false,west=true": {
-      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
-      "y": 180
-    },
-    "facing=north,north=true,east=true,south=true,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
-      "y": 270
-    },
-    "facing=north,north=true,east=true,south=true,west=true": {
+    "facing=north,layout_code=32,north=true,east=true,south=true,west=true": {
       "model": "britannia_mod:block/structure/wooden_fence/cross"
     },
-    "facing=east,north=false,east=false,south=false,west=false": {
+    "facing=north,layout_code=0": {
+      "model": "britannia_mod:block/structure/wooden_fence/isolated"
+    },
+    "facing=north,layout_code=1": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 270
+    },
+    "facing=north,layout_code=2": {
+      "model": "britannia_mod:block/structure/wooden_fence/end"
+    },
+    "facing=north,layout_code=3": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 270
+    },
+    "facing=north,layout_code=4": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 90
+    },
+    "facing=north,layout_code=5": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight"
+    },
+    "facing=north,layout_code=6": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner"
+    },
+    "facing=north,layout_code=7": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 270
+    },
+    "facing=north,layout_code=8": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 180
+    },
+    "facing=north,layout_code=9": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 180
+    },
+    "facing=north,layout_code=10": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight"
+    },
+    "facing=north,layout_code=11": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 180
+    },
+    "facing=north,layout_code=12": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 90
+    },
+    "facing=north,layout_code=13": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 90
+    },
+    "facing=north,layout_code=14": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction"
+    },
+    "facing=north,layout_code=15": {
+      "model": "britannia_mod:block/structure/wooden_fence/cross"
+    },
+    "facing=north,layout_code=16": {
+      "model": "britannia_mod:block/structure/wooden_fence/isolated_reflected",
+      "y": 180
+    },
+    "facing=north,layout_code=17": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored_reflected",
+      "y": 270
+    },
+    "facing=north,layout_code=18": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored_reflected"
+    },
+    "facing=north,layout_code=19": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner_reflected"
+    },
+    "facing=north,layout_code=20": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored_reflected",
+      "y": 90
+    },
+    "facing=north,layout_code=21": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight_reflected",
+      "y": 180
+    },
+    "facing=north,layout_code=22": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner_reflected",
+      "y": 90
+    },
+    "facing=north,layout_code=23": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction_reflected",
+      "y": 90
+    },
+    "facing=north,layout_code=24": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_reflected",
+      "y": 180
+    },
+    "facing=north,layout_code=25": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner_reflected",
+      "y": 270
+    },
+    "facing=north,layout_code=26": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight_reflected",
+      "y": 180
+    },
+    "facing=north,layout_code=27": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction_reflected"
+    },
+    "facing=north,layout_code=28": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner_reflected",
+      "y": 180
+    },
+    "facing=north,layout_code=29": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction_reflected",
+      "y": 270
+    },
+    "facing=north,layout_code=30": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction_reflected",
+      "y": 180
+    },
+    "facing=north,layout_code=31": {
+      "model": "britannia_mod:block/structure/wooden_fence/cross_reflected",
+      "y": 180
+    },
+    "facing=east,layout_code=32,north=false,east=false,south=false,west=false": {
       "model": "britannia_mod:block/structure/wooden_fence/isolated",
       "y": 90
     },
-    "facing=east,north=false,east=false,south=false,west=true": {
+    "facing=east,layout_code=32,north=true,east=false,south=false,west=false": {
       "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
-      "y": 180
+      "y": 270
     },
-    "facing=east,north=false,east=false,south=true,west=false": {
+    "facing=east,layout_code=32,north=false,east=true,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored"
+    },
+    "facing=east,layout_code=32,north=true,east=true,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 270
+    },
+    "facing=east,layout_code=32,north=false,east=false,south=true,west=false": {
       "model": "britannia_mod:block/structure/wooden_fence/end",
       "y": 90
     },
-    "facing=east,north=false,east=false,south=true,west=true": {
-      "model": "britannia_mod:block/structure/wooden_fence/corner",
-      "y": 90
-    },
-    "facing=east,north=false,east=true,south=false,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored"
-    },
-    "facing=east,north=false,east=true,south=false,west=true": {
+    "facing=east,layout_code=32,north=true,east=false,south=true,west=false": {
       "model": "britannia_mod:block/structure/wooden_fence/straight",
       "y": 90
     },
-    "facing=east,north=false,east=true,south=true,west=false": {
+    "facing=east,layout_code=32,north=false,east=true,south=true,west=false": {
       "model": "britannia_mod:block/structure/wooden_fence/corner"
     },
-    "facing=east,north=false,east=true,south=true,west=true": {
-      "model": "britannia_mod:block/structure/wooden_fence/t_junction"
-    },
-    "facing=east,north=true,east=false,south=false,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+    "facing=east,layout_code=32,north=true,east=true,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
       "y": 270
     },
-    "facing=east,north=true,east=false,south=false,west=true": {
+    "facing=east,layout_code=32,north=false,east=false,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 180
+    },
+    "facing=east,layout_code=32,north=true,east=false,south=false,west=true": {
       "model": "britannia_mod:block/structure/wooden_fence/corner",
       "y": 180
     },
-    "facing=east,north=true,east=false,south=true,west=false": {
+    "facing=east,layout_code=32,north=false,east=true,south=false,west=true": {
       "model": "britannia_mod:block/structure/wooden_fence/straight",
       "y": 90
     },
-    "facing=east,north=true,east=false,south=true,west=true": {
-      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
-      "y": 90
-    },
-    "facing=east,north=true,east=true,south=false,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/corner",
-      "y": 270
-    },
-    "facing=east,north=true,east=true,south=false,west=true": {
+    "facing=east,layout_code=32,north=true,east=true,south=false,west=true": {
       "model": "britannia_mod:block/structure/wooden_fence/t_junction",
       "y": 180
     },
-    "facing=east,north=true,east=true,south=true,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
-      "y": 270
+    "facing=east,layout_code=32,north=false,east=false,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 90
     },
-    "facing=east,north=true,east=true,south=true,west=true": {
+    "facing=east,layout_code=32,north=true,east=false,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 90
+    },
+    "facing=east,layout_code=32,north=false,east=true,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction"
+    },
+    "facing=east,layout_code=32,north=true,east=true,south=true,west=true": {
       "model": "britannia_mod:block/structure/wooden_fence/cross",
       "y": 90
     },
-    "facing=south,north=false,east=false,south=false,west=false": {
+    "facing=east,layout_code=0": {
+      "model": "britannia_mod:block/structure/wooden_fence/isolated",
+      "y": 90
+    },
+    "facing=east,layout_code=1": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 270
+    },
+    "facing=east,layout_code=2": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored"
+    },
+    "facing=east,layout_code=3": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 270
+    },
+    "facing=east,layout_code=4": {
+      "model": "britannia_mod:block/structure/wooden_fence/end",
+      "y": 90
+    },
+    "facing=east,layout_code=5": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight",
+      "y": 90
+    },
+    "facing=east,layout_code=6": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner"
+    },
+    "facing=east,layout_code=7": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 270
+    },
+    "facing=east,layout_code=8": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 180
+    },
+    "facing=east,layout_code=9": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 180
+    },
+    "facing=east,layout_code=10": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight",
+      "y": 90
+    },
+    "facing=east,layout_code=11": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 180
+    },
+    "facing=east,layout_code=12": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 90
+    },
+    "facing=east,layout_code=13": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 90
+    },
+    "facing=east,layout_code=14": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction"
+    },
+    "facing=east,layout_code=15": {
+      "model": "britannia_mod:block/structure/wooden_fence/cross",
+      "y": 90
+    },
+    "facing=east,layout_code=16": {
+      "model": "britannia_mod:block/structure/wooden_fence/isolated_reflected",
+      "y": 270
+    },
+    "facing=east,layout_code=17": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_reflected",
+      "y": 270
+    },
+    "facing=east,layout_code=18": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored_reflected"
+    },
+    "facing=east,layout_code=19": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner_reflected"
+    },
+    "facing=east,layout_code=20": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored_reflected",
+      "y": 90
+    },
+    "facing=east,layout_code=21": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight_reflected",
+      "y": 270
+    },
+    "facing=east,layout_code=22": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner_reflected",
+      "y": 90
+    },
+    "facing=east,layout_code=23": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction_reflected",
+      "y": 90
+    },
+    "facing=east,layout_code=24": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored_reflected",
+      "y": 180
+    },
+    "facing=east,layout_code=25": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner_reflected",
+      "y": 270
+    },
+    "facing=east,layout_code=26": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight_reflected",
+      "y": 270
+    },
+    "facing=east,layout_code=27": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction_reflected"
+    },
+    "facing=east,layout_code=28": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner_reflected",
+      "y": 180
+    },
+    "facing=east,layout_code=29": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction_reflected",
+      "y": 270
+    },
+    "facing=east,layout_code=30": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction_reflected",
+      "y": 180
+    },
+    "facing=east,layout_code=31": {
+      "model": "britannia_mod:block/structure/wooden_fence/cross_reflected",
+      "y": 270
+    },
+    "facing=south,layout_code=32,north=false,east=false,south=false,west=false": {
       "model": "britannia_mod:block/structure/wooden_fence/isolated",
       "y": 180
     },
-    "facing=south,north=false,east=false,south=false,west=true": {
+    "facing=south,layout_code=32,north=true,east=false,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 270
+    },
+    "facing=south,layout_code=32,north=false,east=true,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored"
+    },
+    "facing=south,layout_code=32,north=true,east=true,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 270
+    },
+    "facing=south,layout_code=32,north=false,east=false,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 90
+    },
+    "facing=south,layout_code=32,north=true,east=false,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight",
+      "y": 180
+    },
+    "facing=south,layout_code=32,north=false,east=true,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner"
+    },
+    "facing=south,layout_code=32,north=true,east=true,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 270
+    },
+    "facing=south,layout_code=32,north=false,east=false,south=false,west=true": {
       "model": "britannia_mod:block/structure/wooden_fence/end",
       "y": 180
     },
-    "facing=south,north=false,east=false,south=true,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
-      "y": 90
-    },
-    "facing=south,north=false,east=false,south=true,west=true": {
+    "facing=south,layout_code=32,north=true,east=false,south=false,west=true": {
       "model": "britannia_mod:block/structure/wooden_fence/corner",
-      "y": 90
+      "y": 180
     },
-    "facing=south,north=false,east=true,south=false,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored"
-    },
-    "facing=south,north=false,east=true,south=false,west=true": {
+    "facing=south,layout_code=32,north=false,east=true,south=false,west=true": {
       "model": "britannia_mod:block/structure/wooden_fence/straight",
       "y": 180
     },
-    "facing=south,north=false,east=true,south=true,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/corner"
+    "facing=south,layout_code=32,north=true,east=true,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 180
     },
-    "facing=south,north=false,east=true,south=true,west=true": {
+    "facing=south,layout_code=32,north=false,east=false,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 90
+    },
+    "facing=south,layout_code=32,north=true,east=false,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 90
+    },
+    "facing=south,layout_code=32,north=false,east=true,south=true,west=true": {
       "model": "britannia_mod:block/structure/wooden_fence/t_junction"
     },
-    "facing=south,north=true,east=false,south=false,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
-      "y": 270
-    },
-    "facing=south,north=true,east=false,south=false,west=true": {
-      "model": "britannia_mod:block/structure/wooden_fence/corner",
-      "y": 180
-    },
-    "facing=south,north=true,east=false,south=true,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/straight",
-      "y": 180
-    },
-    "facing=south,north=true,east=false,south=true,west=true": {
-      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
-      "y": 90
-    },
-    "facing=south,north=true,east=true,south=false,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/corner",
-      "y": 270
-    },
-    "facing=south,north=true,east=true,south=false,west=true": {
-      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
-      "y": 180
-    },
-    "facing=south,north=true,east=true,south=true,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
-      "y": 270
-    },
-    "facing=south,north=true,east=true,south=true,west=true": {
+    "facing=south,layout_code=32,north=true,east=true,south=true,west=true": {
       "model": "britannia_mod:block/structure/wooden_fence/cross",
       "y": 180
     },
-    "facing=west,north=false,east=false,south=false,west=false": {
+    "facing=south,layout_code=0": {
+      "model": "britannia_mod:block/structure/wooden_fence/isolated",
+      "y": 180
+    },
+    "facing=south,layout_code=1": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 270
+    },
+    "facing=south,layout_code=2": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored"
+    },
+    "facing=south,layout_code=3": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 270
+    },
+    "facing=south,layout_code=4": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 90
+    },
+    "facing=south,layout_code=5": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight",
+      "y": 180
+    },
+    "facing=south,layout_code=6": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner"
+    },
+    "facing=south,layout_code=7": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 270
+    },
+    "facing=south,layout_code=8": {
+      "model": "britannia_mod:block/structure/wooden_fence/end",
+      "y": 180
+    },
+    "facing=south,layout_code=9": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 180
+    },
+    "facing=south,layout_code=10": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight",
+      "y": 180
+    },
+    "facing=south,layout_code=11": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 180
+    },
+    "facing=south,layout_code=12": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 90
+    },
+    "facing=south,layout_code=13": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 90
+    },
+    "facing=south,layout_code=14": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction"
+    },
+    "facing=south,layout_code=15": {
+      "model": "britannia_mod:block/structure/wooden_fence/cross",
+      "y": 180
+    },
+    "facing=south,layout_code=16": {
+      "model": "britannia_mod:block/structure/wooden_fence/isolated_reflected"
+    },
+    "facing=south,layout_code=17": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored_reflected",
+      "y": 270
+    },
+    "facing=south,layout_code=18": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_reflected"
+    },
+    "facing=south,layout_code=19": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner_reflected"
+    },
+    "facing=south,layout_code=20": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored_reflected",
+      "y": 90
+    },
+    "facing=south,layout_code=21": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight_reflected"
+    },
+    "facing=south,layout_code=22": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner_reflected",
+      "y": 90
+    },
+    "facing=south,layout_code=23": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction_reflected",
+      "y": 90
+    },
+    "facing=south,layout_code=24": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored_reflected",
+      "y": 180
+    },
+    "facing=south,layout_code=25": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner_reflected",
+      "y": 270
+    },
+    "facing=south,layout_code=26": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight_reflected"
+    },
+    "facing=south,layout_code=27": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction_reflected"
+    },
+    "facing=south,layout_code=28": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner_reflected",
+      "y": 180
+    },
+    "facing=south,layout_code=29": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction_reflected",
+      "y": 270
+    },
+    "facing=south,layout_code=30": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction_reflected",
+      "y": 180
+    },
+    "facing=south,layout_code=31": {
+      "model": "britannia_mod:block/structure/wooden_fence/cross_reflected"
+    },
+    "facing=west,layout_code=32,north=false,east=false,south=false,west=false": {
       "model": "britannia_mod:block/structure/wooden_fence/isolated",
       "y": 270
     },
-    "facing=west,north=false,east=false,south=false,west=true": {
-      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
-      "y": 180
-    },
-    "facing=west,north=false,east=false,south=true,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
-      "y": 90
-    },
-    "facing=west,north=false,east=false,south=true,west=true": {
-      "model": "britannia_mod:block/structure/wooden_fence/corner",
-      "y": 90
-    },
-    "facing=west,north=false,east=true,south=false,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored"
-    },
-    "facing=west,north=false,east=true,south=false,west=true": {
-      "model": "britannia_mod:block/structure/wooden_fence/straight",
-      "y": 270
-    },
-    "facing=west,north=false,east=true,south=true,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/corner"
-    },
-    "facing=west,north=false,east=true,south=true,west=true": {
-      "model": "britannia_mod:block/structure/wooden_fence/t_junction"
-    },
-    "facing=west,north=true,east=false,south=false,west=false": {
+    "facing=west,layout_code=32,north=true,east=false,south=false,west=false": {
       "model": "britannia_mod:block/structure/wooden_fence/end",
       "y": 270
     },
-    "facing=west,north=true,east=false,south=false,west=true": {
-      "model": "britannia_mod:block/structure/wooden_fence/corner",
-      "y": 180
+    "facing=west,layout_code=32,north=false,east=true,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored"
     },
-    "facing=west,north=true,east=false,south=true,west=false": {
+    "facing=west,layout_code=32,north=true,east=true,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 270
+    },
+    "facing=west,layout_code=32,north=false,east=false,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 90
+    },
+    "facing=west,layout_code=32,north=true,east=false,south=true,west=false": {
       "model": "britannia_mod:block/structure/wooden_fence/straight",
       "y": 270
     },
-    "facing=west,north=true,east=false,south=true,west=true": {
-      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
-      "y": 90
+    "facing=west,layout_code=32,north=false,east=true,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner"
     },
-    "facing=west,north=true,east=true,south=false,west=false": {
-      "model": "britannia_mod:block/structure/wooden_fence/corner",
+    "facing=west,layout_code=32,north=true,east=true,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
       "y": 270
     },
-    "facing=west,north=true,east=true,south=false,west=true": {
+    "facing=west,layout_code=32,north=false,east=false,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 180
+    },
+    "facing=west,layout_code=32,north=true,east=false,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 180
+    },
+    "facing=west,layout_code=32,north=false,east=true,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight",
+      "y": 270
+    },
+    "facing=west,layout_code=32,north=true,east=true,south=false,west=true": {
       "model": "britannia_mod:block/structure/wooden_fence/t_junction",
       "y": 180
     },
-    "facing=west,north=true,east=true,south=true,west=false": {
+    "facing=west,layout_code=32,north=false,east=false,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 90
+    },
+    "facing=west,layout_code=32,north=true,east=false,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 90
+    },
+    "facing=west,layout_code=32,north=false,east=true,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction"
+    },
+    "facing=west,layout_code=32,north=true,east=true,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/cross",
+      "y": 270
+    },
+    "facing=west,layout_code=0": {
+      "model": "britannia_mod:block/structure/wooden_fence/isolated",
+      "y": 270
+    },
+    "facing=west,layout_code=1": {
+      "model": "britannia_mod:block/structure/wooden_fence/end",
+      "y": 270
+    },
+    "facing=west,layout_code=2": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored"
+    },
+    "facing=west,layout_code=3": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 270
+    },
+    "facing=west,layout_code=4": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 90
+    },
+    "facing=west,layout_code=5": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight",
+      "y": 270
+    },
+    "facing=west,layout_code=6": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner"
+    },
+    "facing=west,layout_code=7": {
       "model": "britannia_mod:block/structure/wooden_fence/t_junction",
       "y": 270
     },
-    "facing=west,north=true,east=true,south=true,west=true": {
+    "facing=west,layout_code=8": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 180
+    },
+    "facing=west,layout_code=9": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 180
+    },
+    "facing=west,layout_code=10": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight",
+      "y": 270
+    },
+    "facing=west,layout_code=11": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 180
+    },
+    "facing=west,layout_code=12": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 90
+    },
+    "facing=west,layout_code=13": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 90
+    },
+    "facing=west,layout_code=14": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction"
+    },
+    "facing=west,layout_code=15": {
       "model": "britannia_mod:block/structure/wooden_fence/cross",
       "y": 270
+    },
+    "facing=west,layout_code=16": {
+      "model": "britannia_mod:block/structure/wooden_fence/isolated_reflected",
+      "y": 90
+    },
+    "facing=west,layout_code=17": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored_reflected",
+      "y": 270
+    },
+    "facing=west,layout_code=18": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored_reflected"
+    },
+    "facing=west,layout_code=19": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner_reflected"
+    },
+    "facing=west,layout_code=20": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_reflected",
+      "y": 90
+    },
+    "facing=west,layout_code=21": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight_reflected",
+      "y": 90
+    },
+    "facing=west,layout_code=22": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner_reflected",
+      "y": 90
+    },
+    "facing=west,layout_code=23": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction_reflected",
+      "y": 90
+    },
+    "facing=west,layout_code=24": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored_reflected",
+      "y": 180
+    },
+    "facing=west,layout_code=25": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner_reflected",
+      "y": 270
+    },
+    "facing=west,layout_code=26": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight_reflected",
+      "y": 90
+    },
+    "facing=west,layout_code=27": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction_reflected"
+    },
+    "facing=west,layout_code=28": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner_reflected",
+      "y": 180
+    },
+    "facing=west,layout_code=29": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction_reflected",
+      "y": 270
+    },
+    "facing=west,layout_code=30": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction_reflected",
+      "y": 180
+    },
+    "facing=west,layout_code=31": {
+      "model": "britannia_mod:block/structure/wooden_fence/cross_reflected",
+      "y": 90
     }
   }
 }

@@ -232,6 +232,7 @@ public final class SandstoneWindowBlock extends DoubleWallBlock {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        state = canonicalPairState(state, level, pos);
         return HorizontalShape.rotateFromNorth(canonicalShape(state), state.getValue(FACING));
     }
 

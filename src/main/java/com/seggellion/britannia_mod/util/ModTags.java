@@ -87,6 +87,23 @@ public class ModTags {
          */
         public static final TagKey<Block> GRABBY_DEED_PLACED = createTag("grabby_deed_placed");
 
+        /**
+         * Standing plants an axe may cut down, which are not wood.
+         *
+         * <p>Its own category rather than a line added to {@code #britannia_mod:logs}, because the
+         * wood tags are not merely a list of what an axe may swing at: they are what
+         * {@code WoodChopEventHandler} routes on. A grape vine enrolled as a log would be felled as
+         * a log — minting a {@code WeightedWoodItem} with a random wood weight and filing tree karma
+         * against the player — which is a harvest, and cutting a vine is not supposed to produce
+         * one. Naming the category for the job keeps "an axe may cut this" separate from "this is
+         * timber", so widening one never silently widens the other.
+         *
+         * <p>Membership grants only the ability to <em>attempt</em> the cut. Ownership, house and
+         * region rules are unchanged and are still asked by {@code ManagedBreakAuthorization} before
+         * anything is destroyed.
+         */
+        public static final TagKey<Block> AXE_SEVERABLE_PLANTS = createTag("axe_severable_plants");
+
         private static TagKey<Block> createTag(String name) {
             return BlockTags.create(ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, name));
         }

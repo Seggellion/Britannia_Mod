@@ -14,8 +14,12 @@ writes anything: if it cannot reproduce those four byte for byte, it refuses to
 run, because then it does not understand the art well enough to cut the rest.
 
     python tools/generate_half_walls.py [--check]
+    python tools/generate_half_walls.py --support-corner-only [--check]
 
 --check verifies and reports without writing.
+With --support-corner-only, it checks the actual selected output bytes for freshness
+without requiring the unrelated straight-model proof. Only the existing unmirrored
+false-branch support half corner is written; no blockstates or other art are changed.
 """
 import argparse
 import collections
@@ -126,6 +130,39 @@ def write_json(path, doc):
         handle.write('\n')
 
 
+def support_corner_output():
+    """Preflight the exact authoritative source and selector before any writes."""
+    family = 'plaster_wall_and_support_blank'
+    source = family + '_corner'
+    doc = load(os.path.join(MODELS, source + '.json'))
+    if not doc.get('elements'):
+        raise ValueError('support corner has no elements')
+    for element in doc['elements']:
+        if element.get('rotation', {}).get('angle', 0) != 0:
+            raise ValueError('scoped support corner requires axis-aligned elements')
+        if any(a >= b for a, b in zip(element['from'], element['to'])):
+            raise ValueError('support corner has invalid element bounds')
+        if not element.get('faces'):
+            raise ValueError('support corner element has no faces')
+    variants = load(os.path.join(BLOCKSTATES, family + '_half.json'))['variants']
+    expected = 'britannia_mod:block/structure/plaster/' + family + '_half_corner'
+    matches_corner = [v for k, v in variants.items()
+                      if dict(p.split('=') for p in k.split(','))['shape'] == 'corner'
+                      and dict(p.split('=') for p in k.split(','))['branch_right'] == 'false']
+    if len(matches_corner) != 4 or any(v['model'] != expected for v in matches_corner):
+        raise ValueError('half false-branch selectors no longer match scoped output')
+    cut = halve(doc)
+    cut['__comment'] = ('Half-height cut of {source}: clamp(y, 0, 16) with vertical UVs '
+                        're-cut by tools/generate_half_walls.py --support-corner-only. '
+                        'Use the same command with --check to verify output freshness.').format(source=source)
+    # A slice exposes a cap even if the full-height mesh omitted an internal top.
+    # Target sources require explicit top caps rather than silently losing a roof.
+    if any('up' not in el['faces'] for el in cut['elements']):
+        raise ValueError('scoped support corner requires top caps on every element')
+    path = os.path.join(MODELS, family + '_half_corner.json')
+    return path, (json.dumps(cut, indent='\t', ensure_ascii=True) + '\n').encode('utf-8')
+
+
 def add_offset_return(doc, branch_right):
     """Repeat the main arm across the neighbouring block up to its far-edge wall."""
     out = json.loads(json.dumps(doc), object_pairs_hook=collections.OrderedDict)
@@ -182,7 +219,26 @@ def main():
     parser.add_argument('--check', action='store_true', help='verify without writing')
     parser.add_argument('--offset-return-only', action='store_true',
                         help='write only the blank-half offset models and its blockstate')
+    parser.add_argument('--support-corner-only', action='store_true',
+                        help='derive only the existing false-branch support half corner; --check checks freshness')
     args = parser.parse_args()
+
+    if args.support_corner_only:
+        if args.offset_return_only:
+            parser.error('--support-corner-only and --offset-return-only are mutually exclusive')
+        path, expected = support_corner_output()
+        if args.check:
+            with open(path, 'rb') as handle:
+                actual = handle.read()
+            if actual != expected:
+                print('STALE: ' + os.path.basename(path), file=sys.stderr)
+                return 1
+            print('fresh: ' + os.path.basename(path))
+        else:
+            with open(path, 'wb') as handle:
+                handle.write(expected)
+            print('wrote only ' + os.path.basename(path))
+        return 0
 
     proof_families = ['plaster_wall_blank'] if args.offset_return_only else FAMILIES
     prove_transform(proof_families)
