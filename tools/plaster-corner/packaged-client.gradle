@@ -1,0 +1,35 @@
+// Disposable packaged client/server smoke: pinned SDK, with no project mod roots.
+// Put the verified -all candidate in the isolated run directory's mods/ first.
+gradle.projectsEvaluated {
+    ['runClient', 'runServer'].each { runTask ->
+    rootProject.tasks.named(runTask).configure {
+            if (runTask == 'runServer') standardInput = System.in
+            doFirst {
+                def projectBuild = rootProject.layout.buildDirectory.get().asFile.canonicalPath
+                def excluded = classpath.files.findAll { f ->
+                    f.canonicalPath.startsWith(projectBuild + File.separator) ||
+                    f.name.startsWith('geckolib-') || f.name.startsWith('nanohttpd-')
+                }
+                setClasspath(classpath.filter { !excluded.contains(it) })
+                environment 'MOD_CLASSES', ''
+                // Userdev also loads a separate Minecraft legacy classpath file. Filter that
+                // disposable copy too, or nanohttpd is loaded both there and from jar-in-jar.
+                def legacyPath = systemProperties['legacyClassPath.file']
+                if (!legacyPath) throw new GradleException('Pinned SDK legacy classpath property is missing')
+                def legacy = rootProject.file(legacyPath).readLines().findAll { entry ->
+                    def f = new File(entry)
+                    !f.canonicalPath.startsWith(projectBuild + File.separator) &&
+                        !f.name.startsWith('geckolib-') && !f.name.startsWith('nanohttpd-')
+                }
+                def smokeLegacy = new File(workingDir, 'packaged-legacy-classpath.txt')
+                smokeLegacy.text = legacy.join(System.lineSeparator()) + System.lineSeparator()
+                systemProperty 'legacyClassPath.file', smokeLegacy.absolutePath
+                println 'PACKAGED_SMOKE: MOD_CLASSES cleared; compiled project outputs and standalone bundled dependencies excluded.'
+                excluded.each { println "PACKAGED_SMOKE excluded: ${it}" }
+                if (classpath.files.any { it.canonicalPath.startsWith(projectBuild + File.separator) }) {
+                    throw new GradleException('Compiled project outputs remain on packaged smoke classpath')
+                }
+            }
+        }
+    }
+}

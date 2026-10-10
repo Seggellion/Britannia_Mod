@@ -319,6 +319,125 @@ public final class GrapeArborGameTests {
     }
 
     /**
+     * Growth is a per-random-tick callback and nothing else: one random tick applies exactly one
+     * increment of {@code growthMultiplier / baseGrowthTicks}, and an ordinary server tick applies
+     * none. Halving the grape base value only means anything if that stays true -- a second
+     * advancement pathway would quietly hand the old rate back.
+     *
+     * <p>Asserted with whichever crop can actually grow where the test structure sits, not with
+     * grapes. The GameTest world places structures at roughly y -60, which resolves UNDERGROUND and
+     * is far below the grape altitude floor of 55, so a grape vine there is legitimately blocked and
+     * could only produce a vacuous pass. The dispatch path itself is crop-agnostic: {@code tickGrowth}
+     * reads {@code crop.baseGrowthTicks()} for every crop through the same expression.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void growthAdvancesOncePerRandomTickAndNeverOnAPlainServerTick(GameTestHelper helper) {
+        BlockPos plot = new BlockPos(1, 1, 1);
+        helper.setBlock(plot, BlockRegistry.FARMING_BLOCK.get().defaultBlockState());
+        ServerLevel level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(plot);
+        FarmingBlockEntity farmBe = farmEntity(helper, plot);
+
+        CropDefinition growable = growableCropAt(helper, farmBe, plot);
+        farmBe.plant(growable, "");
+        farmBe.setHydration(3);
+        check(farmBe.getGrowthProgress() == 0.0f, "a fresh planting did not start at zero progress");
+
+        float multiplier = com.seggellion.britannia_mod.farming.CropQualityCalculator.growthMultiplier(
+            farmBe.createGrowthContext(level, pos, growable, null));
+        float expectedIncrement = multiplier / Math.max(1, growable.baseGrowthTicks());
+
+        // One growth callback moves progress by exactly one increment, never two.
+        farmBe.tickGrowth(level, pos, level.getBlockState(pos), level.random);
+        float afterOne = farmBe.getGrowthProgress();
+        check(Math.abs(afterOne - expectedIncrement) < 1.0e-4f,
+            "one growth callback moved " + growable.id() + " by " + afterOne
+                + ", expected " + expectedIncrement);
+
+        // A plain server tick is not a growth callback.
+        float beforeServerTicks = farmBe.getGrowthProgress();
+        for (int tick = 0; tick < 20; tick++) {
+            FarmingBlockEntity.serverTick(level, pos, level.getBlockState(pos), farmBe);
+        }
+        check(farmBe.getGrowthProgress() == beforeServerTicks,
+            "twenty server ticks advanced growth from " + beforeServerTicks
+                + " to " + farmBe.getGrowthProgress());
+
+        // A random tick applies one callback. Hydration decay can lower the multiplier used inside,
+        // so the guard is the ceiling: no dispatch may exceed a single maximum-multiplier increment.
+        farmBe.setHydration(3);
+        float beforeRandomTick = farmBe.getGrowthProgress();
+        level.getBlockState(pos).randomTick(level, pos, level.random);
+        float delta = farmEntity(helper, plot).getGrowthProgress() - beforeRandomTick;
+        check(delta > 0.0f, "a random tick did not advance " + growable.id() + " at all");
+        check(delta <= (3.9375f / Math.max(1, growable.baseGrowthTicks())) + 1.0e-4f,
+            "a random tick advanced growth by " + delta + ", more than one callback can produce");
+
+        helper.succeed();
+    }
+
+    /**
+     * Grapes at the GameTest altitude are altitude-blocked, and a blocked plot must stay exactly
+     * where it is however many ticks it receives. Nothing may advance a grape vine behind the
+     * environmental gate.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void aBlockedGrapePlotNeverAdvancesOnAnyTick(GameTestHelper helper) {
+        BlockPos plot = new BlockPos(1, 1, 1);
+        helper.setBlock(plot, BlockRegistry.FARMING_BLOCK.get().defaultBlockState());
+        ServerLevel level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(plot);
+        CropDefinition grapes = grapeCrop();
+        check(grapes.baseGrowthTicks() == 16, "grapes are not on the approved base growth value");
+
+        FarmingBlockEntity farmBe = farmEntity(helper, plot);
+        farmBe.plant(grapes, GrapesItem.DEFAULT_VARIETY_ID);
+        farmBe.setHydration(3);
+        check(!grapes.canGrowAtAltitude(pos),
+            "the test structure moved above the grape altitude floor; this test needs rewriting");
+
+        for (int tick = 0; tick < 10; tick++) {
+            farmBe.tickGrowth(level, pos, level.getBlockState(pos), level.random);
+            FarmingBlockEntity.serverTick(level, pos, level.getBlockState(pos), farmBe);
+            level.getBlockState(pos).randomTick(level, pos, level.random);
+        }
+
+        check(farmEntity(helper, plot).getGrowthProgress() == 0.0f,
+            "a blocked grape plot advanced to " + farmEntity(helper, plot).getGrowthProgress());
+        check(farmEntity(helper, plot).getGrowthStage() == 0, "a blocked grape plot changed age");
+        check(farmEntity(helper, plot).isGrowthBlocked(), "the plot did not report itself blocked");
+
+        helper.succeed();
+    }
+
+    /**
+     * Perennial regrowth resumes where the Fabric reference left it -- age 4, half progress -- and
+     * the halved base value slows the second lifecycle by the same factor as the first rather than
+     * rewriting where it starts.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void regrowthResumesAtAgeFourAndRunsOnTheSameHalvedBase(GameTestHelper helper) {
+        BlockPos plot = new BlockPos(1, 1, 1);
+        helper.setBlock(plot, BlockRegistry.FARMING_BLOCK.get().defaultBlockState());
+        CropDefinition grapes = grapeCrop();
+        FarmingBlockEntity farmBe = farmEntity(helper, plot);
+
+        farmBe.plant(grapes, GrapesItem.DEFAULT_VARIETY_ID);
+        check(farmBe.getGrowthStage() == 0, "a fresh planting did not start at age 0");
+        check(farmBe.getGrowthProgress() == 0.0f, "a fresh planting did not start at progress 0.0");
+
+        farmBe.regrowAfterHarvest(grapes);
+        check(farmBe.getGrowthStage() == 4, "regrowth did not resume at age 4");
+        check(Math.abs(farmBe.getGrowthProgress() - 0.5f) < 1.0e-4f,
+            "regrowth did not resume at progress 0.5, was " + farmBe.getGrowthProgress());
+        check(!farmBe.isMature(), "a regrown vine came back already mature");
+        check(grapes.baseGrowthTicks() == 16,
+            "regrowth must finish on the same halved base as fresh growth");
+
+        helper.succeed();
+    }
+
+    /**
      * A joined survival {@link ServerPlayer} whose {@code isCreative()} tells the truth.
      *
      * <p>{@link GameTestHelper#makeMockServerPlayerInLevel()} overrides {@code isCreative()} to
@@ -335,6 +454,27 @@ public final class GrapeArborGameTests {
         helper.getLevel().getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
         player.setGameMode(GameType.SURVIVAL);
         return player;
+    }
+
+    /**
+     * A crop whose climate, altitude and support requirements are all satisfied where this test
+     * structure sits, so the growth assertions measure a real advance rather than a blocked one.
+     */
+    private static CropDefinition growableCropAt(
+        GameTestHelper helper, FarmingBlockEntity farmBe, BlockPos relativePos) {
+        BlockPos pos = helper.absolutePos(relativePos);
+        for (CropDefinition candidate : CropRegistry.all()) {
+            if (candidate.tallCrop()) {
+                continue;
+            }
+            float multiplier = com.seggellion.britannia_mod.farming.CropQualityCalculator.growthMultiplier(
+                farmBe.createGrowthContext(helper.getLevel(), pos, candidate, null));
+            if (multiplier > 0.0f) {
+                return candidate;
+            }
+        }
+        throw new GameTestAssertException(
+            "no crop can grow at " + pos.toShortString() + ", so growth dispatch cannot be measured");
     }
 
     private static void useSeedsOn(GameTestHelper helper, ServerPlayer player, BlockPos relativePos) {

@@ -48,6 +48,12 @@ public final class CropVisualModels {
         if (crop == null) {
             return 0;
         }
+        if ("grapes".equals(crop.id())) {
+            // modelLocation short-circuits grapes to the arbor resolver, so the generic one-based
+            // stage below is a number grapes never draw. Diagnostics that print it contradict the
+            // renderer at seven of the eight ages.
+            return GrapeVisualResolver.visualStage(crop, growthAge);
+        }
         if ("corn".equals(crop.id())) {
             return visualAge(crop, growthAge);
         }
@@ -66,6 +72,10 @@ public final class CropVisualModels {
     public static int visualModelStageCount(CropDefinition crop) {
         if (crop == null) {
             return 0;
+        }
+        if ("grapes".equals(crop.id())) {
+            // Seven authored stages, not eight ages: ages 0 and 1 share the seedling model.
+            return GrapeVisualResolver.visualStageCount();
         }
         if ("corn".equals(crop.id())) {
             return crop.visualAgeCount();

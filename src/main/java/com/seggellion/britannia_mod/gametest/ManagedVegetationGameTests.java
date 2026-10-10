@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.event.ManagedVegetationInteractionHandler;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
+import com.seggellion.britannia_mod.vegetation.ManagedVegetationConfig;
 import com.seggellion.britannia_mod.vegetation.ManagedVegetationLifecycle;
 import com.seggellion.britannia_mod.vegetation.ManagedVegetationManager;
 import com.seggellion.britannia_mod.vegetation.ManagedVegetationNode;
@@ -21,6 +22,8 @@ import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.levelgen.PositionalRandomFactory;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
@@ -265,6 +268,174 @@ public final class ManagedVegetationGameTests {
                 "permission-level-2 Adventure item cut was rejected");
         check(adminSword.getDamageValue() == 0, "administrator bypass damaged the held item");
         helper.succeed();
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Pace: germination, then one stage at a time                        */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * A successful discovery roll starts a plant growing; it does not put a finished one in the
+     * world. This is the regression: natural registration used to schedule the node for the current
+     * game time, so the next server tick selected a species and placed it, and nothing was ever
+     * observed to grow.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void naturalDiscoveryGerminatesBeforeAnyPlantAppears(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos base = absolute(helper, 6, 3, 2);
+        ManagedVegetationSavedData data = ManagedVegetationSavedData.get(level);
+        data.nodeAt(base).ifPresent(node -> data.remove(base));
+        level.setBlock(base.below(), Blocks.GRASS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+        for (int offset = 0; offset < 3; offset++) {
+            level.setBlock(base.above(offset), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+        }
+
+        long registeredAt = level.getGameTime();
+        check(ManagedVegetationService.tryRegisterNaturalNode(level, base, new AlwaysDiscovers()),
+                "a passing discovery roll did not register a node");
+
+        ManagedVegetationNode node = data.nodeAt(base).orElseThrow();
+        check(node.lifecycle() == ManagedVegetationLifecycle.REGROWING,
+                "discovery produced a finished plant instead of a germinating node");
+        long germination = node.nextTransitionGameTime() - registeredAt;
+        check(germination >= ManagedVegetationConfig.DEFAULT_CUT_REGROW_MIN_TICKS
+                        && germination <= ManagedVegetationConfig.DEFAULT_CUT_REGROW_MAX_TICKS,
+                "germination delay " + germination + " is outside the required 1200..2400 ticks");
+        check(level.getBlockState(base).is(BlockRegistry.MANAGED_VEGETATION_CONTROLLER.get()),
+                "discovery placed a visible plant instead of the regrowth marker");
+
+        helper.runAfterDelay(4, () -> {
+            check(level.getBlockState(base).is(BlockRegistry.MANAGED_VEGETATION_CONTROLLER.get()),
+                    "a germinating node became visible within a few ticks of discovery");
+            helper.succeed();
+        });
+    }
+
+    /**
+     * Short grass is a stage a player can see, not a value the code passes through. The stage clock
+     * is asserted against the effective window rather than the stored configuration, because those
+     * two differ on any world whose serverconfig predates this hotfix.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void grassRestsAtShortGrassForTheFullStageBeforeGrowingTall(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos base = absolute(helper, 6, 3, 6);
+        setUpNode(level, base);
+        check(ManagedVegetationManager.debugSpawn(level, base, ManagedVegetationProfile.GRASS_FAMILY_ID),
+                "grass-family spawn failed");
+
+        ManagedVegetationSavedData data = ManagedVegetationSavedData.get(level);
+        ManagedVegetationNode shortGrass = data.nodeAt(base).orElseThrow();
+        check(shortGrass.lifecycle() == ManagedVegetationLifecycle.SHORT_GRASS,
+                "the grass family did not stop at the short-grass stage");
+        check(level.getBlockState(base).is(Blocks.SHORT_GRASS), "short grass was not placed");
+        check(!level.getBlockState(base).is(Blocks.TALL_GRASS)
+                        && !level.getBlockState(base.above()).is(Blocks.TALL_GRASS),
+                "grass reached full height without passing through short grass");
+
+        long stageDelay = shortGrass.nextTransitionGameTime() - level.getGameTime();
+        check(stageDelay >= ManagedVegetationConfig.effectiveGrassGrowthMinTicks()
+                        && stageDelay <= ManagedVegetationConfig.effectiveGrassGrowthMaxTicks(),
+                "stage delay " + stageDelay + " is outside the effective window");
+        check(stageDelay >= 4_800L && stageDelay <= 9_600L,
+                "stage delay " + stageDelay + " is outside the required 4800..9600 ticks");
+
+        // Only the clock is short-circuited here; the transition that follows is the real one.
+        check(ManagedVegetationService.forceTransition(level, base), "stage transition was not scheduled");
+        helper.runAfterDelay(2, () -> {
+            check(level.getBlockState(base).is(Blocks.TALL_GRASS)
+                            && level.getBlockState(base.above()).is(Blocks.TALL_GRASS),
+                    "the scheduled stage did not produce tall grass");
+            helper.succeed();
+        });
+    }
+
+    /**
+     * A node whose chunk spent hours unloaded comes back long overdue. It must advance one stage and
+     * re-time the next one from now, never settle its whole backlog in a single dispatch.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void anOverdueNodeAdvancesOnlyOneStagePerDispatch(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos base = absolute(helper, 2, 3, 6);
+        setUpNode(level, base);
+
+        ManagedVegetationSavedData data = ManagedVegetationSavedData.get(level);
+        data.update(data.nodeAt(base).orElseThrow().schedule(0L));
+
+        helper.runAfterDelay(3, () -> {
+            ManagedVegetationNode advanced = data.nodeAt(base).orElseThrow();
+            check(advanced.lifecycle() != ManagedVegetationLifecycle.REGROWING,
+                    "the overdue node never advanced");
+            check(advanced.lifecycle() != ManagedVegetationLifecycle.TALL_GRASS,
+                    "the overdue node settled two stages in one dispatch");
+            check(!level.getBlockState(base).is(Blocks.TALL_GRASS),
+                    "an overdue node produced full-height grass in a single dispatch");
+            if (advanced.lifecycle() == ManagedVegetationLifecycle.SHORT_GRASS) {
+                long remaining = advanced.nextTransitionGameTime() - level.getGameTime();
+                check(remaining >= ManagedVegetationConfig.effectiveGrassGrowthMinTicks()
+                                && remaining <= ManagedVegetationConfig.effectiveGrassGrowthMaxTicks(),
+                        "catch-up re-timed the stage from the stale clock rather than from now: "
+                                + remaining);
+            }
+            helper.succeed();
+        });
+    }
+
+    /** A discovery roll that always passes, so the natural path is deterministic in a test. */
+    private static final class AlwaysDiscovers implements RandomSource {
+        private final RandomSource delegate = RandomSource.create(1234L);
+
+        @Override
+        public RandomSource fork() {
+            return delegate.fork();
+        }
+
+        @Override
+        public PositionalRandomFactory forkPositional() {
+            return delegate.forkPositional();
+        }
+
+        @Override
+        public void setSeed(long seed) {
+            delegate.setSeed(seed);
+        }
+
+        @Override
+        public int nextInt() {
+            return 0;
+        }
+
+        @Override
+        public int nextInt(int bound) {
+            return 0;
+        }
+
+        @Override
+        public long nextLong() {
+            return delegate.nextLong();
+        }
+
+        @Override
+        public boolean nextBoolean() {
+            return delegate.nextBoolean();
+        }
+
+        @Override
+        public float nextFloat() {
+            return delegate.nextFloat();
+        }
+
+        @Override
+        public double nextDouble() {
+            return delegate.nextDouble();
+        }
+
+        @Override
+        public double nextGaussian() {
+            return delegate.nextGaussian();
+        }
     }
 
     private static void setUpNode(ServerLevel level, BlockPos base) {

@@ -23,9 +23,19 @@ public final class WoodenFenceLoadHandler {
             var pos = event.getChunk().getPos();
             var queue = PENDING.computeIfAbsent(level, ignored -> new LinkedHashSet<>());
             queue.add(pos);
-            // A newly loaded junction can change a run extending into its loaded neighbours.
+            // Contacts across the boundary become available; saved layouts never change.
             queue.add(new ChunkPos(pos.x-1, pos.z)); queue.add(new ChunkPos(pos.x+1, pos.z));
             queue.add(new ChunkPos(pos.x, pos.z-1)); queue.add(new ChunkPos(pos.x, pos.z+1));
+        }
+    }
+
+    @SubscribeEvent
+    public static void unloaded(ChunkEvent.Unload event) {
+        if (event.getLevel() instanceof ServerLevel level) synchronized (PENDING) {
+            var pos = event.getChunk().getPos();
+            var queue = PENDING.computeIfAbsent(level, ignored -> new LinkedHashSet<>());
+            queue.add(new ChunkPos(pos.x-1,pos.z)); queue.add(new ChunkPos(pos.x+1,pos.z));
+            queue.add(new ChunkPos(pos.x,pos.z-1)); queue.add(new ChunkPos(pos.x,pos.z+1));
         }
     }
 

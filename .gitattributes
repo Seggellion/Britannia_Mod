@@ -64,3 +64,12 @@ src/test/resources/client-branding-vanilla-splash-hashes.txt text eol=lf
 # hash only holds if its line endings are the same everywhere. Pinned in the byte form the
 # committed hash was recorded over, exactly like the geometry assets above.
 src/main/java/com/seggellion/britannia_mod/mixin/TitleScreenBackgroundMixin.java text eol=crlf
+
+# Scoped support-corner generation checks the derivative's canonical LF bytes.
+src/main/resources/assets/britannia_mod/models/block/structure/plaster/plaster_wall_and_support_blank_half_corner.json text eol=lf
+
+# Native acceptance evidence preserves exact captured bytes across checkouts.
+docs/hotfixes/plaster-corner-0.1.8d/implementation/acceptance-resume/** -text whitespace=cr-at-eol
+docs/hotfixes/plaster-corner-0.1.8d/implementation/acceptance-resume/*.log -diff
+docs/hotfixes/combined-0.1.8d/evidence/** -text whitespace=cr-at-eol
+docs/hotfixes/combined-0.1.8d/evidence/*.log -diff

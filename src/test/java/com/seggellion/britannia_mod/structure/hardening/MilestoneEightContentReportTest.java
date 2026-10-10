@@ -23,7 +23,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class MilestoneEightContentReportTest {
-    private static final Path REPORT = Path.of(System.getProperty("britannia.projectDir", "."),"docs/shrines-monoliths/CONTENT_REPORT.json");
+    private static final Path REPORT = Path.of(System.getProperty("britannia.projectDir", "."),"src/test/resources/release-contracts/CONTENT_REPORT.json");
     private static final Path ASSETS = Path.of(System.getProperty("britannia.projectDir", "."), "src/main/resources/assets/britannia_mod");
     private static final String GENERATED_FROM = "0aa523ec86e483e230fc1c4d04e145d394ebf990";
 

@@ -90,7 +90,7 @@ class RoofTextureMilestoneFourAssetTest {
      */
     @Test
     void bothCheckedInCopiesOfTheManifestStillCarryTheSameContent() throws Exception {
-        Path documented = PROJECT.resolve("docs/projects/stone-slate-roofs/M4_TEXTURE_MANIFEST.json");
+        Path documented = PROJECT.resolve("src/test/resources/release-contracts/M4_TEXTURE_MANIFEST.json");
         assertTrue(Files.isRegularFile(documented),
                 documented + " is missing; the manifest is documented in two places and this is one");
         assertEquals(

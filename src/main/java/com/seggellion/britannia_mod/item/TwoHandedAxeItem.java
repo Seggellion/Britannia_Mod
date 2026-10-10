@@ -33,10 +33,17 @@ public class TwoHandedAxeItem extends AxeItem {
         return AxeHarvestRules.isAllowedAxeHarvestBlock(state);
     }
 
+    /**
+     * Zero is what makes this axe refuse a block outright rather than merely chew it slowly: a
+     * destroy speed of zero leaves {@code getDestroyProgress} at zero however long the dig is held,
+     * because every vanilla modifier on top of it is multiplicative. Anything this axe is meant to
+     * cut therefore has to return a real speed here, not just pass the tag check elsewhere.
+     */
     @Override
     public float getDestroySpeed(ItemStack stack, BlockState state) {
         if (AxeHarvestRules.isAllowedLeafBlock(state)) return 4.0F;
         if (AxeHarvestRules.isAllowedLogBlock(state)) return 2.0F;
+        if (AxeHarvestRules.isAllowedAxeSeverablePlant(state)) return 2.0F;
 
         return 0.0F;
     }

@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.blessed;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import org.slf4j.Logger;
@@ -39,6 +40,8 @@ import java.util.UUID;
  * nothing Rails could key a destruction report to, and {@code of} is empty. A handler that
  * reported a destruction for one of those would have to invent an identity, and an invented
  * identity is a corrupt report about somebody's permanent property.
+ * {@link #ownerOf(ItemStack)} answers the narrower equipment question for both current and
+ * legacy stamps, without manufacturing a lifecycle identity for older items.
  *
  * <h2>Fail closed, everywhere</h2>
  * Every defect -- an empty stack, absent {@link DataComponents#CUSTOM_DATA}, {@code blessed}
@@ -134,6 +137,33 @@ public record BlessedItemLifecycleMetadata(UUID instanceUuid, String deedId, UUI
         } catch (RuntimeException corrupt) {
             LOGGER.warn("Ignoring an unreadable blessed stamp", corrupt);
             return false;
+        }
+    }
+
+    /**
+     * The stamped owner of a well-formed blessed item, including a pre-M6 item without an
+     * instance UUID. A blank string is treated as legacy, as in {@link #of}; a wrong-typed
+     * or non-blank malformed instance UUID is corruption, not a legacy stamp.
+     */
+    public static Optional<UUID> ownerOf(ItemStack stack) {
+        try {
+            CompoundTag tag = blessedCustomData(stack);
+            if (tag == null || tag.getString(KEY_DEED_ID).isBlank()) return Optional.empty();
+
+            UUID owner = parseUuidOrNull(tag.getString(KEY_OWNER));
+            if (owner == null) return Optional.empty();
+
+            if (tag.contains(KEY_INSTANCE_UUID)) {
+                if (!tag.contains(KEY_INSTANCE_UUID, Tag.TAG_STRING)) return Optional.empty();
+                String rawInstance = tag.getString(KEY_INSTANCE_UUID);
+                if (!rawInstance.isBlank() && parseUuidOrNull(rawInstance) == null) {
+                    return Optional.empty();
+                }
+            }
+            return Optional.of(owner);
+        } catch (RuntimeException corrupt) {
+            LOGGER.warn("Ignoring an unreadable blessed owner stamp", corrupt);
+            return Optional.empty();
         }
     }
 
