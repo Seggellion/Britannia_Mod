@@ -1,3 +1,17 @@
+## Active public README/licensing policy — 2026-10-10
+
+PR #502 merged the sanitized release source but continued an earlier omission of the public README. The actual exporter is `docs/source-publication-2026-10-10/prepare_snapshot.py`; its historical exclusion input is `PUBLIC_SNAPSHOT.json` beside this record. The historic exclusion map and counts are preserved as evidence, with an explicit active-policy amendment.
+
+The exporter now retains exact root `README.md` and root LICENSE, LICENCE, COPYING, NOTICE and TEMPLATE_LICENSE notices (no extension, .txt, .md or .rst) **before** applying either case-insensitive Markdown deletion or the historical exclusion map. Nested README files, other Markdown, the complete internal docs/evidence tree and all other established exclusions remain excluded. Public README content must be reviewed without internal handoff links, acceptance records, local paths or private operations.
+
+Before any temporary index/tree/commit is created, preparation fails if `README.md` is absent or any existing root public licensing file from the freshly fetched main is missing from retained blob entries. No licensing file is silently recovered from a different branch. Independent main changes still require investigation; the original retained source/object/mode/type and main-parent guards remain.
+
+The focused exporter regression checks exercise real rule order, historical README/license exclusions, missing README, accidental removal of a currently public license, and exclusion of internal Markdown. Run `python docs/source-publication-2026-10-10/test_prepare_snapshot.py`; no runtime build or GameTests are required for this policy/documentation change. The correction is carried into Patch 19 by a scoped commit integration, with no rebase or version change.
+
+The records below describe earlier preparation checkpoints, not the active exception policy or current repository protections.
+
+---
+
 ## Current closeout — 2026-10-07
 
 Source publication is independently authorized before remaining manual observations. Snapshot fd90bff209d47addf6667c4576bd2053890127f2 retains exact source object/type/mode parity and passes clean build/full JUnit. Additional closeout changes are excluded documents/evidence. Main restricted updates/signatures remain enforced without administrator exception; a PR is not updated main. Actual outcome is recorded in PUBLICATION_RECEIPT.json and RELEASE_HANDOFF.md.
@@ -10,7 +24,7 @@ The existing 2026-09-14 workflow produced a separate main child of the prior pub
 
 Required fence oracle (`legacy-blockstate.json`, `AUTHORED_MODEL_SHA256.txt`) and weapon/roof/shrine asset-contract manifests previously lived under `docs`. Copies now live in `src/test/resources/release-contracts`; the four JUnit consumer classes and fence resource verifier read them there. Original internal copies are preserved. Weapon `source_root` becomes portable `weapons`. Both roof test copies now name `roof.ai` instead of a machine-specific absolute path, and the roof importer emits the basename going forward. Asset bytes, content/hash maps, game code and test assertions are unchanged. Focused fixture consumers pass; the final clean candidate and sanitized check will verify this integration too.
 
-The public export excludes every case-insensitive Markdown path, the complete internal `docs` tree, local editor settings, cache/build/runtime/temporary/configuration/credential files and internal plaster runtime collection/preparation/release-audit tools. Required source assets, tests and their fixture resources, generators/checkers, CI/build files and legal/license files remain. Editable artwork and asset-import manifests are source/build inputs, not runtime screenshots. The exact excluded path list and retained Git object/mode/type comparison will be recorded before publication; no blanket parity pass is claimed yet.
+Except for the public root `README.md` and root licensing notices, the public export excludes every case-insensitive Markdown path, the complete internal `docs` tree, local editor settings, cache/build/runtime/temporary/configuration/credential files and internal plaster runtime collection/preparation/release-audit tools. Required source assets, tests and their fixture resources, generators/checkers, CI/build files and legal/license files remain. Editable artwork and asset-import manifests are source/build inputs, not runtime screenshots. The exact excluded path list and retained Git object/mode/type comparison will be recorded before publication; no blanket parity pass is claimed yet.
 
 Fresh fetch remains `origin/main=f039c4b259d925872618bfe64ee574b20776856c`, `origin/patch-18=7ca44a78d2438ae2204c4f64271ef84bb0672740`. A detached `tmp/combined-0.1.8d/public-source` worktree was created from remote main; no local main branch exists as a result.
 
