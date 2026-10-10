@@ -7,14 +7,7 @@ Britannia's systems — skills, a player-driven economy, banking, guilds, quests
 travel — on top of Minecraft 1.21.1, backed by a shared UltimaCraft web service that ties
 independent servers ("shards") into one persistent world.
 
-**Patch-18 source version: 0.1.8d.** The owner reports that the combined fixes are live
-on the server as of 2026-10-10. Source publication and Patch 19 synchronization are
-tracked separately; this task performs no installation, deployment or repeated acceptance.
-
-The plaster repair relocates the single timber post to the junction, finishes its vacated end,
-and retains the half corner. Bounded shared editing/collision/transform corrections preserve
-the existing registry/assets/version. See the [combined handoff](docs/hotfixes/combined-0.1.8d/RELEASE_HANDOFF.md)
-and [source-publication handoff](docs/source-publication-2026-10-10/HANDOFF.md).
+**Current release: Patch 18 — mod version 0.1.8d.**
 
 ## Features
 
@@ -47,58 +40,38 @@ That launches a development Minecraft client with the mod loaded (first run take
 while NeoForge sets up). Other useful tasks:
 
 ```bash
-./gradlew build                                          # build jars into build/libs/
+./gradlew build --no-configuration-cache                 # build jars into build/libs/
 ./gradlew runServer                                      # local dedicated dev server
-./gradlew test                                           # unit test suite
+./gradlew test --no-configuration-cache                  # unit test suite
 ./gradlew runGameTestServer --no-configuration-cache     # in-game GameTest suite
-./gradlew artifactIdentity                               # size, SHA-256 and commit of each jar
+./gradlew artifactIdentity --no-configuration-cache      # jar size, SHA-256 and source identity
 ```
 
 ## Deploying — which jar
 
-`./gradlew build` writes **two** jars, and only one of them can be deployed.
+Use **`build/libs/britannia_mod-0.1.8d-all.jar`** for a NeoForge 21.1.72
+installation running Minecraft 1.21.1. Put it in the installation's `mods/` folder.
 
-| File | Deploy? | What it is |
-| --- | --- | --- |
-| `build/libs/britannia_mod-<version>-all.jar` | **Yes** | Bundles GeckoLib 4.6.6 and nanohttpd under `META-INF/jarjar/`. |
-| `build/libs/britannia_mod-<version>-thin.jar` | No | No bundled dependencies. Kept for the Maven publication and for consumers that supply their own GeckoLib. |
+| File | Purpose |
+| --- | --- |
+| `britannia_mod-0.1.8d-all.jar` | Deployable jar; bundles GeckoLib 4.6.6 and nanohttpd. |
+| `britannia_mod-0.1.8d-thin.jar` | Unbundled jar for consumers supplying their own dependencies. |
 
-Drop the **`-all`** jar into the `mods/` folder of a NeoForge 21.1.72 installation for
-Minecraft 1.21.1, then restart the server.
+`build` runs `verifyDeployableJar`, which checks the bundled dependencies and recorded
+source identity. Build release candidates from a clean Git checkout. For a local build
+from a dirty checkout, use `-PallowDirty`; it is marked as a local build rather than a
+release candidate. Use `-Pdev` only for development runs: it omits bundled GeckoLib
+and cannot produce a deployable release jar.
 
-**Do not tell them apart by file size.** They are within a few percent of each other, and the
-thin jar does not announce its own problem: `neoforge.mods.toml` does not declare GeckoLib, so a
-server given the thin jar starts clean, runs, and then throws `NoClassDefFoundError` at the first
-animated render — minutes after the deploy, with nothing in the stack trace about packaging. Go by
-the classifier in the filename, or read the contents:
+Every jar carries `britannia_mod_build.properties` with its version, commit, branch,
+dirty flag and build timestamp. `artifactIdentity` prints the size and SHA-256 as well;
+`/grabby env` reports the loaded identity in game.
 
-```bash
-unzip -l build/libs/britannia_mod-0.1.8d-all.jar | grep jarjar
-#   META-INF/jarjar/nanohttpd-2.2.0.jar
-#   META-INF/jarjar/geckolib-neoforge-1.21.1-4.6.6.jar
-#   META-INF/jarjar/metadata.json
-```
-
-`./gradlew check` — and so `./gradlew build`, and CI — runs `verifyDeployableJar`, which fails the
-build if the `-all` jar has lost either bundled dependency or cannot say which commit produced it.
-`-Pdev` deliberately drops GeckoLib from the bundle, so it belongs on `runClient` and nothing else:
-`./gradlew build -Pdev` now fails rather than quietly producing an `-all` jar that is not one.
-
-The same gate **fails on a dirty working tree**. `git.dirty=true` means the bytes came from source
-that no commit names, which is not a release candidate; the flag is computed from
-`git status --porcelain`, so untracked files count too. To build locally from a dirty tree anyway,
-pass **`-PallowDirty`** — the build then succeeds with a warning, and `artifactIdentity` labels the
-result a local build rather than "deploy this one".
-
-Every jar also carries `britannia_mod_build.properties` — mod version, git commit, branch, dirty
-flag and build timestamp — which a running server reports through `/grabby env`. That is how a
-deployed file is matched back to a commit; `./gradlew artifactIdentity` prints the same identity,
-plus each jar's size and SHA-256, at build time.
-
-By default the mod points at a local UltimaCraft backend on `127.0.0.1:3000`; single-player
-and development work fine without one, and production shards configure their real endpoint
-and credentials via `config/britannia_mod-server.properties` or the `ULTIMACRAFT_SHARD_NAME`
-/ `ULTIMACRAFT_SHARD_SECRET` environment pair.
+The default backend endpoint is local (`127.0.0.1:3000`). The development client can
+launch without a backend; shared accounts, banking and shard networking need the
+UltimaCraft service. Configure your shard through
+`config/britannia_mod-server.properties` or the `ULTIMACRAFT_SHARD_NAME`,
+`ULTIMACRAFT_SHARD_SECRET` and `ULTIMACRAFT_API_BASE_URL` environment variables.
 
 ## Run your own shard — server operators wanted
 
@@ -113,7 +86,7 @@ you get connected. More at [ultimacraft.com](https://www.ultimacraft.com).
 ## License
 
 Source is published for reference and shard operation. All rights reserved; see
-`TEMPLATE_LICENSE.txt` for the MIT-licensed NeoForged MDK template files this project
+[`TEMPLATE_LICENSE.txt`](TEMPLATE_LICENSE.txt) for the MIT-licensed NeoForged MDK template files this project
 started from.
 
 UltimaCraft is a fan project. Ultima Online is a trademark of Electronic Arts Inc.;
