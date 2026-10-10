@@ -24,7 +24,25 @@ def entries(ref):
         result[path.decode()] = {'mode': mode, 'type': kind, 'object': oid}
     return result
 
+def public_licensing_file(path):
+    # Root legal notices are public even when Markdown or in an older exclusion
+    # manifest. Keep this narrow: docs/license-notes.md is still internal.
+    name = path.lower()
+    if '/' in name:
+        return False
+    stem, _, suffix = name.partition('.')
+    return stem in {'license', 'licence', 'copying', 'notice', 'template_license'} and suffix in {'', 'txt', 'md', 'rst'}
+
+def require_public_files(kept, current_public):
+    required = {'README.md'} | {p for p in current_public if public_licensing_file(p)}
+    missing = sorted(p for p in required if kept.get(p, {}).get('type') != 'blob')
+    if missing:
+        raise ValueError('Public README/licensing files must survive publication: ' + ', '.join(missing))
+
 def exclusion(path, historical):
+    # Explicit public exceptions must precede BOTH Markdown and historical rules.
+    if path == 'README.md' or public_licensing_file(path):
+        return None
     lower = path.lower()
     if lower.endswith('.md'):
         return 'case-insensitive Markdown exclusion'
@@ -66,6 +84,7 @@ def main():
     # Refuse to overwrite independently evolved main content. Equal changes are safe.
     baseline = entries(policy['remote_main_parent'])
     current = entries(parent)
+    require_public_files(kept, current)
     main_changes = [p for p in set(baseline)|set(current) if baseline.get(p) != current.get(p)]
     conflicts = [p for p in main_changes if current.get(p) != kept.get(p)]
     assert not conflicts, 'Independent main changes require investigation: ' + ', '.join(conflicts)
@@ -87,7 +106,9 @@ def main():
     manifest = {'patch18_source':source, 'fresh_remote_main_parent':parent,
                 'sanitized_commit':commit, 'tree':tree, 'source_entries':len(all_entries),
                 'retained_entries':len(kept), 'excluded_entries':len(excluded),
-                'retained_object_mode_type_parity':True, 'exceptions':[],
+                'retained_object_mode_type_parity':True,
+                'exceptions':sorted(p for p in kept if p == 'README.md' or public_licensing_file(p)),
+                'public_readme_and_existing_licensing_preserved':True,
                 'independent_main_changed_paths':main_changes, 'excluded':excluded, 'retained':kept,
                 'signing_status':'No configured authorized signer; prepared commit signature must be checked, never invented'}
     (args.output/'SNAPSHOT_MANIFEST.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')

@@ -1,3 +1,11 @@
+## README recovery / active export correction — 2026-10-10
+
+PR #502 is actually merged at `265a286088a1b763d9e153703042fe2f6033cdc7`; its release tree remains intact. The public README recovery is a separate main-child PR containing only root README.md. It uses the verified public README at 5c0b917226848192e40b376cae719057e70cd662, with current release/build/artifact and host-configuration corrections checked against the merged source. The actual exporter and historical manifest now explicitly retain the reviewed public root README and existing root licensing files, before the broad exclusions. Internal policy records remain development-only.
+
+Current publication outcomes and remote refs for this scoped recovery are recorded in `tmp/readme-recovery-20261010/evidence/RECEIPT.json` after verification. Earlier signing/restriction descriptions below are historical; fresh applicable rules must always be checked. No runtime build, GameTest, branch rebase, version change or deployment is part of this recovery.
+
+---
+
 # Source publication / Patch 19 synchronization — 2026-10-10
 
 Task: publish current sanitized Patch 18 source to main through its permitted workflow, then synchronize local/remote Patch 19 onto **full development Patch 18**, preserving unique work and version. No deployment, installed JAR changes, live-world edits, server restarts, desktop inputs, release tags or GitHub Releases.
@@ -33,7 +41,7 @@ Affected development RunUO tests pass. Final public validation runs from a clean
 
 ## Sanitization and main workflow
 
-Use the established [policy](../hotfixes/combined-0.1.8d/SANITIZATION.md) and [prior exclusion manifest](../hotfixes/combined-0.1.8d/PUBLIC_SNAPSHOT.json), applied to the **current** committed Patch 18 tree. Every case-insensitive Markdown file, internal docs/evidence, local configuration/cache/runtime/temporary artifact and established private collection tool is excluded. Required source/assets/test fixtures/build files/runtime dependencies/license inputs remain. Required machine-readable economy fixture copies are test inputs, not exported internal-document trees. No retained-file exceptions are planned.
+Use the established [policy](../hotfixes/combined-0.1.8d/SANITIZATION.md) and [prior exclusion manifest](../hotfixes/combined-0.1.8d/PUBLIC_SNAPSHOT.json), applied to the **current** committed Patch 18 tree. Except for the public root README and root licensing notices, every case-insensitive Markdown file, internal docs/evidence, local configuration/cache/runtime/temporary artifact and established private collection tool is excluded. Required source/assets/test fixtures/build files/runtime dependencies/license inputs remain. Required machine-readable economy fixture copies are test inputs, not exported internal-document trees. Explicit root README/licensing exceptions precede both Markdown and historical exclusion rules. Preparation fails if the public README or an existing public licensing blob would be lost; see the active policy amendment and focused exporter regression checks.
 
 Tracked legacy source/archive inputs under `src`, `content` and `weapons` remain retained as in the established exclusion manifest, including `.old` archive names. They are not profile/runtime backup files. The exporter explicitly rejects new exclusion of any still-present previously public source input; generic local-artifact suffix rules must not silently delete these source/assets.
 

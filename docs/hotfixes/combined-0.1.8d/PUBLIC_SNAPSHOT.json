@@ -524,5 +524,14 @@
   "public_publication": "SANITIZED_REVIEW_BRANCH_PUSHED_MAIN_NOT_UPDATED",
   "public_gate": "PASS_EXISTING_LOCAL_GATES_REMOTE_CI_IN_PROGRESS",
   "review_url": "https://github.com/Seggellion/Britannia_Mod/pull/501",
-  "current_integrated_parity_record": "PUBLIC_CURRENT_PARITY.json"
+  "current_integrated_parity_record": "PUBLIC_CURRENT_PARITY.json",
+  "active_policy_amendment_2026_10_10": {
+    "public_exceptions_before_markdown_and_historical_exclusions": [
+      "README.md",
+      "root LICENSE/LICENCE/COPYING/NOTICE/TEMPLATE_LICENSE notices (no extension, .txt, .md, .rst)"
+    ],
+    "required_public_files": "Root README.md and all root licensing files present on freshly fetched public main must be retained as blobs; otherwise preparation fails before creating a tree or commit.",
+    "historical_excluded_entries": "The excluded map and snapshot counts above remain historical evidence. The README.md exclusion is superseded by the explicit first-rule exception in prepare_snapshot.py.",
+    "internal_documents_and_evidence": "Remain excluded; the root README must contain only reviewed public content."
+  }
 }
