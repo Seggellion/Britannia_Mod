@@ -7,17 +7,14 @@ Britannia's systems — skills, a player-driven economy, banking, guilds, quests
 travel — on top of Minecraft 1.21.1, backed by a shared UltimaCraft web service that ties
 independent servers ("shards") into one persistent world.
 
-**Patch-18 source version: 0.1.8d — recovery candidate, not yet deployed.**
-
-Production acceptance remains pending the short fence corner/decorator/reload, paired-wall
-loaded appearance/outline and alligator playback checks. The pre-existing shared wall defect
-has been repaired and automated/current render checks pass; medallion UI and owner movement
-are accepted. Source publication is independently authorized and tracked separately.
+**Patch-18 source version: 0.1.8d.** The owner reports that the combined fixes are live
+on the server as of 2026-10-10. Source publication and Patch 19 synchronization are
+tracked separately; this task performs no installation, deployment or repeated acceptance.
 
 The plaster repair relocates the single timber post to the junction, finishes its vacated end,
 and retains the half corner. Bounded shared editing/collision/transform corrections preserve
 the existing registry/assets/version. See the [combined handoff](docs/hotfixes/combined-0.1.8d/RELEASE_HANDOFF.md)
-and [single five-minute session](docs/hotfixes/combined-0.1.8d/MANUAL_SESSION.md).
+and [source-publication handoff](docs/source-publication-2026-10-10/HANDOFF.md).
 
 ## Features
 

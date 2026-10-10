@@ -2,13 +2,10 @@ package com.seggellion.britannia_mod.economy;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,20 +43,7 @@ final class RunuoBuybackCoverageTest {
 
     @BeforeAll
     static void load() throws IOException {
-        // Gradle test workers run from a build subdirectory; walk up to the repo root.
-        Path relative = Path.of("docs", "vendor-trader-economy", "runuo_ultimacraft_mapping.json");
-        Path base = Path.of(System.getProperty("user.dir")).toAbsolutePath();
-        Path path = null;
-        for (int depth = 0; depth < 6 && base != null; depth++, base = base.getParent()) {
-            Path candidate = base.resolve(relative);
-            if (Files.exists(candidate)) {
-                path = candidate;
-                break;
-            }
-        }
-        assertTrue(path != null, "mapping source not found walking up from "
-                + System.getProperty("user.dir"));
-        mapping = JsonParser.parseString(Files.readString(path)).getAsJsonObject();
+        mapping = RunuoContractFixtures.load("runuo_ultimacraft_mapping.json");
     }
 
     @Test

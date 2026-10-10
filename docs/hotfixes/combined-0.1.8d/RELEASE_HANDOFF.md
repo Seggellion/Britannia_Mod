@@ -1,5 +1,11 @@
 # Combined Patch 18 0.1.8d release handoff
 
+## Source publication and branch synchronization — 2026-10-10
+
+The owner reports that the combined 0.1.8d fixes are now live on the server and requests only sanitized source publication and local/remote Patch 19 rebasing. No deployment, installation, desktop test, production/server/world change or repeated acceptance is performed. Historical runtime/visual records below remain historical, not new publication gates. Effective final production implementation remains in integrated `cf49b170`, with all cumulative fence/plaster/shared-wall/network/medallion/alligator changes preserved.
+
+The public CI RunUO initialization failures are repaired by exact mirrored test-resource JSON contracts and classpath loading; all existing accounting/coverage assertions remain. Development loading also rejects drift from the internal canonical matrix. No runtime source or version change is needed. Fresh snapshot must include current integrated test/tools/source additions and preserve every retained Git object/type/mode under the established exclusion manifest. Main signatures/restricted updates remain enforced without bypass. See the [current publication/rebase handoff](../../source-publication-2026-10-10/HANDOFF.md); actual final refs and gate outcomes are recorded in its task receipt, not inferred from the old PR.
+
 ## One fence/plaster recovery coordinated — 2026-10-09
 
 **COMBINED_CANDIDATE_VERIFIED; INSTALLED_FILE_MATCH; PRODUCTION_ACCEPTANCE_PENDING.** The fence task's completed report and final handoff were received; its prior separately authorized replacement had already finished after Minecraft closed. Fresh read-only coordination verifies the active one-JAR installation, preserved old backup, existing matching localhost server and both fixes in clean `cf49b170` / full SHA `e64fe63c6ed0836f520e3d9b66ac7336b3e323677b63a433d65d48852c30fd70`, 36,142,686 bytes. No duplicate installation or server/client launch, new repair, rebuild, repeated passing suite or desktop control occurs.
