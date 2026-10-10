@@ -34,7 +34,11 @@ def exclusion(path, historical):
         return historical[path]
     if lower.split('/')[0] in {'.vscode', '.idea', '.claude', '.codex', '.agents', '.aws', '.gradle', 'tmp', 'build', 'run', 'runs', 'logs', 'crash-reports'}:
         return 'local configuration/cache/runtime/temporary data'
-    if lower in {'.env', 'server.properties', 'ops.json', 'usercache.json', 'whitelist.json'} or lower.endswith(('.log', '.log.gz', '.hprof', '.bak', '.tmp', '.old')):
+    # The established manifest retains tracked legacy source/archive inputs,
+    # including .old files under src. Do not widen a local-artifact suffix rule
+    # into deletion of previously published source/assets.
+    source_input = lower.startswith(('src/', 'content/', 'weapons/'))
+    if lower in {'.env', 'server.properties', 'ops.json', 'usercache.json', 'whitelist.json'} or (not source_input and lower.endswith(('.log', '.log.gz', '.hprof', '.bak', '.tmp', '.old'))):
         return 'local runtime/configuration/temporary artifact'
     return None
 
@@ -56,6 +60,9 @@ def main():
             excluded[path] = reason
         else:
             kept[path] = item
+    previous_public = entries(policy['sanitized_snapshot'])
+    removed_source_inputs = [p for p in previous_public if p in all_entries and p not in kept]
+    assert not removed_source_inputs, 'New exclusion of previously retained source requires investigation: ' + ', '.join(removed_source_inputs)
     # Refuse to overwrite independently evolved main content. Equal changes are safe.
     baseline = entries(policy['remote_main_parent'])
     current = entries(parent)
